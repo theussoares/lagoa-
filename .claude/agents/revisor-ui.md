@@ -11,8 +11,9 @@ Verifique: fidelidade ao design de referência, uso dos tokens e componentes de
 `layers/ui` (sem cor/tamanho solto, sem CSS inline), acessibilidade (alvos
 ≥ 44px, contraste 4.5:1, `<button>`/`<a>`/`<label>` reais, `aria-label` em
 botão só com ícone, foco visível), props tipadas, componentes burros quando
-possível, textos pt-BR pela camada de textos, e testes cobrindo o
-comportamento.
+possível (sem acesso a store/service), código e nomes em inglês, nenhum
+texto solto (tudo via chave no `pt-BR.json`), tipagem sem `any`/`as`,
+duplicação, e testes cobrindo o comportamento.
 
 Se o diff tocar celular, sessão, Balcão, resgate, consentimento ou cobrança,
 pare e diga que a revisão é do `code-reviewer`.

@@ -5,6 +5,19 @@ com o modelo fixado no frontmatter (`opus` / `sonnet`, que resolvem para a
 versão mais recente de cada família). O contexto do produto, glossário e
 regras de LGPD ficam no [`CLAUDE.md`](./CLAUDE.md) — todos os agentes leem.
 
+## Padrões que valem para todo agente
+
+Detalhados em [`CLAUDE.md` → Idioma e Padrões de código](./CLAUDE.md#idioma):
+
+- **Código em inglês, interface em português.** Identificadores, arquivos,
+  chaves i18n, commits e testes em inglês (glossário domínio → código no
+  `CLAUDE.md`); o que o cliente vê sai do `pt-BR.json`.
+- **SOLID, clean code e DRY**, com fluxo de dependências fixo:
+  página → composables → stores → **services (interface)** → repositories.
+- **Dumb components** por padrão; só a página ou um `*Container.vue` é smart.
+- **Tudo tipado:** `strict`, sem `any`, tipos derivados de Zod, tipos de
+  marca para IDs e celular, uniões discriminadas para estado e resultado.
+
 ## Fluxo de uma feature
 
 ```
@@ -30,13 +43,14 @@ revisão de risco. Não usar em tarefas mecânicas ou de execução direta.
   aceite mensuráveis e casos de borda.
 
 - **Arquiteto de Software** (`arquiteto`) Decide em qual layer Nuxt 4 cada
-  coisa mora (`layers/cliente`, `layers/lojista`, `layers/admin`, `layers/ui`,
+  coisa mora (`layers/customer`, `layers/merchant`, `layers/admin`, `layers/ui`,
   `layers/core`) e o que vai para `shared/` (tipos e schemas Zod comuns a front
   e servidor). Garante que composables não dupliquem lógica entre superfícies e
-  que stores sigam `use<Dominio>Store`. Valida impacto em SSR/hidratação e
-  define os contratos da camada de API mockável enquanto o backend não existe.
-  Produz: `docs/specs/<feature>/solution-design.md` com mapa de arquivos e
-  contratos entre layers.
+  que stores sigam `use<Domain>Store` (`useWalletStore`, `useCounterStore`).
+  Valida impacto em SSR/hidratação, define as interfaces de service (com
+  implementação mock enquanto o backend não existe) e quais componentes são
+  smart ou dumb. Produz: `docs/specs/<feature>/solution-design.md` com mapa de
+  arquivos, interfaces e contratos entre layers.
 
 - **CTO** (`cto`) Aprova a arquitetura global, mitiga riscos e lê o código
   antes de decidir. Valida o `solution-design.md` do Arquiteto. **Dono da
@@ -65,8 +79,8 @@ Subagents paralelos com contexto especializado. Cada um recebe só o contexto
 da sua especialidade.
 
 - **Dev Vue/Nuxt** (`dev-nuxt`, 1 a 3 em paralelo) Implementa páginas e
-  componentes Vue 3 com `<script setup lang="ts">`, componentes burros sempre
-  que possível, seguindo a estrutura `app/` do Nuxt 4 dentro de cada layer.
+  componentes Vue 3 com `<script setup lang="ts">`, dumb components por
+  padrão (props/emits tipados, sem acesso a store ou service), seguindo a estrutura `app/` do Nuxt 4 dentro de cada layer.
   Usa os tokens e componentes de `layers/ui`; não cria CSS inline nem cor
   solta. Cada Dev roda em worktree isolado.
 
@@ -76,13 +90,15 @@ da sua especialidade.
   carimbos, navegação inferior, sidebar do painel). Garante alvos ≥ 44px,
   contraste e foco visível.
 
-- **Dev de Stores Pinia** (`dev-stores`) Estado global por domínio (sessão,
-  carteira, balcão, programa, rede). Conhece as stores existentes para não
-  duplicar; garante `storeToRefs()` nos consumidores e estado SSR-safe.
+- **Dev de Stores Pinia** (`dev-stores`) Estado global por domínio
+  (`session`, `wallet`, `counter`, `program`, `network`). Stores só guardam
+  estado e chamam services pela interface — regra de negócio fica no service.
+  Garante `storeToRefs()` nos consumidores e estado SSR-safe.
 
-- **Dev de Tipos & Contratos** (`dev-tipos`) Mantém os tipos de domínio e os
-  schemas Zod em `shared/` coesos, e a camada de API tipada + mocks em
-  `layers/core`. É quem vai plugar o backend real quando o ADR sair.
+- **Dev de Tipos, Contratos & Services** (`dev-tipos`) Mantém os tipos de
+  domínio e schemas Zod em `shared/`, as interfaces de service com
+  implementações `Mock*`/`Http*` e os repositories que validam toda resposta
+  externa. É quem vai plugar o backend real quando o ADR sair.
 
 - **QA / Test Engineer** (`qa`, 1 ou 2 em paralelo) Vitest +
   `@nuxt/test-utils` (ambiente `nuxt`/happy-dom) para composables, stores e
@@ -94,8 +110,9 @@ da sua especialidade.
   coisa que toque dado pessoal, sessão, Balcão, resgate ou cobrança sobe para
   o `code-reviewer`.
 
-> **Fora por enquanto:** i18n (o MVP é só pt-BR) e tracking/analytics (ainda
-> sem ferramenta escolhida). Quando entrarem, viram um agente cada.
+> **Fora por enquanto:** tracking/analytics (ainda sem ferramenta escolhida).
+> Textos usam `@nuxtjs/i18n` só com pt-BR — se entrar outro idioma, vira um
+> agente de i18n.
 > **Dev Backend** entra depois do ADR do CTO, com o perfil da stack escolhida.
 
 ---

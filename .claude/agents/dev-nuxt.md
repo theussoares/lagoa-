@@ -10,14 +10,18 @@ subtarefa; não saia do escopo dele.
 - Vue 3 com `<script setup lang="ts">`, props e emits tipados.
 - Estrutura Nuxt 4: código de app dentro de `layers/<superficie>/app/`
   (`pages/`, `components/`, `composables/`).
-- Componentes burros sempre que possível: dados entram por props, ações saem
-  por emits; a página ou um composable fala com a store.
+- Siga os padrões de código do `CLAUDE.md` à risca: código em inglês,
+  SOLID, clean code, DRY, tipagem estrita.
+- Dumb components por padrão: dados entram por `defineProps<Props>()`, ações
+  saem por `defineEmits<Emits>()`, sem acesso a store/service/rota. Só a
+  página (ou um `*Container.vue`) é smart e fala com composables/stores.
 - Visual só com tokens e componentes de `layers/ui`. Sem CSS inline, sem cor
   ou espaçamento solto. Se faltar um componente base, peça ao `dev-ui` em vez
   de criar um paralelo.
-- Dados só pelo cliente de API de `layers/core` (nunca `$fetch` direto).
-- Textos em pt-BR pela camada de textos; celular sempre pelo formatador com
-  máscara.
+- Dados só via composable → store → service (nunca `$fetch` direto).
+- Nenhum texto solto no template: toda string visível é chave em inglês no
+  `pt-BR.json` (`$t('counter.registerVisit')`). Celular sempre pelo
+  `maskPhone` compartilhado.
 - Acessibilidade: elementos interativos reais, alvos ≥ 44px, `aria-label` em
   botões só com ícone.
 

@@ -11,9 +11,124 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
 ## Estado do projeto
 
 - **Front:** Nuxt 4 (Vue 3, `<script setup lang="ts">`, Pinia).
-- **Backend:** ainda não definido. Até o ADR do CTO sair, o front consome uma
-  camada de API tipada e mockável em `layers/core` — nenhum componente chama
-  `fetch`/`$fetch` direto.
+- **Backend:** ainda não definido. Até o ADR do CTO sair, o front consome
+  services com interface e implementação mock em `layers/core` — nenhum
+  componente chama `fetch`/`$fetch` direto.
+
+## Idioma
+
+- **Código 100% em inglês:** nomes de arquivos, pastas, variáveis, funções,
+  tipos, stores, rotas internas, chaves de tradução, commits, comentários e
+  testes (`describe`/`it`).
+- **Português só no que o usuário final vê:** textos da interface, mensagens
+  de erro exibidas, e-mails/avisos. Ficam em `layers/core/i18n/locales/pt-BR.json`
+  (`@nuxtjs/i18n`, só o locale pt-BR) e são usados via `$t()`/`useI18n()`
+  com chaves em inglês (`wallet.rewardReady`).
+- **Documentação do time** (`CLAUDE.md`, `EQUIPE.md`, specs, ADRs) segue em
+  português.
+- Slugs de URL visíveis ao usuário podem ser em português
+  (`/carteira`, `/balcao`) via `definePageMeta`/alias; o nome do arquivo da
+  página continua em inglês.
+
+### Glossário de domínio → código
+
+| Domínio (pt-BR)           | Código (en)                    |
+| ------------------------- | ------------------------------ |
+| Cliente                   | `customer`                     |
+| Lojista                   | `merchant`                     |
+| Loja                      | `shop` (evita conflito com Pinia store) |
+| Rede / admin da rede      | `network` / `admin`            |
+| Clube / programa          | `program`                      |
+| Cartão de fidelidade      | `loyaltyCard`                  |
+| Carimbo / ponto           | `stamp` / `point`              |
+| Carteira                  | `wallet`                       |
+| Visita / lançar visita    | `visit` / `registerVisit`      |
+| Check-in                  | `checkIn`                      |
+| Antifraude (janela)       | `checkInCooldown`              |
+| Regras bônus              | `bonusRules` (`welcomeBonus`, `birthdayMultiplier`, `referralBonus`, `surpriseDay`) |
+| Expiração                 | `expirationPolicy`             |
+| Prêmio                    | `reward`                       |
+| Resgate / código          | `redemption` / `redemptionCode`|
+| Balcão                    | `counter`                      |
+| Descobrir / desafio       | `discover` / `challenge`       |
+| Clientes sumidos          | `lapsedCustomers`              |
+| Campanha / aviso          | `campaign` / `notification`    |
+| Consentimento             | `consent`                      |
+| Plano / cobrança          | `plan` / `billing`             |
+
+Termo novo de domínio entra nesta tabela antes de virar código.
+
+## Padrões de código
+
+### Fluxo de dependências (de fora para dentro)
+
+```
+page (smart) → components (dumb)
+     ↓
+composables  → stores (Pinia, estado)
+                 ↓
+              services (regra de aplicação, interface)
+                 ↓
+              repositories / API client (I/O, implementação trocável)
+                 ↓
+              shared/ (tipos + schemas Zod)
+```
+
+- Cada camada só conhece a de baixo. Componente não importa service; service
+  não conhece Vue, Pinia nem Nuxt.
+- **Services** ficam em `layers/<layer>/app/services/`: uma `interface`
+  (`RedemptionService`) e implementações (`HttpRedemptionService`,
+  `MockRedemptionService`). A implementação é injetada por um plugin/
+  composable de `layers/core` — trocar o backend é trocar a implementação.
+
+### SOLID
+
+- **S** — um motivo para mudar por arquivo: componente desenha, composable
+  orquestra, store guarda estado, service aplica regra, repository faz I/O.
+- **O** — modos de programa (`stamps`, `pointsPerCurrency`, `pointsPerVisit`)
+  e regras bônus são estratégias plugáveis (mapa `mode → strategy`), não
+  `if/switch` espalhado.
+- **L** — toda implementação de uma interface (mock ou http) cumpre o mesmo
+  contrato e passa nos mesmos testes.
+- **I** — interfaces pequenas por caso de uso (`CounterService` não carrega
+  métodos de billing).
+- **D** — camadas de cima dependem de interfaces, nunca de implementação
+  concreta.
+
+### Clean code e DRY
+
+- Nomes que dizem o que é (`remainingStamps`, não `n`/`aux`); funções pequenas
+  com um nível de abstração; early return em vez de `if` aninhado.
+- Sem número mágico: limites de domínio (`REDEMPTION_CODE_TTL_MINUTES`,
+  `LAPSED_AFTER_DAYS`) em constantes nomeadas em `shared/`.
+- Sem comentário explicando o óbvio; comentário só para o *porquê*.
+- DRY de conhecimento, não de aparência: regra de negócio e formatação
+  (ex.: `maskPhone`, `formatCurrency`) existem em um lugar só. Duas telas
+  parecidas por acaso não precisam virar um componente genérico.
+
+### Componentes
+
+- **Dumb components** por padrão: recebem dados por props, avisam por emits,
+  não acessam store, service, rota nem i18n de domínio por conta própria
+  (recebem o texto pronto ou a chave).
+- **Smart** só a página (ou um container explícito `*Container.vue`): lê o
+  composable/store e repassa para os dumb.
+- Um componente, uma responsabilidade; acima de ~150 linhas de template,
+  quebrar.
+
+### Tipagem
+
+- `strict: true`, sem `any` (use `unknown` + narrowing), sem `as` para calar o
+  compilador, sem `!` non-null sem justificativa.
+- `defineProps<Props>()` e `defineEmits<Emits>()` com tipos explícitos;
+  retorno explícito em funções exportadas de services, composables e stores.
+- Tipos de domínio derivam dos schemas Zod em `shared/` (`z.infer`); toda
+  resposta externa é validada no repository antes de entrar no app.
+- IDs e dados sensíveis com tipos de marca (`ShopId`, `CustomerId`,
+  `PhoneNumber`) para não misturar nem vazar sem querer.
+- Uniões discriminadas para estados (`{ status: 'idle' | 'loading' | 'error' | 'success' }`)
+  e para resultados de service (`Result<T, DomainError>`), em vez de
+  `null`/exceção solta.
 
 ## Superfícies
 
@@ -56,7 +171,7 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
   campanha.
 - Código de resgate e regras de antifraude são validados no servidor. O front
   só exibe.
-- Toda string visível é pt-BR e passa pela camada de textos definida pelo
-  Arquiteto (sem texto solto espalhado pelos componentes).
+- Toda string visível é pt-BR e vem do `pt-BR.json` via chave em inglês
+  (sem texto solto no template).
 - Acessibilidade: alvos de toque ≥ 44px, contraste 4.5:1, elementos
   interativos reais (`<button>`, `<a>`, `<input>` + `<label>`).

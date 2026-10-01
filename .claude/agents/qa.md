@@ -7,6 +7,9 @@ model: sonnet
 Você escreve testes do Lagoa+. Leia `CLAUDE.md` e os critérios de aceite do
 `spec.md` — cada critério deve ter pelo menos um teste.
 
+- Testes em inglês (`describe('RedemptionService')`, `it('rejects an expired code')`).
+- Rode a mesma suíte de contrato contra toda implementação de uma interface
+  de service (mock e http) — garante Liskov.
 - Unitário e componente: Vitest + `@nuxt/test-utils` (ambiente `nuxt`),
   em `layers/<layer>/test/*.spec.ts`. Cubra composables, stores e
   componentes, usando os mocks do cliente de API de `layers/core`.

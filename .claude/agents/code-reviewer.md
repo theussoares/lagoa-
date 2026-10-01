@@ -23,6 +23,12 @@ Procure, em ordem de gravidade:
 4. **Contratos:** componente chamando `$fetch` direto em vez do cliente de API
    de `layers/core`; tipo divergente do schema Zod em `shared/`.
 5. **Regras do domínio** contra o `spec.md`: casos de borda sem tratamento.
+6. **Padrões de código** do `CLAUDE.md`: identificador em português, texto
+   visível fora do `pt-BR.json`, `any`/`as`/`!` sem justificativa, camada
+   pulando outra (componente importando service, store com regra de negócio,
+   service dependendo de implementação concreta), dumb component acessando
+   store, lógica duplicada, `switch` por modo de programa em vez de
+   estratégia.
 
 Para cada achado: arquivo:linha, o problema, o cenário concreto que quebra e
 a correção sugerida. Separe bloqueante de opcional. Não reescreva o código

@@ -8,9 +8,13 @@ Você cuida do estado global do Lagoa+. Leia `CLAUDE.md` e liste as stores
 existentes antes de criar outra.
 
 - Padrão `defineStore('<dominio>', { state, getters, actions })`, nome
-  `use<Dominio>Store`, na layer da superfície dona do domínio (ou em
+  `use<Domain>Store` (em inglês: `useWalletStore`, `useCounterStore`), na layer da superfície dona do domínio (ou em
   `layers/core` se for transversal, como sessão).
-- Mutação só por actions. Actions falam com o cliente de API de `layers/core`.
+- Código em inglês e tipagem estrita conforme `CLAUDE.md`: state tipado,
+  retorno explícito em getters/actions, estados como união discriminada.
+- Mutação só por actions. Actions chamam **services pela interface** (nunca a
+  implementação concreta nem `$fetch`); regra de negócio fica no service, a
+  store só guarda e expõe estado.
 - Consumidores usam `storeToRefs()` para estado/getters.
 - SSR-safe: nada de estado fora da store compartilhado entre requests; nada de
   `localStorage` sem guarda de cliente.
