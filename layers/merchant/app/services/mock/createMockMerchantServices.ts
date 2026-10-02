@@ -8,7 +8,7 @@ import { asMerchant } from '#layers/core/app/mock/withSession'
 import type { MerchantServices } from '../MerchantServices'
 import type { MockBackend } from '#layers/core/app/mock/MockBackend'
 import { confirmRedemption, registerVisit, todayEntries, validateRedemption } from '#layers/core/app/mock/handlers/counter'
-import { getProgram, merchantCustomers, updateProgram } from '#layers/core/app/mock/handlers/merchant'
+import { countActiveCards, getProgram, merchantCustomers, updateProgram } from '#layers/core/app/mock/handlers/merchant'
 import type { MerchantSessionProvider } from '#layers/core/app/services/SessionProvider'
 
 export function createMockMerchantServices(backend: MockBackend, sessions: MerchantSessionProvider): MerchantServices {
@@ -30,6 +30,7 @@ export function createMockMerchantServices(backend: MockBackend, sessions: Merch
     },
     program: {
       getProgram: () => asMerchant(backend, sessions, getProgram),
+      countActiveCards: () => asMerchant(backend, sessions, (ctx, shopId) => ok(countActiveCards(ctx, shopId))),
       updateProgram: (draft: ProgramDraft) =>
         asMerchant(backend, sessions, (ctx, shopId) => updateProgram(ctx, shopId, draft)),
     },

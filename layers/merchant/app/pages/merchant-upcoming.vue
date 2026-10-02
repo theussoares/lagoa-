@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
   path: '/painel',
-  alias: ['/programa', '/campanhas'],
+  alias: ['/campanhas'],
   layout: 'merchant',
   middleware: 'merchant-auth',
 })

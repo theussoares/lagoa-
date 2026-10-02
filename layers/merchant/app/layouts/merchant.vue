@@ -14,7 +14,7 @@ const items = computed<NavigationMenuItem[]>(() => [
 </script>
 
 <template>
-  <div class="grid min-h-dvh grid-cols-[220px_minmax(0,1fr)] text-base">
+  <div class="grid min-h-dvh grid-cols-[var(--merchant-sidebar-width)_minmax(0,1fr)] text-base [--merchant-sidebar-width:220px]">
     <!-- A barra é sempre "caderneta à noite", no claro e no escuro: os tokens escuros valem aqui dentro. -->
     <aside class="dark sticky top-0 flex h-dvh flex-col bg-(--lagoa-desk) px-3 py-5 text-default">
       <div class="px-2.5 pb-6">

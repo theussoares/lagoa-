@@ -14,6 +14,10 @@ export const FOUNDER_PLAN_PRICE_CENTS = 7900
 
 export const PROGRAM_TARGET_MIN = 3
 export const PROGRAM_TARGET_MAX = 1000
+/** Acima disso o cartão de carimbos não cabe na tela; vira programa de pontos. */
+export const STAMPS_TARGET_MAX = 20
+export const POINTS_RATE_MAX = 100
+export const BONUS_UNITS_MAX = 10
 export const CHECK_IN_COOLDOWN_MAX_HOURS = 168
 export const EXPIRATION_MAX_MONTHS = 24
 export const REWARD_TITLE_MAX_LENGTH = 60

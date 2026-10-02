@@ -118,7 +118,8 @@
     "redemptionInvalid": "Código não encontrado nesta loja. Confira as letras com o cliente.",
     "redemptionExpired": "Esse código venceu. Peça para o cliente gerar outro.",
     "redemptionAlreadyUsed": "Esse prêmio já foi entregue.",
-    "invalidProgram": "Não deu para salvar o clube. Confira os campos destacados."
+    "invalidProgram": "Não deu para salvar o clube. Confira os campos destacados.",
+    "programModeLocked": "Não dá para trocar entre carimbos e pontos enquanto houver clientes com cartão. A meta e o prêmio podem mudar."
   },
   "ledger": {
     "yesterday": "Ontem",
@@ -226,6 +227,106 @@
     "lapsedHint": "Lembrete com carimbo bônus só vai para quem aceitou avisos: {count} de {total} aqui.",
     "refresh": "Atualizar lista",
     "listTitle": "Cartões da loja"
+  },
+  "program": {
+    "title": "Programa e prêmios",
+    "lead": "A regra do seu clube. O que você mudar aqui vale no Balcão e no app do cliente assim que salvar.",
+    "reward": {
+      "title": "Prêmio",
+      "label": "O que o cliente ganha",
+      "hint": "Até {max} caracteres",
+      "placeholder": "Ex.: Corte grátis"
+    },
+    "earn": {
+      "title": "Como o cliente ganha",
+      "mode": "Tipo de cartão",
+      "modes": {
+        "stamps": {
+          "label": "Cartão de carimbos",
+          "description": "1 carimbo por visita. Simples de explicar no balcão."
+        },
+        "pointsPerCurrency": {
+          "label": "Pontos por real",
+          "description": "O atendente lança o valor da compra e o cliente ganha pontos."
+        },
+        "pointsPerVisit": {
+          "label": "Pontos por visita",
+          "description": "Cada visita vale uma quantidade fixa de pontos."
+        }
+      },
+      "modeLocked": "O tipo de cartão fica travado enquanto houver clientes com cartão. A meta e o prêmio podem mudar.",
+      "target": {
+        "stamp": "Carimbos para o prêmio",
+        "point": "Pontos para o prêmio"
+      },
+      "targetHint": "De {min} a {max}",
+      "targetChangeNote": "A nova meta vale também para os cartões em andamento. Ninguém perde o que já juntou.",
+      "pointsPerReal": "Pontos por real gasto",
+      "pointsPerVisit": "Pontos por visita"
+    },
+    "bonus": {
+      "title": "Regras bônus",
+      "unitsLabel": {
+        "stamp": "Carimbos",
+        "point": "Pontos"
+      },
+      "welcome": {
+        "label": "Boas-vindas",
+        "description": "Cartão novo já começa com {units}."
+      },
+      "birthday": {
+        "label": "Aniversário em dobro",
+        "description": "No dia do aniversário, a visita vale o dobro."
+      },
+      "referral": {
+        "label": "Traga um amigo",
+        "description": "Quem indicou ganha {units} quando o amigo faz a 1ª visita."
+      },
+      "surprise": {
+        "label": "Dia surpresa",
+        "description": "Num dia que você escolhe, toda visita vale o dobro.",
+        "date": "Dia surpresa"
+      },
+      "noStacking": "Bônus em dobro não se somam: aniversário no dia surpresa continua valendo o dobro."
+    },
+    "visitRules": {
+      "title": "Check-in e validade",
+      "checkIn": {
+        "label": "Check-in pelo QR da loja",
+        "description": "O cliente escaneia o QR no balcão e ganha sozinho, sem o atendente digitar."
+      },
+      "cooldown": "Intervalo entre visitas",
+      "cooldownHint": "Antifraude: no máximo uma visita por cliente nesse intervalo, contando também as lançadas no Balcão.",
+      "cooldownHours": "{count} hora | {count} hora | {count} horas",
+      "cooldownDays": "{count} dia | 1 dia | {count} dias",
+      "expiration": "Validade dos carimbos e pontos",
+      "expirationHint": "Contada a partir da última visita do cliente.",
+      "expirationNever": "Nunca vencem",
+      "expirationMonths": "{count} mês sem visita | 1 mês sem visita | {count} meses sem visita"
+    },
+    "preview": {
+      "label": "Prévia do cartão",
+      "title": "Assim o cliente vê",
+      "newCard": "Cartão novo",
+      "rewardPlaceholder": "seu prêmio",
+      "earn": {
+        "visit": "{units} por visita",
+        "real": "{units} por real gasto"
+      }
+    },
+    "save": {
+      "submit": "Salvar alterações",
+      "discard": "Desfazer",
+      "saved": "Clube salvo. Já vale no Balcão e no app.",
+      "unsaved": "Alterações não salvas",
+      "leaveConfirm": "Você tem alterações não salvas no clube. Sair mesmo assim?"
+    },
+    "errors": {
+      "range": "Use um número de {min} a {max}.",
+      "rewardTitle": "Escreva o prêmio, com até {max} caracteres.",
+      "surpriseDate": "Escolha o dia surpresa.",
+      "welcomeUnits": "Use de {min} a {max}: as boas-vindas precisam ficar abaixo da meta."
+    }
   },
   "merchantUpcoming": {
     "title": "Esta tela ainda está sendo feita",

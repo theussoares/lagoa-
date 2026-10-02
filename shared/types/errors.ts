@@ -23,6 +23,8 @@ export type DomainError =
   | { readonly code: 'redemptionExpired' }
   | { readonly code: 'redemptionAlreadyUsed' }
   | { readonly code: 'invalidProgram' }
+  /** Trocar carimbos ↔ pontos com cartões em andamento exige migração; fora do MVP. */
+  | { readonly code: 'programModeLocked' }
 
 export type DomainErrorCode = DomainError['code']
 
