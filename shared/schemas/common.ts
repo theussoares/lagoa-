@@ -9,3 +9,8 @@ export type Birthday = z.infer<typeof BirthdaySchema>
 
 export const IsoDateSchema = z.iso.date()
 export type IsoDate = z.infer<typeof IsoDateSchema>
+
+/** Letras e números sem 0/O e 1/I: o código é lido em voz alta ou copiado de um cartaz. */
+export function readableCodeSchema(length: number): z.ZodString {
+  return z.string().regex(new RegExp(`^[A-HJ-NP-Z2-9]{${length}}$`))
+}

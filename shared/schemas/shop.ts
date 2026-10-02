@@ -1,7 +1,8 @@
 import { z } from 'zod'
 import { ShopIdSchema } from './ids'
 import { EarnRateSchema, ProgramUnitSchema } from './program'
-import { REWARD_TITLE_MAX_LENGTH } from '../constants/domain'
+import { readableCodeSchema } from './common'
+import { CHECK_IN_CODE_LENGTH, REWARD_TITLE_MAX_LENGTH } from '../constants/domain'
 
 export const ShopCategorySchema = z.enum([
   'barbershop',
@@ -18,6 +19,10 @@ export type ShopCategory = z.infer<typeof ShopCategorySchema>
 
 export const ShopStatusSchema = z.enum(['pending', 'approved', 'suspended'])
 export type ShopStatus = z.infer<typeof ShopStatusSchema>
+
+/** Identifica a loja no check-in: vai no QR do balcão e impresso embaixo dele. */
+export const CheckInCodeSchema = readableCodeSchema(CHECK_IN_CODE_LENGTH).brand<'CheckInCode'>()
+export type CheckInCode = z.infer<typeof CheckInCodeSchema>
 
 export const ShopSchema = z.object({
   id: ShopIdSchema,

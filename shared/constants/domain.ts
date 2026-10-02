@@ -4,6 +4,10 @@ export const REDEMPTION_CODE_TTL_MINUTES = 10
 export const REDEMPTION_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 export const REWARD_HOLD_DAYS = 30
 export const LAPSED_AFTER_DAYS = 30
+/** Código impresso embaixo do QR da loja, para quem prefere digitar. */
+export const CHECK_IN_CODE_LENGTH = 6
+/** O QR da loja é um link `/check-in?loja=<código>`: a câmera do celular já abre o app no check-in. */
+export const CHECK_IN_LINK_PARAM = 'loja'
 export const LOGIN_CODE_LENGTH = 6
 export const LOGIN_CODE_TTL_MINUTES = 5
 export const FOUNDER_PLAN_PRICE_CENTS = 7900

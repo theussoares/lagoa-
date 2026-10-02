@@ -12,3 +12,9 @@ export function useMockMerchantPhone(): string | null {
   const { public: config } = useRuntimeConfig()
   return config.apiMode === 'mock' ? formatPhoneInput(EXAMPLE_IDS.phones.barbershopMerchant) : null
 }
+
+/** Código de check-in da Barbearia de exemplo: no mock não há cartaz para escanear. Fora do mock, nada. */
+export function useMockCheckInCode(): string | null {
+  const { public: config } = useRuntimeConfig()
+  return config.apiMode === 'mock' ? EXAMPLE_IDS.checkInCodes.barbershop : null
+}
