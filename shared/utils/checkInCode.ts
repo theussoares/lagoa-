@@ -24,3 +24,12 @@ export function readCheckInQr(content: string): Result<CheckInCode, InvalidShopQ
   const code = new URL(trimmed).searchParams.get(CHECK_IN_LINK_PARAM)
   return code === null ? err({ code: 'invalidShopQr' }) : parseCheckInCode(code)
 }
+
+export const CHECK_IN_PATH = '/check-in'
+
+/** Conteúdo do QR do cartaz: a câmera do celular abre o check-in da loja direto. */
+export function checkInLink(origin: string, code: CheckInCode): string {
+  const url = new URL(CHECK_IN_PATH, origin)
+  url.searchParams.set(CHECK_IN_LINK_PARAM, code)
+  return url.toString()
+}

@@ -1,4 +1,5 @@
 import type { CampaignService } from './CampaignService'
+import type { ClubSetupService, ShopApprovalTestingService, ShopPosterService, ShopStatusService } from './ClubSetupService'
 import type { CounterService } from './CounterService'
 import type { MerchantCustomersService } from './MerchantCustomersService'
 import type { MerchantHomeService } from './MerchantHomeService'
@@ -11,4 +12,9 @@ export interface MerchantServices {
   readonly program: ProgramService
   readonly campaigns: CampaignService
   readonly home: MerchantHomeService
+  readonly clubSetup: ClubSetupService
+  readonly poster: ShopPosterService
+  readonly shopStatus: ShopStatusService
+  /** `null` fora do mock. */
+  readonly shopApprovalTesting: ShopApprovalTestingService | null
 }

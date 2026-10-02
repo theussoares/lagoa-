@@ -1,6 +1,7 @@
-import { LOGIN_CODE_TTL_MINUTES } from '#shared/constants/domain'
+import { LOGIN_CODE_TTL_MINUTES, SIGN_UP_TICKET_TTL_MINUTES } from '#shared/constants/domain'
 import type { PhoneNumber } from '#shared/schemas/phone'
-import type { CustomerSession, LoginChallenge, LoginCode, MerchantSession } from '#shared/schemas/session'
+import { SignUpTicketSchema } from '#shared/schemas/session'
+import type { CustomerSession, LoginChallenge, LoginCode, MerchantSignInResult } from '#shared/schemas/session'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok } from '#shared/types/result'
 import type { Result } from '#shared/types/result'
@@ -39,15 +40,29 @@ export function signInCustomer(
   return ok({ role: 'customer', customerId: customer.id, isNewCustomer: isNew })
 }
 
+/** Celular confirmado sem loja vira um ticket para o Criar o clube; o celular fica guardado aqui, não na tela. */
+function issueSignUpTicket(ctx: MockContext, phone: PhoneNumber): MerchantSignInResult {
+  const ticket = SignUpTicketSchema.parse(ctx.ids.next('signup'))
+  const expiresAt = toIso(addMinutes(ctx.now, SIGN_UP_TICKET_TTL_MINUTES))
+  ctx.state.signUpTickets = [...ctx.state.signUpTickets.filter((item) => item.phone !== phone), { ticket, phone, expiresAt }]
+  return { kind: 'signUp', ticket, expiresAt }
+}
+
 export function signInMerchant(
   ctx: MockContext,
   phone: PhoneNumber,
   code: LoginCode,
-): Result<MerchantSession, CodeError | ErrorOf<'notFound'>> {
-  const merchant = ctx.state.merchants.find((item) => item.phone === phone)
+): Result<MerchantSignInResult, CodeError | ErrorOf<'shopSuspended' | 'unauthorized'>> {
   const verified = consumeLoginCode(ctx, phone, code)
   if (!verified.ok) return verified
-  const shop = merchant === undefined ? undefined : findShop(ctx, merchant.shopId)
-  if (merchant === undefined || shop === undefined) return err({ code: 'notFound', entity: 'merchant' })
-  return ok({ role: 'merchant', merchantId: merchant.id, shopId: shop.id, shopName: shop.name })
+  const merchant = ctx.state.merchants.find((item) => item.phone === phone)
+  if (merchant === undefined) return ok(issueSignUpTicket(ctx, phone))
+  // Lojista sem loja é dado quebrado, não cadastro novo: o Criar o clube recusaria o celular.
+  const shop = findShop(ctx, merchant.shopId)
+  if (shop === undefined) return err({ code: 'unauthorized' })
+  if (shop.status === 'suspended') return err({ code: 'shopSuspended' })
+  return ok({
+    kind: 'session',
+    session: { role: 'merchant', merchantId: merchant.id, shopId: shop.id, shopName: shop.name, shopStatus: shop.status },
+  })
 }

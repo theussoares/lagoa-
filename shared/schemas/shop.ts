@@ -2,7 +2,13 @@ import { z } from 'zod'
 import { ShopIdSchema } from './ids'
 import { EarnRateSchema, ProgramUnitSchema } from './program'
 import { readableCodeSchema } from './common'
-import { CHECK_IN_CODE_LENGTH, REWARD_TITLE_MAX_LENGTH } from '../constants/domain'
+import {
+  CHECK_IN_CODE_LENGTH,
+  REWARD_TITLE_MAX_LENGTH,
+  SHOP_ADDRESS_MAX_LENGTH,
+  SHOP_NAME_MAX_LENGTH,
+  SHOP_NEIGHBORHOOD_MAX_LENGTH,
+} from '../constants/domain'
 
 export const ShopCategorySchema = z.enum([
   'barbershop',
@@ -26,10 +32,10 @@ export type CheckInCode = z.infer<typeof CheckInCodeSchema>
 
 export const ShopSchema = z.object({
   id: ShopIdSchema,
-  name: z.string().min(1).max(60),
+  name: z.string().min(1).max(SHOP_NAME_MAX_LENGTH),
   category: ShopCategorySchema,
-  neighborhood: z.string().min(1),
-  addressLine: z.string().min(1),
+  neighborhood: z.string().min(1).max(SHOP_NEIGHBORHOOD_MAX_LENGTH),
+  addressLine: z.string().min(1).max(SHOP_ADDRESS_MAX_LENGTH),
   status: ShopStatusSchema,
 })
 export type Shop = z.infer<typeof ShopSchema>
@@ -52,3 +58,23 @@ export const ShopSummarySchema = ShopSchema.pick({
   }),
 })
 export type ShopSummary = z.infer<typeof ShopSummarySchema>
+
+/** O que o lojista preenche na etapa "Loja" do Criar o clube. */
+export const ShopProfileDraftSchema = z.object({
+  name: z.string().trim().min(1).max(SHOP_NAME_MAX_LENGTH),
+  category: ShopCategorySchema,
+  neighborhood: z.string().trim().min(1).max(SHOP_NEIGHBORHOOD_MAX_LENGTH),
+  addressLine: z.string().trim().min(1).max(SHOP_ADDRESS_MAX_LENGTH),
+})
+export type ShopProfileDraft = z.infer<typeof ShopProfileDraftSchema>
+
+/** Cartaz do balcão: o QR leva ao check-in desta loja. */
+export const ShopPosterSchema = z.object({
+  shopName: z.string().min(1),
+  status: ShopStatusSchema,
+  checkInCode: CheckInCodeSchema,
+  rewardTitle: z.string().min(1),
+  unit: ProgramUnitSchema,
+  target: z.number().int().positive(),
+})
+export type ShopPoster = z.infer<typeof ShopPosterSchema>

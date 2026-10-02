@@ -1,8 +1,11 @@
 import { useSessionStore } from '#layers/core/app/stores/session'
 import type { MerchantSession } from '#shared/schemas/session'
+import { useClubSetupStore } from '../stores/clubSetup'
 
 export const MERCHANT_SIGN_IN_PATH = '/balcao/entrar'
 export const MERCHANT_HOME_PATH = '/balcao'
+export const CLUB_SETUP_PATH = '/balcao/criar-clube'
+export const MERCHANT_PANEL_PATH = '/painel'
 
 export function useMerchantSession(): {
   session: ComputedRef<MerchantSession | null>
@@ -10,9 +13,11 @@ export function useMerchantSession(): {
   signOut: () => Promise<void>
 } {
   const sessions = useSessionStore()
+  const clubSetup = useClubSetupStore()
 
   async function signOut(): Promise<void> {
     sessions.endMerchant()
+    clubSetup.finish()
     await navigateTo(MERCHANT_SIGN_IN_PATH, { replace: true })
   }
 
@@ -20,7 +25,7 @@ export function useMerchantSession(): {
 }
 
 /** Só caminhos internos do painel: `?para=` nunca leva para fora nem para o app do cliente. */
-export function safeMerchantReturnPath(value: unknown): string {
-  if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//')) return MERCHANT_HOME_PATH
+export function safeMerchantReturnPath(value: unknown, fallback: string = MERCHANT_HOME_PATH): string {
+  if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//')) return fallback
   return value
 }

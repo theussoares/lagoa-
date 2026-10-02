@@ -1,7 +1,7 @@
 export const REDEMPTION_CODE_LENGTH = 6
 export const REDEMPTION_CODE_TTL_MINUTES = 10
 /** Sem 0/O e 1/I: o código é lido em voz alta no balcão. */
-export const REDEMPTION_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+export const READABLE_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 export const REWARD_HOLD_DAYS = 30
 export const LAPSED_AFTER_DAYS = 30
 /** Código impresso embaixo do QR da loja, para quem prefere digitar. */
@@ -34,3 +34,8 @@ export const CAMPAIGN_HISTORY_LIMIT = 10
 /** Janela da caderneta do Início: hoje e os 6 dias anteriores, no fuso do piloto. */
 export const WEEK_SUMMARY_DAYS = 7
 export const HOME_LAPSED_PREVIEW_LIMIT = 5
+export const SHOP_NAME_MAX_LENGTH = 60
+export const SHOP_NEIGHBORHOOD_MAX_LENGTH = 40
+export const SHOP_ADDRESS_MAX_LENGTH = 100
+/** Tempo para terminar o "Criar o clube" depois de confirmar o celular. */
+export const SIGN_UP_TICKET_TTL_MINUTES = 60

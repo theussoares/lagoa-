@@ -16,7 +16,7 @@ export interface ProgramFormLabels {
 }
 
 /** Monta os textos do editor a partir do rascunho (a unidade e os limites mudam com o modo). */
-export function useProgramFormLabels(draft: Ref<ProgramDraft | null>): ProgramFormLabels {
+export function useProgramFormLabels(draft: Readonly<Ref<ProgramDraft | null>>): ProgramFormLabels {
   const { t } = useI18n()
 
   function cooldownLabel(hours: number): string {

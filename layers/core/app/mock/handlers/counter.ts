@@ -14,16 +14,19 @@ import { localDateParts, toIso } from '#shared/utils/time'
 import type { MockContext } from './context'
 import { appendLedger, creditCard, toCounterEntry, visitUnits } from './earning'
 import { ensureCustomer, findProgram, maskedPhoneOf, replaceCard } from './queries'
+import { requireOperationalShop } from './shopAccess'
+import type { ShopAccessError } from './shopAccess'
 import type { RedemptionRecord } from '../state'
-
-type Unauthorized = ErrorOf<'unauthorized'>
 
 export function registerVisit(
   ctx: MockContext,
   shopId: ShopId,
   phone: PhoneNumber,
   input: EarnInput,
-): Result<VisitRegistered, ErrorOf<'invalidAmount' | 'amountNotAccepted'> | Unauthorized> {
+): Result<VisitRegistered, ErrorOf<'invalidAmount' | 'amountNotAccepted'> | ShopAccessError> {
+  // Loja nova monta o clube antes, mas só lança visita depois que a rede aprova.
+  const shop = requireOperationalShop(ctx, shopId)
+  if (!shop.ok) return shop
   const program = findProgram(ctx, shopId)
   if (program === undefined) return err({ code: 'unauthorized' })
   const { customer, isNew } = ensureCustomer(ctx, phone)
@@ -70,7 +73,9 @@ export function validateRedemption(
   ctx: MockContext,
   shopId: ShopId,
   code: RedemptionCode,
-): Result<RedemptionPreview, ValidateError> {
+): Result<RedemptionPreview, ValidateError | ShopAccessError> {
+  const shop = requireOperationalShop(ctx, shopId)
+  if (!shop.ok) return shop
   const found = findRedemptionForShop(ctx, shopId, (item) => item.code === code)
   if (!found.ok) return found
   const maskedPhone = maskedPhoneOf(ctx, found.value.customerId)
@@ -87,7 +92,9 @@ export function confirmRedemption(
   ctx: MockContext,
   shopId: ShopId,
   redemptionId: RedemptionId,
-): Result<CounterEntry, ValidateError> {
+): Result<CounterEntry, ValidateError | ShopAccessError> {
+  const shop = requireOperationalShop(ctx, shopId)
+  if (!shop.ok) return shop
   const found = findRedemptionForShop(ctx, shopId, (item) => item.id === redemptionId)
   if (!found.ok) return found
   const redemption = found.value

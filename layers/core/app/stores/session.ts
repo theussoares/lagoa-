@@ -1,4 +1,5 @@
 import type { CustomerSession, MerchantSession } from '#shared/schemas/session'
+import type { ShopStatus } from '#shared/schemas/shop'
 import { readStoredSessions, writeStoredSessions } from '../utils/sessionPersistence'
 
 export const useSessionStore = defineStore('session', () => {
@@ -20,6 +21,13 @@ export const useSessionStore = defineStore('session', () => {
     persist()
   }
 
+  /** A rede aprova ou suspende a loja com o lojista logado: a sessão acompanha o servidor. */
+  function updateMerchantShopStatus(status: ShopStatus): void {
+    if (merchant.value === null || merchant.value.shopStatus === status) return
+    merchant.value = { ...merchant.value, shopStatus: status }
+    persist()
+  }
+
   function endCustomer(): void {
     customer.value = null
     persist()
@@ -30,5 +38,5 @@ export const useSessionStore = defineStore('session', () => {
     persist()
   }
 
-  return { customer, merchant, startCustomer, startMerchant, endCustomer, endMerchant }
+  return { customer, merchant, startCustomer, startMerchant, updateMerchantShopStatus, endCustomer, endMerchant }
 })

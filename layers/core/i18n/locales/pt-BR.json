@@ -123,7 +123,11 @@
     "programModeLocked": "Não dá para trocar entre carimbos e pontos enquanto houver clientes com cartão. A meta e o prêmio podem mudar.",
     "invalidCampaign": "Confira a mensagem e o presente antes de mandar.",
     "noReachableCustomers": "Ninguém para receber agora: quem sumiu não aceitou avisos ou já recebeu um lembrete.",
-    "reachChanged": "O número de clientes mudou desde que você confirmou. Nada foi enviado: confira o novo número e mande de novo."
+    "reachChanged": "O número de clientes mudou desde que você confirmou. Nada foi enviado: confira o novo número e mande de novo.",
+    "invalidClubSetup": "Confira os dados da loja e do clube antes de criar.",
+    "signUpExpired": "O tempo para criar o clube acabou ou o celular já tem uma loja. Confirme o celular de novo para continuar.",
+    "shopPendingApproval": "Sua loja ainda está aguardando aprovação da rede. O Balcão passa a valer quando a rede aprovar.",
+    "shopSuspended": "Sua loja está suspensa pela rede. Fale com a rede Lagoa+ para voltar a usar o painel."
   },
   "ledger": {
     "yesterday": "Ontem",
@@ -171,6 +175,7 @@
     "pageTitle": "Entrar no painel",
     "title": "Entrar no painel da loja",
     "lead": "Use o celular cadastrado da loja. Mandamos um código por SMS, sem senha.",
+    "firstTime": "Primeira vez? Use o celular da loja: depois do código, você cria o clube em poucos passos.",
     "phoneLabel": "Celular da loja",
     "phoneHint": "Com DDD, só números.",
     "phonePlaceholder": "(67) 99123-4567",
@@ -183,7 +188,6 @@
     "resend": "Reenviar código",
     "resendIn": "Reenviar código em {seconds}s",
     "mockHint": "Ambiente de teste: o SMS não sai. Use o celular {phone} (Barbearia de exemplo) e o código {code}.",
-    "notFound": "Esse celular não é de uma loja da rede. Confira o número ou fale com a rede Lagoa+.",
     "asideTitle": "O balcão tão rápido quanto o papel",
     "steps": {
       "phone": "Digite o celular do cliente",
@@ -193,7 +197,15 @@
   },
   "merchantNav": {
     "label": "Navegação do painel",
-    "signOut": "Sair do painel"
+    "signOut": "Sair do painel",
+    "pending": {
+      "title": "Loja aguardando aprovação da rede",
+      "description": "Você já pode conferir o clube e imprimir o cartaz. O Balcão e o check-in passam a valer quando a rede Lagoa+ aprovar a loja.",
+      "approveForTesting": "Aprovar agora (só no teste)"
+    },
+    "suspended": {
+      "title": "Loja suspensa"
+    }
   },
   "customers": {
     "title": "Clientes",
@@ -504,6 +516,83 @@
       "next": "Próximo check-in aqui: {when}.",
       "redeem": "Resgatar prêmio",
       "announce": "{title}. {summary}"
+    }
+  },
+  "shop": {
+    "categories": {
+      "barbershop": "Barbearia",
+      "beauty": "Salão de beleza",
+      "cafe": "Café",
+      "bakery": "Padaria",
+      "pizzeria": "Pizzaria",
+      "restaurant": "Restaurante",
+      "petShop": "Pet shop",
+      "gym": "Academia",
+      "other": "Outro comércio"
+    }
+  },
+  "poster": {
+    "headline": "Junte {units} e ganhe {reward}",
+    "instruction": "Aponte a câmera do celular para o código e ganhe na hora.",
+    "codeLabel": "Ou digite o código da loja no app",
+    "qrLabel": "QR do check-in da {shop}"
+  },
+  "clubSetup": {
+    "pageTitle": "Criar o clube",
+    "creating": "Criando o clube da sua loja",
+    "creatingFor": "Criando o clube da {shop}",
+    "stepsLabel": "Etapas do Criar o clube",
+    "stepDone": "concluída",
+    "steps": {
+      "shop": "Loja",
+      "rules": "Regra",
+      "reward": "Prêmio",
+      "poster": "Cartaz com QR"
+    },
+    "shop": {
+      "title": "Conte sobre a sua loja",
+      "lead": "É assim que ela aparece na carteira do cliente e na vitrine Descobrir.",
+      "module": "Dados da loja",
+      "name": "Nome da loja",
+      "namePlaceholder": "Ex.: Barbearia do Centro",
+      "nameError": "Escreva o nome da loja, com até {max} caracteres.",
+      "category": "Tipo de comércio",
+      "categoryPlaceholder": "Escolha um",
+      "categoryError": "Escolha o tipo de comércio.",
+      "neighborhood": "Bairro",
+      "neighborhoodError": "Escreva o bairro, com até {max} caracteres.",
+      "addressLine": "Endereço",
+      "addressHint": "Rua e número",
+      "addressError": "Escreva o endereço, com até {max} caracteres."
+    },
+    "rules": {
+      "title": "Como o cliente ganha no seu clube?",
+      "lead": "Dá para mudar a meta depois. Trocar carimbos por pontos só enquanto ninguém tiver cartão."
+    },
+    "reward": {
+      "title": "Qual é o prêmio?",
+      "lead": "O prêmio aparece no cartão do cliente desde a primeira visita. Os bônus ajudam a trazer gente nova."
+    },
+    "continue": {
+      "shop": "Continuar para a regra",
+      "rules": "Continuar para o prêmio"
+    },
+    "back": "Voltar",
+    "create": "Criar o clube",
+    "confirmPhoneAgain": "Confirmar o celular",
+    "leaveConfirm": "Sair agora apaga o que você preencheu. Quer sair mesmo assim?",
+    "preview": {
+      "label": "Prévia do cartão",
+      "title": "Como o cliente vê",
+      "shopFallback": "Sua loja"
+    },
+    "poster": {
+      "title": "Clube criado. Agora é o cartaz.",
+      "lead": "Imprima e deixe no balcão: o cliente aponta a câmera e ganha o carimbo sozinho.",
+      "approved": "Loja aprovada: o check-in e o Balcão já valem.",
+      "print": "Imprimir cartaz",
+      "goToPanel": "Ir para o Início",
+      "loadError": "Não conseguimos montar o cartaz agora."
     }
   }
 }

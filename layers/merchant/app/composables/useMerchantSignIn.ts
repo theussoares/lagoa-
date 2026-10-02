@@ -3,8 +3,12 @@ import type { PhoneNumber } from '#shared/schemas/phone'
 import { LoginCodeSchema } from '#shared/schemas/session'
 import type { DomainErrorCode } from '#shared/types/errors'
 import { parsePhoneNumber } from '#shared/utils/phone'
+import { useClubSetupStore } from '../stores/clubSetup'
 
 export type MerchantSignInStep = { name: 'phone' } | { name: 'code'; phone: PhoneNumber }
+
+/** `signUp`: celular confirmado sem loja; a página leva ao Criar o clube. */
+export type MerchantSignInOutcome = 'signedIn' | 'signUp' | 'failed'
 
 export interface MerchantSignIn {
   step: Readonly<Ref<MerchantSignInStep>>
@@ -13,7 +17,7 @@ export interface MerchantSignIn {
   resendIn: Readonly<Ref<number>>
   requestCode: (rawPhone: string) => Promise<void>
   resendCode: () => Promise<void>
-  verify: (rawCode: string) => Promise<boolean>
+  verify: (rawCode: string) => Promise<MerchantSignInOutcome>
   changePhone: () => void
 }
 
@@ -21,6 +25,7 @@ export interface MerchantSignIn {
 export function useMerchantSignIn(): MerchantSignIn {
   const auth = useAuthService()
   const { start } = useMerchantSession()
+  const clubSetup = useClubSetupStore()
 
   const step = ref<MerchantSignInStep>({ name: 'phone' })
   const pending = ref(false)
@@ -54,12 +59,12 @@ export function useMerchantSignIn(): MerchantSignIn {
     await sendTo(step.value.phone)
   }
 
-  async function verify(rawCode: string): Promise<boolean> {
-    if (step.value.name !== 'code' || pending.value) return false
+  async function verify(rawCode: string): Promise<MerchantSignInOutcome> {
+    if (step.value.name !== 'code' || pending.value) return 'failed'
     const code = LoginCodeSchema.safeParse(rawCode)
     if (!code.success) {
       error.value = 'invalidLoginCode'
-      return false
+      return 'failed'
     }
     pending.value = true
     error.value = null
@@ -67,13 +72,19 @@ export function useMerchantSignIn(): MerchantSignIn {
     pending.value = false
     if (!result.ok) {
       error.value = result.error.code
-      return false
+      return 'failed'
     }
-    start(result.value)
-    return true
+    if (result.value.kind === 'signUp') {
+      clubSetup.begin(result.value.ticket, result.value.expiresAt)
+      return 'signUp'
+    }
+    clubSetup.finish()
+    start(result.value.session)
+    return 'signedIn'
   }
 
   function changePhone(): void {
+    clubSetup.finish()
     step.value = { name: 'phone' }
     error.value = null
   }

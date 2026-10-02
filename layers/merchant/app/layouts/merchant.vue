@@ -3,6 +3,15 @@ import type { NavigationMenuItem } from '@nuxt/ui'
 
 const { t } = useI18n()
 const { session, signOut } = useMerchantSession()
+const shopStatus = useShopStatus()
+const { approveForTesting } = shopStatus
+
+// A rede pode ter aprovado ou suspendido a loja desde o login.
+onMounted(() => void shopStatus.refresh())
+
+async function approve(): Promise<void> {
+  if (approveForTesting !== null) await approveForTesting()
+}
 
 const items = computed<NavigationMenuItem[]>(() => [
   { label: t('nav.home'), icon: 'i-ph-house', to: '/painel' },
@@ -39,6 +48,25 @@ const items = computed<NavigationMenuItem[]>(() => [
       />
     </aside>
     <main id="main" class="min-w-0 px-8 py-6">
+      <UAlert
+        v-if="shopStatus.status.value === 'pending'"
+        color="warning"
+        variant="subtle"
+        icon="i-ph-hourglass-medium"
+        class="mx-auto mb-5 max-w-[1200px] print:hidden"
+        :title="t('merchantNav.pending.title')"
+        :description="t('merchantNav.pending.description')"
+        :actions="approveForTesting ? [{ label: t('merchantNav.pending.approveForTesting'), color: 'neutral', variant: 'outline', onClick: approve }] : []"
+      />
+      <UAlert
+        v-else-if="shopStatus.status.value === 'suspended'"
+        color="error"
+        variant="subtle"
+        icon="i-ph-prohibit"
+        class="mx-auto mb-5 max-w-[1200px] print:hidden"
+        :title="t('merchantNav.suspended.title')"
+        :description="t('errors.shopSuspended')"
+      />
       <slot />
     </main>
   </div>

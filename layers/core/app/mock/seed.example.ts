@@ -251,5 +251,6 @@ export function buildExampleSeed(now: Date): MockState {
       },
     ],
     campaigns: [],
+    signUpTickets: [],
   }
 }

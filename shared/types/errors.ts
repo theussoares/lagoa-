@@ -30,6 +30,13 @@ export type DomainError =
   | { readonly code: 'noReachableCustomers' }
   /** O alcance mudou entre a confirmação do lojista e o envio; nada foi enviado. */
   | { readonly code: 'reachChanged' }
+  | { readonly code: 'invalidClubSetup' }
+  /** Ticket do Criar o clube vencido, já usado ou de outro celular: confirmar o celular de novo. */
+  | { readonly code: 'signUpExpired' }
+  /** Loja aguardando aprovação da rede: Balcão e check-in ainda não valem. */
+  | { readonly code: 'shopPendingApproval' }
+  /** Loja suspensa pela rede: o painel não lança, não resgata nem envia campanha. */
+  | { readonly code: 'shopSuspended' }
 
 export type DomainErrorCode = DomainError['code']
 

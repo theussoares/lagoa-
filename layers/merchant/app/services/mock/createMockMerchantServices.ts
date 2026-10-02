@@ -1,4 +1,6 @@
 import type { ReminderDraft } from '#shared/schemas/campaign'
+import type { ClubSetupDraft } from '#shared/schemas/onboarding'
+import type { SignUpTicket } from '#shared/schemas/session'
 import type { CustomerFilter } from '#shared/schemas/customer'
 import type { RedemptionId } from '#shared/schemas/ids'
 import type { PhoneNumber } from '#shared/schemas/phone'
@@ -9,6 +11,7 @@ import { asMerchant } from '#layers/core/app/mock/withSession'
 import type { MerchantServices } from '../MerchantServices'
 import type { MockBackend } from '#layers/core/app/mock/MockBackend'
 import { campaignOverview, sendReminder } from '#layers/core/app/mock/handlers/campaigns'
+import { approveShop, createClub, shopPoster, shopStatus } from '#layers/core/app/mock/handlers/onboarding'
 import { confirmRedemption, registerVisit, todayEntries, validateRedemption } from '#layers/core/app/mock/handlers/counter'
 import { countActiveCards, getProgram, merchantCustomers, updateProgram, weekSummary } from '#layers/core/app/mock/handlers/merchant'
 import type { MerchantSessionProvider } from '#layers/core/app/services/SessionProvider'
@@ -43,6 +46,18 @@ export function createMockMerchantServices(backend: MockBackend, sessions: Merch
     },
     home: {
       getWeekSummary: () => asMerchant(backend, sessions, (ctx, shopId) => ok(weekSummary(ctx, shopId))),
+    },
+    clubSetup: {
+      createClub: (ticket: SignUpTicket, draft: ClubSetupDraft) => backend.run((ctx) => createClub(ctx, ticket, draft)),
+    },
+    poster: {
+      getPoster: () => asMerchant(backend, sessions, shopPoster),
+    },
+    shopStatus: {
+      getStatus: () => asMerchant(backend, sessions, shopStatus),
+    },
+    shopApprovalTesting: {
+      approveCurrentShop: () => asMerchant(backend, sessions, approveShop),
     },
   }
 }
