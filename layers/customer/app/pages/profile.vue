@@ -9,6 +9,8 @@ const { profile } = useCustomerServices()
 const { signOut } = useCustomerSession()
 const { state, reload, set } = useCustomerProfile()
 const savingConsent = ref(false)
+const theme = useThemePreference()
+const themeLabels = computed(() => ({ legend: t('theme.legend'), light: t('theme.light'), dark: t('theme.dark') }))
 
 watch(state, (current) => {
   if (current.status === 'error' && current.error.code === 'unauthorized') void signOut()
@@ -63,6 +65,13 @@ async function onConsentChange(granted: boolean): Promise<void> {
         </dd>
       </div>
     </dl>
+
+    <section aria-labelledby="appearance-title" class="flex flex-col gap-3">
+      <h2 id="appearance-title" class="letreiro text-[0.9375rem] text-toned">{{ t('profile.appearanceTitle') }}</h2>
+      <div class="rounded-(--radius-card) bg-default p-4 shadow-(--lagoa-shadow-card)">
+        <ThemeChoice v-model="theme" :labels="themeLabels" />
+      </div>
+    </section>
 
     <UButton variant="outline" color="neutral" size="lg" block icon="i-ph-sign-out" :label="t('profile.signOut')" @click="signOut" />
   </div>

@@ -60,7 +60,7 @@ outra. Para o lojista, o balcão é tão rápido quanto anotar no papel.
 - Consentimento de avisos explícito e revogável.
 - Código de resgate e antifraude validados no servidor; o front só exibe.
 - Interface 100% pt-BR; código em inglês.
-- Claro e escuro desde o MVP, seguindo o sistema.
+- Claro e escuro desde o MVP: abre no claro; o escuro é escolha da pessoa (Perfil no app, Configurações no painel).
 - Em aberto: backend (ADR do CTO), ferramenta de analytics.
 
 ## Brand Commitments

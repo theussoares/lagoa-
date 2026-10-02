@@ -138,7 +138,7 @@ nova da caderneta do Balcão. Todo o resto é troca de estado curta.
 | Aviso transitório | `UToast` | 4s; nunca para erro que exige ação |
 | Painel | `UDashboardSidebar`, `UDashboardPanel` | navegação do lojista |
 | Tabela | `UTable` | clientes; celular mascarado; números tabulares |
-| Tema | color mode do sistema | sem botão de tema no MVP |
+| Tema | claro por padrão | escolha claro/escuro no Perfil (app) e em Configurações (painel) |
 
 ### De domínio (`layers/ui`, construídos por nós)
 
