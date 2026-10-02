@@ -136,7 +136,7 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', warnBeforeUnloa
               />
             </PanelModule>
             <PanelModule :title="t('program.visitRules.title')">
-              <ProgramVisitRulesFields v-model:check-in="form.program.checkIn" v-model:expiration="form.program.expirationPolicy" :labels="labels.visitRules.value" />
+              <ProgramVisitRulesFields v-model:check-in="form.program.checkIn" v-model:expiration="form.program.expirationPolicy" :labels="labels.visitRules.value" :errors="programErrors" />
             </PanelModule>
           </template>
 

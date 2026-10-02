@@ -24,6 +24,8 @@ export interface EarnFieldsLabels {
   readonly mode: string
   readonly modes: Readonly<Record<ProgramMode, ModeOptionLabel>>
   readonly modeLocked: string
+  /** Etiqueta "Travado" no tipo de cartão que não pode mais mudar. */
+  readonly modeLockedTag: string
   readonly target: string
   readonly targetHint: string
   readonly targetError: string
@@ -65,4 +67,6 @@ export interface VisitRulesLabels {
   readonly expiration: string
   readonly expirationHint: string
   readonly expirationOptions: readonly SelectOption[]
+  /** Valor salvo fora da lista (veio de outra versão do app). */
+  readonly optionError: string
 }

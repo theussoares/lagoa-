@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import type { CheckInPolicy, ExpirationPolicy } from '#shared/schemas/program'
+import type { ProgramFieldErrors } from '../../utils/programForm'
 import type { VisitRulesLabels } from '../../utils/programFormLabels'
 
 interface Props {
   labels: VisitRulesLabels
+  errors: ProgramFieldErrors
 }
 
 defineProps<Props>()
@@ -38,10 +40,10 @@ function setExpiration(value: unknown): void {
       @update:model-value="checkIn = { ...checkIn, enabled: $event }"
     />
     <div class="grid gap-4 sm:grid-cols-2">
-      <UFormField :label="labels.cooldown" :help="labels.cooldownHint" name="cooldownHours">
+      <UFormField :label="labels.cooldown" :help="labels.cooldownHint" :error="errors.cooldownHours ? labels.optionError : undefined" name="cooldownHours">
         <USelect :model-value="String(checkIn.cooldownHours)" :items="[...labels.cooldownOptions]" size="lg" :ui="{ base: 'min-h-11' }" class="w-full" @update:model-value="setCooldown" />
       </UFormField>
-      <UFormField :label="labels.expiration" :help="labels.expirationHint" name="expiration">
+      <UFormField :label="labels.expiration" :help="labels.expirationHint" :error="errors.expirationMonths ? labels.optionError : undefined" name="expiration">
         <USelect :model-value="expirationValue" :items="[...labels.expirationOptions]" size="lg" :ui="{ base: 'min-h-11' }" class="w-full" @update:model-value="setExpiration" />
       </UFormField>
     </div>

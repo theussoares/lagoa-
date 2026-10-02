@@ -121,6 +121,17 @@ desce de cima maior e desfocada, assenta girando para sua inclinação
 produto: aparece no Carimbo ganho, no cartão quando o carimbo chega e na linha
 nova da caderneta do Balcão. Todo o resto é troca de estado curta.
 
+Os três tamanhos da batida:
+
+| Momento | O que acontece |
+| --- | --- |
+| Carimbo comum | impressão grande (96px) cai sobre a régua do título, depois a casa do cartão recebe a tinta |
+| Quase lá (mais uma visita igual a esta fecha o cartão) | igual, e "Falta só 1 carimbo!" é batido logo abaixo como letreiro em moldura de tinta |
+| Prêmio liberado | impressão vermelha com o ícone de presente, título "Prêmio liberado", selo no cartão, vibração dupla. Só na batida que cruza a meta: com o prêmio guardado, as visitas seguintes são comuns |
+
+No Balcão o `LaunchReceipt` é o canhoto do lançamento: impressão de 64px à
+esquerda, título em letreiro, régua tracejada em cima e embaixo (não caixa cinza).
+
 - `prefers-reduced-motion`: a impressão aparece já assentada, sem queda.
 - Saídas ~65% da duração da entrada. Animação nunca bloqueia toque.
 - Só `transform`, `opacity` e `filter`.
@@ -195,4 +206,6 @@ A moldura das telas também é do mundo, não só os cartões:
 | `UBadge` | `StampTag` (letreiro em moldura de tinta, levemente torto) | etiqueta batida, legível (14px) |
 | barra de progresso (`UProgress`, trilho arredondado) | `SlotRow` (casas de carimbo) ou `InkRule` (régua com marcações) | progresso é casa carimbada ou marca na régua, nunca barra |
 | gráfico de barras por dia | `TallyMarks` (risquinhos em grupos de 5) | contagem de caderneta |
+| módulos abertos em fila (paredão de formulário) | `FoldModule` (folha dobrada: título + resumo do que vale; abre ao clicar ou sozinha quando há erro dentro) | o essencial fica aberto, o resto se lê sem abrir |
+| `URadioGroup` desabilitado para opção travada | linha só de leitura com `StampTag` "Travado" | travado é decisão tomada, não controle apagado |
 | `UNavigationMenu` na barra do painel | `SpineNav` (linhas pautadas; página aberta leva carimbinho) | a barra é a lombada da caderneta |
