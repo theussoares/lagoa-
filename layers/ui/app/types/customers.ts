@@ -1,11 +1,14 @@
+import type { CustomerId } from '#shared/schemas/ids'
+import type { MaskedPhone } from '#shared/schemas/phone'
+
 /** Modelos de exibição da tela Clientes. Texto pronto em pt-BR; celular só mascarado. */
 
 export interface CustomerRowModel {
-  readonly id: string
+  readonly id: CustomerId
   /** Primeiro nome, ou `null` quando o cliente não informou. */
   readonly name: string | null
   /** `(67) 9••••-0374` — nunca o número completo. */
-  readonly phone: string
+  readonly phone: MaskedPhone
   /** "7 de 10 carimbos", "320 de 500 pontos". */
   readonly progress: string
   /** 0 a 1, para a régua da coluna do cartão. */

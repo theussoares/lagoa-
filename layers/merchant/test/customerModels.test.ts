@@ -53,3 +53,23 @@ describe('toCustomerRowModel', () => {
     expect(toCustomerRowModel(row({ firstName: null }), now, t).name).toBeNull()
   })
 })
+
+describe('toCustomerRowModel edge cases', () => {
+  it('counts calendar days in the pilot time zone, not 24-hour windows', () => {
+    // 23h de ontem e 8h de hoje em Três Lagoas (UTC−4).
+    const morning = new Date('2026-10-02T12:00:00.000Z')
+    expect(toCustomerRowModel(row({ lastVisitAt: '2026-10-02T03:00:00.000Z' }), morning, t).lastVisit).toBe(
+      'customers.lastVisit.daysAgo count=1 #1',
+    )
+  })
+
+  it('never shows a negative number of days', () => {
+    expect(toCustomerRowModel(row({ lastVisitAt: '2026-10-03T15:00:00.000Z' }), now, t).lastVisit).toBe('customers.lastVisit.today')
+  })
+
+  it('shows points against the target in points mode', () => {
+    const model = toCustomerRowModel(row({ unit: 'point', balance: 320, target: 500 }), now, t)
+    expect(model.progress).toBe('customers.progress balance=320 target=500 units=units.pointNoun #500')
+    expect(model.progressRatio).toBeCloseTo(0.64)
+  })
+})

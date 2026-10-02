@@ -35,6 +35,13 @@ export const PILOT_UTC_OFFSET_HOURS = -4
 /** Mesmo fuso, para formatar hora com `Intl`. */
 export const PILOT_TIME_ZONE = 'America/Campo_Grande'
 
+/** Dias de calendário no fuso do piloto entre duas datas; nunca negativo. */
+export function calendarDaysBetween(from: Date, to: Date): number {
+  const fromDay = Date.parse(localDateParts(from).isoDate)
+  const toDay = Date.parse(localDateParts(to).isoDate)
+  return Math.max(0, Math.round((toDay - fromDay) / DAY_MS))
+}
+
 export function localDateParts(date: Date): { isoDate: string; monthDay: string } {
   const local = addHours(date, PILOT_UTC_OFFSET_HOURS)
   const isoDate = local.toISOString().slice(0, 10)

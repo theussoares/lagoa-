@@ -196,7 +196,7 @@
     "filters": {
       "label": "Mostrar",
       "all": "Todos",
-      "lapsed": "Sumidos há 30+ dias",
+      "lapsed": "Sumidos há mais de {days} dias",
       "rewardReady": "Com prêmio liberado"
     },
     "table": {
@@ -220,7 +220,7 @@
     },
     "empty": {
       "all": "Ainda não há clientes. Eles aparecem aqui depois da primeira visita lançada no Balcão.",
-      "lapsed": "Ninguém sumido. Todo mundo voltou nos últimos 30 dias.",
+      "lapsed": "Ninguém sumido. Todo mundo voltou nos últimos {days} dias.",
       "rewardReady": "Nenhum cliente com prêmio liberado agora."
     },
     "lapsedHint": "Lembrete com carimbo bônus só vai para quem aceitou avisos: {count} de {total} aqui.",

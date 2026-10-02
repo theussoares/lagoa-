@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { TabsItem } from '@nuxt/ui'
+import { LAPSED_AFTER_DAYS } from '#shared/constants/domain'
+import { isReachableForReminder } from '#shared/domain/customer'
 import { CustomerFilterSchema } from '#shared/schemas/customer'
 import type { CustomerTableLabels } from '#layers/ui/app/types/customers'
 import { toCustomerRowModel } from '../utils/customerModels'
@@ -12,13 +14,14 @@ const { signOut } = useMerchantSession()
 useHead({ title: () => `${t('customers.title')} · ${t('app.name')}` })
 
 const { filter, state, reload } = useMerchantCustomers()
+const filterLabelId = useId()
 
 watch(state, (current) => {
   if (current.status === 'error' && current.error.code === 'unauthorized') void signOut()
 })
 
 const filterItems = computed<TabsItem[]>(() =>
-  CustomerFilterSchema.options.map((value) => ({ label: t(`customers.filters.${value}`), value })),
+  CustomerFilterSchema.options.map((value) => ({ label: t(`customers.filters.${value}`, { days: LAPSED_AFTER_DAYS }), value })),
 )
 
 function onFilterChange(value: string | number): void {
@@ -33,7 +36,7 @@ const rows = computed(() => {
 })
 
 const reachableLapsed = computed(() =>
-  state.value.status === 'success' ? state.value.value.filter((row) => row.isLapsed && row.acceptsNotifications).length : 0,
+  state.value.status === 'success' ? state.value.value.filter(isReachableForReminder).length : 0,
 )
 
 const tableLabels = computed<CustomerTableLabels>(() => ({
@@ -67,6 +70,7 @@ const tableLabels = computed<CustomerTableLabels>(() => ({
             variant="ghost"
             color="neutral"
             icon="i-ph-arrow-clockwise"
+            class="size-11 justify-center"
             :aria-label="t('customers.refresh')"
             :loading="state.status === 'loading'"
             @click="reload"
@@ -75,17 +79,19 @@ const tableLabels = computed<CustomerTableLabels>(() => ({
       </template>
 
       <div class="flex flex-col gap-4">
-        <UTabs
-          :model-value="filter"
-          :items="filterItems"
-          :content="false"
-          :aria-label="t('customers.filters.label')"
-          variant="pill"
-          color="neutral"
-          class="w-fit"
-          :ui="{ trigger: 'min-h-11 px-4 text-[0.9375rem]' }"
-          @update:model-value="onFilterChange"
-        />
+        <div role="group" :aria-labelledby="filterLabelId" class="flex flex-col gap-1.5">
+          <span :id="filterLabelId" class="sr-only">{{ t('customers.filters.label') }}</span>
+          <UTabs
+            :model-value="filter"
+            :items="filterItems"
+            :content="false"
+            variant="pill"
+            color="neutral"
+            class="w-fit"
+            :ui="{ trigger: 'min-h-11 px-4 text-[0.9375rem]' }"
+            @update:model-value="onFilterChange"
+          />
+        </div>
 
         <p
           v-if="filter === 'lapsed' && state.status === 'success' && state.value.length > 0"
@@ -111,7 +117,7 @@ const tableLabels = computed<CustomerTableLabels>(() => ({
           :description="t(`errors.${state.error.code}`)"
           :actions="[{ label: t('common.retry'), color: 'neutral', variant: 'outline', onClick: reload }]"
         />
-        <p v-else-if="rows.length === 0" class="py-10 text-center text-muted">{{ t(`customers.empty.${filter}`) }}</p>
+        <p v-else-if="rows.length === 0" class="py-10 text-center text-muted">{{ t(`customers.empty.${filter}`, { days: LAPSED_AFTER_DAYS }) }}</p>
         <CustomerTable v-else :rows="rows" :labels="tableLabels" :caption="t('customers.table.caption')" />
       </div>
     </PanelModule>
