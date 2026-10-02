@@ -12,8 +12,9 @@ export default defineNuxtConfig({
       colors: ['primary', 'secondary', 'success', 'info', 'warning', 'error'],
     },
   },
+  // Abre no claro; o escuro é escolha da pessoa (Perfil / Configurações), não do sistema.
   colorMode: {
-    preference: 'system',
+    preference: 'light',
     fallback: 'light',
   },
   icon: {

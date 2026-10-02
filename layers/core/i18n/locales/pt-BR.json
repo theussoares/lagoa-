@@ -169,7 +169,13 @@
     "consentOn": "Ligado. As lojas onde você tem cartão podem te mandar avisos.",
     "consentOff": "Desligado. Nenhuma loja te manda avisos.",
     "consentSaved": "Preferência salva.",
-    "signOut": "Sair desta conta"
+    "signOut": "Sair desta conta",
+    "appearanceTitle": "Aparência"
+  },
+  "theme": {
+    "legend": "Cores do app neste aparelho",
+    "light": "Claro",
+    "dark": "Escuro"
   },
   "merchantSignIn": {
     "pageTitle": "Entrar no painel",
@@ -198,6 +204,7 @@
   "merchantNav": {
     "label": "Navegação do painel",
     "signOut": "Sair do painel",
+    "settings": "Configurações",
     "pending": {
       "title": "Loja aguardando aprovação da rede",
       "description": "Você já pode conferir o clube e imprimir o cartaz. O Balcão e o check-in passam a valer quando a rede Lagoa+ aprovar a loja.",
@@ -536,6 +543,11 @@
     "instruction": "Aponte a câmera do celular para o código e ganhe na hora.",
     "codeLabel": "Ou digite o código da loja no app",
     "qrLabel": "QR do check-in da {shop}"
+  },
+  "merchantSettings": {
+    "title": "Configurações",
+    "lead": "Ajustes deste computador ou tablet do balcão.",
+    "appearance": "Aparência"
   },
   "clubSetup": {
     "pageTitle": "Criar o clube",

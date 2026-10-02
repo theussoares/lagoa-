@@ -38,14 +38,18 @@ const items = computed<NavigationMenuItem[]>(() => [
           :ui="{ link: 'min-h-11 text-[0.9375rem]', linkLeadingIcon: 'size-5' }"
         />
       </nav>
-      <UButton
-        class="mt-auto"
-        variant="ghost"
-        color="neutral"
-        icon="i-ph-sign-out"
-        :label="t('merchantNav.signOut')"
-        @click="signOut"
-      />
+      <div class="mt-auto flex flex-col gap-1">
+        <UButton
+          to="/configuracoes"
+          variant="ghost"
+          color="neutral"
+          icon="i-ph-gear-six"
+          active-color="primary"
+          active-variant="soft"
+          :label="t('merchantNav.settings')"
+        />
+        <UButton variant="ghost" color="neutral" icon="i-ph-sign-out" :label="t('merchantNav.signOut')" @click="signOut" />
+      </div>
     </aside>
     <main id="main" class="min-w-0 px-8 py-6">
       <UAlert
