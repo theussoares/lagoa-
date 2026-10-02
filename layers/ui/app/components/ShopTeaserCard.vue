@@ -23,8 +23,8 @@ const slotGrid = computed(() =>
   <article :aria-labelledby="titleId" class="flex flex-col rounded-(--radius-card) bg-default shadow-(--lagoa-shadow-card)">
     <header class="flex flex-col items-start gap-1 px-5 pt-5">
       <h3 :id="titleId" class="letreiro text-xl text-highlighted">{{ shop.shopName }}</h3>
-      <p class="text-[0.9375rem] text-muted">{{ shop.place }}</p>
-      <UBadge v-if="shop.tag" :label="shop.tag" color="primary" variant="subtle" icon="i-ph-flag-pennant" class="mt-1 rounded-full" />
+      <p class="text-base text-muted">{{ shop.place }}</p>
+      <StampTag v-if="shop.tag" :label="shop.tag" icon="i-ph-flag-pennant" class="mt-1.5" />
     </header>
 
     <div class="px-5 pt-4 pb-5" aria-hidden="true">
@@ -36,9 +36,7 @@ const slotGrid = computed(() =>
           </span>
         </li>
       </ol>
-      <span v-else class="block h-1.5 overflow-hidden rounded-full bg-(--lagoa-rule)">
-        <span class="block h-full origin-left rounded-full bg-primary" :style="{ transform: `scaleX(${shop.preview.fraction})` }" />
-      </span>
+      <InkRule v-else :fraction="shop.preview.fraction" class="max-w-[22rem]" />
     </div>
 
     <ul class="flex flex-col border-t border-(--lagoa-rule) px-5 py-1">

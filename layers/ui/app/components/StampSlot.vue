@@ -24,7 +24,7 @@ defineProps<Props>()
       aria-hidden="true"
     >
       <UIcon v-if="model.isRewardSlot" name="i-ph-gift" class="size-[42%]" />
-      <span v-else class="tabular text-[0.8125rem] font-semibold [font-stretch:75%]">
+      <span v-else class="tabular text-sm font-semibold [font-stretch:75%]">
         {{ String(model.number).padStart(2, '0') }}
       </span>
     </span>

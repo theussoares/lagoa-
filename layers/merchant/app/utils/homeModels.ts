@@ -13,8 +13,8 @@ export interface WeekDayRow {
   readonly isToday: boolean
   /** "3 visitas". */
   readonly visits: string
-  /** 0 a 1, relativo ao dia mais movimentado da semana. */
-  readonly ratio: number
+  /** Visitas do dia, desenhadas como risquinhos de caderneta. */
+  readonly count: number
   /** "1 cliente novo · 1 prêmio entregue"; `null` sem nada além de visitas. */
   readonly detail: string | null
 }
@@ -43,7 +43,6 @@ export function toWeekHeadline(week: WeekSummary, t: Translate): string {
 }
 
 export function toWeekDayRows(week: WeekSummary, t: Translate): WeekDayRow[] {
-  const busiest = Math.max(1, ...week.days.map((day) => day.visits))
   const today = week.days.at(-1)?.isoDate
   return week.days.map((day) => {
     const isToday = day.isoDate === today
@@ -57,7 +56,7 @@ export function toWeekDayRows(week: WeekSummary, t: Translate): WeekDayRow[] {
       label: isToday ? t('home.week.today', { date }) : date,
       isToday,
       visits: t('home.week.visits', { count: day.visits }, day.visits),
-      ratio: day.visits / busiest,
+      count: day.visits,
       detail: details.length > 0 ? details.join(' · ') : null,
     }
   })

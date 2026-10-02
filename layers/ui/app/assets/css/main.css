@@ -157,6 +157,61 @@ body {
   letter-spacing: 0.02em;
 }
 
+/*
+ * Escala de tipo (MASTER > Tipografia). Título de tela é letreiro: o mesmo tipo
+ * condensado do cartão, grande, sobre a régua dupla da caderneta.
+ */
+.type-title {
+  font-size: 2rem;
+  line-height: 1.02;
+  font-stretch: 75%;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.005em;
+  color: var(--ui-text-highlighted);
+  text-wrap: balance;
+}
+
+.type-h2 {
+  font-size: 1.375rem;
+  line-height: 1.2;
+  font-weight: 650;
+  font-stretch: 95%;
+  color: var(--ui-text-highlighted);
+  text-wrap: balance;
+}
+
+.type-lead {
+  color: var(--ui-text-toned);
+  text-wrap: pretty;
+  max-width: 62ch;
+}
+
+.type-tag {
+  font-size: 0.875rem;
+  line-height: 1.2;
+  font-weight: 650;
+  font-stretch: 75%;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Régua dupla de caderneta: traço de tinta grosso sobre a pauta fina. */
+.ledger-rule {
+  position: relative;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--lagoa-rule);
+}
+
+.ledger-rule::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 3px;
+  height: 2px;
+  background: var(--ui-text-highlighted);
+}
+
 @keyframes stamp-press {
   0% { opacity: 0; transform: translateY(-14px) scale(1.35) rotate(var(--stamp-tilt-from, -14deg)); filter: blur(2px); }
   60% { opacity: 1; transform: translateY(0) scale(0.94) rotate(var(--stamp-tilt, -4deg)); filter: blur(0); }

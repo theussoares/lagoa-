@@ -17,12 +17,12 @@ defineProps<Props>()
     >
       <span class="min-w-0 font-medium text-highlighted">{{ entry.title }}</span>
       <span
-        class="tabular text-right text-[0.9375rem] font-semibold"
+        class="tabular text-right text-base font-semibold"
         :class="entry.tone === 'reward' ? 'text-secondary' : 'text-primary'"
       >
         {{ entry.delta }}
       </span>
-      <span class="col-span-2 text-[0.9375rem] text-muted">
+      <span class="col-span-2 text-base text-muted">
         <span class="tabular">{{ entry.when }}</span>
         <span aria-hidden="true"> · </span>
         <span>{{ entry.detail }}</span>

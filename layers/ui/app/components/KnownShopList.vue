@@ -19,8 +19,8 @@ defineProps<Props>()
         <StampImpression :icon="shop.icon" :tilt="shop.tilt" />
       </span>
       <span class="flex min-w-0 flex-col">
-        <span class="letreiro truncate text-[0.9375rem] text-toned">{{ shop.shopName }}</span>
-        <span class="text-[0.9375rem] text-muted">{{ shop.rule }}</span>
+        <span class="letreiro truncate text-base text-toned">{{ shop.shopName }}</span>
+        <span class="text-base text-muted">{{ shop.rule }}</span>
       </span>
     </li>
   </ul>

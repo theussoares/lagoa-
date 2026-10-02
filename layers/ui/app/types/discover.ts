@@ -1,5 +1,7 @@
 /** Modelos da tela Descobrir. Texto já traduzido pela superfície. */
 
+import type { RulerProgress } from './progress'
+
 export interface ChallengeStopModel {
   readonly id: string
   readonly shopName: string
@@ -22,9 +24,7 @@ export interface ChallengeModel {
   readonly stops: readonly ChallengeStopModel[]
 }
 
-export type ShopPreview =
-  | { readonly kind: 'slots'; readonly total: number; readonly welcome: number }
-  | { readonly kind: 'ruler'; readonly fraction: number }
+export type ShopPreview = { readonly kind: 'slots'; readonly total: number; readonly welcome: number } | RulerProgress
 
 export interface ShopTeaserModel {
   readonly id: string

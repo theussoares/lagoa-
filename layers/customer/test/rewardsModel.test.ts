@@ -56,8 +56,17 @@ describe('toReadyRewardModel', () => {
 describe('toUpcomingRewardModel', () => {
   it('shows what is missing and how far the card got', () => {
     const model = toUpcomingRewardModel(card({ balance: 8 }), t)
-    expect(model).toMatchObject({ count: '2', countLabel: 'rewards.remainingLabel #2', fraction: 0.8 })
+    expect(model).toMatchObject({ count: '2', countLabel: 'rewards.remainingLabel #2', progress: { kind: 'slots', filled: 8, total: 10 } })
     expect(model.progressLabel).toContain('balance=8 target=10')
+  })
+
+  it('never fills more slots than the card has', () => {
+    expect(toUpcomingRewardModel(card({ balance: 12 }), t).progress).toEqual({ kind: 'slots', filled: 10, total: 10 })
+  })
+
+  it('draws points on a ruler instead of slots', () => {
+    const model = toUpcomingRewardModel(card({ unit: 'point', balance: 96, target: 150 }), t)
+    expect(model.progress).toEqual({ kind: 'ruler', fraction: 0.64 })
   })
 })
 

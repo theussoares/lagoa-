@@ -29,7 +29,7 @@ const cameraIssue = ref<'denied' | 'unavailable' | null>(null)
 const code = ref<string[]>([])
 const viewfinder = useTemplateRef<{ video: HTMLVideoElement | null }>('viewfinder')
 const codeField = useTemplateRef<ComponentPublicInstance>('codeField')
-const earnedHeading = useTemplateRef<HTMLHeadingElement>('earnedHeading')
+const earnedHeading = useTemplateRef<{ focus: () => void }>('earnedHeading')
 
 // Link do QR aberto pela câmera do celular: faz o check-in direto e tira o código da URL,
 // para recarregar a página não tentar de novo.
@@ -131,21 +131,11 @@ function recover(): void {
     <p class="sr-only" aria-live="polite">{{ earnedText?.announcement ?? '' }}</p>
 
     <section v-if="earned && earnedText" class="flex flex-col gap-6" aria-labelledby="earned-title">
-      <header class="flex flex-col gap-1 pt-2">
-        <h1
-          id="earned-title"
-          ref="earnedHeading"
-          tabindex="-1"
-          class="text-[1.75rem] leading-[1.15] font-bold text-highlighted [font-stretch:90%] focus:outline-none"
-        >
-          {{ earnedText.title }}
-        </h1>
-        <p class="text-toned">{{ earnedText.lead }}</p>
-      </header>
+      <PageTitle ref="earnedHeading" heading-id="earned-title" :title="earnedText.title" :lead="earnedText.lead" focusable class="pt-2" />
 
       <StampCard v-if="earnedCard" :card="earnedCard" />
 
-      <p class="text-[0.9375rem] text-muted">{{ earnedText.next }}</p>
+      <p class="text-base text-muted">{{ earnedText.next }}</p>
 
       <div class="flex flex-col gap-3">
         <UButton
@@ -169,10 +159,7 @@ function recover(): void {
     </section>
 
     <template v-else>
-      <header class="flex flex-col gap-2">
-        <h1 class="text-[1.75rem] leading-[1.15] font-bold text-highlighted [font-stretch:90%]">{{ t('checkIn.title') }}</h1>
-        <p v-if="!notice" class="text-pretty text-toned">{{ mode === 'scan' ? t('checkIn.leadScan') : t('checkIn.leadType') }}</p>
-      </header>
+      <PageTitle :title="t('checkIn.title')" :lead="notice ? undefined : mode === 'scan' ? t('checkIn.leadScan') : t('checkIn.leadType')" />
 
       <CheckInNotice v-if="notice" :notice="notice">
         <UButton
@@ -200,10 +187,9 @@ function recover(): void {
       </template>
 
       <form v-else class="flex flex-col gap-6" novalidate @submit.prevent="submitTyped">
-        <UAlert
+        <InkNote
           v-if="cameraIssue"
-          color="warning"
-          variant="subtle"
+          tone="warning"
           icon="i-ph-camera-slash"
           :description="cameraIssue === 'denied' ? t('checkIn.cameraDenied') : t('checkIn.cameraUnavailable')"
         />
@@ -239,7 +225,11 @@ function recover(): void {
         </div>
       </form>
 
-      <UAlert v-if="mockCode && !notice" color="info" variant="subtle" icon="i-ph-info" :description="t('checkIn.mockHint', { code: mockCode })" />
+      <InkNote
+        v-if="mockCode && !notice"
+        tone="pencil"
+        :description="t('checkIn.mockHint', { code: mockCode })"
+      />
     </template>
   </div>
 </template>

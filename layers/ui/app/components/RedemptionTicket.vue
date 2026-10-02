@@ -45,7 +45,7 @@ const groups = computed(() => [code.value.slice(0, 3), code.value.slice(3)])
 
       <template v-else>
         <div class="flex flex-col items-center gap-1">
-          <span class="text-[0.9375rem] font-medium text-muted" aria-hidden="true">{{ codeLabel }}</span>
+          <span class="text-base font-medium text-muted" aria-hidden="true">{{ codeLabel }}</span>
           <p
             role="img"
             :aria-label="`${codeLabel}: ${spelledCode}`"
@@ -65,7 +65,7 @@ const groups = computed(() => [code.value.slice(0, 3), code.value.slice(3)])
 
         <div v-if="state.kind === 'active'" class="flex flex-col gap-2">
           <p
-            class="flex items-center justify-center gap-1.5 text-[0.9375rem] font-medium"
+            class="flex items-center justify-center gap-1.5 text-base font-medium"
             :class="state.urgent ? 'text-warning' : 'text-toned'"
           >
             <UIcon :name="state.urgent ? 'i-ph-warning-circle' : 'i-ph-timer'" class="size-5" aria-hidden="true" />

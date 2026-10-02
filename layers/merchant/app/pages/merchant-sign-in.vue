@@ -66,21 +66,15 @@ function backToPhone(): void {
         <p class="letreiro text-xl text-highlighted lg:hidden">{{ t('app.name') }}</p>
 
         <form v-if="step.name === 'phone'" class="flex flex-col gap-6" novalidate @submit.prevent="requestCode(phoneDraft)">
-          <div class="flex flex-col gap-2">
-            <h1 class="text-[1.75rem] leading-[1.15] font-bold text-balance text-highlighted [font-stretch:90%]">
-              {{ t('merchantSignIn.title') }}
-            </h1>
-            <p class="text-pretty text-toned">{{ t('merchantSignIn.lead') }}</p>
+          <PageTitle :title="t('merchantSignIn.title')" :lead="t('merchantSignIn.lead')">
             <p class="flex items-start gap-1.5 text-pretty text-toned">
               <UIcon name="i-ph-storefront" class="mt-1 size-4 shrink-0" aria-hidden="true" />{{ t('merchantSignIn.firstTime') }}
             </p>
-          </div>
+          </PageTitle>
 
-          <UAlert
+          <InkNote
             v-if="mockCode && mockPhone"
-            color="info"
-            variant="subtle"
-            icon="i-ph-info"
+            tone="pencil"
             :description="t('merchantSignIn.mockHint', { phone: mockPhone, code: mockCode })"
           />
 
@@ -106,20 +100,23 @@ function backToPhone(): void {
         </form>
 
         <form v-else class="flex flex-col gap-6" novalidate @submit.prevent="submitCode">
-          <div class="flex flex-col gap-2">
-            <h1 class="text-[1.75rem] leading-[1.15] font-bold text-highlighted [font-stretch:90%]">{{ t('merchantSignIn.codeTitle') }}</h1>
-            <p class="text-toned">
+          <PageTitle :title="t('merchantSignIn.codeTitle')">
+            <p class="type-lead">
               <i18n-t keypath="merchantSignIn.codeLead" scope="global">
                 <template #phone>
                   <span class="tabular font-semibold whitespace-nowrap text-highlighted">{{ sentTo }}</span>
                 </template>
               </i18n-t>
               {{ ' ' }}
-              <UButton variant="link" class="min-h-0 p-0 align-baseline text-base" :label="t('merchantSignIn.changePhone')" @click="backToPhone" />
+              <UButton variant="link" class="relative min-h-0 p-0 align-baseline text-base after:absolute after:-inset-x-1 after:-inset-y-2.5 after:content-['']" :label="t('merchantSignIn.changePhone')" @click="backToPhone" />
             </p>
-          </div>
+          </PageTitle>
 
-          <UAlert v-if="mockCode" color="info" variant="subtle" icon="i-ph-info" :description="t('signIn.mockHint', { code: mockCode })" />
+          <InkNote
+            v-if="mockCode"
+            tone="pencil"
+            :description="t('signIn.mockHint', { code: mockCode })"
+          />
 
           <UFormField ref="codeField" :label="t('merchantSignIn.codeLabel')" :error="codeError" name="code">
             <template #error="{ error: message }">

@@ -48,12 +48,10 @@ watch(state, (current) => {
 
 <template>
   <div class="flex flex-col gap-6">
-    <header class="flex flex-col items-start gap-3">
+    <div class="-mb-3 flex flex-col items-start">
       <UButton :to="back.to" variant="ghost" color="neutral" icon="i-ph-arrow-left" :label="back.label" class="-ml-2.5" />
-      <h1 class="text-[1.75rem] leading-[1.15] font-bold text-balance text-highlighted [font-stretch:90%]">
-        {{ title }}
-      </h1>
-    </header>
+    </div>
+    <PageTitle :title="title" />
 
     <p class="sr-only" aria-live="polite">{{ announcement }}</p>
 
@@ -94,7 +92,7 @@ watch(state, (current) => {
 
       <div v-if="ticket.kind === 'active'" class="flex flex-col gap-3 text-pretty text-toned">
         <p>{{ t('redemption.howTo') }}</p>
-        <p v-if="heldUntil" class="text-[0.9375rem] text-muted">{{ heldUntil }}</p>
+        <p v-if="heldUntil" class="text-base text-muted">{{ heldUntil }}</p>
       </div>
 
       <UButton

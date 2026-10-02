@@ -66,13 +66,13 @@ faz o papel do letreiro de carimbo; a largura normal é o texto de leitura.
 | --- | --- | --- | --- | --- |
 | `count` | 56 / 1.0 | 800 | 75% | o número que falta ("2") |
 | `letreiro` | 20 / 1.1, caixa-alta, +0.02em | 700 | 75% | nome da loja no cartão, abas de módulo |
-| `h1` | 28 / 1.15 | 700 | 90% | título de tela |
-| `h2` | 22 / 1.2 | 650 | 95% | seção |
+| `title` (`.type-title`) | 32 / 1.02, caixa-alta | 800 | 75% | título de tela, sempre sobre a régua dupla (`PageTitle`) |
+| `h2` (`.type-h2`) | 22 / 1.2 | 650 | 95% | seção |
 | `body` | 17 / 1.5 (app) · 16 / 1.5 (painel) | 400 | 100% | texto |
-| `small` | 15 / 1.4 | 450 | 100% | meta, data, apoio |
-| `tag` | 13 / 1.2, caixa-alta, +0.06em | 650 | 75% | número de carimbo, status curto |
+| `small` | 16 / 1.4 no app · 15 / 1.4 no painel | 450 | 100% | meta, data, apoio |
+| `tag` (`.type-tag`) | 14 / 1.2, caixa-alta, +0.06em | 650 | 75% | número de carimbo, status curto, `StampTag` |
 
-- Texto corrido nunca abaixo de 15px; nada abaixo de 13px.
+- App do cliente: nada abaixo de 16px, exceto tag (14px condensada). Painel: texto corrido nunca abaixo de 15px; nada abaixo de 14px.
 - Números de contagem, telefone, código e valores: `tabular-nums`.
 - Hierarquia por escala e largura, não por cor.
 - Proibido: rótulo/eyebrow acima de título, texto em gradiente, mono como
@@ -183,3 +183,16 @@ tematizados, elementos reais (`<button>`, `<a>`, `<input>` + `<label>`),
 - [ ] Celular mascarado em toda lista.
 - [ ] `prefers-reduced-motion` respeitado.
 - [ ] 390px (app) ou 1280px (painel) sem rolagem horizontal; texto ampliado não quebra.
+
+## Moldura autoral (o que substitui o padrão da lib)
+
+A moldura das telas também é do mundo, não só os cartões:
+
+| Em vez de | Use | Por quê |
+| --- | --- | --- |
+| `h1` solto com classes avulsas | `PageTitle` (letreiro 32px sobre `.ledger-rule`) | toda tela abre como página de caderneta |
+| `UAlert` (caixa colorida) | `InkNote` (recorte pautado com carimbinho; tons `ink`, `warning`, `error`, `success`, `pencil` para modo de teste) | aviso é anotação na margem, não banner de SaaS |
+| `UBadge` | `StampTag` (letreiro em moldura de tinta, levemente torto) | etiqueta batida, legível (14px) |
+| barra de progresso (`UProgress`, trilho arredondado) | `SlotRow` (casas de carimbo) ou `InkRule` (régua com marcações) | progresso é casa carimbada ou marca na régua, nunca barra |
+| gráfico de barras por dia | `TallyMarks` (risquinhos em grupos de 5) | contagem de caderneta |
+| `UNavigationMenu` na barra do painel | `SpineNav` (linhas pautadas; página aberta leva carimbinho) | a barra é a lombada da caderneta |

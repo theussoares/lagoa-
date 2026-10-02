@@ -39,6 +39,6 @@ const slots: StampSlotModel[] = Array.from({ length: SLOTS }, (_, index) => ({
         :icon="PRESSED[slot.number - 1]?.icon ?? 'i-ph-storefront-bold'"
       />
     </ol>
-    <figcaption class="border-t border-(--lagoa-rule) px-5 py-3 text-[0.9375rem] text-muted">{{ caption }}</figcaption>
+    <figcaption class="border-t border-(--lagoa-rule) px-5 py-3 text-base text-muted">{{ caption }}</figcaption>
   </figure>
 </template>
