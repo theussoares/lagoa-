@@ -1,11 +1,18 @@
 <script setup lang="ts">
 import type { ComponentPublicInstance } from 'vue'
 import { CHECK_IN_CODE_LENGTH, CHECK_IN_LINK_PARAM } from '#shared/constants/domain'
+import { stampTilt } from '#layers/ui/app/utils/stampTilt'
+import { REWARD_STAMP_ICON } from '#layers/ui/app/utils/stampIcons'
 import { seenBalanceBefore, toCheckInEarnedModel, toCheckInNotice } from '../utils/checkInModel'
 
 definePageMeta({ path: '/check-in', layout: 'customer', middleware: 'customer-auth' })
 
 const STAMP_VIBRATION_MS = 15
+/** Prêmio liberado bate duas vezes: o carimbo e o selo vermelho. */
+const REWARD_VIBRATION_PATTERN = [15, 90, 35]
+const FALLBACK_STAMP_ICON = 'i-ph-seal-check-bold'
+/** A frase de ânimo cai logo depois da impressão grande. */
+const CHEER_DELAY_MS = 260
 const VIEWFINDER_TEXT = {
   busy: 'checkIn.submitting',
   scanning: 'checkIn.cameraScanning',
@@ -82,12 +89,22 @@ const earnedCard = computed(() => {
 const earnedText = computed(() =>
   earned.value ? toCheckInEarnedModel(earned.value.result, earnedCard.value?.summary ?? null, new Date(), translate) : null,
 )
+const heroStamp = computed<{ icon: string; tilt: number; tone: 'ink' | 'reward' } | null>(() => {
+  if (!earned.value || !earnedText.value) return null
+  const { cardId, balance } = earned.value.result.card
+  const reward = earnedText.value.moment === 'reward'
+  return {
+    icon: reward ? REWARD_STAMP_ICON : (earnedCard.value?.icon ?? FALLBACK_STAMP_ICON),
+    tilt: stampTilt(cardId, balance),
+    tone: reward ? 'reward' : 'ink',
+  }
+})
 
 watch(earned, async (current) => {
   if (current === null) return
   // A batida acontece aqui; a carteira não repete.
   if (current.card) seenStamps.remember({ [current.card.id]: current.card.balance })
-  navigator.vibrate?.(STAMP_VIBRATION_MS)
+  navigator.vibrate?.(earnedText.value?.moment === 'reward' ? REWARD_VIBRATION_PATTERN : STAMP_VIBRATION_MS)
   await nextTick()
   earnedHeading.value?.focus()
 })
@@ -131,7 +148,21 @@ function recover(): void {
     <p class="sr-only" aria-live="polite">{{ earnedText?.announcement ?? '' }}</p>
 
     <section v-if="earned && earnedText" class="flex flex-col gap-6" aria-labelledby="earned-title">
-      <PageTitle ref="earnedHeading" heading-id="earned-title" :title="earnedText.title" :lead="earnedText.lead" focusable class="pt-2" />
+      <PageTitle ref="earnedHeading" heading-id="earned-title" :title="earnedText.title" :lead="earnedText.lead" focusable class="pt-2">
+        <template v-if="heroStamp" #actions>
+          <!-- A batida grande: o carimbo cai na página, por cima da régua, antes de passar para o cartão. -->
+          <span class="relative z-10 -mt-4 -mb-9 size-24 shrink-0">
+            <StampImpression :icon="heroStamp.icon" :tilt="heroStamp.tilt" :tone="heroStamp.tone" pressed />
+          </span>
+        </template>
+        <p
+          v-if="earnedText.cheer"
+          class="letreiro stamp-press self-start rounded-[6px] px-2.5 py-1 text-xl text-primary ring-2 ring-current [--stamp-tilt:-2deg]"
+          :style="{ animationDelay: `${CHEER_DELAY_MS}ms` }"
+        >
+          {{ earnedText.cheer }}
+        </p>
+      </PageTitle>
 
       <StampCard v-if="earnedCard" :card="earnedCard" />
 

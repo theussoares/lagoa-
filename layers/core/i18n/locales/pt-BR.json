@@ -329,6 +329,19 @@
       "expirationNever": "Nunca vencem",
       "expirationMonths": "{count} mês sem visita | 1 mês sem visita | {count} meses sem visita"
     },
+    "summary": {
+      "noBonus": "Nenhuma regra ligada",
+      "welcome": "Boas-vindas com {units}",
+      "checkInOn": "Check-in pelo QR ligado",
+      "checkInOff": "Check-in pelo QR desligado",
+      "cooldown": "1 visita a cada {interval}",
+      "neverExpires": "não vencem",
+      "expiresAfter": "vencem após {count} mês sem visita | vencem após 1 mês sem visita | vencem após {count} meses sem visita"
+    },
+    "card": {
+      "title": "O cartão",
+      "locked": "Travado"
+    },
     "preview": {
       "label": "Prévia do cartão",
       "title": "Assim o cliente vê",
@@ -350,6 +363,7 @@
       "range": "Use um número de {min} a {max}.",
       "rewardTitle": "Escreva o prêmio, com até {max} caracteres.",
       "surpriseDate": "Escolha o dia surpresa.",
+      "option": "Escolha uma das opções da lista.",
       "welcomeUnits": "Use de {min} a {max}: as boas-vindas precisam ficar abaixo da meta."
     }
   },
@@ -517,12 +531,15 @@
     "earned": {
       "title": {
         "stamp": "Carimbo ganho",
-        "point": "Pontos ganhos"
+        "point": "Pontos ganhos",
+        "reward": "Prêmio liberado"
       },
       "lead": "+{units} no seu cartão.",
+      "almost": "Falta só {units}! | Falta só {units}! | Faltam só {units}!",
       "next": "Próximo check-in aqui: {when}.",
       "redeem": "Resgatar prêmio",
-      "announce": "{title}. {summary}"
+      "announce": "{title}. {summary}",
+      "announceCheer": "{title}. {cheer} {summary}"
     }
   },
   "shop": {

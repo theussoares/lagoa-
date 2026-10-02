@@ -17,9 +17,15 @@ export interface CheckInNoticeModel {
   readonly recovery: CheckInRecovery
 }
 
+/** Que batida foi essa: comum, a penúltima (quase lá) ou a que liberou o prêmio. */
+export type CheckInMoment = 'earned' | 'almost' | 'reward'
+
 export interface CheckInEarnedModel {
+  readonly moment: CheckInMoment
   readonly title: string
   readonly lead: string
+  /** "Falta só 1 carimbo!": só no quase lá. */
+  readonly cheer: string | null
   readonly next: string
   /** Frase única para o leitor de tela anunciar o carimbo. */
   readonly announcement: string
@@ -86,11 +92,31 @@ export function seenBalanceBefore(result: CheckInResult): number {
 /** `cardSummary` é a frase do cartão para leitor de tela, quando o cartão carregou. */
 export function toCheckInEarnedModel(result: CheckInResult, cardSummary: string | null, now: Date, t: Translate): CheckInEarnedModel {
   const { unit, units } = result.activity
-  const title = t(`checkIn.earned.title.${unit}`)
+  const moment = checkInMoment(result)
+  const remaining = result.card.target - result.card.balance
+  const title = moment === 'reward' ? t('checkIn.earned.title.reward') : t(`checkIn.earned.title.${unit}`)
+  const cheer = moment === 'almost' ? t('checkIn.earned.almost', { units: t(`units.${unit}`, { count: remaining }, remaining) }, remaining) : null
   return {
+    moment,
     title,
     lead: t('checkIn.earned.lead', { units: t(`units.${unit}`, {}, units) }),
+    cheer,
     next: t('checkIn.earned.next', { when: formatCheckInWhen(result.nextCheckInAt, now, t) }),
-    announcement: cardSummary === null ? title : t('checkIn.earned.announce', { title, summary: cardSummary }),
+    announcement: earnedAnnouncement(title, cheer, cardSummary, t),
   }
+}
+
+function earnedAnnouncement(title: string, cheer: string | null, cardSummary: string | null, t: Translate): string {
+  if (cheer === null) return cardSummary === null ? title : t('checkIn.earned.announce', { title, summary: cardSummary })
+  return t('checkIn.earned.announceCheer', { title, cheer, summary: cardSummary ?? '' }).trim()
+}
+
+/**
+ * Prêmio só na batida que cruzou a meta: com o prêmio guardado, as visitas seguintes
+ * voltam a ser comuns. Quase lá = mais uma visita igual a esta (com o mesmo bônus) fecha o cartão.
+ */
+function checkInMoment(result: CheckInResult): CheckInMoment {
+  if (result.card.rewardReady) return seenBalanceBefore(result) < result.card.target ? 'reward' : 'earned'
+  const remaining = result.card.target - result.card.balance
+  return remaining > 0 && remaining <= result.activity.units ? 'almost' : 'earned'
 }

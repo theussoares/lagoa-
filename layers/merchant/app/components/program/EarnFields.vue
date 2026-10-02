@@ -49,7 +49,19 @@ function setRate(value: number | null | undefined): void {
 
 <template>
   <div class="flex flex-col gap-5">
-    <UFormField :label="labels.mode" name="mode" :help="modeLocked ? labels.modeLocked : undefined">
+    <!-- Travado não é rádio apagado: é o tipo escolhido, com a etiqueta dizendo que não muda mais. -->
+    <div v-if="modeLocked" class="flex flex-col gap-1.5">
+      <p class="text-sm font-medium text-default">{{ labels.mode }}</p>
+      <div class="flex items-start justify-between gap-4 rounded-(--ui-radius) border border-(--lagoa-rule) px-4 py-3">
+        <span class="flex min-w-0 flex-col">
+          <span class="font-semibold text-highlighted">{{ labels.modes[rules.mode].label }}</span>
+          <span class="text-[0.9375rem] text-muted">{{ labels.modes[rules.mode].description }}</span>
+        </span>
+        <StampTag :label="labels.modeLockedTag" icon="i-ph-lock-simple" />
+      </div>
+      <p class="text-[0.9375rem] text-muted">{{ labels.modeLocked }}</p>
+    </div>
+    <UFormField v-else :label="labels.mode" name="mode">
       <URadioGroup
         :model-value="rules.mode"
         :items="modeItems"
