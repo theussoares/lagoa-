@@ -1,4 +1,5 @@
 import { sortByRewardProximity, toCardProgress } from '#shared/domain/loyaltyCard'
+import { isVisitKind } from '#shared/domain/ledger'
 import type { Challenge } from '#shared/schemas/discover'
 import type { CustomerId, ShopId } from '#shared/schemas/ids'
 import type { LoyaltyCard, WalletCard } from '#shared/schemas/loyaltyCard'
@@ -75,7 +76,7 @@ export function checkIn(ctx: MockContext, customerId: CustomerId, code: CheckInC
 
   // Antifraude: qualquer visita recente nesta loja (balcão ou check-in) segura o check-in.
   const lastVisit = ctx.state.ledger
-    .filter((record) => record.customerId === customerId && record.shopId === shop.id && record.kind !== 'redemption')
+    .filter((record) => record.customerId === customerId && record.shopId === shop.id && isVisitKind(record.kind))
     .reduce<string | null>((latest, record) => (latest === null || record.createdAt > latest ? record.createdAt : latest), null)
   if (lastVisit !== null) {
     const availableAt = addHours(new Date(lastVisit), program.checkIn.cooldownHours)
@@ -118,7 +119,7 @@ export function discoverChallenges(ctx: MockContext, customerId: CustomerId): Ch
         (record) =>
           record.customerId === customerId &&
           record.shopId === shopId &&
-          record.kind !== 'redemption' &&
+          isVisitKind(record.kind) &&
           record.createdAt >= challenge.startsAt &&
           (challenge.endsAt === null || record.createdAt <= challenge.endsAt),
       ),

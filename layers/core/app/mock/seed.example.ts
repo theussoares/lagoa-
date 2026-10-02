@@ -41,6 +41,7 @@ export const EXAMPLE_IDS = {
     joao: CustomerIdSchema.parse('cus_joao'),
     maria: CustomerIdSchema.parse('cus_maria'),
     pedro: CustomerIdSchema.parse('cus_pedro'),
+    lucas: CustomerIdSchema.parse('cus_lucas'),
   },
   merchants: {
     barbershop: MerchantIdSchema.parse('mer_barbearia'),
@@ -51,6 +52,7 @@ export const EXAMPLE_IDS = {
     joao: PhoneNumberSchema.parse('67900000002'),
     maria: PhoneNumberSchema.parse('67900000003'),
     pedro: PhoneNumberSchema.parse('67900000004'),
+    lucas: PhoneNumberSchema.parse('67900000005'),
     barbershopMerchant: PhoneNumberSchema.parse('67900000010'),
     cafeMerchant: PhoneNumberSchema.parse('67900000011'),
   },
@@ -214,6 +216,7 @@ export function buildExampleSeed(now: Date): MockState {
     { customerId: C.joao, program: barbershop, visitsHoursAgo: [75 * DAY, 45 * DAY] },
     { customerId: C.maria, program: barbershop, visitsHoursAgo: [60 * DAY, 40 * DAY, 25 * DAY, 12 * DAY, 3, 1] },
     { customerId: C.pedro, program: barbershop, visitsHoursAgo: [2] },
+    { customerId: C.lucas, program: barbershop, visitsHoursAgo: [90 * DAY, 70 * DAY, 52 * DAY] },
   ]
   const built = histories.map((history) => buildHistory(now, history, ledgerIds))
 
@@ -226,6 +229,7 @@ export function buildExampleSeed(now: Date): MockState {
       customer(C.joao, P.joao, 'João', true, addHours(now, -80 * DAY)),
       customer(C.maria, P.maria, 'Maria', false, addHours(now, -60 * DAY)),
       customer(C.pedro, P.pedro, null, false, addHours(now, -2)),
+      customer(C.lucas, P.lucas, 'Lucas', false, addHours(now, -90 * DAY)),
     ],
     merchants: [
       { id: EXAMPLE_IDS.merchants.barbershop, phone: P.barbershopMerchant, shopId: S.barbershop },
@@ -246,5 +250,6 @@ export function buildExampleSeed(now: Date): MockState {
         endsAt: toIso(addHours(now, 20 * DAY)),
       },
     ],
+    campaigns: [],
   }
 }

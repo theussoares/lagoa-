@@ -82,7 +82,8 @@
       "earned": "+{units}",
       "earnedAmount": "+{units} · {amount}",
       "earnedCheckIn": "+{units} · check-in",
-      "redeemed": "Prêmio entregue: {reward}"
+      "redeemed": "Prêmio entregue: {reward}",
+      "earnedCampaign": "+{units} · presente de lembrete"
     }
   },
   "nav": {
@@ -119,7 +120,10 @@
     "redemptionExpired": "Esse código venceu. Peça para o cliente gerar outro.",
     "redemptionAlreadyUsed": "Esse prêmio já foi entregue.",
     "invalidProgram": "Não deu para salvar o clube. Confira os campos destacados.",
-    "programModeLocked": "Não dá para trocar entre carimbos e pontos enquanto houver clientes com cartão. A meta e o prêmio podem mudar."
+    "programModeLocked": "Não dá para trocar entre carimbos e pontos enquanto houver clientes com cartão. A meta e o prêmio podem mudar.",
+    "invalidCampaign": "Confira a mensagem e o presente antes de mandar.",
+    "noReachableCustomers": "Ninguém para receber agora: quem sumiu não aceitou avisos ou já recebeu um lembrete.",
+    "reachChanged": "O número de clientes mudou desde que você confirmou. Nada foi enviado: confira o novo número e mande de novo."
   },
   "ledger": {
     "yesterday": "Ontem",
@@ -129,7 +133,8 @@
       "visit": "No balcão",
       "amount": "Compra no balcão",
       "checkIn": "Check-in",
-      "redemption": "Prêmio resgatado"
+      "redemption": "Prêmio resgatado",
+      "campaignBonus": "Presente de lembrete"
     }
   },
   "signIn": {
@@ -224,9 +229,10 @@
       "lapsed": "Ninguém sumido. Todo mundo voltou nos últimos {days} dias.",
       "rewardReady": "Nenhum cliente com prêmio liberado agora."
     },
-    "lapsedHint": "Lembrete com carimbo bônus só vai para quem aceitou avisos: {count} de {total} aqui.",
+    "lapsedHint": "{count} de {total} aceitaram avisos.",
     "refresh": "Atualizar lista",
-    "listTitle": "Cartões da loja"
+    "listTitle": "Cartões da loja",
+    "lapsedHintLink": "Ver quem recebe o lembrete em Campanhas"
   },
   "program": {
     "title": "Programa e prêmios",
@@ -326,6 +332,55 @@
       "rewardTitle": "Escreva o prêmio, com até {max} caracteres.",
       "surpriseDate": "Escolha o dia surpresa.",
       "welcomeUnits": "Use de {min} a {max}: as boas-vindas precisam ficar abaixo da meta."
+    }
+  },
+  "campaigns": {
+    "title": "Campanhas",
+    "lead": "Mande um lembrete para quem sumiu, com um presente para voltar. Vai pelo app, só para quem aceitou avisos.",
+    "reach": {
+      "title": "Quem vai receber",
+      "reachable": "Ninguém vai receber agora | 1 cliente vai receber | {count} clientes vão receber",
+      "lapsed": "Nenhum cliente sumido há mais de {days} dias | 1 cliente sumido há mais de {days} dias | {count} clientes sumidos há mais de {days} dias",
+      "withoutConsent": "1 não aceitou avisos e não recebe | {count} não aceitaram avisos e não recebem",
+      "expired": "1 teve o cartão zerado por falta de visita e não recebe | {count} tiveram o cartão zerado por falta de visita e não recebem",
+      "alreadyReminded": "1 já recebeu lembrete e ainda não voltou | {count} já receberam lembrete e ainda não voltaram",
+      "emptyHint": "Quem aceitou avisos e passar mais de {days} dias sem vir entra aqui.",
+      "privacy": "Você vê só quantos são. Ninguém é listado e o celular não aparece."
+    },
+    "message": {
+      "title": "Lembrete",
+      "label": "Mensagem",
+      "hint": "Até {max} caracteres.",
+      "default": "Sentimos sua falta! Passa aqui essa semana.",
+      "error": "Escreva a mensagem, com até {max} caracteres.",
+      "bonusLabel": "Presente no cartão",
+      "bonusHint": "Entra no cartão e na caderneta de quem recebe, sem contar como visita. Use 0 para mandar só a mensagem.",
+      "bonusError": "Use de {min} a {max}."
+    },
+    "preview": {
+      "label": "Prévia do aviso",
+      "title": "Como o cliente recebe",
+      "source": "Lagoa+",
+      "bonus": "+{units} de presente no seu cartão"
+    },
+    "send": {
+      "submit": "Mandar lembrete",
+      "confirmTitle": "Mandar o lembrete agora?",
+      "confirmRecipients": "Vai para 1 cliente que sumiu e aceitou avisos. | Vai para {count} clientes que sumiram e aceitaram avisos.",
+      "confirmBonus": "Cada um ganha {units} no cartão.",
+      "confirmNoBonus": "Sem presente no cartão: só a mensagem.",
+      "confirmUndo": "Depois de enviado, não dá para desfazer.",
+      "confirm": "Mandar agora",
+      "cancel": "Voltar",
+      "sent": "Lembrete enviado para 1 cliente. | Lembrete enviado para {count} clientes."
+    },
+    "history": {
+      "title": "Lembretes enviados",
+      "empty": "Nenhum lembrete enviado ainda.",
+      "recipients": "1 cliente | {count} clientes",
+      "bonus": "+{units}",
+      "noBonus": "Sem presente",
+      "caption": "Lembretes enviados pela loja, do mais recente para o mais antigo"
     }
   },
   "merchantUpcoming": {

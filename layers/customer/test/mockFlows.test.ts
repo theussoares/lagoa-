@@ -147,7 +147,10 @@ describe('merchant customers', () => {
   it('flags customers with no visit for over 30 days as lapsed, masked', async () => {
     const { barbershop } = setup()
     const lapsed = unwrap(await barbershop.customers.listCustomers('lapsed'))
-    expect(lapsed.map((row) => [row.firstName, row.maskedPhone])).toEqual([['João', '(67) 9••••-0002']])
+    expect(lapsed.map((row) => [row.firstName, row.maskedPhone])).toEqual([
+      ['João', '(67) 9••••-0002'],
+      ['Lucas', '(67) 9••••-0005'],
+    ])
   })
 })
 

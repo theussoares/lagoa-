@@ -1,4 +1,6 @@
-import { LAPSED_AFTER_DAYS, REWARD_HOLD_DAYS } from '#shared/constants/domain'
+import { REWARD_HOLD_DAYS } from '#shared/constants/domain'
+import { isLapsedSince } from '#shared/domain/customer'
+import { isVisitKind } from '#shared/domain/ledger'
 import { isRewardReady } from '#shared/domain/loyaltyCard'
 import { ProgramDraftSchema } from '#shared/schemas/program'
 import type { CustomerFilter, MerchantCustomerRow } from '#shared/schemas/customer'
@@ -9,7 +11,7 @@ import type { ErrorOf } from '#shared/types/errors'
 import { err, ok } from '#shared/types/result'
 import type { Result } from '#shared/types/result'
 import { maskPhone } from '#shared/utils/phone'
-import { addDays, daysBetween, toIso } from '#shared/utils/time'
+import { addDays, toIso } from '#shared/utils/time'
 import type { MockContext } from './context'
 import { findCustomer, findProgram } from './queries'
 
@@ -26,7 +28,7 @@ export function merchantCustomers(ctx: MockContext, shopId: ShopId, filter: Cust
       const customer = findCustomer(ctx, card.customerId)
       if (customer === undefined) return []
       const visitsCount = ctx.state.ledger.filter(
-        (record) => record.shopId === shopId && record.customerId === customer.id && record.kind !== 'redemption',
+        (record) => record.shopId === shopId && record.customerId === customer.id && isVisitKind(record.kind),
       ).length
       return [
         {
@@ -38,7 +40,7 @@ export function merchantCustomers(ctx: MockContext, shopId: ShopId, filter: Cust
           target: card.target,
           visitsCount,
           lastVisitAt: card.lastVisitAt,
-          isLapsed: card.lastVisitAt !== null && daysBetween(new Date(card.lastVisitAt), ctx.now) > LAPSED_AFTER_DAYS,
+          isLapsed: isLapsedSince(card.lastVisitAt, ctx.now),
           acceptsNotifications: customer.consent.notifications,
         },
       ]

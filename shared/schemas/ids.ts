@@ -10,6 +10,7 @@ export const LoyaltyCardIdSchema = id.brand<'LoyaltyCardId'>()
 export const VisitIdSchema = id.brand<'VisitId'>()
 export const RedemptionIdSchema = id.brand<'RedemptionId'>()
 export const ChallengeIdSchema = id.brand<'ChallengeId'>()
+export const CampaignIdSchema = id.brand<'CampaignId'>()
 
 export type ShopId = z.infer<typeof ShopIdSchema>
 export type CustomerId = z.infer<typeof CustomerIdSchema>
@@ -19,3 +20,4 @@ export type LoyaltyCardId = z.infer<typeof LoyaltyCardIdSchema>
 export type VisitId = z.infer<typeof VisitIdSchema>
 export type RedemptionId = z.infer<typeof RedemptionIdSchema>
 export type ChallengeId = z.infer<typeof ChallengeIdSchema>
+export type CampaignId = z.infer<typeof CampaignIdSchema>

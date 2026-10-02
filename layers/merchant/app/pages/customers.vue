@@ -95,9 +95,11 @@ const tableLabels = computed<CustomerTableLabels>(() => ({
 
         <p
           v-if="filter === 'lapsed' && state.status === 'success' && state.value.length > 0"
-          class="flex items-start gap-1.5 text-[0.9375rem] text-toned"
+          class="flex flex-wrap items-center gap-x-1.5 text-[0.9375rem] text-toned"
         >
-          <UIcon name="i-ph-bell-ringing" class="mt-0.5 size-4 shrink-0" aria-hidden="true" />{{ t('customers.lapsedHint', { count: reachableLapsed, total: rows.length }) }}
+          <UIcon name="i-ph-bell-ringing" class="size-4 shrink-0" aria-hidden="true" />{{ t('customers.lapsedHint', { count: reachableLapsed, total: rows.length }) }}
+          <!-- A janela e a expiração só o servidor sabe: quem de fato recebe aparece em Campanhas. -->
+          <ULink to="/campanhas" class="inline-flex min-h-11 items-center font-semibold text-primary">{{ t('customers.lapsedHintLink') }}</ULink>
         </p>
 
         <div v-if="state.status === 'loading'" class="flex flex-col" role="status" :aria-label="t('common.loading')">

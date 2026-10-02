@@ -25,6 +25,11 @@ export type DomainError =
   | { readonly code: 'invalidProgram' }
   /** Trocar carimbos ↔ pontos com cartões em andamento exige migração; fora do MVP. */
   | { readonly code: 'programModeLocked' }
+  | { readonly code: 'invalidCampaign' }
+  /** Ninguém sumido, com avisos aceitos, que ainda não tenha recebido lembrete. */
+  | { readonly code: 'noReachableCustomers' }
+  /** O alcance mudou entre a confirmação do lojista e o envio; nada foi enviado. */
+  | { readonly code: 'reachChanged' }
 
 export type DomainErrorCode = DomainError['code']
 

@@ -1,3 +1,4 @@
+import type { CampaignService } from './CampaignService'
 import type { CounterService } from './CounterService'
 import type { MerchantCustomersService } from './MerchantCustomersService'
 import type { ProgramService } from './ProgramService'
@@ -7,4 +8,5 @@ export interface MerchantServices {
   readonly counter: CounterService
   readonly customers: MerchantCustomersService
   readonly program: ProgramService
+  readonly campaigns: CampaignService
 }

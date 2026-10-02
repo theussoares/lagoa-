@@ -10,6 +10,7 @@ export const EarnSourceSchema = z.enum([
   'checkIn',
   'welcomeBonus',
   'referralBonus',
+  'campaignBonus',
 ])
 export type EarnSource = z.infer<typeof EarnSourceSchema>
 
