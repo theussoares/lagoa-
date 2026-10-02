@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { REWARD_TITLE_MAX_LENGTH } from '#shared/constants/domain'
+import { MERCHANT_SIGN_IN_PATH } from '../composables/useMerchantSession'
 import { toProgramPreview } from '../utils/programPreviewModel'
 
 definePageMeta({ path: '/programa', layout: 'merchant', middleware: 'merchant-auth' })
@@ -23,13 +24,6 @@ watch(
 
 const preview = computed(() => (draft.value === null ? null : toProgramPreview(draft.value, session.value?.shopName ?? '', translate)))
 
-const targetChanged = computed(() =>
-  state.value.status === 'success' &&
-  draft.value !== null &&
-  state.value.value.activeCards > 0 &&
-  draft.value.rules.target !== state.value.value.program.rules.target,
-)
-
 const saveMessage = computed(() => {
   const current = saveState.value
   if (current.status === 'saved') return { tone: 'success' as const, text: t('program.save.saved') }
@@ -37,8 +31,9 @@ const saveMessage = computed(() => {
   return null
 })
 
-onBeforeRouteLeave(() => {
-  if (!editor.isDirty.value) return true
+// Sessão encerrada (sair, ou vencida no meio do save) leva ao login sem perguntar: não há como salvar mesmo.
+onBeforeRouteLeave((to) => {
+  if (!editor.isDirty.value || session.value === null || to.path === MERCHANT_SIGN_IN_PATH) return true
   return window.confirm(t('program.save.leaveConfirm'))
 })
 </script>
@@ -67,7 +62,8 @@ onBeforeRouteLeave(() => {
     />
 
     <form v-else-if="draft" class="grid items-start gap-5 lg:grid-cols-12" novalidate @submit.prevent="editor.save">
-      <div class="flex flex-col gap-5 lg:col-span-7">
+      <!-- Travado durante o save: o que fosse digitado agora seria trocado pela resposta do servidor. -->
+      <fieldset :disabled="saveState.status === 'saving'" class="flex min-w-0 flex-col gap-5 lg:col-span-7">
         <PanelModule :title="t('program.reward.title')">
           <UFormField
             :label="t('program.reward.label')"
@@ -83,21 +79,22 @@ onBeforeRouteLeave(() => {
           <ProgramEarnFields
             v-model:rules="draft.rules"
             :labels="labels.earn.value"
+            :limits="labels.limits.value"
             :errors="fieldErrors"
             :mode-locked="editor.modeLocked.value"
-            :target-changed="targetChanged"
+            :target-changed="editor.targetChanged.value"
             @mode="editor.setMode"
           />
         </PanelModule>
 
         <PanelModule :title="t('program.bonus.title')">
-          <ProgramBonusFields v-model:bonus="draft.bonusRules" :labels="labels.bonus.value" :errors="fieldErrors" />
+          <ProgramBonusFields v-model:bonus="draft.bonusRules" :labels="labels.bonus.value" :limits="labels.limits.value" :errors="fieldErrors" />
         </PanelModule>
 
         <PanelModule :title="t('program.visitRules.title')">
           <ProgramVisitRulesFields v-model:check-in="draft.checkIn" v-model:expiration="draft.expirationPolicy" :labels="labels.visitRules.value" />
         </PanelModule>
-      </div>
+      </fieldset>
 
       <aside class="flex flex-col gap-3 lg:sticky lg:top-6 lg:col-span-5" :aria-label="t('program.preview.label')">
         <p class="letreiro text-[0.9375rem] text-toned">{{ t('program.preview.title') }}</p>
@@ -107,7 +104,7 @@ onBeforeRouteLeave(() => {
         </p>
       </aside>
 
-      <div class="fixed inset-x-0 bottom-0 z-10 border-t border-(--lagoa-rule) bg-default/95 backdrop-blur left-[220px]">
+      <div class="fixed inset-x-0 bottom-0 z-10 border-t border-(--lagoa-rule) bg-default/95 backdrop-blur left-(--merchant-sidebar-width)">
         <div class="mx-auto flex max-w-[1200px] items-center justify-end gap-3 px-8 py-3">
           <p aria-live="polite" class="mr-auto flex items-center gap-1.5 text-[0.9375rem]" :class="saveMessage?.tone === 'error' ? 'text-error' : 'text-success'">
             <template v-if="saveMessage">

@@ -2,6 +2,19 @@ import type { ProgramMode } from '#shared/schemas/program'
 
 /** Textos prontos das seções do editor; os componentes só desenham. */
 
+export interface NumberRange {
+  readonly min: number
+  readonly max: number
+}
+
+/** Limites do domínio para os campos numéricos; mudam com o modo e a meta. */
+export interface ProgramFieldLimits {
+  readonly target: NumberRange
+  readonly rate: NumberRange
+  readonly welcomeUnits: NumberRange
+  readonly referralUnits: NumberRange
+}
+
 export interface ModeOptionLabel {
   readonly label: string
   readonly description: string
@@ -31,7 +44,8 @@ export interface BonusFieldsLabels {
   readonly birthday: BonusToggleLabel
   readonly referral: BonusToggleLabel
   readonly referralUnits: string
-  readonly unitsError: string
+  readonly welcomeUnitsError: string
+  readonly referralUnitsError: string
   readonly surprise: BonusToggleLabel
   readonly surpriseDate: string
   readonly surpriseDateError: string

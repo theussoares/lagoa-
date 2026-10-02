@@ -28,13 +28,14 @@ function draft(overrides: Partial<ProgramDraft> = {}): ProgramDraft {
 }
 
 describe('switchMode', () => {
-  it('keeps the target and fills the rate when moving to points', () => {
-    expect(switchMode({ mode: 'stamps', target: 10 }, 'pointsPerVisit')).toEqual({ mode: 'pointsPerVisit', pointsPerVisit: 10, target: 10 })
-    expect(switchMode({ mode: 'stamps', target: 10 }, 'pointsPerCurrency')).toEqual({ mode: 'pointsPerCurrency', pointsPerReal: 1, target: 10 })
+  it('keeps the same number of visits to the reward when moving to points', () => {
+    expect(switchMode({ mode: 'stamps', target: 10 }, 'pointsPerVisit')).toEqual({ mode: 'pointsPerVisit', pointsPerVisit: 10, target: 100 })
+    expect(switchMode({ mode: 'stamps', target: 10 }, 'pointsPerCurrency')).toEqual({ mode: 'pointsPerCurrency', pointsPerReal: 1, target: 200 })
   })
 
-  it('clamps a points target that does not fit on a stamp card', () => {
-    expect(switchMode({ mode: 'pointsPerCurrency', pointsPerReal: 1, target: 150 }, 'stamps')).toEqual({ mode: 'stamps', target: STAMPS_TARGET_MAX })
+  it('converts points back to visits and clamps to what fits on a stamp card', () => {
+    expect(switchMode({ mode: 'pointsPerVisit', pointsPerVisit: 10, target: 80 }, 'stamps')).toEqual({ mode: 'stamps', target: 8 })
+    expect(switchMode({ mode: 'pointsPerVisit', pointsPerVisit: 1, target: 500 }, 'stamps')).toEqual({ mode: 'stamps', target: STAMPS_TARGET_MAX })
   })
 })
 
@@ -46,6 +47,12 @@ describe('programFieldErrors', () => {
   it('maps schema issues to the fields on screen', () => {
     const invalid = { ...draft(), reward: { title: ' ' }, rules: { mode: 'stamps' as const, target: 25 } }
     expect(programFieldErrors(invalid)).toEqual({ rewardTitle: true, target: true })
+  })
+
+  it('keeps the welcome bonus below the target', () => {
+    const base = draft()
+    const generous = { ...base, rules: { mode: 'stamps' as const, target: 3 }, bonusRules: { ...base.bonusRules, welcomeBonus: { enabled: true, units: 3 } } }
+    expect(programFieldErrors(generous)).toEqual({ welcomeUnits: true })
   })
 
   it('asks for a date when the surprise day is on', () => {

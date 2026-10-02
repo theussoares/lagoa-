@@ -23,6 +23,8 @@ export interface ProgramEditor {
   /** Rascunho editável; `null` até o programa carregar. */
   draft: Ref<ProgramDraft | null>
   modeLocked: ComputedRef<boolean>
+  /** Meta diferente da salva com cartões em andamento: a tela avisa que vale para eles. */
+  targetChanged: ComputedRef<boolean>
   isDirty: ComputedRef<boolean>
   /** Só aparecem depois da primeira tentativa de salvar. */
   fieldErrors: ComputedRef<ProgramFieldErrors>
@@ -47,23 +49,32 @@ export function useProgramEditor(): ProgramEditor {
   const saveState = shallowRef<ProgramSaveState>({ status: 'idle' })
   const triedToSave = ref(false)
 
-  const saved = computed(() => (state.value.status === 'success' ? toProgramDraft(state.value.value.program) : null))
+  const savedProgram = computed(() => (state.value.status === 'success' ? state.value.value.program : null))
+  const saved = computed(() => (savedProgram.value === null ? null : toProgramDraft(savedProgram.value)))
 
-  watch(saved, (current) => {
-    draft.value = current === null ? null : structuredClone(current)
+  // Só um programa novo do servidor troca o rascunho; atualizar a contagem de cartões não apaga o que foi digitado.
+  watch(savedProgram, () => {
+    draft.value = saved.value === null ? null : structuredClone(saved.value)
     triedToSave.value = false
   })
 
   const modeLocked = computed(() => state.value.status === 'success' && state.value.value.activeCards > 0)
+  const targetChanged = computed(
+    () =>
+      modeLocked.value &&
+      draft.value !== null &&
+      saved.value !== null &&
+      draft.value.rules.target !== saved.value.rules.target,
+  )
   const isDirty = computed(() => draft.value !== null && saved.value !== null && !isSameDraft(draft.value, saved.value))
   const fieldErrors = computed<ProgramFieldErrors>(() =>
     triedToSave.value && draft.value !== null ? programFieldErrors(draft.value) : {},
   )
 
-  // Qualquer edição depois de salvar tira o "Salvo" da tela.
-  watch(draft, () => {
-    if (saveState.value.status === 'saved' || saveState.value.status === 'error') saveState.value = { status: 'idle' }
-  }, { deep: true })
+  // Voltar a editar depois de salvar tira o "Salvo" da tela.
+  watch(isDirty, (dirty) => {
+    if (dirty && saveState.value.status === 'saved') saveState.value = { status: 'idle' }
+  })
 
   function setMode(mode: ProgramMode): void {
     if (draft.value === null || modeLocked.value) return
@@ -77,16 +88,22 @@ export function useProgramEditor(): ProgramEditor {
       saveState.value = { status: 'error', code: 'invalidProgram' }
       return
     }
-    const activeCards = state.value.value.activeCards
+    const { program, activeCards } = state.value.value
     saveState.value = { status: 'saving' }
     const result = await programService.updateProgram(draft.value)
     if (!result.ok) {
       saveState.value = { status: 'error', code: result.error.code }
+      // O Balcão pode ter criado cartões depois que a tela abriu: trava o modo já.
+      if (result.error.code === 'programModeLocked') await refreshActiveCards(program)
       return
     }
     set({ program: result.value, activeCards })
-    await nextTick()
     saveState.value = { status: 'saved' }
+  }
+
+  async function refreshActiveCards(program: Program): Promise<void> {
+    const count = await programService.countActiveCards()
+    if (count.ok) set({ program, activeCards: count.value })
   }
 
   function discard(): void {
@@ -95,5 +112,5 @@ export function useProgramEditor(): ProgramEditor {
     triedToSave.value = false
   }
 
-  return { state, draft, modeLocked, isDirty, fieldErrors, saveState, reload, setMode, save, discard }
+  return { state, draft, modeLocked, targetChanged, isDirty, fieldErrors, saveState, reload, setMode, save, discard }
 }

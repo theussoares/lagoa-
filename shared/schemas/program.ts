@@ -91,6 +91,19 @@ export const ProgramSchema = z.object({
 })
 export type Program = z.infer<typeof ProgramSchema>
 
-/** O que o lojista edita em "Programa e prêmios". */
-export const ProgramDraftSchema = ProgramSchema.omit({ id: true, shopId: true })
+/**
+ * O que o lojista edita em "Programa e prêmios". As regras que cruzam campos
+ * ficam aqui para valerem igual no front e no servidor.
+ */
+export const ProgramDraftSchema = ProgramSchema.omit({ id: true, shopId: true }).superRefine((draft, ctx) => {
+  const { welcomeBonus, surpriseDay } = draft.bonusRules
+  // Boas-vindas do tamanho da meta dariam o prêmio sem nenhuma visita.
+  if (welcomeBonus.enabled && welcomeBonus.units >= draft.rules.target) {
+    ctx.addIssue({ code: 'custom', path: ['bonusRules', 'welcomeBonus', 'units'], message: 'welcomeReachesTarget' })
+  }
+  // Dia surpresa ligado sem data nunca dobraria nada.
+  if (surpriseDay.enabled && surpriseDay.date === null) {
+    ctx.addIssue({ code: 'custom', path: ['bonusRules', 'surpriseDay', 'date'], message: 'surpriseDateMissing' })
+  }
+})
 export type ProgramDraft = z.infer<typeof ProgramDraftSchema>

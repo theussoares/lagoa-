@@ -2,10 +2,11 @@
 import type { RadioGroupItem } from '@nuxt/ui'
 import type { ProgramMode, ProgramRules } from '#shared/schemas/program'
 import type { ProgramFieldErrors } from '../../utils/programForm'
-import type { EarnFieldsLabels } from '../../utils/programFormLabels'
+import type { EarnFieldsLabels, ProgramFieldLimits } from '../../utils/programFormLabels'
 
 interface Props {
   labels: EarnFieldsLabels
+  limits: ProgramFieldLimits
   errors: ProgramFieldErrors
   modeLocked: boolean
   /** Meta mudou e já há cartões: avisa que vale para quem está no meio. */
@@ -61,7 +62,7 @@ function setRate(value: number | null | undefined): void {
 
     <div class="grid gap-4 sm:grid-cols-2">
       <UFormField :label="labels.target" :hint="labels.targetHint" :error="errors.target ? labels.targetError : undefined" name="target">
-        <UInputNumber :model-value="rules.target" :min="1" size="lg" class="w-full" @update:model-value="setTarget" />
+        <UInputNumber :model-value="rules.target" :min="limits.target.min" :max="limits.target.max" size="lg" :ui="{ base: 'min-h-11' }" class="w-full" @update:model-value="setTarget" />
       </UFormField>
 
       <UFormField
@@ -70,7 +71,7 @@ function setRate(value: number | null | undefined): void {
         :error="errors.pointsPerReal ? labels.rateError : undefined"
         name="pointsPerReal"
       >
-        <UInputNumber :model-value="rules.pointsPerReal" :min="1" size="lg" class="w-full" @update:model-value="setRate" />
+        <UInputNumber :model-value="rules.pointsPerReal" :min="limits.rate.min" :max="limits.rate.max" size="lg" :ui="{ base: 'min-h-11' }" class="w-full" @update:model-value="setRate" />
       </UFormField>
       <UFormField
         v-else-if="rules.mode === 'pointsPerVisit'"
@@ -78,7 +79,7 @@ function setRate(value: number | null | undefined): void {
         :error="errors.pointsPerVisit ? labels.rateError : undefined"
         name="pointsPerVisit"
       >
-        <UInputNumber :model-value="rules.pointsPerVisit" :min="1" size="lg" class="w-full" @update:model-value="setRate" />
+        <UInputNumber :model-value="rules.pointsPerVisit" :min="limits.rate.min" :max="limits.rate.max" size="lg" :ui="{ base: 'min-h-11' }" class="w-full" @update:model-value="setRate" />
       </UFormField>
     </div>
 
