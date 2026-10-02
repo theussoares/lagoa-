@@ -1,5 +1,6 @@
 import type { LoyaltyCardId, RedemptionId, ShopId } from '#shared/schemas/ids'
 import type { ProfileUpdate } from '#shared/schemas/customer'
+import type { CheckInCode } from '#shared/schemas/shop'
 import { ok } from '#shared/types/result'
 import { asCustomer } from '#layers/core/app/mock/withSession'
 import type { CustomerServices } from '../CustomerServices'
@@ -20,8 +21,7 @@ export function createMockCustomerServices(backend: MockBackend, sessions: Custo
         asCustomer(backend, sessions, (ctx, customerId) => ok(rewardHistory(ctx, customerId, limit))),
     },
     checkIn: {
-      checkIn: (shopQrToken: string) =>
-        asCustomer(backend, sessions, (ctx, customerId) => checkIn(ctx, customerId, shopQrToken)),
+      checkIn: (code: CheckInCode) => asCustomer(backend, sessions, (ctx, customerId) => checkIn(ctx, customerId, code)),
     },
     redemption: {
       requestCode: (cardId: LoyaltyCardId) =>

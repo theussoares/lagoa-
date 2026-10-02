@@ -8,16 +8,16 @@ import { PhoneNumberSchema } from '#shared/schemas/phone'
 import { ProgramSchema, ProgramUnitSchema } from '#shared/schemas/program'
 import { RedemptionSchema } from '#shared/schemas/redemption'
 import { LoginCodeSchema } from '#shared/schemas/session'
-import { ShopSchema } from '#shared/schemas/shop'
+import { CheckInCodeSchema, ShopSchema } from '#shared/schemas/shop'
 import { LedgerKindSchema } from '#shared/schemas/visit'
 
 /**
  * Banco do backend falso. Só existe no mock: é o "servidor" que guarda o
  * celular completo. Nada daqui sai para a UI sem passar pelos handlers.
  */
-export const MOCK_STATE_VERSION = 2
+export const MOCK_STATE_VERSION = 3
 
-export const ShopRecordSchema = ShopSchema.extend({ checkInToken: z.string().min(8) })
+export const ShopRecordSchema = ShopSchema.extend({ checkInCode: CheckInCodeSchema })
 export type ShopRecord = z.infer<typeof ShopRecordSchema>
 
 export const CustomerRecordSchema = z.object({

@@ -1,13 +1,10 @@
 import { z } from 'zod'
-import { IsoDateTimeSchema } from './common'
+import { IsoDateTimeSchema, readableCodeSchema } from './common'
 import { LoyaltyCardIdSchema, RedemptionIdSchema, ShopIdSchema } from './ids'
 import { MaskedPhoneSchema } from './phone'
 import { REDEMPTION_CODE_LENGTH } from '../constants/domain'
 
-export const RedemptionCodeSchema = z
-  .string()
-  .regex(new RegExp(`^[A-HJ-NP-Z2-9]{${REDEMPTION_CODE_LENGTH}}$`))
-  .brand<'RedemptionCode'>()
+export const RedemptionCodeSchema = readableCodeSchema(REDEMPTION_CODE_LENGTH).brand<'RedemptionCode'>()
 export type RedemptionCode = z.infer<typeof RedemptionCodeSchema>
 
 export const RedemptionStatusSchema = z.enum(['active', 'redeemed', 'expired'])

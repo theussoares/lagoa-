@@ -57,6 +57,7 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
 | Caderneta (histórico)     | `ledger` (`counterEntry` no Balcão, `walletActivity` no app) |
 | Visita / lançar visita    | `visit` / `registerVisit`      |
 | Check-in                  | `checkIn`                      |
+| Código da loja (check-in) | `checkInCode`                  |
 | Antifraude (janela)       | `checkInCooldown`              |
 | Regras bônus              | `bonusRules` (`welcomeBonus`, `birthdayMultiplier`, `referralBonus`, `surpriseDay`) |
 | Expiração                 | `expirationPolicy`             |

@@ -19,6 +19,10 @@ export function formatShortDate(iso: string): string {
   return dayFormat.format(new Date(iso))
 }
 
+export function formatTime(iso: string): string {
+  return timeFormat.format(new Date(iso))
+}
+
 export function toLedgerEntryModel(activity: WalletActivity, now: Date, t: Translate): LedgerEntryModel {
   const base = { id: activity.id, when: formatLedgerWhen(activity.createdAt, now, t), title: activity.shopName }
   if (activity.kind === 'redemption') {

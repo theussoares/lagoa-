@@ -2,7 +2,7 @@ import { sortByRewardProximity, toCardProgress } from '#shared/domain/loyaltyCar
 import type { Challenge } from '#shared/schemas/discover'
 import type { CustomerId, ShopId } from '#shared/schemas/ids'
 import type { LoyaltyCard, WalletCard } from '#shared/schemas/loyaltyCard'
-import type { ShopSummary } from '#shared/schemas/shop'
+import type { CheckInCode, ShopSummary } from '#shared/schemas/shop'
 import type { CheckInResult, WalletActivity } from '#shared/schemas/visit'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok } from '#shared/types/result'
@@ -65,10 +65,10 @@ function customerLedger(
 
 type CheckInError = ErrorOf<'invalidShopQr' | 'checkInDisabled' | 'checkInCooldown' | 'unauthorized'>
 
-export function checkIn(ctx: MockContext, customerId: CustomerId, shopQrToken: string): Result<CheckInResult, CheckInError> {
+export function checkIn(ctx: MockContext, customerId: CustomerId, code: CheckInCode): Result<CheckInResult, CheckInError> {
   const customer = findCustomer(ctx, customerId)
   if (customer === undefined) return err({ code: 'unauthorized' })
-  const shop = ctx.state.shops.find((item) => item.checkInToken === shopQrToken && item.status === 'approved')
+  const shop = ctx.state.shops.find((item) => item.checkInCode === code && item.status === 'approved')
   const program = shop === undefined ? undefined : findProgram(ctx, shop.id)
   if (shop === undefined || program === undefined) return err({ code: 'invalidShopQr' })
   if (!program.checkIn.enabled) return err({ code: 'checkInDisabled' })

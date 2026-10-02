@@ -18,6 +18,8 @@ import type { EarnSource, LoyaltyCard } from '#shared/schemas/loyaltyCard'
 import { PhoneNumberSchema } from '#shared/schemas/phone'
 import type { BonusRules, Program, ProgramRules } from '#shared/schemas/program'
 import { LoginCodeSchema } from '#shared/schemas/session'
+import { CheckInCodeSchema } from '#shared/schemas/shop'
+import type { CheckInCode } from '#shared/schemas/shop'
 import { unitOf } from '#shared/domain/programStrategies'
 import { MOCK_STATE_VERSION } from './state'
 import type { CustomerRecord, LedgerRecord, MockState, ShopRecord } from './state'
@@ -52,13 +54,14 @@ export const EXAMPLE_IDS = {
     barbershopMerchant: PhoneNumberSchema.parse('67900000010'),
     cafeMerchant: PhoneNumberSchema.parse('67900000011'),
   },
-  qrTokens: {
-    barbershop: 'qr-exemplo-barbearia',
-    cafe: 'qr-exemplo-cafe',
-    pizzeria: 'qr-exemplo-pizzaria',
-    petShop: 'qr-exemplo-pet',
-    bakery: 'qr-exemplo-padaria',
-    beauty: 'qr-exemplo-salao',
+  checkInCodes: {
+    barbershop: CheckInCodeSchema.parse('NAV4K7'),
+    cafe: CheckInCodeSchema.parse('CAF8R3'),
+    pizzeria: CheckInCodeSchema.parse('FRN5Z2'),
+    petShop: CheckInCodeSchema.parse('PET6M9'),
+    gym: CheckInCodeSchema.parse('MVT3H8'),
+    bakery: CheckInCodeSchema.parse('PDR7Q4'),
+    beauty: CheckInCodeSchema.parse('BEL2W6'),
   },
 } as const
 
@@ -73,8 +76,8 @@ const defaultBonus: BonusRules = {
   surpriseDay: { enabled: false, multiplier: 2, date: null },
 }
 
-function shop(id: ShopId, name: string, category: ShopRecord['category'], neighborhood: string, token: string, status: ShopRecord['status'] = 'approved'): ShopRecord {
-  return { id, name, category, neighborhood, addressLine: `Endereço de exemplo, ${neighborhood}`, status, checkInToken: token }
+function shop(id: ShopId, name: string, category: ShopRecord['category'], neighborhood: string, checkInCode: CheckInCode, status: ShopRecord['status'] = 'approved'): ShopRecord {
+  return { id, name, category, neighborhood, addressLine: `Endereço de exemplo, ${neighborhood}`, status, checkInCode }
 }
 
 function program(shopId: ShopId, rewardTitle: string, rules: ProgramRules, cooldownHours: number, bonusRules: BonusRules = defaultBonus): Program {
@@ -176,13 +179,13 @@ const DAY = 24
 
 export function buildExampleSeed(now: Date): MockState {
   const shops = [
-    shop(S.barbershop, 'Barbearia Navalha', 'barbershop', 'Centro', EXAMPLE_IDS.qrTokens.barbershop),
-    shop(S.cafe, 'Café da Orla', 'cafe', 'Lapa', EXAMPLE_IDS.qrTokens.cafe),
-    shop(S.pizzeria, 'Pizzaria Forno a Lenha', 'pizzeria', 'Santos Dumont', EXAMPLE_IDS.qrTokens.pizzeria),
-    shop(S.petShop, 'Pet Amigo', 'petShop', 'Vila Nova', EXAMPLE_IDS.qrTokens.petShop),
-    shop(S.gym, 'Academia Movimento', 'gym', 'Jardim Alvorada', 'qr-exemplo-academia', 'pending'),
-    shop(S.bakery, 'Padaria Pão da Hora', 'bakery', 'Centro', EXAMPLE_IDS.qrTokens.bakery),
-    shop(S.beauty, 'Studio Bela', 'beauty', 'Lapa', EXAMPLE_IDS.qrTokens.beauty),
+    shop(S.barbershop, 'Barbearia Navalha', 'barbershop', 'Centro', EXAMPLE_IDS.checkInCodes.barbershop),
+    shop(S.cafe, 'Café da Orla', 'cafe', 'Lapa', EXAMPLE_IDS.checkInCodes.cafe),
+    shop(S.pizzeria, 'Pizzaria Forno a Lenha', 'pizzeria', 'Santos Dumont', EXAMPLE_IDS.checkInCodes.pizzeria),
+    shop(S.petShop, 'Pet Amigo', 'petShop', 'Vila Nova', EXAMPLE_IDS.checkInCodes.petShop),
+    shop(S.gym, 'Academia Movimento', 'gym', 'Jardim Alvorada', EXAMPLE_IDS.checkInCodes.gym, 'pending'),
+    shop(S.bakery, 'Padaria Pão da Hora', 'bakery', 'Centro', EXAMPLE_IDS.checkInCodes.bakery),
+    shop(S.beauty, 'Studio Bela', 'beauty', 'Lapa', EXAMPLE_IDS.checkInCodes.beauty),
   ]
   const barbershop = program(S.barbershop, 'Corte grátis', { mode: 'stamps', target: 10 }, 4)
   const cafe = program(S.cafe, 'Café com pão de queijo', { mode: 'pointsPerCurrency', pointsPerReal: 1, target: 150 }, 4, {

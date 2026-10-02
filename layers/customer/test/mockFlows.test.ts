@@ -5,6 +5,7 @@ import { anaSession, barbershopSession, cafeSession, makeBackend, staticSession 
 import { createMockMerchantServices } from '#layers/merchant/app/services/mock/createMockMerchantServices'
 import { LoginCodeSchema } from '#shared/schemas/session'
 import { RedemptionCodeSchema } from '#shared/schemas/redemption'
+import { CheckInCodeSchema } from '#shared/schemas/shop'
 import { createMockCustomerServices } from '../app/services/mock/createMockCustomerServices'
 
 function setup() {
@@ -113,21 +114,23 @@ describe('redemption across customer and counter', () => {
 describe('check-in', () => {
   it('stamps once and then holds the customer for the cooldown window', async () => {
     const { customer, clock } = setup()
-    const first = unwrap(await customer.checkIn.checkIn(EXAMPLE_IDS.qrTokens.barbershop))
+    const first = unwrap(await customer.checkIn.checkIn(EXAMPLE_IDS.checkInCodes.barbershop))
     expect(first.card.balance).toBe(9)
 
-    const blocked = await customer.checkIn.checkIn(EXAMPLE_IDS.qrTokens.barbershop)
+    const blocked = await customer.checkIn.checkIn(EXAMPLE_IDS.checkInCodes.barbershop)
     expect(blocked.ok).toBe(false)
     if (!blocked.ok) expect(blocked.error).toEqual({ code: 'checkInCooldown', availableAt: first.nextCheckInAt })
 
     clock.advanceHours(4)
-    const second = unwrap(await customer.checkIn.checkIn(EXAMPLE_IDS.qrTokens.barbershop))
+    const second = unwrap(await customer.checkIn.checkIn(EXAMPLE_IDS.checkInCodes.barbershop))
     expect(second.card).toMatchObject({ balance: 10, rewardReady: true })
   })
 
-  it('rejects an unknown or pending shop QR', async () => {
+  it('rejects a pending shop and a code no shop owns', async () => {
     const { customer } = setup()
-    expect(await customer.checkIn.checkIn('qr-exemplo-academia')).toEqual({ ok: false, error: { code: 'invalidShopQr' } })
+    const invalid = { ok: false, error: { code: 'invalidShopQr' } }
+    expect(await customer.checkIn.checkIn(EXAMPLE_IDS.checkInCodes.gym)).toEqual(invalid)
+    expect(await customer.checkIn.checkIn(CheckInCodeSchema.parse('ZZZ222'))).toEqual(invalid)
   })
 })
 

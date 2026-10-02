@@ -113,7 +113,7 @@
     "amountNotAccepted": "Este clube não lança por valor. Use \"Dar 1 carimbo\".",
     "invalidShopQr": "Esse QR não é de uma loja da rede. Peça o QR do balcão.",
     "checkInDisabled": "Esta loja não usa check-in. Peça o carimbo no balcão.",
-    "checkInCooldown": "Você já ganhou o carimbo aqui. O próximo libera às {time}.",
+    "checkInCooldown": "Você já fez check-in aqui. O próximo libera {when}.",
     "rewardNotReady": "Ainda faltam {remaining} para o prêmio.",
     "redemptionInvalid": "Código não encontrado nesta loja. Confira as letras com o cliente.",
     "redemptionExpired": "Esse código venceu. Peça para o cliente gerar outro.",
@@ -160,11 +160,6 @@
     "consentOff": "Desligado. Nenhuma loja te manda avisos.",
     "consentSaved": "Preferência salva.",
     "signOut": "Sair desta conta"
-  },
-  "upcoming": {
-    "title": "Esta tela ainda está sendo feita",
-    "lead": "Ela entra numa das próximas etapas do Lagoa+.",
-    "back": "Voltar para a carteira"
   },
   "merchantSignIn": {
     "pageTitle": "Entrar no painel",
@@ -252,5 +247,47 @@
     "welcome": "Cartão novo já começa com {units}.",
     "challengeTag": "Conta no desafio",
     "empty": "Nenhuma loja na rede por enquanto. Volte em breve."
+  },
+  "checkIn": {
+    "pageTitle": "Check-in",
+    "title": "Fazer check-in",
+    "leadScan": "Aponte a câmera para o QR no balcão da loja. O carimbo cai na hora.",
+    "leadType": "Digite o código de 6 letras e números impresso embaixo do QR.",
+    "viewfinderLabel": "Câmera lendo o QR da loja",
+    "cameraStarting": "Abrindo a câmera…",
+    "cameraScanning": "Procurando o QR…",
+    "submitting": "Registrando sua visita…",
+    "typeCode": "Digitar código da loja",
+    "useCamera": "Usar a câmera",
+    "codeLabel": "Código da loja",
+    "submit": "Fazer check-in",
+    "invalidCode": "Esse código não é de nenhuma loja da rede. Confira as letras no cartaz do balcão.",
+    "cameraDenied": "Sem permissão para usar a câmera. Libere nas configurações do navegador ou digite o código da loja.",
+    "cameraUnavailable": "Não deu para abrir a câmera neste aparelho. Digite o código da loja.",
+    "mockHint": "Ambiente de teste: não há cartaz impresso. Use o código {code}, da Barbearia de exemplo.",
+    "notice": {
+      "cooldownTitle": "Você já fez check-in aqui",
+      "cooldown": "O próximo check-in nesta loja libera {when}. Carimbo dado no balcão também conta para essa espera.",
+      "invalidQrTitle": "QR não reconhecido",
+      "disabledTitle": "Check-in desligado nesta loja",
+      "networkTitle": "Sem conexão"
+    },
+    "scanAgain": "Escanear de novo",
+    "toWallet": "Ver carteira",
+    "when": {
+      "today": "hoje às {time}",
+      "tomorrow": "amanhã às {time}",
+      "later": "em {date} às {time}"
+    },
+    "earned": {
+      "title": {
+        "stamp": "Carimbo ganho",
+        "point": "Pontos ganhos"
+      },
+      "lead": "+{units} no seu cartão.",
+      "next": "Próximo check-in aqui: {when}.",
+      "redeem": "Resgatar prêmio",
+      "announce": "{title}. {summary}"
+    }
   }
 }
