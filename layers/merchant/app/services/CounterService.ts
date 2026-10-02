@@ -5,9 +5,12 @@ import type { CounterEntry, VisitRegistered } from '#shared/schemas/visit'
 import type { ErrorOf, TransportError } from '#shared/types/errors'
 import type { Result } from '#shared/types/result'
 
-export type RegisterVisitError = ErrorOf<'invalidAmount' | 'amountNotAccepted'> | TransportError
+/** Loja pendente ou suspensa: o servidor recusa tudo que mexe com cliente. */
+export type ShopClosedError = ErrorOf<'shopPendingApproval' | 'shopSuspended'>
+export type RegisterVisitError = ErrorOf<'invalidAmount' | 'amountNotAccepted'> | ShopClosedError | TransportError
 export type ValidateRedemptionError =
   | ErrorOf<'redemptionInvalid' | 'redemptionExpired' | 'redemptionAlreadyUsed'>
+  | ShopClosedError
   | TransportError
 
 /** Balcão: tudo que o atendente faz entre um cliente e outro. */

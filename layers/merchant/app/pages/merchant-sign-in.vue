@@ -10,6 +10,7 @@ const route = useRoute()
 useHead({ title: () => `${t('merchantSignIn.pageTitle')} · ${t('app.name')}` })
 
 const { step, pending, error, resendIn, requestCode, resendCode, verify, changePhone } = useMerchantSignIn()
+const { session } = useMerchantSession()
 const mockCode = useMockLoginHint()
 const mockPhone = useMockMerchantPhone()
 
@@ -23,10 +24,7 @@ const steps = computed<[string, string, string]>(() => [
   t('merchantSignIn.steps.redeem'),
 ])
 
-const errorText = computed(() => {
-  if (error.value === null) return undefined
-  return error.value === 'notFound' ? t('merchantSignIn.notFound') : t(`errors.${error.value}`)
-})
+const errorText = computed(() => (error.value === null ? undefined : t(`errors.${error.value}`)))
 const phoneError = computed(() => (step.value.name === 'phone' ? errorText.value : undefined))
 const codeError = computed(() => (step.value.name === 'code' ? errorText.value : undefined))
 const sentTo = computed(() => (step.value.name === 'code' ? formatPhoneInput(step.value.phone) : ''))
@@ -36,8 +34,15 @@ function onPhoneInput(value: string | number): void {
 }
 
 async function submitCode(): Promise<void> {
-  if (await verify(code.value.join(''))) {
-    await navigateTo(safeMerchantReturnPath(route.query.para), { replace: true })
+  const outcome = await verify(code.value.join(''))
+  if (outcome === 'signedIn') {
+    // Loja aguardando aprovação ainda não lança visita: o Início explica o porquê.
+    const fallback = session.value?.shopStatus === 'pending' ? MERCHANT_PANEL_PATH : MERCHANT_HOME_PATH
+    await navigateTo(safeMerchantReturnPath(route.query.para, fallback), { replace: true })
+    return
+  }
+  if (outcome === 'signUp') {
+    await navigateTo(CLUB_SETUP_PATH, { replace: true })
     return
   }
   code.value = []
@@ -66,6 +71,9 @@ function backToPhone(): void {
               {{ t('merchantSignIn.title') }}
             </h1>
             <p class="text-pretty text-toned">{{ t('merchantSignIn.lead') }}</p>
+            <p class="flex items-start gap-1.5 text-pretty text-toned">
+              <UIcon name="i-ph-storefront" class="mt-1 size-4 shrink-0" aria-hidden="true" />{{ t('merchantSignIn.firstTime') }}
+            </p>
           </div>
 
           <UAlert

@@ -71,6 +71,10 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
 | Alcance da campanha       | `reach`                        |
 | Presente do lembrete      | `campaignBonus`                |
 | Consentimento             | `consent`                      |
+| Criar o clube (cadastro)  | `clubSetup`                    |
+| Ticket do cadastro (celular confirmado sem loja) | `signUpTicket` |
+| Cartaz do balcão (QR)     | `poster` (`checkInPoster`)     |
+| Situação da loja          | `shopStatus` (`pending` \| `approved` \| `suspended`) |
 | Plano / cobrança          | `plan` / `billing`             |
 
 Termo novo de domínio entra nesta tabela antes de virar código.

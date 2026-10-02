@@ -4,11 +4,17 @@ import { findProgram } from './queries'
 
 /**
  * O que no backend real seriam jobs: códigos vencem, prêmio guardado expira,
- * carimbos vencem por inatividade. No mock roda antes de cada chamada.
+ * carimbos vencem por inatividade, ticket de cadastro some. No mock roda antes de cada chamada.
  */
 export function runMaintenance(ctx: MockContext): void {
   expireRedemptions(ctx)
   expireCards(ctx)
+  expireSignUpTickets(ctx)
+}
+
+/** Ticket vencido guarda um celular que não serve mais para nada (LGPD: só o mínimo). */
+function expireSignUpTickets(ctx: MockContext): void {
+  ctx.state.signUpTickets = ctx.state.signUpTickets.filter((ticket) => new Date(ticket.expiresAt) > ctx.now)
 }
 
 function expireRedemptions(ctx: MockContext): void {

@@ -8,7 +8,7 @@ import { LoyaltyCardSchema } from '#shared/schemas/loyaltyCard'
 import { PhoneNumberSchema } from '#shared/schemas/phone'
 import { ProgramSchema, ProgramUnitSchema } from '#shared/schemas/program'
 import { RedemptionSchema } from '#shared/schemas/redemption'
-import { LoginCodeSchema } from '#shared/schemas/session'
+import { LoginCodeSchema, SignUpTicketSchema } from '#shared/schemas/session'
 import { CheckInCodeSchema, ShopSchema } from '#shared/schemas/shop'
 import { LedgerKindSchema } from '#shared/schemas/visit'
 
@@ -16,7 +16,7 @@ import { LedgerKindSchema } from '#shared/schemas/visit'
  * Banco do backend falso. Só existe no mock: é o "servidor" que guarda o
  * celular completo. Nada daqui sai para a UI sem passar pelos handlers.
  */
-export const MOCK_STATE_VERSION = 4
+export const MOCK_STATE_VERSION = 5
 
 export const ShopRecordSchema = ShopSchema.extend({ checkInCode: CheckInCodeSchema })
 export type ShopRecord = z.infer<typeof ShopRecordSchema>
@@ -63,6 +63,14 @@ export const LoginChallengeRecordSchema = z.object({
 })
 export type LoginChallengeRecord = z.infer<typeof LoginChallengeRecordSchema>
 
+/** Celular confirmado sem loja: só o servidor sabe de quem é o ticket. */
+export const SignUpTicketRecordSchema = z.object({
+  ticket: SignUpTicketSchema,
+  phone: PhoneNumberSchema,
+  expiresAt: IsoDateTimeSchema,
+})
+export type SignUpTicketRecord = z.infer<typeof SignUpTicketRecordSchema>
+
 export const ChallengeRecordSchema = ChallengeSchema.omit({ visitedShopIds: true })
 export type ChallengeRecord = z.infer<typeof ChallengeRecordSchema>
 
@@ -82,5 +90,6 @@ export const MockStateSchema = z.object({
   loginChallenges: z.array(LoginChallengeRecordSchema),
   challenges: z.array(ChallengeRecordSchema),
   campaigns: z.array(CampaignRecordSchema),
+  signUpTickets: z.array(SignUpTicketRecordSchema),
 })
 export type MockState = z.infer<typeof MockStateSchema>

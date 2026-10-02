@@ -14,6 +14,7 @@ definePageMeta({ path: '/balcao', layout: 'merchant', middleware: 'merchant-auth
 const { t } = useI18n()
 const translate = useTranslate()
 const { signOut } = useMerchantSession()
+const shopStatus = useShopStatus()
 const { program: programService } = useMerchantServices()
 useHead({ title: () => `${t('counter.title')} · ${t('app.name')}` })
 
@@ -32,14 +33,14 @@ const dayFormat = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'nume
 const timeFormat = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: PILOT_TIME_ZONE })
 const today = dayFormat.format(new Date())
 
-// Sessão vencida em qualquer chamada leva de volta ao login do painel.
+// Sessão vencida em qualquer chamada leva de volta ao login do painel; loja fechada
+// pela rede atualiza a faixa do painel, sem derrubar a sessão.
 watch(
   () => [program.state.value, ledger.state.value, launch.state.value, redemption.state.value],
   (states) => {
-    const unauthorized = states.some((state) =>
-      state.status === 'error' && ('error' in state ? state.error.code === 'unauthorized' : state.code === 'unauthorized'),
-    )
-    if (unauthorized) void signOut()
+    const codes = states.flatMap((state) => (state.status !== 'error' ? [] : ['error' in state ? state.error.code : state.code]))
+    if (codes.includes('unauthorized')) void signOut()
+    else if (codes.includes('shopPendingApproval') || codes.includes('shopSuspended')) void shopStatus.refresh()
   },
 )
 

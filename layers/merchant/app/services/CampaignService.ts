@@ -1,9 +1,13 @@
 import type { Campaign, CampaignOverview, ReminderDraft } from '#shared/schemas/campaign'
 import type { ErrorOf, TransportError } from '#shared/types/errors'
 import type { Result } from '#shared/types/result'
+import type { ShopClosedError } from './CounterService'
 
 export type CampaignOverviewError = ErrorOf<'notFound'> | TransportError
-export type SendReminderError = ErrorOf<'invalidCampaign' | 'noReachableCustomers' | 'reachChanged' | 'notFound'> | TransportError
+export type SendReminderError =
+  | ErrorOf<'invalidCampaign' | 'noReachableCustomers' | 'reachChanged' | 'notFound'>
+  | ShopClosedError
+  | TransportError
 
 export interface CampaignService {
   /** Alcance só em números e histórico de envios; nenhum celular sai daqui. */

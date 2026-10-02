@@ -178,14 +178,18 @@ describe('auth', () => {
     )
   })
 
-  it('only lets registered merchants into the panel', async () => {
+  it('signs registered merchants in and sends unknown phones to create a club', async () => {
     const { backend } = setup()
     const auth = new MockAuthService(backend)
-    unwrap(await auth.requestLoginCode(EXAMPLE_IDS.phones.ana))
-    expect(await auth.signInMerchant(EXAMPLE_IDS.phones.ana, backend.loginCode)).toEqual({
-      ok: false,
-      error: { code: 'notFound', entity: 'merchant' },
+    unwrap(await auth.requestLoginCode(EXAMPLE_IDS.phones.barbershopMerchant))
+    expect(unwrap(await auth.signInMerchant(EXAMPLE_IDS.phones.barbershopMerchant, backend.loginCode))).toMatchObject({
+      kind: 'session',
+      session: { shopId: EXAMPLE_IDS.shops.barbershop, shopStatus: 'approved' },
     })
+    unwrap(await auth.requestLoginCode(EXAMPLE_IDS.phones.ana))
+    const unknown = unwrap(await auth.signInMerchant(EXAMPLE_IDS.phones.ana, backend.loginCode))
+    expect(unknown.kind).toBe('signUp')
+    expect(JSON.stringify(unknown)).not.toContain(EXAMPLE_IDS.phones.ana)
   })
 })
 

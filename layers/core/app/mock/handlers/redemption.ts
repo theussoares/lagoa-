@@ -1,5 +1,5 @@
 import { isRewardReady, remainingUnits } from '#shared/domain/loyaltyCard'
-import { REDEMPTION_CODE_ALPHABET, REDEMPTION_CODE_LENGTH, REDEMPTION_CODE_TTL_MINUTES } from '#shared/constants/domain'
+import { REDEMPTION_CODE_LENGTH, REDEMPTION_CODE_TTL_MINUTES } from '#shared/constants/domain'
 import { RedemptionCodeSchema } from '#shared/schemas/redemption'
 import type { Redemption, RedemptionCode } from '#shared/schemas/redemption'
 import { RedemptionIdSchema } from '#shared/schemas/ids'
@@ -8,6 +8,7 @@ import type { ErrorOf } from '#shared/types/errors'
 import { err, ok } from '#shared/types/result'
 import type { Result } from '#shared/types/result'
 import { addMinutes, toIso } from '#shared/utils/time'
+import { randomReadableCode } from './codes'
 import type { MockContext } from './context'
 import type { RedemptionRecord } from '../state'
 
@@ -21,11 +22,7 @@ function generateCode(ctx: MockContext): RedemptionCode {
     ctx.state.redemptions.filter((item) => item.status === 'active').map((item) => item.code),
   )
   for (;;) {
-    const raw = Array.from(
-      { length: REDEMPTION_CODE_LENGTH },
-      () => REDEMPTION_CODE_ALPHABET[ctx.random.int(REDEMPTION_CODE_ALPHABET.length)] ?? 'A',
-    ).join('')
-    const code = RedemptionCodeSchema.parse(raw)
+    const code = RedemptionCodeSchema.parse(randomReadableCode(ctx, REDEMPTION_CODE_LENGTH))
     if (!activeCodes.has(code)) return code
   }
 }

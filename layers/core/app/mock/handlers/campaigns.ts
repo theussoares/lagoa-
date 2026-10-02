@@ -17,6 +17,8 @@ import { toIso } from '#shared/utils/time'
 import type { MockContext } from './context'
 import { appendLedger, holdRewardIfReady } from './earning'
 import { findCustomer, findProgram, replaceCard } from './queries'
+import { requireOperationalShop } from './shopAccess'
+import type { ShopAccessError } from './shopAccess'
 import type { CampaignRecord } from '../state'
 
 interface ReminderCandidateCard {
@@ -107,7 +109,9 @@ export function sendReminder(
   shopId: ShopId,
   draft: ReminderDraft,
   expectedRecipients: number,
-): Result<Campaign, SendReminderError> {
+): Result<Campaign, SendReminderError | ShopAccessError> {
+  const shop = requireOperationalShop(ctx, shopId)
+  if (!shop.ok) return shop
   const program = findProgram(ctx, shopId)
   if (program === undefined) return err(programMissing)
   const parsed = ReminderDraftSchema.safeParse(draft)

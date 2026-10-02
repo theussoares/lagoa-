@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { parseCheckInCode, readCheckInQr } from './checkInCode'
+import { CheckInCodeSchema } from '../schemas/shop'
+import { checkInLink, parseCheckInCode, readCheckInQr } from './checkInCode'
 
 describe('parseCheckInCode', () => {
   it('normalizes case and spacing typed by the customer', () => {
@@ -29,4 +30,13 @@ describe('readCheckInQr', () => {
       expect(readCheckInQr(content).ok).toBe(false)
     },
   )
+})
+
+describe('checkInLink', () => {
+  it('builds the poster link that the scanner reads back', () => {
+    const code = CheckInCodeSchema.parse('NAV4K7')
+    const link = checkInLink('https://lagoa.test', code)
+    expect(link).toBe('https://lagoa.test/check-in?loja=NAV4K7')
+    expect(readCheckInQr(link)).toEqual({ ok: true, value: code })
+  })
 })

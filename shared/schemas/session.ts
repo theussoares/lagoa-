@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { IsoDateTimeSchema } from './common'
 import { CustomerIdSchema, MerchantIdSchema, ShopIdSchema } from './ids'
 import { LOGIN_CODE_LENGTH } from '../constants/domain'
+import { ShopStatusSchema } from './shop'
 
 export const LoginCodeSchema = z
   .string()
@@ -24,8 +25,20 @@ export const MerchantSessionSchema = z.object({
   merchantId: MerchantIdSchema,
   shopId: ShopIdSchema,
   shopName: z.string().min(1),
+  /** Lida no login. Loja nova fica `pending` até a rede aprovar; o servidor é quem barra o Balcão. */
+  shopStatus: ShopStatusSchema,
 })
 export type MerchantSession = z.infer<typeof MerchantSessionSchema>
 
 export const SessionSchema = z.discriminatedUnion('role', [CustomerSessionSchema, MerchantSessionSchema])
 export type Session = z.infer<typeof SessionSchema>
+
+/** Celular confirmado, mas sem loja: vale só para criar o clube, por pouco tempo. O celular fica no servidor. */
+export const SignUpTicketSchema = z.string().min(1).brand<'SignUpTicket'>()
+export type SignUpTicket = z.infer<typeof SignUpTicketSchema>
+
+export const MerchantSignInResultSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('session'), session: MerchantSessionSchema }),
+  z.object({ kind: z.literal('signUp'), ticket: SignUpTicketSchema, expiresAt: IsoDateTimeSchema }),
+])
+export type MerchantSignInResult = z.infer<typeof MerchantSignInResultSchema>
