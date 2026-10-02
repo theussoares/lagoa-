@@ -2,29 +2,32 @@ import { z } from 'zod'
 import { IsoDateSchema } from './common'
 import { ProgramIdSchema, ShopIdSchema } from './ids'
 import {
+  BONUS_UNITS_MAX,
   CHECK_IN_COOLDOWN_MAX_HOURS,
   EXPIRATION_MAX_MONTHS,
   PROGRAM_TARGET_MAX,
   PROGRAM_TARGET_MIN,
+  POINTS_RATE_MAX,
   REWARD_TITLE_MAX_LENGTH,
+  STAMPS_TARGET_MAX,
 } from '../constants/domain'
 
 const target = z.number().int().min(PROGRAM_TARGET_MIN).max(PROGRAM_TARGET_MAX)
 
 export const StampsRulesSchema = z.object({
   mode: z.literal('stamps'),
-  target: target.max(20),
+  target: target.max(STAMPS_TARGET_MAX),
 })
 
 export const PointsPerCurrencyRulesSchema = z.object({
   mode: z.literal('pointsPerCurrency'),
-  pointsPerReal: z.number().int().min(1).max(100),
+  pointsPerReal: z.number().int().min(1).max(POINTS_RATE_MAX),
   target,
 })
 
 export const PointsPerVisitRulesSchema = z.object({
   mode: z.literal('pointsPerVisit'),
-  pointsPerVisit: z.number().int().min(1).max(100),
+  pointsPerVisit: z.number().int().min(1).max(POINTS_RATE_MAX),
   target,
 })
 
@@ -54,9 +57,9 @@ export type EarnRate = z.infer<typeof EarnRateSchema>
 const toggle = z.object({ enabled: z.boolean() })
 
 export const BonusRulesSchema = z.object({
-  welcomeBonus: toggle.extend({ units: z.number().int().min(1).max(10) }),
+  welcomeBonus: toggle.extend({ units: z.number().int().min(1).max(BONUS_UNITS_MAX) }),
   birthdayMultiplier: toggle.extend({ multiplier: z.literal(2) }),
-  referralBonus: toggle.extend({ units: z.number().int().min(1).max(10) }),
+  referralBonus: toggle.extend({ units: z.number().int().min(1).max(BONUS_UNITS_MAX) }),
   surpriseDay: toggle.extend({ multiplier: z.literal(2), date: IsoDateSchema.nullable() }),
 })
 export type BonusRules = z.infer<typeof BonusRulesSchema>

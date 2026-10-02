@@ -46,6 +46,10 @@ export function merchantCustomers(ctx: MockContext, shopId: ShopId, filter: Cust
     .toSorted((a, b) => (b.lastVisitAt ?? '').localeCompare(a.lastVisitAt ?? ''))
 }
 
+export function countActiveCards(ctx: MockContext, shopId: ShopId): number {
+  return ctx.state.cards.filter((card) => card.shopId === shopId).length
+}
+
 export function getProgram(ctx: MockContext, shopId: ShopId): Result<Program, ErrorOf<'unauthorized'>> {
   const program = findProgram(ctx, shopId)
   return program === undefined ? err({ code: 'unauthorized' }) : ok(program)
@@ -59,14 +63,13 @@ export function updateProgram(
   ctx: MockContext,
   shopId: ShopId,
   draft: ProgramDraft,
-): Result<Program, ErrorOf<'invalidProgram' | 'unauthorized'>> {
+): Result<Program, ErrorOf<'invalidProgram' | 'programModeLocked' | 'unauthorized'>> {
   const current = findProgram(ctx, shopId)
   if (current === undefined) return err({ code: 'unauthorized' })
   const parsed = ProgramDraftSchema.safeParse(draft)
   if (!parsed.success) return err({ code: 'invalidProgram' })
-  if (parsed.data.rules.mode !== current.rules.mode && ctx.state.cards.some((card) => card.shopId === shopId)) {
-    // Trocar de carimbos para pontos com clientes no meio do cartão exige migração; fora do MVP.
-    return err({ code: 'invalidProgram' })
+  if (parsed.data.rules.mode !== current.rules.mode && countActiveCards(ctx, shopId) > 0) {
+    return err({ code: 'programModeLocked' })
   }
   const next: Program = { ...current, ...parsed.data }
   ctx.state.programs = ctx.state.programs.map((program) => (program.shopId === shopId ? next : program))
