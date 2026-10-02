@@ -1,3 +1,5 @@
+import type { ProgressModel } from './progress'
+
 /** Modelos da aba Prêmios. Texto já traduzido pela superfície. */
 
 export interface ReadyRewardModel {
@@ -23,8 +25,7 @@ export interface UpcomingRewardModel {
   readonly countLabel: string
   /** "8 de 10 carimbos" */
   readonly progressLabel: string
-  /** 0..1 */
-  readonly fraction: number
+  readonly progress: ProgressModel
   readonly tilt: number
   /** A linha inteira para leitor de tela. */
   readonly summary: string

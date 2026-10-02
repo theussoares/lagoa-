@@ -31,9 +31,7 @@ async function onConsentChange(granted: boolean): Promise<void> {
 
 <template>
   <div class="flex flex-col gap-6">
-    <h1 class="flex min-h-12 items-center text-[1.75rem] leading-tight font-bold text-highlighted [font-stretch:90%]">
-      {{ t('profile.title') }}
-    </h1>
+    <PageTitle :title="t('profile.title')" />
 
     <USkeleton v-if="state.status === 'loading'" class="h-56 rounded-(--radius-card)" />
 
@@ -46,7 +44,7 @@ async function onConsentChange(granted: boolean): Promise<void> {
 
     <dl v-else class="rounded-(--radius-card) bg-default px-5 shadow-(--lagoa-shadow-card)">
       <div class="flex flex-col gap-1 border-b border-(--lagoa-rule) py-4">
-        <dt class="text-[0.9375rem] text-muted">{{ t('profile.phoneLabel') }}</dt>
+        <dt class="text-base text-muted">{{ t('profile.phoneLabel') }}</dt>
         <dd class="tabular text-lg font-semibold text-highlighted">{{ state.value.maskedPhone }}</dd>
       </div>
       <div class="py-4">
@@ -59,7 +57,7 @@ async function onConsentChange(granted: boolean): Promise<void> {
             :disabled="savingConsent"
             :label="t('profile.consentLabel')"
             :description="state.value.consent.notifications ? t('profile.consentOn') : t('profile.consentOff')"
-            :ui="{ root: 'items-start gap-3', label: 'text-base font-medium text-highlighted', description: 'text-[0.9375rem] text-muted' }"
+            :ui="{ root: 'items-start gap-3', label: 'text-base font-medium text-highlighted', description: 'text-base text-muted' }"
             @update:model-value="onConsentChange"
           />
         </dd>
@@ -67,7 +65,7 @@ async function onConsentChange(granted: boolean): Promise<void> {
     </dl>
 
     <section aria-labelledby="appearance-title" class="flex flex-col gap-3">
-      <h2 id="appearance-title" class="letreiro text-[0.9375rem] text-toned">{{ t('profile.appearanceTitle') }}</h2>
+      <h2 id="appearance-title" class="letreiro text-base text-toned">{{ t('profile.appearanceTitle') }}</h2>
       <div class="rounded-(--radius-card) bg-default p-4 shadow-(--lagoa-shadow-card)">
         <ThemeChoice v-model="theme" :labels="themeLabels" />
       </div>

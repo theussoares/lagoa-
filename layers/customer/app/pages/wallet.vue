@@ -38,7 +38,6 @@ watch(anyUnauthorized, (unauthorized) => {
 
 const firstName = computed(() => (profileState.value.status === 'success' ? profileState.value.value.firstName : null))
 const greeting = computed(() => (firstName.value ? t('wallet.greeting', { name: firstName.value }) : t('wallet.greetingAnonymous')))
-const initial = computed(() => firstName.value?.charAt(0).toUpperCase())
 
 const ledger = computed(() => {
   if (activityState.value.status !== 'success') return []
@@ -49,12 +48,19 @@ const ledger = computed(() => {
 
 <template>
   <div class="flex flex-col gap-8">
-    <header class="flex min-h-12 items-center justify-between gap-3">
-      <h1 class="text-[1.375rem] leading-tight font-semibold text-highlighted [font-stretch:95%]">{{ greeting }}</h1>
-      <NuxtLink to="/perfil" :aria-label="t('wallet.profileLink')" class="rounded-full">
-        <UAvatar :text="initial" :icon="initial ? undefined : 'i-ph-user'" size="lg" class="bg-default ring-1 ring-(--lagoa-rule)" />
-      </NuxtLink>
-    </header>
+    <PageTitle :title="greeting">
+      <template #actions>
+        <UButton
+          to="/perfil"
+          variant="ghost"
+          color="neutral"
+          icon="i-ph-user-circle"
+          class="size-11 shrink-0 justify-center rounded-full"
+          :ui="{ leadingIcon: 'size-7' }"
+          :aria-label="t('wallet.profileLink')"
+        />
+      </template>
+    </PageTitle>
 
     <section :aria-label="t('wallet.stackLabel')">
       <WalletStackSkeleton v-if="cardsState.status === 'loading'" />

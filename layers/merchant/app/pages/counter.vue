@@ -148,10 +148,11 @@ onMounted(focusPhone)
 
 <template>
   <div class="mx-auto flex max-w-[1200px] flex-col gap-5">
-    <header class="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-      <h1 class="text-[1.75rem] leading-tight font-bold text-highlighted [font-stretch:90%]">{{ t('counter.title') }}</h1>
-      <p class="text-muted first-letter:uppercase">{{ today }}</p>
-    </header>
+    <PageTitle :title="t('counter.title')">
+      <template #actions>
+        <p class="pb-1 text-muted first-letter:uppercase">{{ today }}</p>
+      </template>
+    </PageTitle>
 
     <div class="grid items-start gap-5 lg:grid-cols-12">
       <div class="flex flex-col gap-5 lg:col-span-5">
@@ -207,19 +208,26 @@ onMounted(focusPhone)
           </form>
 
           <div aria-live="polite" class="empty:hidden mt-4 flex flex-col">
-            <UAlert v-if="launchAlert" color="error" variant="subtle" icon="i-ph-warning-circle" :description="launchAlert" />
-            <UAlert
+            <InkNote
+              v-if="launchAlert"
+              tone="error"
+              icon="i-ph-warning-circle"
+              :description="launchAlert"
+            />
+            <InkNote
               v-else-if="program.state.value.status === 'error'"
-              color="error"
-              variant="subtle"
+              tone="error"
               icon="i-ph-warning-circle"
               :description="t('counter.launch.programProblem')"
-              :actions="[{ label: t('common.retry'), color: 'neutral', variant: 'outline', onClick: program.reload }]"
+              :actions="[{ label: t('common.retry'), onClick: program.reload }]"
             />
             <LaunchReceipt v-else-if="receipt" :key="launch.state.value.status === 'success' ? launch.state.value.result.entry.id : ''" :receipt="receipt" :icon="STAMP_ICON" />
           </div>
         </PanelModule>
+      </div>
 
+      <!-- Resgate no topo da direita: valida sem rolar, ao lado do teclado; a caderneta rola por dentro. -->
+      <div class="flex flex-col gap-5 lg:col-span-7">
         <RedemptionStub
           ref="stub"
           v-model="redemption.code.value"
@@ -275,44 +283,53 @@ onMounted(focusPhone)
             </p>
           </div>
         </RedemptionStub>
+
+        <PanelModule :title="t('counter.ledger.title')">
+          <template #actions>
+            <div class="flex items-center gap-1">
+              <span v-if="ledger.state.value.status === 'success'" class="tabular text-[0.9375rem] text-muted">
+                {{ t('counter.todayCount', ledger.state.value.value.length) }}
+              </span>
+              <UButton
+                variant="ghost"
+                color="neutral"
+                icon="i-ph-arrow-clockwise"
+                class="size-11 justify-center"
+                :aria-label="t('counter.ledger.refresh')"
+                :loading="ledger.state.value.status === 'loading'"
+                @click="ledger.reload"
+              />
+            </div>
+          </template>
+
+          <div v-if="ledger.state.value.status === 'loading'" class="flex flex-col" role="status" :aria-label="t('common.loading')">
+            <div v-for="row in 5" :key="row" class="flex h-14 items-center gap-4 border-b border-(--lagoa-rule) last:border-b-0">
+              <USkeleton class="h-4 w-11" />
+              <USkeleton class="h-4 w-36" />
+              <USkeleton class="ml-auto h-4 w-24" />
+              <USkeleton class="size-9 rounded-full" />
+            </div>
+          </div>
+          <InkNote
+            v-else-if="ledger.state.value.status === 'error'"
+            tone="error"
+            icon="i-ph-warning-circle"
+            :description="t(`errors.${ledger.state.value.error.code}`)"
+            :actions="[{ label: t('common.retry'), onClick: ledger.reload }]"
+            live
+          />
+          <p v-else-if="ledgerRows.length === 0" class="py-10 text-center text-muted">{{ t('counter.ledger.empty') }}</p>
+          <!-- Rola por dentro: focável para quem usa só o teclado (iPad do balcão). -->
+          <div
+            v-else
+            tabindex="0"
+            role="region"
+            :aria-label="t('counter.ledger.title')"
+            class="-mx-4 -mb-4 max-h-[min(28rem,50dvh)] overflow-y-auto px-4 pb-4 [scrollbar-color:var(--lagoa-slot)_transparent] [scrollbar-width:thin]">
+            <CounterLedger :entries="ledgerRows" />
+          </div>
+        </PanelModule>
       </div>
-
-      <PanelModule :title="t('counter.ledger.title')" class="lg:sticky lg:top-6 lg:col-span-7">
-        <template #actions>
-          <div class="flex items-center gap-1">
-            <span v-if="ledger.state.value.status === 'success'" class="tabular text-[0.9375rem] text-muted">
-              {{ t('counter.todayCount', ledger.state.value.value.length) }}
-            </span>
-            <UButton
-              variant="ghost"
-              color="neutral"
-              icon="i-ph-arrow-clockwise"
-              :aria-label="t('counter.ledger.refresh')"
-              :loading="ledger.state.value.status === 'loading'"
-              @click="ledger.reload"
-            />
-          </div>
-        </template>
-
-        <div v-if="ledger.state.value.status === 'loading'" class="flex flex-col" role="status" :aria-label="t('common.loading')">
-          <div v-for="row in 5" :key="row" class="flex h-14 items-center gap-4 border-b border-(--lagoa-rule) last:border-b-0">
-            <USkeleton class="h-4 w-11" />
-            <USkeleton class="h-4 w-36" />
-            <USkeleton class="ml-auto h-4 w-24" />
-            <USkeleton class="size-9 rounded-full" />
-          </div>
-        </div>
-        <UAlert
-          v-else-if="ledger.state.value.status === 'error'"
-          color="error"
-          variant="subtle"
-          icon="i-ph-warning-circle"
-          :description="t(`errors.${ledger.state.value.error.code}`)"
-          :actions="[{ label: t('common.retry'), color: 'neutral', variant: 'outline', onClick: ledger.reload }]"
-        />
-        <p v-else-if="ledgerRows.length === 0" class="py-10 text-center text-muted">{{ t('counter.ledger.empty') }}</p>
-        <CounterLedger v-else :entries="ledgerRows" />
-      </PanelModule>
     </div>
   </div>
 </template>

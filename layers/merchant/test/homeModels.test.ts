@@ -39,13 +39,13 @@ describe('toWeekHeadline', () => {
 })
 
 describe('toWeekDayRows', () => {
-  it('scales the ruler to the busiest day and marks today', () => {
+  it('counts each day\'s visits and marks today', () => {
     const base = week()
     const days = base.days.map((day, index) => (index === 4 ? { ...day, visits: 4, redemptions: 1 } : index === 6 ? { ...day, visits: 2, newCustomers: 1 } : day))
     const rows = toWeekDayRows({ ...base, days }, t)
-    expect(rows[4]).toMatchObject({ ratio: 1, isToday: false, detail: 'home.week.redemptions count=1 #1' })
-    expect(rows[6]).toMatchObject({ ratio: 0.5, isToday: true,  detail: 'home.week.newCustomers count=1 #1' })
-    expect(rows[0]).toMatchObject({ ratio: 0, detail: null })
+    expect(rows[4]).toMatchObject({ count: 4, isToday: false, detail: 'home.week.redemptions count=1 #1' })
+    expect(rows[6]).toMatchObject({ count: 2, isToday: true,  detail: 'home.week.newCustomers count=1 #1' })
+    expect(rows[0]).toMatchObject({ count: 0, detail: null })
     expect(rows[0]?.label).toMatch(/26/)
     expect(rows[6]?.label).toMatch(/^home\.week\.today date=.*2/)
   })

@@ -34,9 +34,7 @@ watch(unauthorized, (value) => {
 
 <template>
   <div class="flex flex-col gap-8">
-    <h1 class="flex min-h-12 items-center text-[1.75rem] leading-[1.15] font-bold text-highlighted [font-stretch:90%]">
-      {{ t('rewards.title') }}
-    </h1>
+    <PageTitle :title="t('rewards.title')" />
 
     <div v-if="cardsState.status === 'loading'" class="flex flex-col gap-4" role="status" :aria-label="t('common.loading')">
       <div class="flex flex-col gap-5 rounded-(--radius-card) bg-default p-5 shadow-(--lagoa-shadow-card)">

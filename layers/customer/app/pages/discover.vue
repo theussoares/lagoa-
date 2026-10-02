@@ -42,12 +42,7 @@ watch(unauthorized, (value) => {
 
 <template>
   <div class="flex flex-col gap-8">
-    <header class="flex flex-col gap-2">
-      <h1 class="flex min-h-12 items-center text-[1.75rem] leading-[1.15] font-bold text-highlighted [font-stretch:90%]">
-        {{ t('discover.title') }}
-      </h1>
-      <p class="text-pretty text-toned">{{ t('discover.lead') }}</p>
-    </header>
+    <PageTitle :title="t('discover.title')" :lead="t('discover.lead')" />
 
     <div v-if="loading" class="flex flex-col gap-4" role="status" :aria-label="t('common.loading')">
       <USkeleton class="h-52 rounded-(--radius-card)" />

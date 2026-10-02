@@ -17,7 +17,7 @@ const right = computed(() => props.items.slice(2))
 
 function tabClass(item: TabBarItem): string[] {
   return [
-    'flex h-full flex-col items-center justify-center gap-1 text-[0.8125rem] leading-none transition-colors duration-(--lagoa-dur-fast)',
+    'flex h-full flex-col items-center justify-center gap-1 text-sm leading-none transition-colors duration-(--lagoa-dur-fast)',
     isActive(item) ? 'font-semibold text-primary' : 'font-medium text-muted hover:text-highlighted',
   ]
 }
@@ -42,7 +42,7 @@ function isActive(item: TabBarItem): boolean {
       <li class="flex justify-center">
         <NuxtLink
           :to="action.to"
-          class="-mt-5 flex flex-col items-center gap-1 text-[0.8125rem] font-semibold text-highlighted"
+          class="-mt-5 flex flex-col items-center gap-1 text-sm font-semibold text-highlighted"
           :aria-current="isActive(action) ? 'page' : undefined"
         >
           <span class="grid size-16 place-items-center rounded-full bg-primary text-inverted shadow-(--lagoa-shadow-card) ring-4 ring-(--lagoa-desk) transition-transform duration-(--lagoa-dur-fast) active:scale-95">

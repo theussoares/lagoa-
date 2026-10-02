@@ -1,5 +1,6 @@
 import { isRewardReady, remainingUnits } from '#shared/domain/loyaltyCard'
 import type { WalletCard } from '#shared/schemas/loyaltyCard'
+import type { ProgressModel } from '#layers/ui/app/types/progress'
 import type { ReadyRewardModel, UpcomingRewardModel } from '#layers/ui/app/types/rewards'
 import type { Translate } from '#layers/core/app/utils/translate'
 import { stampTilt } from '#layers/ui/app/utils/stampTilt'
@@ -30,6 +31,12 @@ export function toReadyRewardModel(card: WalletCard, t: Translate, formatDate: (
   }
 }
 
+/** Carimbo vira fileira de casas (a meta já é limitada pelo schema); pontos viram régua. */
+function toProgressModel(card: WalletCard): ProgressModel {
+  if (card.unit === 'stamp') return { kind: 'slots', filled: Math.min(card.balance, card.target), total: card.target }
+  return { kind: 'ruler', fraction: Math.min(1, card.balance / card.target) }
+}
+
 export function toUpcomingRewardModel(card: WalletCard, t: Translate): UpcomingRewardModel {
   const remaining = remainingUnits(card)
   const units = t(`units.${card.unit}`, {}, remaining)
@@ -45,7 +52,7 @@ export function toUpcomingRewardModel(card: WalletCard, t: Translate): UpcomingR
       target: card.target,
       unit: t(`units.${card.unit}Noun`, {}, card.target),
     }),
-    fraction: Math.min(1, card.balance / card.target),
+    progress: toProgressModel(card),
     tilt: stampTilt(card.id, 1),
     summary: t(
       'wallet.card.summary',

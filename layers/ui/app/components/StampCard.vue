@@ -19,10 +19,10 @@ withDefaults(defineProps<Props>(), { headingLevel: 'h2' })
           <component :is="headingLevel" class="letreiro text-[1.25rem] leading-[1.1] text-highlighted">
             {{ card.shopName }}
           </component>
-          <p class="truncate text-[0.9375rem] text-muted">{{ card.shopDetail }}</p>
+          <p class="truncate text-base text-muted">{{ card.shopDetail }}</p>
         </div>
       </div>
-      <span class="tabular shrink-0 pt-0.5 text-[0.8125rem] font-semibold tracking-[0.06em] text-toned [font-stretch:75%]" aria-hidden="true">
+      <span class="tabular shrink-0 pt-0.5 text-sm font-semibold tracking-[0.06em] text-toned [font-stretch:75%]" aria-hidden="true">
         {{ card.progress }}
       </span>
     </header>
@@ -47,7 +47,7 @@ withDefaults(defineProps<Props>(), { headingLevel: 'h2' })
           {{ card.status.count }}
         </span>
         <span class="flex min-w-0 flex-col">
-          <span class="text-[0.9375rem] text-muted">{{ card.status.unitLine }}</span>
+          <span class="text-base text-muted">{{ card.status.unitLine }}</span>
           <span class="text-[1.375rem] leading-[1.2] font-semibold text-highlighted [font-stretch:95%]">
             {{ card.status.reward }}
           </span>
@@ -58,7 +58,7 @@ withDefaults(defineProps<Props>(), { headingLevel: 'h2' })
         <span class="text-[1.375rem] leading-[1.2] font-semibold text-highlighted [font-stretch:95%]">
           {{ card.status.reward }}
         </span>
-        <span v-if="card.status.note" class="text-[0.9375rem] text-muted">{{ card.status.note }}</span>
+        <span v-if="card.status.note" class="text-base text-muted">{{ card.status.note }}</span>
       </div>
 
       <slot name="actions" />

@@ -11,8 +11,8 @@
   },
   "wallet": {
     "title": "Carteira",
-    "greeting": "Olá, {name}",
-    "greetingAnonymous": "Olá",
+    "greeting": "Carteira de {name}",
+    "greetingAnonymous": "Sua carteira",
     "profileLink": "Abrir seu perfil",
     "stackLabel": "Seus cartões",
     "showCard": "Mostrar o cartão de {shop}",

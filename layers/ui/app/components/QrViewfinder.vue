@@ -44,7 +44,7 @@ defineExpose({ video })
     </div>
 
     <figcaption class="absolute inset-x-0 bottom-4 flex justify-center px-4">
-      <span class="rounded-full bg-default/90 px-3.5 py-1.5 text-[0.9375rem] font-medium text-highlighted" role="status">
+      <span class="rounded-full bg-default/90 px-3.5 py-1.5 text-base font-medium text-highlighted" role="status">
         {{ statusText }}
       </span>
     </figcaption>
