@@ -1,0 +1,40 @@
+{
+  // Typecheck do código sem Vue/Nuxt (shared, services, mock, mapeadores de tela) e dos testes unitários.
+  // O resto do app é checado por `nuxt typecheck`.
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2023", "DOM"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": false,
+    "noImplicitOverride": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": [],
+    "paths": {
+      "#shared/*": ["./shared/*"],
+      "#layers/core/*": ["./layers/core/*"],
+      "#layers/customer/*": ["./layers/customer/*"],
+      "#layers/merchant/*": ["./layers/merchant/*"],
+      "#layers/ui/*": ["./layers/ui/*"]
+    }
+  },
+  "include": [
+    "shared/**/*.ts",
+    "layers/core/app/services/**/*.ts",
+    "layers/core/app/mock/**/*.ts",
+    "layers/core/test/**/*.ts",
+    "layers/customer/app/services/**/*.ts",
+    "layers/customer/app/utils/**/*.ts",
+    "layers/core/app/utils/translate.ts",
+    "layers/merchant/app/utils/**/*.ts",
+    "layers/ui/app/utils/**/*.ts",
+    "layers/ui/app/types/**/*.ts",
+    "layers/customer/test/**/*.ts",
+    "layers/merchant/app/services/**/*.ts",
+    "layers/merchant/test/**/*.ts"
+  ]
+}

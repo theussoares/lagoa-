@@ -1,0 +1,256 @@
+{
+  "app": {
+    "name": "Lagoa+",
+    "skipToContent": "Pular para o conteúdo"
+  },
+  "units": {
+    "stamp": "nenhum carimbo | 1 carimbo | {count} carimbos",
+    "point": "nenhum ponto | 1 ponto | {count} pontos",
+    "stampNoun": "carimbo | carimbos",
+    "pointNoun": "ponto | pontos"
+  },
+  "wallet": {
+    "title": "Carteira",
+    "greeting": "Olá, {name}",
+    "greetingAnonymous": "Olá",
+    "profileLink": "Abrir seu perfil",
+    "stackLabel": "Seus cartões",
+    "showCard": "Mostrar o cartão de {shop}",
+    "showMore": "Mostrar mais 1 cartão | Mostrar mais {count} cartões",
+    "redeem": "Resgatar prêmio",
+    "ledgerTitle": "Caderneta",
+    "ledgerEmpty": "Suas visitas aparecem aqui assim que o primeiro carimbo cair.",
+    "emptyTitle": "Seu primeiro carimbo está numa loja da cidade",
+    "empty": "Peça seu carimbo no balcão de uma loja da rede ou faça check-in pelo QR da loja.",
+    "emptyAction": "Ver lojas da rede",
+    "card": {
+      "unitsFor": {
+        "stamp": "carimbo para ganhar | carimbos para ganhar",
+        "point": "ponto para ganhar | pontos para ganhar"
+      },
+      "seal": "Prêmio liberado",
+      "heldUntil": "Guardado para você até {date}",
+      "peekReady": "Liberado",
+      "peekRemaining": "Falta {units} | Faltam {units}",
+      "rulerLabel": "{balance} de {target} {unit}",
+      "summary": "{shop}: {balance} de {target}. Falta {units} para {reward}. | {shop}: {balance} de {target}. Faltam {units} para {reward}.",
+      "summaryReady": "{shop}: prêmio liberado, {reward}."
+    }
+  },
+  "counter": {
+    "title": "Balcão",
+    "todayCount": "Nenhum lançamento hoje | 1 lançamento hoje | {count} lançamentos hoje",
+    "signedOut": "Entre com o celular da loja para usar o Balcão.",
+    "launch": {
+      "title": "Lançar visita",
+      "phoneLabel": "Celular do cliente",
+      "phoneHint": "Digite pelo teclado ou toque nas teclas. Enter lança, Esc limpa.",
+      "give": "Dar {units}",
+      "amountLabel": "Valor da compra",
+      "amountHint": "Vale {points} por real gasto.",
+      "giveAmount": "Lançar valor",
+      "keypadLabel": "Teclado do celular",
+      "keypadClear": "Limpar",
+      "keypadBackspace": "Apagar o último dígito",
+      "programProblem": "Não deu para carregar o clube da loja."
+    },
+    "receipt": {
+      "earned": "+{units} para {phone}",
+      "newCard": "Cartão novo criado para {phone}",
+      "rewardReady": "Prêmio liberado: {reward}",
+      "welcome": "Começou com {units} de boas-vindas.",
+      "progress": "Agora tem {balance} de {target}.",
+      "remaining": "Falta {units} para {reward}. | Faltam {units} para {reward}.",
+      "tellCustomer": "{phone} completou o cartão. Avise o cliente que o prêmio está liberado."
+    },
+    "redemption": {
+      "title": "Validar resgate",
+      "hint": "Peça o código de 6 letras e números que aparece no app do cliente.",
+      "codeLabel": "Código do cliente",
+      "checking": "Conferindo o código…",
+      "valid": "Código válido",
+      "customer": "Cliente {phone} · vale até {time}",
+      "deliver": "Entregar prêmio",
+      "cancel": "Cancelar",
+      "delivered": "Prêmio entregue: {reward}. Já está na caderneta."
+    },
+    "ledger": {
+      "title": "Caderneta de hoje",
+      "refresh": "Atualizar caderneta",
+      "empty": "Nenhum lançamento hoje. O primeiro carimbo do dia aparece aqui.",
+      "newCustomer": "Cliente novo",
+      "earned": "+{units}",
+      "earnedAmount": "+{units} · {amount}",
+      "earnedCheckIn": "+{units} · check-in",
+      "redeemed": "Prêmio entregue: {reward}"
+    }
+  },
+  "nav": {
+    "wallet": "Carteira",
+    "discover": "Descobrir",
+    "checkIn": "Check-in",
+    "rewards": "Prêmios",
+    "profile": "Perfil",
+    "home": "Início",
+    "counter": "Balcão",
+    "customers": "Clientes",
+    "program": "Programa e prêmios",
+    "campaigns": "Campanhas",
+    "mainLabel": "Navegação principal"
+  },
+  "common": {
+    "loading": "Carregando",
+    "retry": "Tentar de novo"
+  },
+  "errors": {
+    "unauthorized": "Sua sessão terminou. Entre de novo para continuar.",
+    "network": "Sem conexão agora. Confira a internet e tente de novo.",
+    "notFound": "Não encontramos o que você procurou.",
+    "invalidPhone": "Esse celular não parece certo. Use DDD + 9 dígitos, ex.: (67) 99123-4567.",
+    "invalidLoginCode": "Código errado. Confira o SMS e digite de novo.",
+    "loginCodeExpired": "Esse código venceu. Peça um novo.",
+    "invalidAmount": "Valor inválido. Digite o valor da compra em reais.",
+    "amountNotAccepted": "Este clube não lança por valor. Use \"Dar 1 carimbo\".",
+    "invalidShopQr": "Esse QR não é de uma loja da rede. Peça o QR do balcão.",
+    "checkInDisabled": "Esta loja não usa check-in. Peça o carimbo no balcão.",
+    "checkInCooldown": "Você já ganhou o carimbo aqui. O próximo libera às {time}.",
+    "rewardNotReady": "Ainda faltam {remaining} para o prêmio.",
+    "redemptionInvalid": "Código não encontrado nesta loja. Confira as letras com o cliente.",
+    "redemptionExpired": "Esse código venceu. Peça para o cliente gerar outro.",
+    "redemptionAlreadyUsed": "Esse prêmio já foi entregue.",
+    "invalidProgram": "Não deu para salvar o clube. Confira os campos destacados."
+  },
+  "ledger": {
+    "yesterday": "Ontem",
+    "earned": "+{units}",
+    "redeemed": "Resgatado",
+    "kind": {
+      "visit": "No balcão",
+      "amount": "Compra no balcão",
+      "checkIn": "Check-in",
+      "redemption": "Prêmio resgatado"
+    }
+  },
+  "signIn": {
+    "pageTitle": "Entrar",
+    "heroCaption": "Um cartão para a barbearia, o café e a pizzaria da cidade.",
+    "title": "Seus carimbos de Três Lagoas num lugar só",
+    "lead": "Entre com seu celular. Mandamos um código por SMS, sem senha.",
+    "phoneLabel": "Seu celular",
+    "phoneHint": "Com DDD, só números.",
+    "phonePlaceholder": "(67) 99123-4567",
+    "sendCode": "Receber código",
+    "codeTitle": "Digite o código",
+    "codeLead": "Mandamos 6 números para {phone}.",
+    "changePhone": "Trocar número",
+    "codeLabel": "Código do SMS",
+    "consentLabel": "Quero receber avisos e promoções das lojas",
+    "consentHint": "Só das lojas onde você tem cartão. Dá para desligar quando quiser, no Perfil.",
+    "terms": "Ao entrar, você aceita os Termos de uso e a Política de privacidade do Lagoa+.",
+    "submit": "Entrar",
+    "resend": "Reenviar código",
+    "resendIn": "Reenviar código em {seconds}s",
+    "mockHint": "Ambiente de teste: o SMS não sai. Use o código {code}."
+  },
+  "profile": {
+    "title": "Perfil",
+    "phoneLabel": "Celular",
+    "consentLabel": "Avisos e promoções das lojas",
+    "consentOn": "Ligado. As lojas onde você tem cartão podem te mandar avisos.",
+    "consentOff": "Desligado. Nenhuma loja te manda avisos.",
+    "consentSaved": "Preferência salva.",
+    "signOut": "Sair desta conta"
+  },
+  "upcoming": {
+    "title": "Esta tela ainda está sendo feita",
+    "lead": "Ela entra numa das próximas etapas do Lagoa+.",
+    "back": "Voltar para a carteira"
+  },
+  "merchantSignIn": {
+    "pageTitle": "Entrar no painel",
+    "title": "Entrar no painel da loja",
+    "lead": "Use o celular cadastrado da loja. Mandamos um código por SMS, sem senha.",
+    "phoneLabel": "Celular da loja",
+    "phoneHint": "Com DDD, só números.",
+    "phonePlaceholder": "(67) 99123-4567",
+    "sendCode": "Receber código",
+    "codeTitle": "Digite o código",
+    "codeLead": "Mandamos 6 números para {phone}.",
+    "changePhone": "Trocar número",
+    "codeLabel": "Código do SMS",
+    "submit": "Entrar",
+    "resend": "Reenviar código",
+    "resendIn": "Reenviar código em {seconds}s",
+    "mockHint": "Ambiente de teste: o SMS não sai. Use o celular {phone} (Barbearia de exemplo) e o código {code}.",
+    "notFound": "Esse celular não é de uma loja da rede. Confira o número ou fale com a rede Lagoa+.",
+    "asideTitle": "O balcão tão rápido quanto o papel",
+    "steps": {
+      "phone": "Digite o celular do cliente",
+      "stamp": "Dê o carimbo com um toque",
+      "redeem": "Confira o código do prêmio"
+    }
+  },
+  "merchantNav": {
+    "label": "Navegação do painel",
+    "signOut": "Sair do painel"
+  },
+  "merchantUpcoming": {
+    "title": "Esta tela ainda está sendo feita",
+    "lead": "Ela entra numa das próximas etapas do painel. O Balcão já funciona.",
+    "back": "Ir para o Balcão"
+  },
+  "redemption": {
+    "pageTitle": "Resgatar prêmio",
+    "back": "Carteira",
+    "title": "Mostre este código no balcão",
+    "codeLabel": "Código de resgate",
+    "validFor": "Vale por",
+    "minutesLeft": "O código vale por mais 1 minuto. | O código vale por mais {minutes} minutos.",
+    "howTo": "Quem atende digita essas letras no Balcão e entrega o seu prêmio.",
+    "heldUntil": "Sem pressa: se o código vencer, é só gerar outro. O prêmio fica guardado até {date}",
+    "expiredNote": "Esse código venceu. Gere outro e mostre no balcão.",
+    "regenerate": "Gerar novo código",
+    "redeemedSeal": "Entregue",
+    "redeemedNote": "O prêmio foi entregue. Seu cartão recomeça na carteira.",
+    "backToWallet": "Voltar para a carteira",
+    "redeemedTitle": "Bom proveito!",
+    "backToRewards": "Prêmios"
+  },
+  "rewards": {
+    "title": "Prêmios",
+    "readyTitle": "Para resgatar",
+    "redeem": "Mostrar código no balcão",
+    "noneReady": "Nenhum prêmio liberado agora.",
+    "closest": "O mais perto é {shop}: falta {units} para {reward}. | O mais perto é {shop}: faltam {units} para {reward}.",
+    "upcomingTitle": "A caminho",
+    "remainingLabel": "falta | faltam",
+    "historyTitle": "Já resgatados",
+    "historyEmpty": "Os prêmios que você resgatar ficam anotados aqui.",
+    "emptyTitle": "Seus prêmios aparecem aqui"
+  },
+  "discover": {
+    "title": "Descobrir",
+    "lead": "Todas estas lojas valem na mesma carteira. O primeiro carimbo já abre o cartão.",
+    "challengesTitle": "Desafio da cidade | Desafios da cidade",
+    "challenge": {
+      "deadline": "Até {date}",
+      "progress": "{done} de {total} visitadas",
+      "done": "Desafio completo",
+      "stopVisited": "{shop}: visitada",
+      "stopPending": "{shop}: falta visitar"
+    },
+    "freshTitle": "Novas para você",
+    "howTo": "Para abrir o cartão, peça o carimbo no balcão ou faça check-in pelo QR da loja.",
+    "freshEmpty": "Você já tem cartão em todas as lojas da rede. Quando uma loja nova entrar, ela aparece aqui.",
+    "knownTitle": "Já na sua carteira",
+    "openWallet": "Abrir a carteira",
+    "rule": "{units} = {reward}",
+    "earn": {
+      "visit": "{units} por visita",
+      "real": "{units} por real gasto"
+    },
+    "welcome": "Cartão novo já começa com {units}.",
+    "challengeTag": "Conta no desafio",
+    "empty": "Nenhuma loja na rede por enquanto. Volte em breve."
+  }
+}

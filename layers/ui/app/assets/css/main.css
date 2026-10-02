@@ -1,0 +1,192 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+@import "@fontsource-variable/archivo/wdth.css";
+
+/* Lagoa+ "Carimbo e Caderneta". Fonte da verdade: design-system/lagoa/MASTER.md */
+
+@theme static {
+  --font-sans: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
+
+  /* tinta: almofada de carimbo azul (ação, carimbos) */
+  --color-tinta-50: #ECF7FF;
+  --color-tinta-100: #DEECFF;
+  --color-tinta-200: #C5DAFF;
+  --color-tinta-300: #A4BFFF;
+  --color-tinta-400: #7899F7;
+  --color-tinta-500: #5476E7;
+  --color-tinta-600: #3B5ACA;
+  --color-tinta-700: #2E48A7;
+  --color-tinta-800: #223785;
+  --color-tinta-900: #172763;
+  --color-tinta-950: #0B163F;
+
+  /* carimbo: tinta vermelha, só prêmio e resgate */
+  --color-carimbo-50: #FFEEE8;
+  --color-carimbo-100: #FFE1D8;
+  --color-carimbo-200: #FFC9BC;
+  --color-carimbo-300: #FDA796;
+  --color-carimbo-400: #E97964;
+  --color-carimbo-500: #D44D36;
+  --color-carimbo-600: #B62C15;
+  --color-carimbo-700: #95200C;
+  --color-carimbo-800: #761606;
+  --color-carimbo-900: #580D03;
+  --color-carimbo-950: #370601;
+
+  /* folha: confirmação */
+  --color-folha-50: #E7FDEE;
+  --color-folha-100: #D9F5E1;
+  --color-folha-200: #BFE6CB;
+  --color-folha-300: #9AD0AC;
+  --color-folha-400: #69B183;
+  --color-folha-500: #389560;
+  --color-folha-600: #0D7A46;
+  --color-folha-700: #026337;
+  --color-folha-800: #004D29;
+  --color-folha-900: #00391C;
+  --color-folha-950: #00220E;
+
+  /* mesa: neutro frio de papel e balcão */
+  --color-mesa-50: #F3F7FA;
+  --color-mesa-100: #E9EEF0;
+  --color-mesa-200: #D7DCDE;
+  --color-mesa-300: #BDC2C5;
+  --color-mesa-400: #9A9FA2;
+  --color-mesa-500: #7B8184;
+  --color-mesa-600: #61676A;
+  --color-mesa-700: #4E5356;
+  --color-mesa-800: #3C4143;
+  --color-mesa-900: #2A2F31;
+  --color-mesa-950: #181B1D;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-stamp: cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+:root {
+  --ui-radius: 0.625rem; /* controles 10px; cartões usam --radius-card */
+  --radius-card: 0.875rem;
+
+  --ui-primary: var(--ui-color-primary-700);
+  --ui-secondary: var(--ui-color-secondary-600);
+  --ui-success: var(--ui-color-success-600);
+  /* erro e aviso escurecidos: o padrão (500) não chega a 4.5:1 sobre a mesa */
+  --ui-error: var(--ui-color-error-700);
+  --ui-warning: var(--ui-color-warning-700);
+
+  --ui-bg: #FFFFFF;
+  --ui-bg-muted: var(--color-mesa-50);
+  --ui-bg-elevated: var(--color-mesa-100);
+  --ui-bg-accented: var(--color-mesa-200);
+  --ui-text: var(--color-mesa-800);
+  --ui-text-highlighted: var(--color-mesa-950);
+  --ui-text-toned: var(--color-mesa-700);
+  --ui-text-muted: var(--color-mesa-600);
+  --ui-text-dimmed: var(--color-mesa-600);
+  --ui-border: var(--color-mesa-200);
+  --ui-border-muted: var(--color-mesa-100);
+  --ui-border-accented: var(--color-mesa-300);
+
+  --lagoa-desk: var(--color-mesa-100);
+  --lagoa-rule: var(--color-mesa-200);
+  --lagoa-slot: var(--color-mesa-500);
+  --lagoa-shadow-card: 0 1px 2px rgb(24 27 29 / 0.06), 0 12px 24px -10px rgb(24 27 29 / 0.22);
+
+  --lagoa-dur-fast: 120ms;
+  --lagoa-dur-base: 200ms;
+  --lagoa-dur-stamp: 420ms;
+}
+
+.dark {
+  --ui-primary: var(--ui-color-primary-300);
+  --ui-secondary: var(--ui-color-secondary-300);
+  --ui-success: var(--ui-color-success-300);
+  --ui-error: var(--ui-color-error-400);
+  --ui-warning: var(--ui-color-warning-400);
+
+  --ui-bg: #212628;
+  --ui-bg-muted: var(--color-mesa-900);
+  --ui-bg-elevated: var(--color-mesa-800);
+  --ui-bg-accented: var(--color-mesa-700);
+  --ui-text: var(--color-mesa-200);
+  --ui-text-highlighted: var(--color-mesa-50);
+  --ui-text-toned: var(--color-mesa-300);
+  --ui-text-muted: var(--color-mesa-400);
+  --ui-text-dimmed: var(--color-mesa-400);
+  --ui-border: var(--color-mesa-800);
+  --ui-border-muted: var(--color-mesa-900);
+  --ui-border-accented: var(--color-mesa-700);
+
+  --lagoa-desk: var(--color-mesa-950);
+  --lagoa-rule: var(--color-mesa-800);
+  --lagoa-slot: var(--color-mesa-500);
+  --lagoa-shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 24px -10px rgb(0 0 0 / 0.55);
+}
+
+body {
+  background: var(--lagoa-desk);
+  color: var(--ui-text);
+  font-size: 1.0625rem; /* 17px no app; o painel sobrescreve para 16px */
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: var(--color-tinta-200);
+  color: var(--color-tinta-950);
+}
+
+.dark ::selection {
+  background: var(--color-tinta-800);
+  color: var(--color-tinta-50);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: 2px;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* letreiro: caixa-alta condensada impressa no cartão */
+.letreiro {
+  font-stretch: 75%;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+@keyframes stamp-press {
+  0% { opacity: 0; transform: translateY(-14px) scale(1.35) rotate(var(--stamp-tilt-from, -14deg)); filter: blur(2px); }
+  60% { opacity: 1; transform: translateY(0) scale(0.94) rotate(var(--stamp-tilt, -4deg)); filter: blur(0); }
+  100% { opacity: 1; transform: scale(1) rotate(var(--stamp-tilt, -4deg)); }
+}
+
+.stamp-press {
+  animation: stamp-press var(--lagoa-dur-stamp) var(--ease-stamp) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stamp-press {
+    animation: none;
+    transform: rotate(var(--stamp-tilt, -4deg));
+  }
+}
+
+/* Letras do código de resgate chegam uma a uma, como tipo sendo composto. */
+@keyframes ticket-char {
+  from { opacity: 0; transform: translateY(0.25em); }
+  to { opacity: 1; transform: none; }
+}
+
+.ticket-char {
+  display: inline-block;
+  animation: ticket-char var(--lagoa-dur-base) var(--ease-out-expo) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticket-char {
+    animation: none;
+  }
+}

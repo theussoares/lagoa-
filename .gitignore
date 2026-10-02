@@ -1,0 +1,12 @@
+node_modules
+.nuxt
+.output
+.data
+dist
+coverage
+.env
+.env.*
+!.env.example
+.DS_Store
+.impeccable/questions
+.impeccable/config.local.json

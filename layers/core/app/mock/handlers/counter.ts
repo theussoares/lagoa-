@@ -1,0 +1,130 @@
+import { consumeReward, toCardProgress } from '#shared/domain/loyaltyCard'
+import { welcomeUnits } from '#shared/domain/bonusRules'
+import { addUnits } from '#shared/domain/loyaltyCard'
+import type { EarnInput } from '#shared/domain/programStrategies'
+import type { RedemptionId, ShopId } from '#shared/schemas/ids'
+import type { PhoneNumber } from '#shared/schemas/phone'
+import type { RedemptionCode, RedemptionPreview } from '#shared/schemas/redemption'
+import type { CounterEntry, VisitRegistered } from '#shared/schemas/visit'
+import type { ErrorOf } from '#shared/types/errors'
+import { err, ok } from '#shared/types/result'
+import type { Result } from '#shared/types/result'
+import { localDateParts, toIso } from '#shared/utils/time'
+import type { MockContext } from './context'
+import { appendLedger, creditCard, toCounterEntry, visitUnits } from './earning'
+import { ensureCustomer, findProgram, maskedPhoneOf, replaceCard } from './queries'
+import type { RedemptionRecord } from '../state'
+
+type Unauthorized = ErrorOf<'unauthorized'>
+
+export function registerVisit(
+  ctx: MockContext,
+  shopId: ShopId,
+  phone: PhoneNumber,
+  input: EarnInput,
+): Result<VisitRegistered, ErrorOf<'invalidAmount' | 'amountNotAccepted'> | Unauthorized> {
+  const program = findProgram(ctx, shopId)
+  if (program === undefined) return err({ code: 'unauthorized' })
+  const { customer, isNew } = ensureCustomer(ctx, phone)
+  const units = visitUnits(ctx, customer, program, input)
+  if (!units.ok) return units
+  const source = input.kind === 'amount' ? 'counterAmount' : 'counter'
+  const credited = creditCard(ctx, customer, program, units.value, source)
+  const record = appendLedger(ctx, {
+    shopId,
+    customerId: customer.id,
+    kind: input.kind === 'amount' ? 'amount' : 'visit',
+    unit: credited.card.unit,
+    units: units.value,
+    amountCents: input.kind === 'amount' ? input.amountCents : null,
+    rewardTitle: null,
+    isNewCustomer: isNew,
+  })
+  const entry = toCounterEntry(ctx, record)
+  if (!entry.ok) return err({ code: 'unauthorized' })
+  return ok({
+    entry: entry.value,
+    card: toCardProgress(credited.card),
+    unitsEarned: units.value,
+    welcomeUnits: credited.welcomeUnits,
+  })
+}
+
+type ValidateError = ErrorOf<'redemptionInvalid' | 'redemptionExpired' | 'redemptionAlreadyUsed'>
+
+function findRedemptionForShop(
+  ctx: MockContext,
+  shopId: ShopId,
+  match: (redemption: RedemptionRecord) => boolean,
+): Result<RedemptionRecord, ValidateError> {
+  // Código de outra loja responde igual a código inexistente: não vaza que ele existe.
+  const redemption = ctx.state.redemptions.find((item) => item.shopId === shopId && match(item))
+  if (redemption === undefined) return err({ code: 'redemptionInvalid' })
+  if (redemption.status === 'expired') return err({ code: 'redemptionExpired' })
+  if (redemption.status === 'redeemed') return err({ code: 'redemptionAlreadyUsed' })
+  return ok(redemption)
+}
+
+export function validateRedemption(
+  ctx: MockContext,
+  shopId: ShopId,
+  code: RedemptionCode,
+): Result<RedemptionPreview, ValidateError> {
+  const found = findRedemptionForShop(ctx, shopId, (item) => item.code === code)
+  if (!found.ok) return found
+  const maskedPhone = maskedPhoneOf(ctx, found.value.customerId)
+  if (maskedPhone === undefined) return err({ code: 'redemptionInvalid' })
+  return ok({
+    redemptionId: found.value.id,
+    rewardTitle: found.value.rewardTitle,
+    maskedPhone,
+    expiresAt: found.value.expiresAt,
+  })
+}
+
+export function confirmRedemption(
+  ctx: MockContext,
+  shopId: ShopId,
+  redemptionId: RedemptionId,
+): Result<CounterEntry, ValidateError> {
+  const found = findRedemptionForShop(ctx, shopId, (item) => item.id === redemptionId)
+  if (!found.ok) return found
+  const redemption = found.value
+  const card = ctx.state.cards.find((item) => item.id === redemption.cardId)
+  const program = findProgram(ctx, shopId)
+  if (card === undefined || program === undefined) return err({ code: 'redemptionInvalid' })
+
+  ctx.state.redemptions = ctx.state.redemptions.map((item) =>
+    item.id === redemption.id ? { ...item, status: 'redeemed' } : item,
+  )
+  // Regra de negócio: com boas-vindas ligada, o próximo cartão já começa andado.
+  const consumed = consumeReward(card)
+  const restartUnits = welcomeUnits(program.bonusRules)
+  replaceCard(ctx, restartUnits > 0 ? addUnits(consumed, restartUnits, 'welcomeBonus', toIso(ctx.now)) : consumed)
+
+  const record = appendLedger(ctx, {
+    shopId,
+    customerId: redemption.customerId,
+    kind: 'redemption',
+    unit: card.unit,
+    units: 0,
+    amountCents: null,
+    rewardTitle: redemption.rewardTitle,
+    isNewCustomer: false,
+  })
+  const entry = toCounterEntry(ctx, record)
+  return entry.ok ? entry : err({ code: 'redemptionInvalid' })
+}
+
+export function todayEntries(ctx: MockContext, shopId: ShopId): CounterEntry[] {
+  const today = localDateParts(ctx.now).isoDate
+  return ctx.state.ledger
+    .filter((record) => record.shopId === shopId && localDateParts(new Date(record.createdAt)).isoDate === today)
+    // Mais novo primeiro; no mesmo instante, o último lançado primeiro.
+    .toReversed()
+    .toSorted((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .flatMap((record) => {
+      const entry = toCounterEntry(ctx, record)
+      return entry.ok ? [entry.value] : []
+    })
+}
