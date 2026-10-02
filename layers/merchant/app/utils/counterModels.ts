@@ -19,6 +19,7 @@ const ledgerIcons: Readonly<Record<LedgerKind, string>> = {
   amount: 'i-ph-receipt-bold',
   checkIn: 'i-ph-qr-code-bold',
   redemption: 'i-ph-gift-bold',
+  campaignBonus: 'i-ph-megaphone-bold',
 }
 
 export function unitsText(t: Translate, unit: ProgramUnit, count: number): string {
@@ -36,6 +37,8 @@ function ledgerAction(entry: CounterEntry, t: Translate): string {
       return t('counter.ledger.earnedCheckIn', { units: earned })
     case 'visit':
       return t('counter.ledger.earned', { units: earned })
+    case 'campaignBonus':
+      return t('counter.ledger.earnedCampaign', { units: earned })
   }
 }
 

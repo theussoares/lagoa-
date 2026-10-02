@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { BirthdaySchema, IsoDateTimeSchema } from '#shared/schemas/common'
+import { CampaignSchema } from '#shared/schemas/campaign'
 import { ChallengeSchema } from '#shared/schemas/discover'
 import { ConsentSchema } from '#shared/schemas/customer'
 import { CustomerIdSchema, MerchantIdSchema, ShopIdSchema, VisitIdSchema } from '#shared/schemas/ids'
@@ -15,7 +16,7 @@ import { LedgerKindSchema } from '#shared/schemas/visit'
  * Banco do backend falso. Só existe no mock: é o "servidor" que guarda o
  * celular completo. Nada daqui sai para a UI sem passar pelos handlers.
  */
-export const MOCK_STATE_VERSION = 3
+export const MOCK_STATE_VERSION = 4
 
 export const ShopRecordSchema = ShopSchema.extend({ checkInCode: CheckInCodeSchema })
 export type ShopRecord = z.infer<typeof ShopRecordSchema>
@@ -65,6 +66,10 @@ export type LoginChallengeRecord = z.infer<typeof LoginChallengeRecordSchema>
 export const ChallengeRecordSchema = ChallengeSchema.omit({ visitedShopIds: true })
 export type ChallengeRecord = z.infer<typeof ChallengeRecordSchema>
 
+/** Quem recebeu fica só no servidor: serve para a janela de lembrete, nunca vai para a tela. */
+export const CampaignRecordSchema = CampaignSchema.extend({ recipientIds: z.array(CustomerIdSchema) })
+export type CampaignRecord = z.infer<typeof CampaignRecordSchema>
+
 export const MockStateSchema = z.object({
   version: z.literal(MOCK_STATE_VERSION),
   shops: z.array(ShopRecordSchema),
@@ -76,5 +81,6 @@ export const MockStateSchema = z.object({
   redemptions: z.array(RedemptionRecordSchema),
   loginChallenges: z.array(LoginChallengeRecordSchema),
   challenges: z.array(ChallengeRecordSchema),
+  campaigns: z.array(CampaignRecordSchema),
 })
 export type MockState = z.infer<typeof MockStateSchema>

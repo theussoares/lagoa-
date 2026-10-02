@@ -44,14 +44,15 @@ export function creditCard(
   const start = existing ?? newCard(ctx, customer.id, program)
   const welcomed = welcome > 0 ? addUnits(start, welcome, 'welcomeBonus', nowIso) : start
   const credited = addUnits(welcomed, units, source, nowIso)
-  const card: LoyaltyCard = {
-    ...credited,
-    lastVisitAt: nowIso,
-    rewardExpiresAt:
-      credited.rewardExpiresAt ?? (isRewardReady(credited) ? toIso(addDays(ctx.now, REWARD_HOLD_DAYS)) : null),
-  }
+  const card: LoyaltyCard = { ...holdRewardIfReady(ctx, credited), lastVisitAt: nowIso }
   replaceCard(ctx, card)
   return { card, welcomeUnits: welcome }
+}
+
+/** Prêmio que acabou de liberar fica guardado REWARD_HOLD_DAYS a partir de agora. */
+export function holdRewardIfReady(ctx: MockContext, card: LoyaltyCard): LoyaltyCard {
+  if (card.rewardExpiresAt !== null || !isRewardReady(card)) return card
+  return { ...card, rewardExpiresAt: toIso(addDays(ctx.now, REWARD_HOLD_DAYS)) }
 }
 
 export function appendLedger(ctx: MockContext, record: Omit<LedgerRecord, 'id' | 'createdAt'>): LedgerRecord {

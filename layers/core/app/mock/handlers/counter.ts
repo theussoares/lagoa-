@@ -1,4 +1,5 @@
 import { consumeReward, toCardProgress } from '#shared/domain/loyaltyCard'
+import { isCounterKind } from '#shared/domain/ledger'
 import { welcomeUnits } from '#shared/domain/bonusRules'
 import { addUnits } from '#shared/domain/loyaltyCard'
 import type { EarnInput } from '#shared/domain/programStrategies'
@@ -119,7 +120,10 @@ export function confirmRedemption(
 export function todayEntries(ctx: MockContext, shopId: ShopId): CounterEntry[] {
   const today = localDateParts(ctx.now).isoDate
   return ctx.state.ledger
-    .filter((record) => record.shopId === shopId && localDateParts(new Date(record.createdAt)).isoDate === today)
+    .filter(
+      (record) =>
+        record.shopId === shopId && isCounterKind(record.kind) && localDateParts(new Date(record.createdAt)).isoDate === today,
+    )
     // Mais novo primeiro; no mesmo instante, o último lançado primeiro.
     .toReversed()
     .toSorted((a, b) => b.createdAt.localeCompare(a.createdAt))

@@ -67,6 +67,9 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
 | Descobrir / desafio       | `discover` / `challenge`       |
 | Clientes sumidos          | `lapsedCustomers`              |
 | Campanha / aviso          | `campaign` / `notification`    |
+| Lembrete (para sumidos)   | `reminder` (`lapsedReminder`)  |
+| Alcance da campanha       | `reach`                        |
+| Presente do lembrete      | `campaignBonus`                |
 | Consentimento             | `consent`                      |
 | Plano / cobrança          | `plan` / `billing`             |
 

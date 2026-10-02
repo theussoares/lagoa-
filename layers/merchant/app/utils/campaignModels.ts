@@ -1,0 +1,93 @@
+import { LAPSED_AFTER_DAYS } from '#shared/constants/domain'
+import type { Campaign, ReminderDraft, ReminderReach } from '#shared/schemas/campaign'
+import type { ProgramUnit } from '#shared/schemas/program'
+import { PILOT_TIME_ZONE } from '#shared/utils/time'
+import type { Translate } from '#layers/core/app/utils/translate'
+import { unitsText } from './counterModels'
+
+const sentAtFormat = new Intl.DateTimeFormat('pt-BR', {
+  day: 'numeric',
+  month: 'short',
+  hour: '2-digit',
+  minute: '2-digit',
+  timeZone: PILOT_TIME_ZONE,
+})
+
+export interface ReachLine {
+  readonly key: 'lapsed' | 'withoutConsent' | 'expired' | 'alreadyReminded'
+  readonly icon: string
+  readonly text: string
+}
+
+export interface ReachModel {
+  readonly reachable: number
+  readonly headline: string
+  readonly lines: readonly ReachLine[]
+  /** Explica por que ninguém recebe agora; `null` quando alguém recebe. */
+  readonly emptyHint: string | null
+}
+
+export interface ReminderPreviewModel {
+  readonly shopName: string
+  readonly message: string
+  /** "+1 carimbo de presente no seu cartão"; `null` sem bônus. */
+  readonly bonus: string | null
+}
+
+export interface CampaignHistoryRow {
+  readonly id: string
+  readonly sentAt: string
+  readonly recipients: string
+  readonly bonus: string
+  readonly message: string
+}
+
+export function toReachModel(reach: ReminderReach, t: Translate): ReachModel {
+  const lines: ReachLine[] = [
+    { key: 'lapsed', icon: 'i-ph-user-minus', text: t('campaigns.reach.lapsed', { count: reach.lapsed, days: LAPSED_AFTER_DAYS }, reach.lapsed) },
+  ]
+  if (reach.withoutConsent > 0) {
+    lines.push({
+      key: 'withoutConsent',
+      icon: 'i-ph-bell-slash',
+      text: t('campaigns.reach.withoutConsent', { count: reach.withoutConsent }, reach.withoutConsent),
+    })
+  }
+  if (reach.expired > 0) {
+    lines.push({ key: 'expired', icon: 'i-ph-hourglass-simple-low', text: t('campaigns.reach.expired', { count: reach.expired }, reach.expired) })
+  }
+  if (reach.alreadyReminded > 0) {
+    lines.push({
+      key: 'alreadyReminded',
+      icon: 'i-ph-clock-counter-clockwise',
+      text: t('campaigns.reach.alreadyReminded', { count: reach.alreadyReminded }, reach.alreadyReminded),
+    })
+  }
+  return {
+    reachable: reach.reachable,
+    headline: t('campaigns.reach.reachable', { count: reach.reachable }, reach.reachable),
+    lines,
+    emptyHint: reach.reachable > 0 ? null : t('campaigns.reach.emptyHint', { days: LAPSED_AFTER_DAYS }),
+  }
+}
+
+export function toReminderPreview(draft: ReminderDraft, shopName: string, unit: ProgramUnit, t: Translate): ReminderPreviewModel {
+  return {
+    shopName,
+    message: draft.message.trim(),
+    bonus: draft.bonusUnits > 0 ? t('campaigns.preview.bonus', { units: unitsText(t, unit, draft.bonusUnits) }) : null,
+  }
+}
+
+export function toCampaignHistoryRow(campaign: Campaign, t: Translate): CampaignHistoryRow {
+  return {
+    id: campaign.id,
+    sentAt: sentAtFormat.format(new Date(campaign.sentAt)),
+    recipients: t('campaigns.history.recipients', { count: campaign.recipientsCount }, campaign.recipientsCount),
+    bonus:
+      campaign.bonusUnits > 0
+        ? t('campaigns.history.bonus', { units: unitsText(t, campaign.unit, campaign.bonusUnits) })
+        : t('campaigns.history.noBonus'),
+    message: campaign.message,
+  }
+}

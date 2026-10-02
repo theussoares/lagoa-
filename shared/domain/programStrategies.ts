@@ -1,5 +1,5 @@
 import type { EarnRate, ProgramMode, ProgramRules, ProgramRulesByMode, ProgramUnit } from '../schemas/program'
-import { AMOUNT_MAX_CENTS } from '../constants/domain'
+import { AMOUNT_MAX_CENTS, REFERENCE_TICKET_REAIS } from '../constants/domain'
 import { err, ok } from '../types/result'
 import type { Result } from '../types/result'
 import type { ErrorOf } from '../types/errors'
@@ -14,6 +14,8 @@ export interface ProgramStrategy<R> {
   readonly acceptsAmount: boolean
   baseUnits(rules: R, input: EarnInput): Result<number, EarnError>
   earnRate(rules: R): EarnRate
+  /** Quanto uma visita típica rende; base para converter metas e dimensionar presentes. */
+  visitWorth(rules: R): number
 }
 
 const CENTS_PER_REAL = 100
@@ -28,6 +30,7 @@ const programStrategies: { readonly [M in ProgramMode]: ProgramStrategy<ProgramR
     acceptsAmount: false,
     baseUnits: (_rules, input) => (input.kind === 'visit' ? ok(1) : err({ code: 'amountNotAccepted' })),
     earnRate: () => ({ per: 'visit', units: 1 }),
+    visitWorth: () => 1,
   },
   pointsPerVisit: {
     unit: 'point',
@@ -35,6 +38,7 @@ const programStrategies: { readonly [M in ProgramMode]: ProgramStrategy<ProgramR
     baseUnits: (rules, input) =>
       input.kind === 'visit' ? ok(rules.pointsPerVisit) : err({ code: 'amountNotAccepted' }),
     earnRate: (rules) => ({ per: 'visit', units: rules.pointsPerVisit }),
+    visitWorth: (rules) => rules.pointsPerVisit,
   },
   pointsPerCurrency: {
     unit: 'point',
@@ -46,6 +50,7 @@ const programStrategies: { readonly [M in ProgramMode]: ProgramStrategy<ProgramR
       return points > 0 ? ok(points) : err({ code: 'invalidAmount' })
     },
     earnRate: (rules) => ({ per: 'real', units: rules.pointsPerReal }),
+    visitWorth: (rules) => rules.pointsPerReal * REFERENCE_TICKET_REAIS,
   },
 }
 
@@ -82,5 +87,16 @@ export function earnRateOf(rules: ProgramRules): EarnRate {
       return strategyFor(rules).earnRate(rules)
     case 'pointsPerCurrency':
       return strategyFor(rules).earnRate(rules)
+  }
+}
+
+export function visitWorthOf(rules: ProgramRules): number {
+  switch (rules.mode) {
+    case 'stamps':
+      return strategyFor(rules).visitWorth(rules)
+    case 'pointsPerVisit':
+      return strategyFor(rules).visitWorth(rules)
+    case 'pointsPerCurrency':
+      return strategyFor(rules).visitWorth(rules)
   }
 }

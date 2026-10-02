@@ -4,7 +4,7 @@ import { LoyaltyCardIdSchema, ShopIdSchema, VisitIdSchema } from './ids'
 import { MaskedPhoneSchema } from './phone'
 import { ProgramUnitSchema } from './program'
 
-export const LedgerKindSchema = z.enum(['visit', 'amount', 'checkIn', 'redemption'])
+export const LedgerKindSchema = z.enum(['visit', 'amount', 'checkIn', 'redemption', 'campaignBonus'])
 export type LedgerKind = z.infer<typeof LedgerKindSchema>
 
 /** Linha da caderneta do Balcão. Celular só mascarado. */
