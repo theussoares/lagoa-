@@ -60,7 +60,8 @@ revisão de risco. Não usar em tarefas mecânicas ou de execução direta.
 
 - **Engenheiro de Software** (`engenheiro`) Quebra o escopo em subtarefas
   atômicas, distribui para os Devs com contexto completo (caminhos, interfaces
-  esperadas, telas do design de referência), roda Devs em worktrees isolados,
+  esperadas, fluxo das telas do design de referência e regras de
+  `design-system/lagoa/`), roda Devs em worktrees isolados,
   integra o resultado e gerencia escalações.
 
 - **Code Reviewer Sênior** (`code-reviewer`) Revisão de risco em toda
@@ -85,10 +86,12 @@ da sua especialidade.
   solta. Cada Dev roda em worktree isolado.
 
 - **Dev de Design System & Acessibilidade** (`dev-ui`) Dono de `layers/ui`:
-  traduz o design de referência em tokens (tipografia Geologica, paleta,
-  raios, sombras) e componentes base (botões, inputs, cartão com anel de
-  carimbos, navegação inferior, sidebar do painel). Garante alvos ≥ 44px,
-  contraste e foco visível.
+  tematiza o Nuxt UI v4 com os tokens do design system
+  (`design-system/lagoa/MASTER.md`, [ADR-0001](docs/adr/0001-component-library.md))
+  e constrói os componentes de domínio que a lib não tem (cartão de carimbos,
+  impressão, maço de cartões, caderneta, canhoto de resgate, teclado do
+  Balcão, barra inferior do app). Garante alvos ≥ 44px, contraste e foco
+  visível.
 
 - **Dev de Stores Pinia** (`dev-stores`) Estado global por domínio
   (`session`, `wallet`, `counter`, `program`, `network`). Stores só guardam
@@ -106,7 +109,7 @@ da sua especialidade.
   lançar visita, resgate). Testes junto de cada layer em `layers/*/test/`.
 
 - **Revisor de UI** (`revisor-ui`) Revisa mudanças só de UI e composables
-  simples: fidelidade ao design, tokens, acessibilidade, tipagem. Qualquer
+  simples: fidelidade ao design system, tokens, acessibilidade, tipagem. Qualquer
   coisa que toque dado pessoal, sessão, Balcão, resgate ou cobrança sobe para
   o `code-reviewer`.
 

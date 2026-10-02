@@ -5,15 +5,26 @@ junta carimbos ou pontos nas lojas da cidade numa carteira única; o lojista
 lança visitas no balcão e acompanha quem voltou; a rede aprova lojas e cobra o
 plano.
 
-Design de referência do MVP: https://claude.ai/artifact/BkmsXbbcBXZTe9GStye6Ui
+Design system: [`design-system/lagoa/MASTER.md`](./design-system/lagoa/MASTER.md)
+(mundo visual "Carimbo e Caderneta", Nuxt UI v4 —
+[ADR-0001](./docs/adr/0001-component-library.md)). Verdade de produto:
+[`PRODUCT.md`](./PRODUCT.md).
+Design de referência antigo (vale só como evidência de conteúdo e fluxo, não
+como identidade visual): https://claude.ai/artifact/BkmsXbbcBXZTe9GStye6Ui
 Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
 
 ## Estado do projeto
 
-- **Front:** Nuxt 4 (Vue 3, `<script setup lang="ts">`, Pinia).
+- **Front:** Nuxt 4 (Vue 3, `<script setup lang="ts">`, Pinia) + Nuxt UI v4.
 - **Backend:** ainda não definido. Até o ADR do CTO sair, o front consome
   services com interface e implementação mock em `layers/core` — nenhum
-  componente chama `fetch`/`$fetch` direto.
+  componente chama `fetch`/`$fetch` direto. O mock é um servidor falso único
+  (`layers/core/app/mock`), escolhido por `runtimeConfig.public.apiMode`, e
+  guarda o estado no `localStorage` (cliente e Balcão em abas diferentes veem os
+  mesmos dados). Dados de exemplo em `seed.example.ts`; código de login do mock:
+  `246810`. Por isso o app roda como SPA (`ssr: false`) por enquanto.
+- **Rodar:** `pnpm dev` (cliente em `/carteira`, lojista em `/balcao`),
+  `pnpm test`, `pnpm typecheck`.
 
 ## Idioma
 
@@ -42,6 +53,8 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
 | Cartão de fidelidade      | `loyaltyCard`                  |
 | Carimbo / ponto           | `stamp` / `point`              |
 | Carteira                  | `wallet`                       |
+| Unidade (carimbo ou ponto)| `unit` (`stamp` \| `point`)     |
+| Caderneta (histórico)     | `ledger` (`counterEntry` no Balcão, `walletActivity` no app) |
 | Visita / lançar visita    | `visit` / `registerVisit`      |
 | Check-in                  | `checkIn`                      |
 | Antifraude (janela)       | `checkInCooldown`              |
@@ -147,9 +160,15 @@ composables  → stores (Pinia, estado)
   carimbo (ou lança por valor). Cliente novo ganha cartão na hora.
 - **Check-in:** cliente escaneia o QR da loja e ganha o carimbo sozinho.
 - **Antifraude:** no máximo 1 check-in por cliente/loja a cada janela
-  configurável (ex.: 4 h, 1 dia).
+  configurável (ex.: 4 h, 1 dia). Qualquer visita conta para a janela, inclusive
+  a lançada no balcão.
 - **Regras bônus:** boas-vindas (cartão começa com 2 carimbos), aniversário em
   dobro, traga um amigo (+1 quando o amigo faz a 1ª visita), dia surpresa em dobro.
+  Multiplicadores não se somam: vale o maior (aniversário no dia surpresa = 2×,
+  não 4×).
+- **Mudança de programa:** mudar a meta vale também para os cartões em
+  andamento; trocar o modo (carimbos ↔ pontos) fica bloqueado enquanto houver
+  cartões.
 - **Expiração:** carimbos vencem após X meses sem visita (ou nunca).
 - **Resgate:** cliente gera um código de uso único (6 caracteres, ~10 min de
   validade); o lojista valida no Balcão e confirma a entrega. Prêmio não
