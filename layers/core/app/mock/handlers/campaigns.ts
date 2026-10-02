@@ -24,7 +24,10 @@ interface ReminderCandidateCard {
   readonly eligibility: ReminderEligibility
 }
 
-type SendReminderError = ErrorOf<'invalidCampaign' | 'noReachableCustomers' | 'reachChanged' | 'unauthorized'>
+type SendReminderError = ErrorOf<'invalidCampaign' | 'noReachableCustomers' | 'reachChanged' | 'notFound' | 'unauthorized'>
+
+/** Loja sem clube criado ainda: não é sessão inválida, e a tela não deve deslogar. */
+const programMissing: ErrorOf<'notFound'> = { code: 'notFound', entity: 'program' }
 
 function lastRemindedByCustomer(ctx: MockContext, shopId: ShopId): Map<CustomerId, IsoDateTime> {
   const latest = new Map<CustomerId, IsoDateTime>()
@@ -64,9 +67,9 @@ function toCampaign(record: CampaignRecord): Campaign {
   return campaign
 }
 
-export function campaignOverview(ctx: MockContext, shopId: ShopId): Result<CampaignOverview, ErrorOf<'unauthorized'>> {
+export function campaignOverview(ctx: MockContext, shopId: ShopId): Result<CampaignOverview, ErrorOf<'notFound'>> {
   const program = findProgram(ctx, shopId)
-  if (program === undefined) return err({ code: 'unauthorized' })
+  if (program === undefined) return err(programMissing)
   const history = ctx.state.campaigns
     .filter((campaign) => campaign.shopId === shopId)
     .toSorted((a, b) => b.sentAt.localeCompare(a.sentAt))
@@ -106,7 +109,7 @@ export function sendReminder(
   expectedRecipients: number,
 ): Result<Campaign, SendReminderError> {
   const program = findProgram(ctx, shopId)
-  if (program === undefined) return err({ code: 'unauthorized' })
+  if (program === undefined) return err(programMissing)
   const parsed = ReminderDraftSchema.safeParse(draft)
   if (!parsed.success || !isBonusWithinLimits(parsed.data.bonusUnits, reminderBonusLimits(program.rules))) {
     return err({ code: 'invalidCampaign' })

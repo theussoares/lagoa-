@@ -1,12 +1,14 @@
 import { REWARD_HOLD_DAYS } from '#shared/constants/domain'
 import { isLapsedSince } from '#shared/domain/customer'
 import { isVisitKind } from '#shared/domain/ledger'
+import { summarizeWeek } from '#shared/domain/weekSummary'
 import { isRewardReady } from '#shared/domain/loyaltyCard'
 import { ProgramDraftSchema } from '#shared/schemas/program'
 import type { CustomerFilter, MerchantCustomerRow } from '#shared/schemas/customer'
 import type { ShopId } from '#shared/schemas/ids'
 import type { LoyaltyCard } from '#shared/schemas/loyaltyCard'
 import type { Program, ProgramDraft } from '#shared/schemas/program'
+import type { WeekSummary } from '#shared/schemas/weekSummary'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok } from '#shared/types/result'
 import type { Result } from '#shared/types/result'
@@ -47,6 +49,13 @@ export function merchantCustomers(ctx: MockContext, shopId: ShopId, filter: Cust
     })
     .filter(filters[filter])
     .toSorted((a, b) => (b.lastVisitAt ?? '').localeCompare(a.lastVisitAt ?? ''))
+}
+
+export function weekSummary(ctx: MockContext, shopId: ShopId): WeekSummary {
+  return summarizeWeek(
+    ctx.state.ledger.filter((record) => record.shopId === shopId),
+    ctx.now,
+  )
 }
 
 export function countActiveCards(ctx: MockContext, shopId: ShopId): number {

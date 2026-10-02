@@ -4,6 +4,7 @@ import { LAPSED_AFTER_DAYS } from '#shared/constants/domain'
 import { isReachableForReminder } from '#shared/domain/customer'
 import { CustomerFilterSchema } from '#shared/schemas/customer'
 import type { CustomerTableLabels } from '#layers/ui/app/types/customers'
+import { CUSTOMER_FILTER_QUERY, customerFilterFromSlug, customerFilterSlug } from '../utils/customerFilterQuery'
 import { toCustomerRowModel } from '../utils/customerModels'
 
 definePageMeta({ path: '/clientes', layout: 'merchant', middleware: 'merchant-auth' })
@@ -13,7 +14,25 @@ const translate = useTranslate()
 const { signOut } = useMerchantSession()
 useHead({ title: () => `${t('customers.title')} · ${t('app.name')}` })
 
-const { filter, state, reload } = useMerchantCustomers()
+const route = useRoute()
+const router = useRouter()
+const { filter, state, reload } = useMerchantCustomers(customerFilterFromSlug(route.query[CUSTOMER_FILTER_QUERY]))
+
+// O filtro mora na URL (`?filtro=sumidos`): o Início linka direto e o menu lateral volta para "Todos".
+// Troca de aba usa `replace`: o Voltar do navegador sai da tela em vez de desfazer cada aba.
+watch(
+  () => route.query[CUSTOMER_FILTER_QUERY],
+  (slug) => {
+    filter.value = customerFilterFromSlug(slug)
+    // `?filtro=xyz` ou `?filtro=todos` viram a URL limpa de "Todos".
+    if (slug !== undefined && filter.value === 'all') void router.replace({ query: {} })
+  },
+  { immediate: true },
+)
+watch(filter, (next) => {
+  if (customerFilterFromSlug(route.query[CUSTOMER_FILTER_QUERY]) === next) return
+  void router.replace({ query: next === 'all' ? {} : { [CUSTOMER_FILTER_QUERY]: customerFilterSlug(next) } })
+})
 const filterLabelId = useId()
 
 watch(state, (current) => {

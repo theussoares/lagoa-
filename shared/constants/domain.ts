@@ -31,3 +31,6 @@ export const REMINDER_BONUS_MIN_UNITS = 0
 /** Presente sugerido no lembrete, em visitas: 1 carimbo, ou os pontos de uma visita. */
 export const REMINDER_BONUS_SUGGESTED_VISITS = 1
 export const CAMPAIGN_HISTORY_LIMIT = 10
+/** Janela da caderneta do Início: hoje e os 6 dias anteriores, no fuso do piloto. */
+export const WEEK_SUMMARY_DAYS = 7
+export const HOME_LAPSED_PREVIEW_LIMIT = 5

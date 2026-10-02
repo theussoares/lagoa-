@@ -1,7 +1,6 @@
 import type { CampaignOverview, ReminderBonusLimits, ReminderDraft } from '#shared/schemas/campaign'
-import type { TransportError } from '#shared/types/errors'
 import type { AsyncResultState } from '#layers/core/app/composables/useAsyncResult'
-import type { SendReminderError } from '../services/CampaignService'
+import type { CampaignOverviewError, SendReminderError } from '../services/CampaignService'
 import { initialReminderDraft, reminderFieldErrors, withSuggestedBonus } from '../utils/reminderForm'
 import type { ReminderFieldErrors } from '../utils/reminderForm'
 
@@ -12,7 +11,7 @@ export type ReminderSendState =
   | { status: 'error'; code: SendReminderError['code'] }
 
 export interface Campaigns {
-  state: ComputedRef<AsyncResultState<CampaignOverview, TransportError>>
+  state: ComputedRef<AsyncResultState<CampaignOverview, CampaignOverviewError>>
   draft: Ref<ReminderDraft>
   bonusLimits: ComputedRef<ReminderBonusLimits | null>
   /** Só aparecem depois da primeira tentativa de mandar. */
