@@ -189,6 +189,44 @@
     "label": "Navegação do painel",
     "signOut": "Sair do painel"
   },
+  "customers": {
+    "title": "Clientes",
+    "lead": "Quem tem cartão da sua loja. O celular aparece sempre mascarado.",
+    "count": "Nenhum cliente | 1 cliente | {count} clientes",
+    "filters": {
+      "label": "Mostrar",
+      "all": "Todos",
+      "lapsed": "Sumidos há mais de {days} dias",
+      "rewardReady": "Com prêmio liberado"
+    },
+    "table": {
+      "caption": "Clientes da loja",
+      "customer": "Cliente",
+      "card": "Cartão",
+      "visits": "Visitas",
+      "lastVisit": "Última visita",
+      "notifications": "Avisos",
+      "noName": "Sem nome",
+      "rewardReady": "Prêmio liberado",
+      "lapsed": "Sumido",
+      "acceptsNotifications": "Aceita",
+      "noNotifications": "Não aceita"
+    },
+    "progress": "{balance} de {target} {units}",
+    "lastVisit": {
+      "never": "nunca",
+      "today": "hoje",
+      "daysAgo": "hoje | há 1 dia | há {count} dias"
+    },
+    "empty": {
+      "all": "Ainda não há clientes. Eles aparecem aqui depois da primeira visita lançada no Balcão.",
+      "lapsed": "Ninguém sumido. Todo mundo voltou nos últimos {days} dias.",
+      "rewardReady": "Nenhum cliente com prêmio liberado agora."
+    },
+    "lapsedHint": "Lembrete com carimbo bônus só vai para quem aceitou avisos: {count} de {total} aqui.",
+    "refresh": "Atualizar lista",
+    "listTitle": "Cartões da loja"
+  },
   "merchantUpcoming": {
     "title": "Esta tela ainda está sendo feita",
     "lead": "Ela entra numa das próximas etapas do painel. O Balcão já funciona.",

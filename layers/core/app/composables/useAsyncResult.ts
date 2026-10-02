@@ -1,3 +1,5 @@
+import { computed, onMounted, shallowRef } from 'vue'
+import type { ComputedRef } from 'vue'
 import type { Result } from '#shared/types/result'
 
 export type AsyncResultState<T, E> =
@@ -15,10 +17,14 @@ export interface AsyncResult<T, E> {
 /** Carrega um service ao montar e expõe o estado como união discriminada. */
 export function useAsyncResult<T, E>(load: () => Promise<Result<T, E>>): AsyncResult<T, E> {
   const state = shallowRef<AsyncResultState<T, E>>({ status: 'loading' })
+  let latestRequest = 0
 
   async function reload(): Promise<void> {
+    const request = ++latestRequest
     state.value = { status: 'loading' }
     const result = await load()
+    // Uma resposta antiga (filtro trocado no meio do caminho) não sobrescreve a mais nova.
+    if (request !== latestRequest) return
     state.value = result.ok ? { status: 'success', value: result.value } : { status: 'error', error: result.error }
   }
 
