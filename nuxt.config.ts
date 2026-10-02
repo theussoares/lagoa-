@@ -27,6 +27,11 @@ export default defineNuxtConfig({
     },
   },
   pwa: {
+    // O service worker gerado mandava toda navegação para "/" sem ter "/" no
+    // cache: depois da primeira visita, recarregar ou abrir um link quebrava.
+    // Até o PWA ter ícones e uma estratégia de cache revisada, publicamos um
+    // service worker que se remove sozinho (e limpa quem já instalou o antigo).
+    selfDestroying: true,
     registerType: 'autoUpdate',
     manifest: {
       name: 'Lagoa+',
