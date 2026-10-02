@@ -59,11 +59,11 @@ export const EXAMPLE_IDS = {
   checkInCodes: {
     barbershop: CheckInCodeSchema.parse('NAV4K7'),
     cafe: CheckInCodeSchema.parse('CAF8R3'),
-    pizzeria: CheckInCodeSchema.parse('FRN5Z2'),
+    pizzeria: CheckInCodeSchema.parse('FRN5X2'),
     petShop: CheckInCodeSchema.parse('PET6M9'),
     gym: CheckInCodeSchema.parse('MVT3H8'),
     bakery: CheckInCodeSchema.parse('PDR7Q4'),
-    beauty: CheckInCodeSchema.parse('BEL2W6'),
+    beauty: CheckInCodeSchema.parse('ELA2W6'),
   },
 } as const
 
@@ -100,6 +100,7 @@ function customer(id: CustomerId, phone: CustomerRecord['phone'], firstName: str
     phone,
     firstName,
     birthday: null,
+    birthdayChangedAt: null,
     consent: { notifications: consent, updatedAt: consent ? toIso(createdAt) : null },
     termsAcceptedAt: toIso(createdAt),
     createdAt: toIso(createdAt),

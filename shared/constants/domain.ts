@@ -1,8 +1,18 @@
 export const REDEMPTION_CODE_LENGTH = 6
 export const REDEMPTION_CODE_TTL_MINUTES = 10
-/** Sem 0/O e 1/I: o código é lido em voz alta no balcão. */
-export const READABLE_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+/**
+ * O código é lido em voz alta no balcão e copiado de cartaz: fica de fora quem tem sósia
+ * (0/O, 1/I, 8/B, 5/S, 2/Z, U/V).
+ */
+export const READABLE_CODE_ALPHABET = 'ACDEFGHJKLMNPQRTVWXY23456789'
 export const REWARD_HOLD_DAYS = 30
+/**
+ * Aniversário dobra o carimbo: trocar a data à vontade viraria dobro todo dia.
+ * Depois de salvo, só troca de novo após este prazo (tirar a data vale a qualquer hora).
+ */
+export const BIRTHDAY_CHANGE_COOLDOWN_DAYS = 365
+/** Cidade do piloto: completa o endereço da loja na busca do mapa. */
+export const PILOT_CITY = 'Três Lagoas, MS'
 export const LAPSED_AFTER_DAYS = 30
 /** Código impresso embaixo do QR da loja, para quem prefere digitar. */
 export const CHECK_IN_CODE_LENGTH = 6

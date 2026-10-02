@@ -106,6 +106,7 @@
   "errors": {
     "unauthorized": "Sua sessão terminou. Entre de novo para continuar.",
     "network": "Sem conexão agora. Confira a internet e tente de novo.",
+    "birthdayLocked": "A data do aniversário só pode ser trocada uma vez por ano.",
     "notFound": "Não encontramos o que você procurou.",
     "invalidPhone": "Esse celular não parece certo. Use DDD + 9 dígitos, ex.: (67) 99123-4567.",
     "invalidLoginCode": "Código errado. Confira o SMS e digite de novo.",
@@ -170,7 +171,27 @@
     "consentOff": "Desligado. Nenhuma loja te manda avisos.",
     "consentSaved": "Preferência salva.",
     "signOut": "Sair desta conta",
-    "appearanceTitle": "Aparência"
+    "appearanceTitle": "Aparência",
+    "birthday": {
+      "title": "Aniversário",
+      "legend": "Dia do seu aniversário",
+      "help": "Nas lojas com a regra de aniversário, a visita nesse dia vale o dobro. Não pedimos o ano. Depois de salva, a data só pode ser trocada uma vez por ano.",
+      "partial": "Escolha o dia e o mês.",
+      "lockedUntil": "Você pode trocar a data a partir de {date}.",
+      "removeTitle": "Tirar o aniversário?",
+      "removeDescription": "A visita deixa de valer o dobro no seu dia. Para cadastrar outra data, espere até {date}.",
+      "removeDescriptionFree": "A visita deixa de valer o dobro no seu dia. Você pode cadastrar de novo quando quiser.",
+      "removeConfirm": "Tirar a data",
+      "removeCancel": "Manter",
+      "day": "Dia",
+      "month": "Mês",
+      "placeholderDay": "Escolha",
+      "placeholderMonth": "Escolha",
+      "save": "Salvar aniversário",
+      "remove": "Tirar aniversário",
+      "saved": "Aniversário salvo: {date}.",
+      "removed": "Aniversário removido."
+    }
   },
   "theme": {
     "legend": "Cores do app neste aparelho",
@@ -495,6 +516,8 @@
     },
     "welcome": "Cartão novo já começa com {units}.",
     "challengeTag": "Conta no desafio",
+    "directions": "Como chegar",
+    "directionsTo": "Como chegar: {shop} (abre o mapa)",
     "empty": "Nenhuma loja na rede por enquanto. Volte em breve."
   },
   "checkIn": {

@@ -53,7 +53,7 @@ export function describeCounterServiceContract(
 
     it('answers an unknown redemption code as invalid', async () => {
       const { counter } = setup()
-      const code = RedemptionCodeSchema.parse('ZZZZZZ')
+      const code = RedemptionCodeSchema.parse('XXXXXX')
       expect(await counter.validateRedemption(code)).toEqual({ ok: false, error: { code: 'redemptionInvalid' } })
     })
 

@@ -37,6 +37,8 @@ export type DomainError =
   | { readonly code: 'shopPendingApproval' }
   /** Loja suspensa pela rede: o painel não lança, não resgata nem envia campanha. */
   | { readonly code: 'shopSuspended' }
+  /** Aniversário trocado há menos de `BIRTHDAY_CHANGE_COOLDOWN_DAYS`: a data nova só a partir de `changeableAt`. */
+  | { readonly code: 'birthdayLocked'; readonly changeableAt: IsoDateTime }
 
 export type DomainErrorCode = DomainError['code']
 

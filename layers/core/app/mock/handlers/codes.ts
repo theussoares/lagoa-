@@ -1,7 +1,7 @@
 import { READABLE_CODE_ALPHABET } from '#shared/constants/domain'
 import type { MockContext } from './context'
 
-/** Código para ler em voz alta ou digitar: sem 0/O e 1/I. */
+/** Código para ler em voz alta ou digitar: só caracteres sem sósia (`READABLE_CODE_ALPHABET`). */
 export function randomReadableCode(ctx: MockContext, length: number): string {
   return Array.from(
     { length },

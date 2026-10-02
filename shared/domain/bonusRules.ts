@@ -15,10 +15,24 @@ interface MultiplierRule {
 const MULTIPLIER_RULE_NAMES = ['birthdayMultiplier', 'surpriseDay'] as const
 export type AppliedBonus = (typeof MULTIPLIER_RULE_NAMES)[number]
 
+const LEAP_DAY = '02-29'
+const LEAP_DAY_FALLBACK = '02-28'
+
+function isLeapYear(year: number): boolean {
+  return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0
+}
+
+/** Quem nasceu em 29/02 comemora em 28/02 nos anos sem 29. */
+export function isBirthdayToday(birthday: Birthday | null, today: EarnContext['today']): boolean {
+  if (birthday === null) return false
+  if (birthday === today.monthDay) return true
+  return birthday === LEAP_DAY && today.monthDay === LEAP_DAY_FALLBACK && !isLeapYear(Number(today.isoDate.slice(0, 4)))
+}
+
 const multiplierRules: Readonly<Record<AppliedBonus, MultiplierRule>> = {
   birthdayMultiplier: {
     applies: (rules, context) =>
-      rules.birthdayMultiplier.enabled && context.customerBirthday === context.today.monthDay,
+      rules.birthdayMultiplier.enabled && isBirthdayToday(context.customerBirthday, context.today),
     multiplier: (rules) => rules.birthdayMultiplier.multiplier,
   },
   surpriseDay: {

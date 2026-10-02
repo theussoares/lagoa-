@@ -1,3 +1,4 @@
+import { PILOT_CITY } from '#shared/constants/domain'
 import type { Challenge } from '#shared/schemas/discover'
 import type { ShopSummary } from '#shared/schemas/shop'
 import type { ChallengeModel, KnownShopModel, ShopPreview, ShopTeaserModel } from '#layers/ui/app/types/discover'
@@ -35,6 +36,14 @@ function ruleLine(shop: ShopSummary, t: Translate): string {
   return t('discover.rule', { units: t(`units.${unit}`, {}, target), reward: rewardTitle })
 }
 
+const MAP_SEARCH_URL = 'https://www.google.com/maps/search/?api=1'
+
+/** Busca da loja no mapa: só nome e endereço públicos da loja, nada da pessoa. */
+export function shopDirectionsUrl(shop: Pick<ShopSummary, 'name' | 'addressLine'>): string {
+  const query = encodeURIComponent(`${shop.name}, ${shop.addressLine}, ${PILOT_CITY}`)
+  return `${MAP_SEARCH_URL}&query=${query}`
+}
+
 function previewFor(shop: ShopSummary): ShopPreview {
   const { unit, target, welcomeUnits } = shop.program
   if (unit === 'stamp' && target <= MAX_PREVIEW_SLOTS) return { kind: 'slots', total: target, welcome: welcomeUnits }
@@ -54,6 +63,11 @@ export function toShopTeaserModel(shop: ShopSummary, challengeShopIds: ReadonlyS
     welcome: welcomeUnits > 0 ? t('discover.welcome', { units: t(`units.${unit}`, {}, welcomeUnits) }) : null,
     preview: previewFor(shop),
     tag: challengeShopIds.has(shop.id) ? t('discover.challengeTag') : null,
+    directions: {
+      label: t('discover.directions'),
+      accessibleLabel: t('discover.directionsTo', { shop: shop.name }),
+      href: shopDirectionsUrl(shop),
+    },
   }
 }
 
