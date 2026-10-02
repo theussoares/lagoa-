@@ -383,10 +383,32 @@
       "caption": "Lembretes enviados pela loja, do mais recente para o mais antigo"
     }
   },
-  "merchantUpcoming": {
-    "title": "Esta tela ainda está sendo feita",
-    "lead": "Ela entra numa das próximas etapas do painel. O Balcão já funciona.",
-    "back": "Ir para o Balcão"
+  "home": {
+    "title": "Início",
+    "lead": "O que aconteceu na loja nos últimos {days} dias e quem vale chamar de volta.",
+    "counterAction": "Ir para o Balcão",
+    "week": {
+      "title": "Caderneta da semana",
+      "caption": "Visitas por dia, dos últimos {days} dias até hoje",
+      "headline": "Nos últimos {days} dias: {visits} de {customers}, {newCustomers} e {redemptions}.",
+      "headlineEmpty": "Nenhuma visita nos últimos {days} dias. Lance a próxima no Balcão.",
+      "headlineOnlyRedemptions": "Nenhuma visita nos últimos {days} dias, mas {redemptions}.",
+      "visits": "nenhuma visita | 1 visita | {count} visitas",
+      "customers": "nenhum cliente | 1 cliente | {count} clientes",
+      "newCustomers": "nenhum cliente novo | 1 cliente novo | {count} clientes novos",
+      "redemptions": "nenhum prêmio entregue | 1 prêmio entregue | {count} prêmios entregues",
+      "today": "Hoje, {date}"
+    },
+    "lapsed": {
+      "title": "Clientes sumidos",
+      "caption": "Clientes sumidos mais recentes",
+      "count": "1 cliente sem visita há mais de {days} dias | {count} clientes sem visita há mais de {days} dias",
+      "empty": "Ninguém sumido: todo mundo voltou nos últimos {days} dias.",
+      "seeAll": "Ver todos",
+      "remind": "Mandar lembrete",
+      "reachable": "Ninguém pode receber um lembrete agora. | 1 cliente pode receber um lembrete agora. | {count} clientes podem receber um lembrete agora."
+    },
+    "refresh": "Atualizar o Início"
   },
   "redemption": {
     "pageTitle": "Resgatar prêmio",

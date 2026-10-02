@@ -10,7 +10,7 @@ import type { MerchantServices } from '../MerchantServices'
 import type { MockBackend } from '#layers/core/app/mock/MockBackend'
 import { campaignOverview, sendReminder } from '#layers/core/app/mock/handlers/campaigns'
 import { confirmRedemption, registerVisit, todayEntries, validateRedemption } from '#layers/core/app/mock/handlers/counter'
-import { countActiveCards, getProgram, merchantCustomers, updateProgram } from '#layers/core/app/mock/handlers/merchant'
+import { countActiveCards, getProgram, merchantCustomers, updateProgram, weekSummary } from '#layers/core/app/mock/handlers/merchant'
 import type { MerchantSessionProvider } from '#layers/core/app/services/SessionProvider'
 
 export function createMockMerchantServices(backend: MockBackend, sessions: MerchantSessionProvider): MerchantServices {
@@ -40,6 +40,9 @@ export function createMockMerchantServices(backend: MockBackend, sessions: Merch
       getOverview: () => asMerchant(backend, sessions, campaignOverview),
       sendReminder: (draft: ReminderDraft, expectedRecipients: number) =>
         asMerchant(backend, sessions, (ctx, shopId) => sendReminder(ctx, shopId, draft, expectedRecipients)),
+    },
+    home: {
+      getWeekSummary: () => asMerchant(backend, sessions, (ctx, shopId) => ok(weekSummary(ctx, shopId))),
     },
   }
 }
