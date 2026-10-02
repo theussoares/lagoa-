@@ -1,0 +1,40 @@
+import type { AsyncResult } from '#layers/core/app/composables/useAsyncResult'
+import type { WalletCard } from '#shared/schemas/loyaltyCard'
+import type { CustomerProfile } from '#shared/schemas/customer'
+import type { Challenge } from '#shared/schemas/discover'
+import type { ShopSummary } from '#shared/schemas/shop'
+import type { WalletActivity } from '#shared/schemas/visit'
+import type { TransportError } from '#shared/types/errors'
+
+const RECENT_ACTIVITY_LIMIT = 8
+const REWARD_HISTORY_LIMIT = 20
+
+export function useWalletCards(): AsyncResult<WalletCard[], TransportError> {
+  const { wallet } = useCustomerServices()
+  return useAsyncResult(() => wallet.listCards())
+}
+
+export function useWalletActivity(): AsyncResult<WalletActivity[], TransportError> {
+  const { wallet } = useCustomerServices()
+  return useAsyncResult(() => wallet.listActivity(RECENT_ACTIVITY_LIMIT))
+}
+
+export function useRewardHistory(): AsyncResult<WalletActivity[], TransportError> {
+  const { wallet } = useCustomerServices()
+  return useAsyncResult(() => wallet.listRewardHistory(REWARD_HISTORY_LIMIT))
+}
+
+export function useCustomerProfile(): AsyncResult<CustomerProfile, TransportError> {
+  const { profile } = useCustomerServices()
+  return useAsyncResult(() => profile.getProfile())
+}
+
+export function useDiscoverShops(): AsyncResult<ShopSummary[], TransportError> {
+  const { discover } = useCustomerServices()
+  return useAsyncResult(() => discover.listShops())
+}
+
+export function useDiscoverChallenges(): AsyncResult<Challenge[], TransportError> {
+  const { discover } = useCustomerServices()
+  return useAsyncResult(() => discover.listChallenges())
+}
