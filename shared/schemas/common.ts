@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { READABLE_CODE_ALPHABET } from '../constants/domain'
 
 export const IsoDateTimeSchema = z.iso.datetime({ offset: true })
 export type IsoDateTime = z.infer<typeof IsoDateTimeSchema>
@@ -10,7 +11,10 @@ export type Birthday = z.infer<typeof BirthdaySchema>
 export const IsoDateSchema = z.iso.date()
 export type IsoDate = z.infer<typeof IsoDateSchema>
 
-/** Letras e números sem 0/O e 1/I: o código é lido em voz alta ou copiado de um cartaz. */
+/** Só letras e números sem sósia (`READABLE_CODE_ALPHABET`): o código é lido em voz alta ou copiado de um cartaz. */
 export function readableCodeSchema(length: number): z.ZodString {
-  return z.string().regex(new RegExp(`^[A-HJ-NP-Z2-9]{${length}}$`))
+  return z
+    .string()
+    .length(length)
+    .refine((code) => [...code].every((char) => READABLE_CODE_ALPHABET.includes(char)))
 }

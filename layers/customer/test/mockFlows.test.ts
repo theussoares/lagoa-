@@ -6,6 +6,7 @@ import { createMockMerchantServices } from '#layers/merchant/app/services/mock/c
 import { LoginCodeSchema } from '#shared/schemas/session'
 import { RedemptionCodeSchema } from '#shared/schemas/redemption'
 import { CheckInCodeSchema } from '#shared/schemas/shop'
+import { BIRTHDAY_CHANGE_COOLDOWN_DAYS, READABLE_CODE_ALPHABET } from '#shared/constants/domain'
 import { createMockCustomerServices } from '../app/services/mock/createMockCustomerServices'
 
 function setup() {
@@ -52,7 +53,8 @@ describe('redemption across customer and counter', () => {
     const { customer, barbershop, backend } = setup()
     const pizzeriaCard = unwrap(await customer.wallet.getCard(EXAMPLE_IDS.shops.pizzeria))
     const redemption = unwrap(await customer.redemption.requestCode(pizzeriaCard.id))
-    expect(redemption.code).toMatch(/^[A-HJ-NP-Z2-9]{6}$/)
+    expect(redemption.code).toHaveLength(6)
+    expect([...redemption.code].every((char) => READABLE_CODE_ALPHABET.includes(char))).toBe(true)
 
     // Mesmo código pedido de novo enquanto válido.
     expect(unwrap(await customer.redemption.requestCode(pizzeriaCard.id)).code).toBe(redemption.code)
@@ -130,7 +132,7 @@ describe('check-in', () => {
     const { customer } = setup()
     const invalid = { ok: false, error: { code: 'invalidShopQr' } }
     expect(await customer.checkIn.checkIn(EXAMPLE_IDS.checkInCodes.gym)).toEqual(invalid)
-    expect(await customer.checkIn.checkIn(CheckInCodeSchema.parse('ZZZ222'))).toEqual(invalid)
+    expect(await customer.checkIn.checkIn(CheckInCodeSchema.parse('XXX222'))).toEqual(invalid)
   })
 })
 
@@ -160,6 +162,41 @@ describe('consent', () => {
     const revoked = unwrap(await customer.profile.setNotificationConsent(false))
     expect(revoked.consent.notifications).toBe(false)
     expect(revoked.consent.updatedAt).not.toBeNull()
+  })
+})
+
+describe('birthday', () => {
+  const HOURS_PER_DAY = 24
+
+  it('sets the first date freely, then locks a new date for the cooldown', async () => {
+    const { customer, clock } = setup()
+    const saved = unwrap(await customer.profile.updateProfile({ firstName: null, birthday: '10-01' }))
+    expect(saved.birthday).toBe('10-01')
+    expect(saved.birthdayChangeableAt).not.toBeNull()
+
+    const locked = await customer.profile.updateProfile({ firstName: null, birthday: '10-02' })
+    expect(locked).toMatchObject({ ok: false, error: { code: 'birthdayLocked', changeableAt: saved.birthdayChangeableAt } })
+
+    clock.advanceHours(BIRTHDAY_CHANGE_COOLDOWN_DAYS * HOURS_PER_DAY)
+    const changed = unwrap(await customer.profile.updateProfile({ firstName: null, birthday: '10-02' }))
+    expect(changed.birthday).toBe('10-02')
+  })
+
+  it('lets the date go at any time, but removing does not reopen the lock', async () => {
+    const { customer } = setup()
+    unwrap(await customer.profile.updateProfile({ firstName: null, birthday: '10-01' }))
+    const removed = unwrap(await customer.profile.updateProfile({ firstName: null, birthday: null }))
+    expect(removed.birthday).toBeNull()
+    expect(await customer.profile.updateProfile({ firstName: null, birthday: '10-02' })).toMatchObject({
+      ok: false,
+      error: { code: 'birthdayLocked' },
+    })
+  })
+
+  it('saves other fields without touching the lock when the date stays the same', async () => {
+    const { customer } = setup()
+    unwrap(await customer.profile.updateProfile({ firstName: null, birthday: '10-01' }))
+    expect(unwrap(await customer.profile.updateProfile({ firstName: 'Ana', birthday: '10-01' })).firstName).toBe('Ana')
   })
 })
 

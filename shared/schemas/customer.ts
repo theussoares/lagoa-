@@ -15,6 +15,8 @@ export const CustomerProfileSchema = z.object({
   id: CustomerIdSchema,
   firstName: z.string().min(1).max(40).nullable(),
   birthday: BirthdaySchema.nullable(),
+  /** Quando a data pode ser trocada de novo; `null` = já pode. */
+  birthdayChangeableAt: IsoDateTimeSchema.nullable(),
   maskedPhone: MaskedPhoneSchema,
   consent: ConsentSchema,
   termsAcceptedAt: IsoDateTimeSchema.nullable(),

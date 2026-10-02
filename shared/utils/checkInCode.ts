@@ -3,13 +3,14 @@ import { CheckInCodeSchema } from '../schemas/shop'
 import type { CheckInCode } from '../schemas/shop'
 import type { ErrorOf } from '../types/errors'
 import { err, ok } from '../types/result'
+import { normalizeReadableCode } from './readableCode'
 import type { Result } from '../types/result'
 
 type InvalidShopQr = ErrorOf<'invalidShopQr'>
 
 /** Aceita o que a pessoa digitar ("nav 4k7") e normaliza para o formato do código. */
 export function parseCheckInCode(input: string): Result<CheckInCode, InvalidShopQr> {
-  const parsed = CheckInCodeSchema.safeParse(input.replace(/[\s-]/g, '').toUpperCase())
+  const parsed = CheckInCodeSchema.safeParse(normalizeReadableCode(input))
   return parsed.success ? ok(parsed.data) : err({ code: 'invalidShopQr' })
 }
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { LaunchReceiptModel } from '../types/counter'
+import { slotGridStyle } from '../utils/slotGrid'
 import { REWARD_STAMP_ICON } from '../utils/stampIcons'
 
 interface Props {
@@ -8,7 +9,11 @@ interface Props {
   icon: string
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+
+const SLOTS_PER_ROW = 10
+const SLOT_GAP = '0.375rem'
+const slotGrid = computed(() => (props.receipt.body.kind === 'slots' ? slotGridStyle(props.receipt.body.slots.length, SLOTS_PER_ROW, SLOT_GAP) : undefined))
 </script>
 
 <template>
@@ -30,7 +35,7 @@ defineProps<Props>()
         <p class="text-pretty text-[0.9375rem] text-toned">{{ receipt.detail }}</p>
       </div>
     </div>
-    <ol v-if="receipt.body.kind === 'slots'" class="grid grid-cols-10 gap-1.5" aria-hidden="true">
+    <ol v-if="receipt.body.kind === 'slots'" class="mx-auto grid" :style="slotGrid" aria-hidden="true">
       <StampSlot v-for="slot in receipt.body.slots" :key="slot.number" :model="slot" :icon="icon" />
     </ol>
     <PointsRuler v-else :balance="receipt.body.balance" :target="receipt.body.target" :label="receipt.body.label" />

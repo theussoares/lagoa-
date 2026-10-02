@@ -52,5 +52,22 @@ const slotGrid = computed(() =>
         </span>
       </li>
     </ul>
+
+    <footer class="border-t border-(--lagoa-rule) px-5 py-3">
+      <UButton
+        :to="shop.directions.href"
+        target="_blank"
+        external
+        variant="outline"
+        color="neutral"
+        size="lg"
+        block
+        icon="i-ph-map-pin"
+        trailing-icon="i-ph-arrow-up-right"
+        :label="shop.directions.label"
+        :aria-label="shop.directions.accessibleLabel"
+        class="min-h-11"
+      />
+    </footer>
   </article>
 </template>

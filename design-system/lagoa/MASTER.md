@@ -144,7 +144,7 @@ esquerda, título em letreiro, régua tracejada em cima e embaixo (não caixa ci
 | --- | --- | --- |
 | Ação | `UButton` | tamanho padrão `lg` (≥48px); um primário por tela; `xl` para "Dar 1 carimbo" e "Fazer check-in" |
 | Campo | `UInput`, `UFormField`, `UForm` | label visível sempre; schema Zod de `shared/`; erro abaixo do campo |
-| Código | `UPinInput` | 6 casas, caixa-alta, `tabular-nums`; dentro do `RedemptionStub` |
+| Código | `UPinInput` | 6 casas, caixa-alta, `tabular-nums`; dentro do `RedemptionStub`. Alfabeto sem sósias (`READABLE_CODE_ALPHABET`: sem 0/O, 1/I, 8/B, 5/S, 2/Z, U/V) |
 | Folha inferior | `UDrawer` | ações do cartão e confirmação no app |
 | Aviso transitório | `UToast` | 4s; nunca para erro que exige ação |
 | Painel | `UDashboardSidebar`, `UDashboardPanel` | navegação do lojista |
@@ -155,7 +155,7 @@ esquerda, título em letreiro, régua tracejada em cima e embaixo (não caixa ci
 
 | Componente | O que é |
 | --- | --- |
-| `StampCard` | o cartão: letreiro da loja, grade de casas, frase "faltam N para <prêmio>" |
+| `StampCard` | o cartão: letreiro da loja, grade de casas, frase "faltam N para <prêmio>". A grade fecha em fileiras iguais (`slotGridStyle`: 8 casas = 4 + 4, nunca 5 + 3) e a casa tem sempre o tamanho de uma fileira cheia; cartão com menos casas fica mais estreito e centrado |
 | `StampSlot` | casa de carimbo: vazia (círculo pontilhado numerado) ou batida |
 | `StampImpression` | impressão: anel duplo, ícone Phosphor bold, inclinação fixa, tinta azul (ou vermelha no prêmio) |
 | `CardStack` | maço de cartões: topo inteiro, os próximos espiam pela borda, ordenados por proximidade do prêmio |

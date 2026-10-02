@@ -42,6 +42,15 @@ export interface ShopTeaserModel {
   readonly preview: ShopPreview
   /** "Conta no desafio" */
   readonly tag: string | null
+  /** Link para o mapa: o card leva até a loja, que é onde o cartão abre. */
+  readonly directions: ExternalLinkModel
+}
+
+export interface ExternalLinkModel {
+  readonly label: string
+  /** Nome completo para leitor de tela: "Como chegar: Barbearia Navalha (abre o mapa)". */
+  readonly accessibleLabel: string
+  readonly href: string
 }
 
 export interface KnownShopModel {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { StampCardModel } from '../types/wallet'
+import { slotGridStyle } from '../utils/slotGrid'
 
 interface Props {
   card: StampCardModel
@@ -7,7 +8,11 @@ interface Props {
   headingLevel?: 'h2' | 'h3'
 }
 
-withDefaults(defineProps<Props>(), { headingLevel: 'h2' })
+const props = withDefaults(defineProps<Props>(), { headingLevel: 'h2' })
+
+const SLOTS_PER_ROW = 5
+const SLOT_GAP = '0.75rem'
+const slotGrid = computed(() => (props.card.body.kind === 'slots' ? slotGridStyle(props.card.body.slots.length, SLOTS_PER_ROW, SLOT_GAP) : undefined))
 </script>
 
 <template>
@@ -29,7 +34,7 @@ withDefaults(defineProps<Props>(), { headingLevel: 'h2' })
 
     <div class="relative border-t border-(--lagoa-rule) px-5 py-5">
       <!-- a grade é desenho; a frase do rodapé (summary) diz o mesmo para leitor de tela -->
-      <ol v-if="card.body.kind === 'slots'" class="grid grid-cols-5 gap-x-3 gap-y-3" aria-hidden="true">
+      <ol v-if="card.body.kind === 'slots'" class="mx-auto grid" :style="slotGrid" aria-hidden="true">
         <StampSlot v-for="slot in card.body.slots" :key="slot.number" :model="slot" :icon="card.icon" />
       </ol>
       <PointsRuler v-else :balance="card.body.balance" :target="card.body.target" :label="card.body.label" />

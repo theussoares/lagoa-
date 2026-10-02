@@ -66,6 +66,7 @@ export function ensureCustomer(ctx: MockContext, phone: PhoneNumber): { customer
     phone,
     firstName: null,
     birthday: null,
+    birthdayChangedAt: null,
     consent: { notifications: false, updatedAt: null },
     termsAcceptedAt: null,
     createdAt: toIso(ctx.now),
