@@ -21,3 +21,11 @@ export function slotGridStyle(total: number, maxPerRow: number, gap: string): Re
     width: `calc((100% - ${maxPerRow - 1} * ${gap}) * ${columns} / ${maxPerRow} + ${columns - 1} * ${gap})`,
   }
 }
+
+/**
+ * Fileira única com casas do mesmo tamanho em todo cartão: um cartão de 6 não fica com
+ * bolas maiores que um de 10 (`minColumns`).
+ */
+export function previewGridStyle(total: number, minColumns: number): Record<string, string> {
+  return { gridTemplateColumns: `repeat(${Math.max(minColumns, total)}, minmax(0, 1fr))` }
+}
