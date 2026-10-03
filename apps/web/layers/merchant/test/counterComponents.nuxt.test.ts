@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
 import type { VueWrapper } from '@vue/test-utils'
 import { useNuxtApp } from '#imports'
+import { mountComponent, unmountAll } from '#layers/core/test/componentHarness.nuxt'
 import { typeCode, typeInto } from '#layers/core/test/pageHarness.nuxt'
+import { MaskedPhoneSchema } from '#shared/schemas/phone'
 import AmountField from '../app/components/counter/AmountField.vue'
 import CounterLedger from '../app/components/counter/CounterLedger.vue'
 import LaunchFeedback from '../app/components/counter/LaunchFeedback.vue'
@@ -19,19 +20,9 @@ function t(key: string, named?: Record<string, unknown>, plural?: number): strin
   return useNuxtApp().$i18n.t(key, named ?? {}, plural ?? 1)
 }
 
-let wrapper: VueWrapper | undefined
+const mountIt = mountComponent
 
-async function mountIt<T extends Parameters<typeof mountSuspended>[0]>(component: T, props: Record<string, unknown>): Promise<VueWrapper> {
-  wrapper = await mountSuspended(component, { props, attachTo: document.body })
-  await flushPromises()
-  return wrapper
-}
-
-afterEach(() => {
-  wrapper?.unmount()
-  wrapper = undefined
-  document.body.innerHTML = ''
-})
+afterEach(unmountAll)
 
 const rulerReceipt: LaunchReceiptModel = {
   tone: 'ink',
@@ -305,14 +296,16 @@ describe('counter components: RedemptionPanel', () => {
     const page = await mountIt(RedemptionPanel, panelProps)
     expect(page.get('h2').text()).toBe(t('counter.redemption.title'))
     expect(codeCells(page)).toHaveLength(6)
-    expect(page.get('[aria-live="polite"]').exists()).toBe(true)
+    expect(page.find('[aria-live="polite"]').exists()).toBe(true)
   })
 
   it('emits complete when the six cells are filled, uppercasing what was typed', async () => {
+    let current: VueWrapper | undefined
     const page = await mountIt(RedemptionPanel, {
       ...panelProps,
-      'onUpdate:code': (value: string[]) => wrapper?.setProps({ code: value }),
+      'onUpdate:code': (value: string[]) => void current?.setProps({ code: value }),
     })
+    current = page
     await typeCode(page.element, 'acdefg')
     // O campo de código pode avisar mais de uma vez; quem valida (useRedemptionCheck) ignora o repetido.
     expect(page.emitted('complete')?.length).toBeGreaterThanOrEqual(1)
@@ -348,7 +341,7 @@ describe('counter components: LedgerPanel and CounterLedger', () => {
     {
       id: 'visit_1',
       time: '14:32',
-      phone: '(67) 9••••-0374',
+      phone: MaskedPhoneSchema.parse('(67) 9••••-0374'),
       badge: 'Cliente novo',
       action: '+1 carimbo',
       tone: 'ink',
@@ -359,7 +352,7 @@ describe('counter components: LedgerPanel and CounterLedger', () => {
     {
       id: 'visit_2',
       time: '14:10',
-      phone: '(67) 9••••-0002',
+      phone: MaskedPhoneSchema.parse('(67) 9••••-0002'),
       badge: null,
       action: 'Prêmio entregue: Corte grátis',
       tone: 'reward',

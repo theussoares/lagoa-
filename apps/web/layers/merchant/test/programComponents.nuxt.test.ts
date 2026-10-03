@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
 import type { VueWrapper } from '@vue/test-utils'
 import { UInputNumber, USelect } from '#components'
 import { useNuxtApp } from '#imports'
+import { mountComponent, unmountAll } from '#layers/core/test/componentHarness.nuxt'
 import { REWARD_TITLE_MAX_LENGTH } from '#shared/constants/domain'
 import type { BonusRules, ProgramRules } from '#shared/schemas/program'
 import BonusFields from '../app/components/program/BonusFields.vue'
@@ -19,19 +19,9 @@ function t(key: string, named?: Record<string, unknown>): string {
   return useNuxtApp().$i18n.t(key, named ?? {})
 }
 
-let wrapper: VueWrapper | undefined
+const mountIt = mountComponent
 
-async function mountIt(component: Parameters<typeof mountSuspended>[0], props: Record<string, unknown>): Promise<VueWrapper> {
-  wrapper = await mountSuspended(component, { props, attachTo: document.body })
-  await flushPromises()
-  return wrapper
-}
-
-afterEach(() => {
-  wrapper?.unmount()
-  wrapper = undefined
-  document.body.innerHTML = ''
-})
+afterEach(unmountAll)
 
 const limits: ProgramFieldLimits = {
   target: { min: 3, max: 20 },

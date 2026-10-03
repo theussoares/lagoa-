@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
 import type { VueWrapper } from '@vue/test-utils'
 import { useNuxtApp } from '#imports'
+import { mountComponent, unmountAll } from '#layers/core/test/componentHarness.nuxt'
 import { typeCode } from '#layers/core/test/pageHarness.nuxt'
 import CodeForm from '../app/components/check-in/CodeForm.vue'
 import EarnedStep from '../app/components/check-in/EarnedStep.vue'
@@ -14,19 +14,9 @@ function t(key: string, named?: Record<string, unknown>): string {
   return useNuxtApp().$i18n.t(key, named ?? {})
 }
 
-let wrapper: VueWrapper | undefined
+const mountIt = mountComponent
 
-async function mountIt(component: Parameters<typeof mountSuspended>[0], props: Record<string, unknown>): Promise<VueWrapper> {
-  wrapper = await mountSuspended(component, { props, attachTo: document.body })
-  await flushPromises()
-  return wrapper
-}
-
-afterEach(() => {
-  wrapper?.unmount()
-  wrapper = undefined
-  document.body.innerHTML = ''
-})
+afterEach(unmountAll)
 
 function button(page: VueWrapper, label: string): ReturnType<VueWrapper['get']> {
   const found = page.findAll('a, button').find((item) => item.text() === label)
@@ -102,7 +92,6 @@ describe('check-in components: ScanStep', () => {
     const first = page.emitted('video')?.[0]?.[0]
     expect(first).toBeInstanceOf(HTMLVideoElement)
     page.unmount()
-    wrapper = undefined
     expect(page.emitted('video')?.at(-1)).toEqual([null])
   })
 
@@ -153,11 +142,13 @@ describe('check-in components: CodeForm', () => {
     expect(page.emitted('switchToCamera')).toHaveLength(1)
   })
 
-  it('emits the typed code in capitals, one character per cell, and submits when complete', async () => {
+  it('emits what was typed, one character per cell, and submits when complete', async () => {
+    let current: VueWrapper | undefined
     const page = await mountIt(CodeForm, {
       ...formProps,
-      'onUpdate:code': (value: string[]) => wrapper?.setProps({ code: value }),
+      'onUpdate:code': (value: string[]) => void current?.setProps({ code: value }),
     })
+    current = page
     await typeCode(page.element, 'nav4k7')
     expect(page.emitted('update:code')?.at(-1)?.[0]).toEqual([...'nav4k7'])
     expect(page.emitted('submit')?.length).toBeGreaterThanOrEqual(1)
