@@ -14,7 +14,7 @@ const { signOut } = useCustomerSession()
 const { state, reload, set } = useCustomerProfile()
 const savingConsent = ref(false)
 const birthdayPending = ref<BirthdayAction | null>(null)
-const theme = useThemePreference()
+const theme = useThemePreference('customer')
 const themeLabels = computed(() => ({ legend: t('theme.legend'), light: t('theme.light'), dark: t('theme.dark') }))
 const birthdayLockedUntil = computed(() => {
   if (state.value.status !== 'success') return null

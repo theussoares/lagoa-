@@ -2,6 +2,7 @@
 import type { SpineNavItem } from '#layers/ui/app/types/spine'
 
 const { t } = useI18n()
+useThemePreference('merchant')
 const { session, signOut } = useMerchantSession()
 const shopStatus = useShopStatus()
 const { approveForTesting } = shopStatus

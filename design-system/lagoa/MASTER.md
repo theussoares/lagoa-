@@ -41,8 +41,8 @@ bordas e texto de apoio no mesmo tom da tinta).
 | Erro / Aviso | `error` → `red`, `warning` → `amber` | padrão | padrão | sempre com ícone + texto |
 | Mesa (neutro) | `neutral` → `mesa` | cinzas neutros, levemente quentes | ver superfícies | bordas, apoio |
 
-Superfícies. **O app abre no escuro**; o claro é escolha da pessoa (Perfil /
-Configurações). Fundo claro é branco puro (nada azulado: parece "tema de IA").
+Superfícies. **O app do cliente abre no escuro e o painel do lojista no claro**;
+a pessoa troca em Perfil / Configurações. Fundo claro é branco puro (nada azulado: parece "tema de IA").
 
 | Token | Claro | Escuro |
 | --- | --- | --- |
@@ -179,7 +179,7 @@ esquerda, título em letreiro, régua tracejada em cima e embaixo (não caixa ci
 | Aviso transitório | `UToast` | 4s; nunca para erro que exige ação |
 | Painel | `UDashboardSidebar`, `UDashboardPanel` | navegação do lojista |
 | Tabela | `UTable` | clientes; celular mascarado; números tabulares |
-| Tema | escuro por padrão | escolha claro/escuro no Perfil (app) e em Configurações (painel) |
+| Tema | app do cliente abre escuro; painel do lojista abre claro | escolha claro/escuro no Perfil (app) e em Configurações (painel); cada superfície guarda a própria escolha (`useThemePreference(surface)`) |
 
 ### De domínio (`layers/ui`, construídos por nós)
 

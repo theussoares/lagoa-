@@ -2,6 +2,7 @@
 import type { TabBarItem } from '#layers/ui/app/types/wallet'
 
 const { t } = useI18n()
+useThemePreference('customer')
 const route = useRoute()
 
 const items = computed<[TabBarItem, TabBarItem, TabBarItem, TabBarItem]>(() => [

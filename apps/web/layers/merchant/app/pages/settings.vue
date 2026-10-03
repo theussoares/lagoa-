@@ -4,7 +4,7 @@ definePageMeta({ path: '/configuracoes', layout: 'merchant', middleware: 'mercha
 const { t } = useI18n()
 useHead({ title: () => `${t('merchantSettings.title')} · ${t('app.name')}` })
 
-const theme = useThemePreference()
+const theme = useThemePreference('merchant')
 const themeLabels = computed(() => ({ legend: t('theme.legend'), light: t('theme.light'), dark: t('theme.dark') }))
 </script>
 
