@@ -1,0 +1,233 @@
+{
+  "seo": {
+    "title": "Lagoa+ · Clube de fidelidade do comércio de Três Lagoas",
+    "description": "O cartão de carimbo no celular do cliente, lançado no balcão em segundos. Faça seu cliente voltar, sem cartão de papel e sem app próprio. Plano Fundador por R$ 79/mês."
+  },
+  "nav": {
+    "label": "Navegação principal",
+    "skip": "Pular para o conteúdo",
+    "home": "Lagoa+, início",
+    "counter": "Balcão",
+    "lapsed": "Clientes sumidos",
+    "how": "Como funciona",
+    "pricing": "Preço",
+    "faq": "Dúvidas",
+    "signIn": "Entrar no Balcão",
+    "openMenu": "Abrir menu",
+    "closeMenu": "Fechar menu"
+  },
+  "cta": {
+    "primary": "Quero entrar no clube",
+    "newTab": "(abre o WhatsApp)",
+    "whatsappMessage": "Olá! Tenho uma loja em Três Lagoas e quero saber mais sobre o Lagoa+."
+  },
+  "hero": {
+    "titleLead": "Seu cliente já gosta de você.",
+    "titleAccent": "Dê um motivo para voltar.",
+    "lead": "O cartão de carimbo do comércio de Três Lagoas, no celular do cliente. Você lança a visita no balcão em segundos.",
+    "secondary": "Experimentar o Balcão",
+    "note": "Piloto em Três Lagoas/MS · Plano Fundador R$ 79/mês com preço travado",
+    "receipt": "+1 carimbo lançado",
+    "receiptDetail": "(67) 9••••-0374 · agora 8 de 10",
+    "visualLabel": "Exemplo: o cartão do cliente com 8 de 10 carimbos, faltando 2 para um corte grátis, e o lançamento no Balcão."
+  },
+  "card": {
+    "shopName": "Sua barbearia",
+    "shopDetail": "Cartão de 10 carimbos",
+    "unitLine": "carimbos para",
+    "reward": "Corte grátis",
+    "peek": "Faltam 2 carimbos",
+    "summary": "Cartão de exemplo: 8 de 10 carimbos. Faltam 2 para Corte grátis."
+  },
+  "counter": {
+    "title": "O Balcão é rápido como anotar no papel.",
+    "lead": "Digite o celular do cliente e dê o carimbo. Quem fecha o cartão leva o prêmio na mesma tela.",
+    "tryIt": "Experimente: este cliente está a 1 carimbo do prêmio.",
+    "panelTitle": "Balcão",
+    "phoneLabel": "Celular do cliente",
+    "phoneHint": "Digite qualquer celular com DDD. É só demonstração: nada é enviado nem salvo.",
+    "keypadClear": "Limpar",
+    "keypadBackspace": "Apagar último número",
+    "give": "Dar 1 carimbo",
+    "restart": "Recomeçar",
+    "waiting": "O canhoto do lançamento aparece aqui.",
+    "rewardTitle": "Prêmio liberado para {phone}",
+    "rewardDetail": "Fechou 10 de 10. Agora é só entregar o Corte grátis.",
+    "seal": "Prêmio liberado",
+    "points": {
+      "newCustomer": "Cliente novo ganha o cartão na hora",
+      "byValue": "Lance por visita ou pelo valor da compra",
+      "checkIn": "Ou o cliente lê o QR do balcão e ganha o carimbo sozinho"
+    },
+    "phoneError": "Esse número não é de celular. Use DDD + 9 + 8 números, como (67) 99123-4567."
+  },
+  "lapsed": {
+    "title": "Veja quem sumiu. E chame de volta.",
+    "lead": "É o que o cartão de papel não faz. Quem está há mais de 30 dias sem aparecer entra numa lista, e você manda um lembrete com um carimbo de presente.",
+    "consent": "Só recebe aviso quem aceitou. O celular aparece sempre mascarado.",
+    "listTitle": "Sem visita há mais de 30 dias",
+    "daysAgo": "há {days} dias",
+    "consentTag": "Aceitou avisos",
+    "reminder": "Lembrete: “Sentimos sua falta. Volte e ganhe 1 carimbo de presente.”",
+    "sample": "Exemplo ilustrativo"
+  },
+  "how": {
+    "title": "Da primeira visita ao prêmio, sem papel.",
+    "lead": "Você monta o clube uma vez. Depois é só lançar a visita no balcão.",
+    "steps": {
+      "setup": {
+        "title": "Crie o clube",
+        "body": "Escolha cartão de carimbos ou pontos, a meta e o prêmio. Você pode ajustar a meta depois."
+      },
+      "visit": {
+        "title": "Lance a visita",
+        "body": "No Balcão, pelo celular do cliente. Ou ele mesmo lê o QR do cartaz no balcão e ganha o carimbo sozinho."
+      },
+      "wallet": {
+        "title": "O cliente acompanha",
+        "body": "A carteira no celular mostra o cartão, quanto falta para o prêmio e as outras lojas da rede."
+      },
+      "redeem": {
+        "title": "Resgate com código",
+        "body": "Ele gera um código de 6 letras e números que vale por cerca de 10 minutos. Você confere no Balcão e entrega."
+      }
+    },
+    "fraudTitle": "Sem carimbo duplicado",
+    "fraudBody": "Cada cliente ganha no máximo um carimbo por loja a cada intervalo que você escolhe, como 4 horas ou 1 dia. A visita lançada no balcão também conta.",
+    "redeemTitle": "Código de resgate",
+    "redeemCode": "K7M4QR",
+    "redeemCodeLabel": "Código de exemplo: K 7 M 4 Q R",
+    "redeemHint": "Vale por 10 minutos e só uma vez"
+  },
+  "bonus": {
+    "title": "Motivos a mais para voltar.",
+    "lead": "Ligue as regras que fazem sentido para a sua loja. Se duas caírem no mesmo dia, vale a maior: aniversário no dia surpresa continua 2×.",
+    "welcome": {
+      "tag": "+2",
+      "title": "Boas-vindas",
+      "body": "O cartão já começa com 2 carimbos. Quem começa andado tem pressa de terminar."
+    },
+    "birthday": {
+      "tag": "2×",
+      "title": "Aniversário em dobro",
+      "body": "No dia do aniversário, cada visita vale dois carimbos."
+    },
+    "referral": {
+      "tag": "+1",
+      "title": "Traga um amigo",
+      "body": "Quem indicou ganha +1 carimbo quando o amigo faz a primeira visita."
+    },
+    "surprise": {
+      "tag": "2×",
+      "title": "Dia surpresa",
+      "body": "Escolha um dia parado da semana e ofereça carimbo em dobro."
+    }
+  },
+  "network": {
+    "title": "Clientes de outras lojas passam a conhecer a sua.",
+    "lead": "Na vitrine Descobrir, o cliente vê as lojas da rede e os desafios da cidade. Quem junta carimbo no café descobre a sua loja no caminho.",
+    "challengeTitle": "Visite 3 lojas novas",
+    "challengeBody": "Complete o desafio do mês e ganhe carimbo extra.",
+    "challengeProgress": "1 de 3 visitadas",
+    "challengeDone": "Desafio completo",
+    "stops": {
+      "coffee": "Café",
+      "pizza": "Pizzaria",
+      "yours": "Sua loja"
+    },
+    "stopVisited": "{shop}: visitada",
+    "stopPending": "{shop}: falta visitar"
+  },
+  "pricing": {
+    "title": "Um plano só, para entrar cedo.",
+    "plan": "Plano Fundador",
+    "currency": "R$",
+    "amount": "79",
+    "period": "/mês",
+    "locked": "Preço travado",
+    "lockedNote": "Quem entra como Fundador mantém esse preço.",
+    "approval": "A rede aprova cada loja para o clube ter só comércio de verdade da cidade. A Equipe Lagoa+ conversa com você antes.",
+    "groups": {
+      "counter": {
+        "title": "No balcão",
+        "items": {
+          "counter": "Balcão para lançar visitas e conferir resgates",
+          "poster": "Cartaz com QR para o cliente ganhar o carimbo sozinho"
+        }
+      },
+      "club": {
+        "title": "No seu clube",
+        "items": {
+          "modes": "Cartão de carimbos, pontos por real ou por visita",
+          "bonus": "Boas-vindas, aniversário, amigo e dia surpresa"
+        }
+      },
+      "return": {
+        "title": "Para trazer de volta",
+        "items": {
+          "customers": "Lista de clientes e de quem sumiu",
+          "campaigns": "Lembretes com carimbo de presente",
+          "discover": "Sua loja na vitrine Descobrir"
+        }
+      }
+    }
+  },
+  "faq": {
+    "title": "Perguntas frequentes",
+    "items": {
+      "next": {
+        "q": "O que acontece depois que eu chamo no WhatsApp?",
+        "a": "A Equipe Lagoa+ responde em até 24 horas, conversa sobre a sua loja e, com a loja aprovada, monta o clube com você."
+      },
+      "app": {
+        "q": "O cliente precisa baixar um aplicativo?",
+        "a": "Não precisa de loja de aplicativos. A carteira abre no navegador do celular e pode ser instalada na tela inicial."
+      },
+      "checkIn": {
+        "q": "Como o cliente ganha o carimbo sozinho?",
+        "a": "Você deixa no balcão um cartaz com um QR. O cliente aponta a câmera do celular, confirma e o carimbo cai na carteira dele."
+      },
+      "system": {
+        "q": "Preciso mudar meu caixa ou sistema?",
+        "a": "Não. O Balcão roda no navegador do computador, do tablet ou do celular que já fica no balcão."
+      },
+      "fraud": {
+        "q": "E se alguém tentar juntar carimbo demais?",
+        "a": "Cada cliente ganha no máximo um carimbo por loja a cada intervalo que você define. O código de resgate é de uso único e vence em cerca de 10 minutos."
+      },
+      "reward": {
+        "q": "O que acontece com o prêmio que o cliente não resgatou?",
+        "a": "Fica guardado por 30 dias. Depois do resgate, o próximo cartão já começa andado se as boas-vindas estiverem ligadas."
+      },
+      "change": {
+        "q": "Posso mudar a meta depois?",
+        "a": "Pode, e a nova meta vale também para os cartões em andamento. Trocar carimbos por pontos fica bloqueado enquanto houver cartões abertos."
+      },
+      "privacy": {
+        "q": "Como ficam os dados dos meus clientes?",
+        "a": "O celular é dado pessoal: aparece mascarado nas listas e nunca é exposto. Lembrete só vai para quem aceitou receber avisos, e a pessoa pode cancelar quando quiser."
+      },
+      "price": {
+        "q": "Quanto custa?",
+        "a": "O Plano Fundador custa R$ 79 por mês com preço travado. A loja entra depois da aprovação da rede."
+      }
+    }
+  },
+  "closing": {
+    "title": "A próxima visita começa no seu balcão.",
+    "lead": "Quem atende é a Equipe Lagoa+, aqui em Três Lagoas.",
+    "phoneLabel": "WhatsApp da rede",
+    "steps": {
+      "call": "Você chama no WhatsApp e conta sobre a sua loja.",
+      "reply": "A Equipe Lagoa+ responde em até 24 horas.",
+      "setup": "Com a loja aprovada, a gente monta o clube com você."
+    },
+    "stepsLabel": "O que acontece depois",
+    "note": "Plano Fundador · R$ 79/mês · preço travado"
+  },
+  "footer": {
+    "tagline": "Clube de fidelidade do comércio de Três Lagoas/MS.",
+    "merchantSignIn": "Entrar no Balcão",
+    "copyright": "© {year} Lagoa+"
+  }
+}

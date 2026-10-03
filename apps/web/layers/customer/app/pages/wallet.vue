@@ -43,7 +43,10 @@ const greeting = computed(() => (firstName.value ? t('wallet.greeting', { name: 
 const ledger = computed(() => {
   if (activityState.value.status !== 'success') return []
   const now = new Date()
-  return activityState.value.value.map((activity) => toLedgerEntryModel(activity, now, translate))
+  const iconByShop = new Map<string, string>(
+    cardsState.value.status === 'success' ? cardsState.value.value.map((card) => [card.shop.id, categoryIcon(card.shop.category)]) : [],
+  )
+  return activityState.value.value.map((activity) => toLedgerEntryModel(activity, now, translate, iconByShop))
 })
 </script>
 
@@ -62,48 +65,48 @@ const ledger = computed(() => {
     </ScreenHeader>
 
     <div class="flex flex-col gap-8">
-    <section :aria-label="t('wallet.stackLabel')" class="relative -mt-10">
-      <WalletStackSkeleton v-if="cardsState.status === 'loading'" />
+      <section :aria-label="t('wallet.stackLabel')" class="relative -mt-10">
+        <WalletStackSkeleton v-if="cardsState.status === 'loading'" />
 
-      <WalletProblem
-        v-else-if="cardsState.status === 'error'"
-        :message="t(`errors.${cardsState.error.code}`)"
-        :action="t('common.retry')"
-        @retry="reloadCards"
-      />
+        <WalletProblem
+          v-else-if="cardsState.status === 'error'"
+          :message="t(`errors.${cardsState.error.code}`)"
+          :action="t('common.retry')"
+          @retry="reloadCards"
+        />
 
-      <WalletEmpty
-        v-else-if="cards.length === 0"
-        :title="t('wallet.emptyTitle')"
-        :lead="t('wallet.empty')"
-        :action="t('wallet.emptyAction')"
-        to="/descobrir"
-      />
+        <WalletEmpty
+          v-else-if="cards.length === 0"
+          :title="t('wallet.emptyTitle')"
+          :lead="t('wallet.empty')"
+          :action="t('wallet.emptyAction')"
+          to="/descobrir"
+        />
 
-      <CardStack
-        v-else
-        :cards="cards"
-        :active-id="activeId"
-        :show-label="(card) => t('wallet.showCard', { shop: card.shopName })"
-        :more-label="(hidden) => t('wallet.showMore', { count: hidden }, hidden)"
-        @select="activeId = $event"
-      >
-        <template #actions="{ card }">
-          <UButton v-if="card.rewardReady" :to="`/premios/${card.id}`" color="secondary" size="xl" block icon="i-ph-gift" :label="t('wallet.redeem')" />
-        </template>
-      </CardStack>
-    </section>
+        <CardStack
+          v-else
+          :cards="cards"
+          :active-id="activeId"
+          :show-label="(card) => t('wallet.showCard', { shop: card.shopName })"
+          :more-label="(hidden) => t('wallet.showMore', { count: hidden }, hidden)"
+          @select="activeId = $event"
+        >
+          <template #actions="{ card }">
+            <UButton v-if="card.rewardReady" :to="`/premios/${card.id}`" color="secondary" size="xl" block icon="i-ph-gift" :label="t('wallet.redeem')" />
+          </template>
+        </CardStack>
+      </section>
 
-    <section v-if="cards.length > 0" class="flex flex-col gap-3" aria-labelledby="ledger-title">
-      <h2 id="ledger-title" class="type-h2">
-        {{ t('wallet.ledgerTitle') }}
-      </h2>
-      <div class="rounded-(--radius-card) bg-default px-5 py-1 shadow-(--lagoa-shadow-card)">
-        <USkeleton v-if="activityState.status === 'loading'" class="my-3 h-24" />
-        <LedgerList v-else-if="ledger.length > 0" :entries="ledger" />
-        <p v-else class="py-4 text-muted">{{ t('wallet.ledgerEmpty') }}</p>
-      </div>
-    </section>
-      </div>
+      <section v-if="cards.length > 0 || ledger.length > 0" class="flex flex-col gap-3" aria-labelledby="ledger-title">
+        <h2 id="ledger-title" class="type-h2">
+          {{ t('wallet.ledgerTitle') }}
+        </h2>
+        <div class="rounded-(--radius-card) bg-default px-5 py-1 shadow-(--lagoa-shadow-card)">
+          <USkeleton v-if="activityState.status === 'loading'" class="my-3 h-24" />
+          <LedgerList v-else-if="ledger.length > 0" :entries="ledger" />
+          <p v-else class="py-4 text-muted">{{ t('wallet.ledgerEmpty') }}</p>
+        </div>
+      </section>
+    </div>
   </div>
 </template>

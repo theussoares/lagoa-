@@ -32,7 +32,7 @@ const titleId = useId()
       <UIcon :name="icon" class="size-8" />
     </span>
     <div class="relative flex flex-col items-start gap-2">
-      <span class="eyebrow-tag inline-flex items-center gap-1.5 rounded-full bg-(--color-sol-100) px-3 py-1.5 text-(--color-sol-800) dark:bg-(--color-sol-900) dark:text-(--color-sol-200)">
+      <span class="eyebrow-tag inline-flex items-center gap-1.5 rounded-full bg-(--color-tinta-100) px-3 py-1.5 text-(--color-tinta-800) dark:bg-(--color-tinta-900) dark:text-(--color-tinta-200)">
         <UIcon name="i-ph-star-fill" class="size-3.5" aria-hidden="true" />
         {{ badge }}
       </span>

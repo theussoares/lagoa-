@@ -1,0 +1,53 @@
+/* Escala da LP: maior que a do app, mesmas famílias e tracking (MASTER > Tipografia). */
+
+html {
+  scroll-padding-top: 6rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+.type-display {
+  font-family: var(--font-display);
+  font-size: clamp(2.625rem, 6.4vw, 5rem);
+  line-height: 0.98;
+  font-weight: 750;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.type-section {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4.2vw, 3.25rem);
+  line-height: 1.02;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  color: var(--ui-text-highlighted);
+  text-wrap: balance;
+}
+
+.type-card-title {
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ui-text-highlighted);
+  text-wrap: balance;
+}
+
+.reveal-pending {
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+.reveal-shown {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity var(--lagoa-dur-rise) var(--ease-elegant),
+    transform var(--lagoa-dur-rise) var(--ease-elegant);
+}

@@ -16,7 +16,7 @@ defineProps<Props>()
     <UIcon v-else :name="icon" class="absolute -right-2 -bottom-4 size-28 text-primary opacity-15" />
     <span
       v-if="showcase.openLabel"
-      class="eyebrow-tag absolute top-3 right-3 inline-flex items-center gap-2 rounded-full bg-(--color-lima-100) px-3 py-1.5 text-(--color-lima-900) ring-4 ring-white"
+      class="eyebrow-tag absolute top-3 right-3 inline-flex max-w-[calc(100%-1.5rem)] items-center gap-2 whitespace-nowrap rounded-full bg-(--color-lima-100) px-3 py-1.5 text-(--color-lima-900) ring-4 ring-(--ui-bg)"
     >
       <span class="live-dot size-2 rounded-full bg-(--color-lima-500)" />
       {{ showcase.openLabel }}

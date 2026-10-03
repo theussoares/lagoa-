@@ -57,11 +57,16 @@ export interface StampCardModel {
 
 export interface LedgerEntryModel {
   readonly id: string
+  /** "setembro": agrupa a caderneta por mês. */
+  readonly month: string
   readonly when: string
   readonly title: string
   readonly detail: string
   readonly delta: string
   readonly tone: 'ink' | 'reward'
+  /** Carimbo da loja que acompanha a linha. */
+  readonly icon: string
+  readonly tilt: number
 }
 
 export interface TabBarItem {

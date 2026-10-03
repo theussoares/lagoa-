@@ -23,7 +23,7 @@ const titleId = useId()
           <h3 :id="titleId" class="font-display truncate text-xl font-bold text-highlighted">{{ shop.shopName }}</h3>
           <p v-if="shop.showcase.rating || shop.showcase.distance" class="tabular flex items-center gap-1.5 text-base text-toned">
             <template v-if="shop.showcase.rating">
-              <UIcon name="i-ph-star-fill" class="size-4 text-(--color-sol-500)" aria-hidden="true" />
+              <UIcon name="i-ph-star-fill" class="size-4 text-highlighted" aria-hidden="true" />
               <span class="font-semibold">{{ shop.showcase.rating }}</span>
             </template>
             <span v-if="shop.showcase.rating && shop.showcase.distance" aria-hidden="true">·</span>
@@ -35,13 +35,10 @@ const titleId = useId()
 
       <ShopCardPreview :preview="shop.preview" :icon="shop.icon" :tilt="shop.tilt" />
 
-      <div class="flex items-start gap-3 rounded-2xl bg-(--color-lima-50) px-4 py-3 dark:bg-(--color-tinta-950)">
-        <UIcon name="i-ph-gift" class="mt-0.5 size-5 shrink-0 text-(--color-lima-700)" aria-hidden="true" />
-        <p class="flex flex-col text-toned">
-          <span class="font-semibold text-highlighted">{{ shop.rule }}</span>
-          <span>{{ shop.earn }}<template v-if="shop.welcome"> · {{ shop.welcome }}</template></span>
-        </p>
-      </div>
+      <p class="flex flex-col text-toned">
+        <span class="font-semibold text-highlighted">{{ shop.rule }}</span>
+        <span>{{ shop.earn }}<template v-if="shop.welcome"> · {{ shop.welcome }}</template></span>
+      </p>
 
       <UButton
         :to="shop.directions.href"
