@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import type { CheckInPolicy, ExpirationPolicy } from '#shared/schemas/program'
-import type { ProgramFieldErrors, VisitRulesLabels } from '../../types/program'
+import type { SelectOption } from '#layers/ui/app/types/form'
+import type { ProgramFieldErrors } from '../../types/program'
 
 interface Props {
-  labels: VisitRulesLabels
+  cooldownOptions: readonly SelectOption[]
+  expirationOptions: readonly SelectOption[]
   errors: ProgramFieldErrors
 }
 
@@ -32,18 +34,18 @@ function setExpiration(value: unknown): void {
   <div class="flex flex-col gap-5">
     <USwitch
       :model-value="checkIn.enabled"
-      :label="labels.checkIn.label"
-      :description="labels.checkIn.description"
+      :label="$t('program.visitRules.checkIn.label')"
+      :description="$t('program.visitRules.checkIn.description')"
       size="lg"
       class="min-h-11"
       @update:model-value="checkIn = { ...checkIn, enabled: $event }"
     />
     <div class="grid gap-4 sm:grid-cols-2">
-      <UFormField :label="labels.cooldown" :help="labels.cooldownHint" :error="errors.cooldownHours ? labels.optionError : undefined" name="cooldownHours">
-        <USelect :model-value="String(checkIn.cooldownHours)" :items="[...labels.cooldownOptions]" size="lg" :ui="{ base: 'min-h-11' }" class="w-full" @update:model-value="setCooldown" />
+      <UFormField :label="$t('program.visitRules.cooldown')" :help="$t('program.visitRules.cooldownHint')" :error="errors.cooldownHours ? $t('program.errors.option') : undefined" name="cooldownHours">
+        <USelect :model-value="String(checkIn.cooldownHours)" :items="[...cooldownOptions]" size="lg" :ui="{ base: 'min-h-11' }" class="w-full" @update:model-value="setCooldown" />
       </UFormField>
-      <UFormField :label="labels.expiration" :help="labels.expirationHint" :error="errors.expirationMonths ? labels.optionError : undefined" name="expiration">
-        <USelect :model-value="expirationValue" :items="[...labels.expirationOptions]" size="lg" :ui="{ base: 'min-h-11' }" class="w-full" @update:model-value="setExpiration" />
+      <UFormField :label="$t('program.visitRules.expiration')" :help="$t('program.visitRules.expirationHint')" :error="errors.expirationMonths ? $t('program.errors.option') : undefined" name="expiration">
+        <USelect :model-value="expirationValue" :items="[...expirationOptions]" size="lg" :ui="{ base: 'min-h-11' }" class="w-full" @update:model-value="setExpiration" />
       </UFormField>
     </div>
   </div>

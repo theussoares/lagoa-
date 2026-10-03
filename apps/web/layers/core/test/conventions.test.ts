@@ -24,7 +24,6 @@ const TRANSITIONAL_EXPORTED_TYPES: readonly string[] = []
 const TRANSITIONAL_BROWSER_API: readonly string[] = [
   'layers/customer/app/composables/useSeenStamps.ts',
   'layers/customer/app/pages/check-in.vue',
-  'layers/merchant/app/pages/club-setup.vue',
   'layers/merchant/app/pages/program.vue',
 ]
 
@@ -37,7 +36,6 @@ const TRANSITIONAL_PAGE_SCRIPT: readonly string[] = [
   'layers/customer/app/pages/sign-in.vue',
   'layers/customer/app/pages/wallet.vue',
   'layers/merchant/app/pages/campaigns.vue',
-  'layers/merchant/app/pages/club-setup.vue',
   'layers/merchant/app/pages/counter.vue',
   'layers/merchant/app/pages/customers.vue',
   'layers/merchant/app/pages/merchant-sign-in.vue',
@@ -51,7 +49,6 @@ const TRANSITIONAL_PAGE_TEMPLATE: readonly string[] = [
   'layers/customer/app/pages/rewards.vue',
   'layers/customer/app/pages/sign-in.vue',
   'layers/merchant/app/pages/campaigns.vue',
-  'layers/merchant/app/pages/club-setup.vue',
   'layers/merchant/app/pages/counter.vue',
   'layers/merchant/app/pages/customers.vue',
   'layers/merchant/app/pages/home.vue',

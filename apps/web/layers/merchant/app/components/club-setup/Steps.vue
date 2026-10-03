@@ -3,15 +3,13 @@ import type { SetupStepItem } from '../../types/clubSetup'
 
 interface Props {
   steps: readonly SetupStepItem[]
-  label: string
-  doneLabel: string
 }
 
 defineProps<Props>()
 </script>
 
 <template>
-  <ol :aria-label="label" class="flex flex-wrap items-center gap-1.5">
+  <ol :aria-label="$t('clubSetup.stepsLabel')" class="flex flex-wrap items-center gap-1.5">
     <li
       v-for="(item, index) in steps"
       :key="item.key"
@@ -26,8 +24,8 @@ defineProps<Props>()
         <UIcon v-if="item.state === 'done'" name="i-ph-check-bold" class="size-3.5" aria-hidden="true" />
         <span v-else class="tabular" aria-hidden="true">{{ index + 1 }}</span>
       </span>
-      {{ item.label }}
-      <span v-if="item.state === 'done'" class="sr-only">({{ doneLabel }})</span>
+      {{ $t(`clubSetup.steps.${item.key}`) }}
+      <span v-if="item.state === 'done'" class="sr-only">({{ $t('clubSetup.stepDone') }})</span>
     </li>
   </ol>
 </template>
