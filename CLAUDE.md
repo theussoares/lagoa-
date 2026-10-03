@@ -28,6 +28,9 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
   os contratos. Caminhos `layers/...` neste documento são relativos a `apps/web/`.
 - **Rodar (da raiz):** `pnpm dev` (cliente em `/carteira`, lojista em `/balcao`),
   `pnpm test`, `pnpm typecheck`.
+- **Landing page do lojista:** `apps/site` (Nuxt pré-renderizado, herda
+  `apps/web/layers/ui`). `pnpm dev:site` (porta 3001), `pnpm generate:site`.
+  CTA no WhatsApp via `NUXT_PUBLIC_WHATSAPP_NUMBER`.
 
 ## Idioma
 
