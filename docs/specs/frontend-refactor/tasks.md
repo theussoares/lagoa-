@@ -191,3 +191,7 @@ caminho por linha, ordem alfabética) — conflito trivial na integração.
   Desvios aceitos: `previewGridStyle` novo em `ui/utils/slotGrid.ts` (o antigo mudaria o layout do `ShopCard`);
   `BROWSER_COMPOSABLES` por nome de arquivo; `tsconfig.test.json` inclui `layers/ui/test/**`.
   Ponto para revisão: `core/composables/useThemeChoiceLabels.ts` importa (só tipo) `ThemeChoiceLabels` de `#layers/ui`.
+- **T1** — integrado (fast-forward sobre o U1; `6646333`..`eb31c97`). 375 testes, typecheck verde, snapshots e i18n inalterados.
+  `TRANSITIONAL_EXPORTED_TYPES` vazia. Pendências levadas ao lote A3: `SetupStepItem.label` ainda existe (tirar muda prop de `Steps.vue`);
+  `*Labels`/`LapsedPreviewLabels` movidos para `types/`, apagam nos lotes. `ProgramSnapshot` virou tipo de `types/program.ts`.
+- **Onda 1 encerrada.** Próximo: S1 (`dev-stores`, revisão `code-reviewer`).
