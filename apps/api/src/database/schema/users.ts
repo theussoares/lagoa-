@@ -1,0 +1,25 @@
+import { boolean, char, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
+import { bytea, createdAt } from './columns'
+
+/** `id` é o mesmo `auth.users.id` do Supabase: não há tabela de OTP. */
+export const appUsers = pgTable('app_users', {
+  id: uuid('id').primaryKey(),
+  emailEncrypted: bytea('email_encrypted').notNull(),
+  emailHash: bytea('email_hash').notNull().unique(),
+  phoneEncrypted: bytea('phone_encrypted').notNull(),
+  phoneHash: bytea('phone_hash').notNull().unique(),
+  createdAt: createdAt(),
+})
+
+export const customerProfiles = pgTable('customer_profiles', {
+  userId: uuid('user_id')
+    .primaryKey()
+    .references(() => appUsers.id),
+  firstName: text('first_name'),
+  birthday: char('birthday', { length: 5 }),
+  birthdayChangedAt: timestamp('birthday_changed_at', { withTimezone: true }),
+  referralCode: char('referral_code', { length: 8 }).notNull().unique(),
+  termsAcceptedAt: timestamp('terms_accepted_at', { withTimezone: true }),
+  notificationsConsent: boolean('notifications_consent').notNull().default(false),
+  consentUpdatedAt: timestamp('consent_updated_at', { withTimezone: true }),
+})
