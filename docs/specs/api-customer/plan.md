@@ -38,8 +38,10 @@ Tela: Descobrir. Front: `DiscoverService`.
   (`ShopSummary`: unidade, meta, prêmio, taxa, `welcomeUnits`).
 - `GET /v1/discover/shops`, `GET /v1/discover/challenges` (lista vazia: desafios
   estão fora do MVP, ver `docs/database-model.md`).
-- Busca de loja por `checkInCode` (peça reutilizada pelo check-in na fase 4).
-- Seed de desenvolvimento (lojas e programas de exemplo) para as fases seguintes.
+- `programs/program-rules.mapper.ts`: traduz a regra "achatada" do banco para o `ProgramRules` do `shared`
+  (reutilizado nas fases 3 e 4). A busca de loja por `checkInCode` entra na fase 4, onde é usada.
+- Seed de desenvolvimento: `pnpm --filter @lagoa/api db:seed` (idempotente) e `db:seed -- --reset`
+  (remove). Lojas fictícias: 3 aprovadas, 1 pendente, 1 suspensa.
 
 ## Fase 3: Carteira e Cartão da loja
 Telas: Carteira, Cartão da loja. Front: `WalletService`.
@@ -89,6 +91,8 @@ Tela: Resgate. Front: `RewardRedemptionService`.
 | Lojista que vira cliente com celular diferente do já gravado: o gravado vence, sem aviso | `drizzle-registration.repository.ts` | 5 |
 | Versão dos termos aceitos (`termsVersion`) para auditoria LGPD; exige migration | `customer_profiles` | 5 |
 | Quem tira o aniversário e quer repor a mesma data fica travado até 365 dias: PO confirmar | `profile.rules.ts` | PO |
+| Testes de repository Drizzle (filtro `approved`, ordem, lock) contra Postgres de verdade, hoje só validados à mão | `apps/api` | 5 |
+| Índice `(status, name, id)` para a ordem da vitrine, se passar de centenas de lojas | `shops` | 5 |
 | Rotação da chave de cifra de PII (prefixo de versão no payload) | `pii.service.ts` | 5 |
 
 ## Pontos de contato com o Caio
