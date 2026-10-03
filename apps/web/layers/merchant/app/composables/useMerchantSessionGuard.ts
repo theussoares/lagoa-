@@ -1,8 +1,9 @@
-import { errorCodeOf } from '#layers/core/app/utils/errorCode'
+import { hasErrorCode } from '#layers/core/app/utils/errorCode'
+import type { DomainErrorCode } from '#shared/types/errors'
 import type { ErrorCarrier } from '#layers/core/app/types/error'
 import type { MerchantSessionGuardOptions } from '../types/session'
 
-const SHOP_CLOSED_CODES = ['shopPendingApproval', 'shopSuspended']
+const SHOP_CLOSED_CODES: readonly DomainErrorCode[] = ['shopPendingApproval', 'shopSuspended']
 
 /**
  * Sessão vencida em qualquer fonte leva de volta ao login do painel; loja fechada pela rede
@@ -16,14 +17,15 @@ export function useMerchantSessionGuard(
   const shopStatus = useShopStatus()
 
   watch(
-    () => source().map(errorCodeOf),
-    (codes) => {
-      if (codes.includes('unauthorized')) {
+    // Array novo a cada leitura: reavalia a cada mudança de qualquer fonte, como o Balcão fazia.
+    () => [...source()],
+    (states) => {
+      if (hasErrorCode(states, ['unauthorized'])) {
         void signOut()
         return
       }
       if (options.refreshShopStatus !== true) return
-      if (codes.some((code) => code !== null && SHOP_CLOSED_CODES.includes(code))) void shopStatus.refresh()
+      if (hasErrorCode(states, SHOP_CLOSED_CODES)) void shopStatus.refresh()
     },
   )
 }

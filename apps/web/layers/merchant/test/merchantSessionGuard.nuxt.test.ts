@@ -119,4 +119,22 @@ describe('useMerchantSessionGuard', () => {
     await set(a, failed('shopSuspended'))
     logs.forEach((spy) => expect(spy).not.toHaveBeenCalled())
   })
+  it('signs out again when a source stays unauthorized and another source changes', async () => {
+    const a = shallowRef<ErrorCarrier>(SUCCESS)
+    const b = shallowRef<ErrorCarrier>(SUCCESS)
+    await mountGuard([a, b], { refreshShopStatus: true })
+    await set(a, failed('unauthorized'))
+    await set(b, PENDING)
+    expect(signOutMock).toHaveBeenCalledTimes(2)
+    expect(refreshMock).not.toHaveBeenCalled()
+  })
+
+  it('refreshes again when the shop stays closed and another source changes without error', async () => {
+    const a = shallowRef<ErrorCarrier>(SUCCESS)
+    const b = shallowRef<ErrorCarrier>(SUCCESS)
+    await mountGuard([a, b], { refreshShopStatus: true })
+    await set(a, failed('shopSuspended'))
+    await set(b, PENDING)
+    expect(refreshMock).toHaveBeenCalledTimes(2)
+  })
 })

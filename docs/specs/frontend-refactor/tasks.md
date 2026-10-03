@@ -195,3 +195,7 @@ caminho por linha, ordem alfabética) — conflito trivial na integração.
   `TRANSITIONAL_EXPORTED_TYPES` vazia. Pendências levadas ao lote A3: `SetupStepItem.label` ainda existe (tirar muda prop de `Steps.vue`);
   `*Labels`/`LapsedPreviewLabels` movidos para `types/`, apagam nos lotes. `ProgramSnapshot` virou tipo de `types/program.ts`.
 - **Onda 1 encerrada.** Próximo: S1 (`dev-stores`, revisão `code-reviewer`).
+- **S1** — integrado (`b377e4b`, `48c1b49`, correção de paridade do cliente `726db33`). `code-reviewer`: aprovado.
+  Opcionais aplicados: `hasErrorCode` com `readonly DomainErrorCode[]`; testes de reavaliação do Balcão com fonte parada em erro.
+  Nota para o lote C: `reward-redemption.vue`/`profile.vue` usam `watch(state)`; trocar pela guarda só perde o caso
+  `unauthorized → unauthorized` sem `pending` (já fora da tela) — registrar no PR.
