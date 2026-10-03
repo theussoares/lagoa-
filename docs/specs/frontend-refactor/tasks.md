@@ -187,3 +187,7 @@ caminho por linha, ordem alfabética) — conflito trivial na integração.
   (manual no N-A2), `USelect` de categoria (entra pelo store no teste), cartaz
   sem snapshot (código aleatório do mock; coberto por asserts), cliente
   "novo" do Balcão usa número do seed.
+- **U1** — integrado (fast-forward; commit só de `git mv`: `2d84ccd`). 334 testes, typecheck verde, snapshots do QA-0 sem `-u`.
+  Desvios aceitos: `previewGridStyle` novo em `ui/utils/slotGrid.ts` (o antigo mudaria o layout do `ShopCard`);
+  `BROWSER_COMPOSABLES` por nome de arquivo; `tsconfig.test.json` inclui `layers/ui/test/**`.
+  Ponto para revisão: `core/composables/useThemeChoiceLabels.ts` importa (só tipo) `ThemeChoiceLabels` de `#layers/ui`.
