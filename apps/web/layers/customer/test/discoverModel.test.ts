@@ -64,6 +64,14 @@ describe('toShopTeaserModel', () => {
     expect(model.earn).toBe('discover.earn.visit units=units.stamp #1')
   })
 
+  it('points to the shop on the map with only its public name and address', () => {
+    expect(toShopTeaserModel(shop('shop_b'), new Set(), t).directions).toEqual({
+      label: 'discover.directions',
+      accessibleLabel: 'discover.directionsTo shop=Loja shop_b',
+      href: 'https://www.google.com/maps/search/?api=1&query=Loja%20shop_b%2C%20Endere%C3%A7o%20de%20exemplo%2C%20Centro%2C%20Tr%C3%AAs%20Lagoas%2C%20MS',
+    })
+  })
+
   it('uses a ruler for points and has no welcome line when the bonus is off', () => {
     const model = toShopTeaserModel(
       shop('shop_c', { unit: 'point', target: 150, earnRate: { per: 'real', units: 1 }, welcomeUnits: 0 }),

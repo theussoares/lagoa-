@@ -72,10 +72,7 @@ async function onConfirm(): Promise<void> {
 
 <template>
   <div class="mx-auto flex max-w-[1200px] flex-col gap-5">
-    <header class="flex flex-col gap-1">
-      <h1 class="text-[1.75rem] leading-tight font-bold text-highlighted [font-stretch:90%]">{{ t('campaigns.title') }}</h1>
-      <p class="max-w-2xl text-muted">{{ t('campaigns.lead') }}</p>
-    </header>
+    <PageTitle :title="t('campaigns.title')" :lead="t('campaigns.lead')" />
 
     <div v-if="state.status === 'loading'" class="grid gap-5 lg:grid-cols-12" role="status" :aria-label="t('common.loading')">
       <div class="flex flex-col gap-5 lg:col-span-7">
@@ -84,13 +81,13 @@ async function onConfirm(): Promise<void> {
       <USkeleton class="h-72 rounded-(--radius-card) lg:col-span-5" />
     </div>
 
-    <UAlert
+    <InkNote
       v-else-if="state.status === 'error'"
-      color="error"
-      variant="subtle"
+      tone="error"
       icon="i-ph-warning-circle"
       :description="t(`errors.${state.error.code}`)"
-      :actions="[{ label: t('common.retry'), color: 'neutral', variant: 'outline', onClick: campaigns.reload }]"
+      :actions="[{ label: t('common.retry'), onClick: campaigns.reload }]"
+      live
     />
 
     <div v-else-if="reach && preview && limits" class="grid items-start gap-5 lg:grid-cols-12">

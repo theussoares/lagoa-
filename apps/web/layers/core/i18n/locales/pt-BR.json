@@ -12,7 +12,8 @@
   "wallet": {
     "title": "Carteira",
     "greeting": "Olá, {name}",
-    "greetingAnonymous": "Olá",
+    "greetingAnonymous": "Sua carteira",
+    "lead": "Continue juntando carimbos pela cidade e ganhe prêmios.",
     "profileLink": "Abrir seu perfil",
     "stackLabel": "Seus cartões",
     "showCard": "Mostrar o cartão de {shop}",
@@ -106,6 +107,7 @@
   "errors": {
     "unauthorized": "Sua sessão terminou. Entre de novo para continuar.",
     "network": "Sem conexão agora. Confira a internet e tente de novo.",
+    "birthdayLocked": "A data do aniversário só pode ser trocada uma vez por ano.",
     "notFound": "Não encontramos o que você procurou.",
     "invalidPhone": "Esse celular não parece certo. Use DDD + 9 dígitos, ex.: (67) 99123-4567.",
     "invalidLoginCode": "Código errado. Confira o SMS e digite de novo.",
@@ -170,7 +172,27 @@
     "consentOff": "Desligado. Nenhuma loja te manda avisos.",
     "consentSaved": "Preferência salva.",
     "signOut": "Sair desta conta",
-    "appearanceTitle": "Aparência"
+    "appearanceTitle": "Aparência",
+    "birthday": {
+      "title": "Aniversário",
+      "legend": "Dia do seu aniversário",
+      "help": "Nas lojas com a regra de aniversário, a visita nesse dia vale o dobro. Não pedimos o ano. Depois de salva, a data só pode ser trocada uma vez por ano.",
+      "partial": "Escolha o dia e o mês.",
+      "lockedUntil": "Você pode trocar a data a partir de {date}.",
+      "removeTitle": "Tirar o aniversário?",
+      "removeDescription": "A visita deixa de valer o dobro no seu dia. Para cadastrar outra data, espere até {date}.",
+      "removeDescriptionFree": "A visita deixa de valer o dobro no seu dia. Você pode cadastrar de novo quando quiser.",
+      "removeConfirm": "Tirar a data",
+      "removeCancel": "Manter",
+      "day": "Dia",
+      "month": "Mês",
+      "placeholderDay": "Escolha",
+      "placeholderMonth": "Escolha",
+      "save": "Salvar aniversário",
+      "remove": "Tirar aniversário",
+      "saved": "Aniversário salvo: {date}.",
+      "removed": "Aniversário removido."
+    }
   },
   "theme": {
     "legend": "Cores do app neste aparelho",
@@ -329,6 +351,19 @@
       "expirationNever": "Nunca vencem",
       "expirationMonths": "{count} mês sem visita | 1 mês sem visita | {count} meses sem visita"
     },
+    "summary": {
+      "noBonus": "Nenhuma regra ligada",
+      "welcome": "Boas-vindas com {units}",
+      "checkInOn": "Check-in pelo QR ligado",
+      "checkInOff": "Check-in pelo QR desligado",
+      "cooldown": "1 visita a cada {interval}",
+      "neverExpires": "não vencem",
+      "expiresAfter": "vencem após {count} mês sem visita | vencem após 1 mês sem visita | vencem após {count} meses sem visita"
+    },
+    "card": {
+      "title": "O cartão",
+      "locked": "Travado"
+    },
     "preview": {
       "label": "Prévia do cartão",
       "title": "Assim o cliente vê",
@@ -350,6 +385,7 @@
       "range": "Use um número de {min} a {max}.",
       "rewardTitle": "Escreva o prêmio, com até {max} caracteres.",
       "surpriseDate": "Escolha o dia surpresa.",
+      "option": "Escolha uma das opções da lista.",
       "welcomeUnits": "Use de {min} a {max}: as boas-vindas precisam ficar abaixo da meta."
     }
   },
@@ -460,8 +496,8 @@
   },
   "discover": {
     "title": "Descobrir",
-    "lead": "Todas estas lojas valem na mesma carteira. O primeiro carimbo já abre o cartão.",
-    "challengesTitle": "Desafio da cidade | Desafios da cidade",
+        "challengesTitle": "Desafio da cidade | Desafios da cidade",
+    "challengeBadge": "Desafio do mês",
     "challenge": {
       "deadline": "Até {date}",
       "progress": "{done} de {total} visitadas",
@@ -469,8 +505,18 @@
       "stopVisited": "{shop}: visitada",
       "stopPending": "{shop}: falta visitar"
     },
-    "freshTitle": "Novas para você",
-    "howTo": "Para abrir o cartão, peça o carimbo no balcão ou faça check-in pelo QR da loja.",
+    "lead": "Lugares que combinam com você.",
+    "searchLabel": "Buscar lojas",
+    "searchPlaceholder": "Buscar lojas ou bairros…",
+    "noResults": "Nenhuma loja com esse nome. Tente outra palavra.",
+    "mapLink": "Ver mapa",
+    "mapLinkLabel": "Ver as lojas da rede no mapa (abre o mapa)",
+    "freshTitle": "Perto de você",
+    "howTo": "Peça o carimbo no balcão ou faça check-in pelo QR da loja.",
+    "showcase": {
+      "openNow": "Aberta agora",
+      "distance": "{distance} km"
+    },
     "freshEmpty": "Você já tem cartão em todas as lojas da rede. Quando uma loja nova entrar, ela aparece aqui.",
     "knownTitle": "Já na sua carteira",
     "openWallet": "Abrir a carteira",
@@ -481,6 +527,8 @@
     },
     "welcome": "Cartão novo já começa com {units}.",
     "challengeTag": "Conta no desafio",
+    "directions": "Como chegar",
+    "directionsTo": "Como chegar: {shop} (abre o mapa)",
     "empty": "Nenhuma loja na rede por enquanto. Volte em breve."
   },
   "checkIn": {
@@ -517,12 +565,15 @@
     "earned": {
       "title": {
         "stamp": "Carimbo ganho",
-        "point": "Pontos ganhos"
+        "point": "Pontos ganhos",
+        "reward": "Prêmio liberado"
       },
       "lead": "+{units} no seu cartão.",
+      "almost": "Falta só {units}! | Falta só {units}! | Faltam só {units}!",
       "next": "Próximo check-in aqui: {when}.",
       "redeem": "Resgatar prêmio",
-      "announce": "{title}. {summary}"
+      "announce": "{title}. {summary}",
+      "announceCheer": "{title}. {cheer} {summary}"
     }
   },
   "shop": {

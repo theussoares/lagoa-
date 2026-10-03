@@ -152,7 +152,7 @@ describe('mock ClubSetupService guards', () => {
     const { merchant, ticket, signIn } = await setup()
     signIn(await create(merchant, ticket))
     const pending = { ok: false, error: { code: 'shopPendingApproval' } }
-    expect(await merchant.counter.validateRedemption(RedemptionCodeSchema.parse('ABC234'))).toEqual(pending)
+    expect(await merchant.counter.validateRedemption(RedemptionCodeSchema.parse('ACD234'))).toEqual(pending)
     expect(await merchant.campaigns.sendReminder({ message: 'Volte!', bonusUnits: 0 }, 0)).toEqual(pending)
   })
 })
@@ -175,7 +175,7 @@ describe('suspended shop', () => {
 
     const suspended = { ok: false, error: { code: 'shopSuspended' } }
     expect(await merchant.counter.registerVisit(EXAMPLE_IDS.phones.ana)).toEqual(suspended)
-    expect(await merchant.counter.validateRedemption(RedemptionCodeSchema.parse('ABC234'))).toEqual(suspended)
+    expect(await merchant.counter.validateRedemption(RedemptionCodeSchema.parse('ACD234'))).toEqual(suspended)
     expect(await merchant.campaigns.sendReminder({ message: 'Volte!', bonusUnits: 0 }, 1)).toEqual(suspended)
     expect(await merchant.shopStatus.getStatus()).toEqual({ ok: true, value: 'suspended' })
   })

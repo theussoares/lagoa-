@@ -38,7 +38,6 @@ watch(anyUnauthorized, (unauthorized) => {
 
 const firstName = computed(() => (profileState.value.status === 'success' ? profileState.value.value.firstName : null))
 const greeting = computed(() => (firstName.value ? t('wallet.greeting', { name: firstName.value }) : t('wallet.greetingAnonymous')))
-const initial = computed(() => firstName.value?.charAt(0).toUpperCase())
 
 const ledger = computed(() => {
   if (activityState.value.status !== 'success') return []
@@ -48,15 +47,21 @@ const ledger = computed(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-8">
-    <header class="flex min-h-12 items-center justify-between gap-3">
-      <h1 class="text-[1.375rem] leading-tight font-semibold text-highlighted [font-stretch:95%]">{{ greeting }}</h1>
-      <NuxtLink to="/perfil" :aria-label="t('wallet.profileLink')" class="rounded-full">
-        <UAvatar :text="initial" :icon="initial ? undefined : 'i-ph-user'" size="lg" class="bg-default ring-1 ring-(--lagoa-rule)" />
-      </NuxtLink>
-    </header>
+  <div>
+    <ScreenHeader :title="greeting" :lead="t('wallet.lead')">
+      <template #actions>
+        <NuxtLink
+          to="/perfil"
+          class="grid size-11 shrink-0 place-items-center rounded-full bg-white/15 text-white ring-1 ring-white/50 transition-colors duration-(--lagoa-dur-fast) hover:bg-white/25"
+          :aria-label="t('wallet.profileLink')"
+        >
+          <UIcon name="i-ph-user-circle" class="size-7" aria-hidden="true" />
+        </NuxtLink>
+      </template>
+    </ScreenHeader>
 
-    <section :aria-label="t('wallet.stackLabel')">
+    <div class="flex flex-col gap-8">
+    <section :aria-label="t('wallet.stackLabel')" class="relative -mt-10">
       <WalletStackSkeleton v-if="cardsState.status === 'loading'" />
 
       <WalletProblem
@@ -89,7 +94,7 @@ const ledger = computed(() => {
     </section>
 
     <section v-if="cards.length > 0" class="flex flex-col gap-3" aria-labelledby="ledger-title">
-      <h2 id="ledger-title" class="text-[1.375rem] leading-tight font-semibold text-highlighted [font-stretch:95%]">
+      <h2 id="ledger-title" class="type-h2">
         {{ t('wallet.ledgerTitle') }}
       </h2>
       <div class="rounded-(--radius-card) bg-default px-5 py-1 shadow-(--lagoa-shadow-card)">
@@ -98,5 +103,6 @@ const ledger = computed(() => {
         <p v-else class="py-4 text-muted">{{ t('wallet.ledgerEmpty') }}</p>
       </div>
     </section>
+      </div>
   </div>
 </template>

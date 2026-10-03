@@ -25,7 +25,7 @@ defineProps<Props>()
         <h3 class="text-[1.375rem] leading-tight font-semibold text-balance text-highlighted [font-stretch:95%]">
           {{ reward.reward }}
         </h3>
-        <p v-if="reward.note" class="text-[0.9375rem] text-muted">{{ reward.note }}</p>
+        <p v-if="reward.note" class="text-base text-muted">{{ reward.note }}</p>
       </div>
     </div>
 

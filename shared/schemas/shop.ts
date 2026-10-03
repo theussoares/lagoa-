@@ -30,6 +30,15 @@ export type ShopStatus = z.infer<typeof ShopStatusSchema>
 export const CheckInCodeSchema = readableCodeSchema(CHECK_IN_CODE_LENGTH).brand<'CheckInCode'>()
 export type CheckInCode = z.infer<typeof CheckInCodeSchema>
 
+/** Vitrine da loja no Descobrir. Tudo opcional: o card só mostra o que existe. */
+export const ShopShowcaseSchema = z.object({
+  imageUrl: z.string().min(1).optional(),
+  rating: z.number().min(0).max(5).optional(),
+  distanceKm: z.number().nonnegative().optional(),
+  openNow: z.boolean().optional(),
+})
+export type ShopShowcase = z.infer<typeof ShopShowcaseSchema>
+
 export const ShopSchema = z.object({
   id: ShopIdSchema,
   name: z.string().min(1).max(SHOP_NAME_MAX_LENGTH),
@@ -37,6 +46,7 @@ export const ShopSchema = z.object({
   neighborhood: z.string().min(1).max(SHOP_NEIGHBORHOOD_MAX_LENGTH),
   addressLine: z.string().min(1).max(SHOP_ADDRESS_MAX_LENGTH),
   status: ShopStatusSchema,
+  showcase: ShopShowcaseSchema.optional(),
 })
 export type Shop = z.infer<typeof ShopSchema>
 
@@ -47,6 +57,7 @@ export const ShopSummarySchema = ShopSchema.pick({
   category: true,
   neighborhood: true,
   addressLine: true,
+  showcase: true,
 }).extend({
   program: z.object({
     unit: ProgramUnitSchema,

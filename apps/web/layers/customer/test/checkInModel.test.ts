@@ -71,14 +71,47 @@ describe('earned check-in', () => {
   it('announces the title with the card summary', () => {
     const model = toCheckInEarnedModel(result, 'Barbearia Navalha: 9 de 10.', now, t)
     expect(model).toEqual({
+      moment: 'almost',
       title: 'checkIn.earned.title.stamp',
       lead: 'checkIn.earned.lead units=units.stamp #1',
+      cheer: 'checkIn.earned.almost units=units.stamp count=1 #1 #1',
       next: 'checkIn.earned.next when=checkIn.when.today time=14:00',
-      announcement: 'checkIn.earned.announce title=checkIn.earned.title.stamp summary=Barbearia Navalha: 9 de 10.',
+      announcement:
+        'checkIn.earned.announceCheer title=checkIn.earned.title.stamp cheer=checkIn.earned.almost units=units.stamp count=1 #1 #1 summary=Barbearia Navalha: 9 de 10.',
     })
   })
 
   it('falls back to the title when the card did not load', () => {
-    expect(toCheckInEarnedModel(result, null, now, t).announcement).toBe('checkIn.earned.title.stamp')
+    expect(toCheckInEarnedModel({ ...result, card: { ...result.card, balance: 5 } }, null, now, t).announcement).toBe('checkIn.earned.title.stamp')
+  })
+
+  it('is a plain stamp when more than one visit is still missing', () => {
+    const model = toCheckInEarnedModel({ ...result, card: { ...result.card, balance: 5 } }, null, now, t)
+    expect(model).toMatchObject({ moment: 'earned', cheer: null })
+  })
+
+  it('celebrates the stamp that frees the reward', () => {
+    const model = toCheckInEarnedModel({ ...result, card: { ...result.card, balance: 10, rewardReady: true } }, null, now, t)
+    expect(model).toMatchObject({ moment: 'reward', title: 'checkIn.earned.title.reward', cheer: null })
+  })
+
+  it('goes back to a plain stamp while the reward waits to be redeemed', () => {
+    const model = toCheckInEarnedModel({ ...result, card: { ...result.card, balance: 11, rewardReady: true } }, null, now, t)
+    expect(model).toMatchObject({ moment: 'earned', title: 'checkIn.earned.title.stamp', cheer: null })
+  })
+
+  it('cheers without a card summary when the card did not load', () => {
+    expect(toCheckInEarnedModel(result, null, now, t).announcement).toBe(
+      'checkIn.earned.announceCheer title=checkIn.earned.title.stamp cheer=checkIn.earned.almost units=units.stamp count=1 #1 #1 summary=',
+    )
+  })
+
+  it('counts the plural of what is missing in points mode', () => {
+    const points = CheckInResultSchema.parse({
+      ...result,
+      activity: { ...result.activity, unit: 'point', units: 10 },
+      card: { ...result.card, unit: 'point', balance: 95, target: 100 },
+    })
+    expect(toCheckInEarnedModel(points, null, now, t).cheer).toBe('checkIn.earned.almost units=units.point count=5 #5 #5')
   })
 })

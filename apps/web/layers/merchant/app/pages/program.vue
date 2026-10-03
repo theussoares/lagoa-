@@ -2,6 +2,7 @@
 import { REWARD_TITLE_MAX_LENGTH } from '#shared/constants/domain'
 import { MERCHANT_SIGN_IN_PATH } from '../composables/useMerchantSession'
 import { toProgramPreview } from '../utils/programPreviewModel'
+import { sectionHasError } from '../utils/programSummary'
 
 definePageMeta({ path: '/programa', layout: 'merchant', middleware: 'merchant-auth' })
 
@@ -13,6 +14,16 @@ useHead({ title: () => `${t('program.title')} · ${t('app.name')}` })
 const editor = useProgramEditor()
 const { draft, state, saveState, fieldErrors } = editor
 const labels = useProgramFormLabels(draft)
+
+// O essencial (prêmio, tipo e meta) fica aberto; bônus e validade dobram num resumo.
+const bonusOpen = ref(false)
+const visitRulesOpen = ref(false)
+// Cada tentativa de salvar inválida gera um estado novo: reabre a seção com erro mesmo que o lojista a tenha fechado.
+watch(saveState, (current) => {
+  if (current.status !== 'error' || current.code !== 'invalidProgram') return
+  if (sectionHasError('bonus', fieldErrors.value)) bonusOpen.value = true
+  if (sectionHasError('visitRules', fieldErrors.value)) visitRulesOpen.value = true
+})
 
 watch(
   () => [state.value, saveState.value] as const,
@@ -40,10 +51,7 @@ onBeforeRouteLeave((to) => {
 
 <template>
   <div class="mx-auto flex max-w-[1200px] flex-col gap-5 pb-24">
-    <header class="flex flex-col gap-1">
-      <h1 class="text-[1.75rem] leading-tight font-bold text-highlighted [font-stretch:90%]">{{ t('program.title') }}</h1>
-      <p class="text-muted">{{ t('program.lead') }}</p>
-    </header>
+    <PageTitle :title="t('program.title')" :lead="t('program.lead')" />
 
     <div v-if="state.status === 'loading'" class="grid gap-5 lg:grid-cols-12" role="status" :aria-label="t('common.loading')">
       <div class="flex flex-col gap-5 lg:col-span-7">
@@ -52,19 +60,19 @@ onBeforeRouteLeave((to) => {
       <USkeleton class="h-80 rounded-(--radius-card) lg:col-span-5" />
     </div>
 
-    <UAlert
+    <InkNote
       v-else-if="state.status === 'error'"
-      color="error"
-      variant="subtle"
+      tone="error"
       icon="i-ph-warning-circle"
       :description="t(`errors.${state.error.code}`)"
-      :actions="[{ label: t('common.retry'), color: 'neutral', variant: 'outline', onClick: editor.reload }]"
+      :actions="[{ label: t('common.retry'), onClick: editor.reload }]"
+      live
     />
 
     <form v-else-if="draft" class="grid items-start gap-5 lg:grid-cols-12" novalidate @submit.prevent="editor.save">
       <!-- Travado durante o save: o que fosse digitado agora seria trocado pela resposta do servidor. -->
       <fieldset :disabled="saveState.status === 'saving'" class="flex min-w-0 flex-col gap-5 lg:col-span-7">
-        <PanelModule :title="t('program.reward.title')">
+        <PanelModule :title="t('program.card.title')">
           <UFormField
             :label="t('program.reward.label')"
             :hint="t('program.reward.hint', { max: REWARD_TITLE_MAX_LENGTH })"
@@ -73,9 +81,6 @@ onBeforeRouteLeave((to) => {
           >
             <UInput v-model="draft.reward.title" :maxlength="REWARD_TITLE_MAX_LENGTH" size="lg" class="w-full" :placeholder="t('program.reward.placeholder')" />
           </UFormField>
-        </PanelModule>
-
-        <PanelModule :title="t('program.earn.title')">
           <ProgramEarnFields
             v-model:rules="draft.rules"
             :labels="labels.earn.value"
@@ -83,17 +88,18 @@ onBeforeRouteLeave((to) => {
             :errors="fieldErrors"
             :mode-locked="editor.modeLocked.value"
             :target-changed="editor.targetChanged.value"
+            class="mt-5 border-t border-(--lagoa-rule) pt-5"
             @mode="editor.setMode"
           />
         </PanelModule>
 
-        <PanelModule :title="t('program.bonus.title')">
+        <FoldModule v-model:open="bonusOpen" :title="t('program.bonus.title')" :summary="labels.summaries.value?.bonus ?? ''">
           <ProgramBonusFields v-model:bonus="draft.bonusRules" :labels="labels.bonus.value" :limits="labels.limits.value" :errors="fieldErrors" />
-        </PanelModule>
+        </FoldModule>
 
-        <PanelModule :title="t('program.visitRules.title')">
-          <ProgramVisitRulesFields v-model:check-in="draft.checkIn" v-model:expiration="draft.expirationPolicy" :labels="labels.visitRules.value" />
-        </PanelModule>
+        <FoldModule v-model:open="visitRulesOpen" :title="t('program.visitRules.title')" :summary="labels.summaries.value?.visitRules ?? ''">
+          <ProgramVisitRulesFields v-model:check-in="draft.checkIn" v-model:expiration="draft.expirationPolicy" :labels="labels.visitRules.value" :errors="fieldErrors" />
+        </FoldModule>
       </fieldset>
 
       <aside class="flex flex-col gap-3 lg:sticky lg:top-6 lg:col-span-5" :aria-label="t('program.preview.label')">

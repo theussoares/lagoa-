@@ -35,7 +35,7 @@ const titleId = useId()
           </span>
         </span>
         <span
-          class="text-[0.8125rem] leading-tight font-medium text-pretty"
+          class="text-sm leading-tight font-medium text-pretty"
           :class="stop.visited ? 'text-highlighted' : 'text-muted'"
           aria-hidden="true"
         >
@@ -44,7 +44,7 @@ const titleId = useId()
       </li>
     </ol>
 
-    <footer class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-(--lagoa-rule) px-5 py-3.5 text-[0.9375rem]">
+    <footer class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-(--lagoa-rule) px-5 py-3.5 text-base">
       <span v-if="challenge.done" class="flex items-center gap-1.5 font-semibold text-success">
         <UIcon name="i-ph-check-circle" class="size-5" aria-hidden="true" />
         {{ doneLabel }}

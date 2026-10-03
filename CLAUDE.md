@@ -74,9 +74,12 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
 | Alcance da campanha       | `reach`                        |
 | Presente do lembrete      | `campaignBonus`                |
 | Consentimento             | `consent`                      |
+| Aniversário (sem ano)     | `birthday` (`MM-DD`)           |
+| Troca do aniversário travada | `birthdayLocked` (`birthdayChangeableAt`) |
 | Criar o clube (cadastro)  | `clubSetup`                    |
 | Ticket do cadastro (celular confirmado sem loja) | `signUpTicket` |
 | Cartaz do balcão (QR)     | `poster` (`checkInPoster`)     |
+| Cabeçalho de tela / card herói | `screenHeader` / `heroCard` |
 | Situação da loja          | `shopStatus` (`pending` \| `approved` \| `suspended`) |
 | Plano / cobrança          | `plan` / `billing`             |
 
@@ -176,7 +179,10 @@ composables  → stores (Pinia, estado)
 - **Regras bônus:** boas-vindas (cartão começa com 2 carimbos), aniversário em
   dobro, traga um amigo (+1 quando o amigo faz a 1ª visita), dia surpresa em dobro.
   Multiplicadores não se somam: vale o maior (aniversário no dia surpresa = 2×,
-  não 4×).
+  não 4×). Quem nasceu em 29/02 comemora em 28/02 nos anos sem 29.
+- **Aniversário:** o cliente informa dia e mês no Perfil. A primeira data é
+  livre; depois a troca fica travada por 365 dias (senão viraria dobro todo
+  dia). Tirar a data vale a qualquer hora, mas não destrava a próxima troca.
 - **Mudança de programa:** mudar a meta vale também para os cartões em
   andamento; trocar o modo (carimbos ↔ pontos) fica bloqueado enquanto houver
   cartões.

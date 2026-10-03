@@ -14,10 +14,9 @@ defineProps<Props>()
     <li v-for="row in rows" :key="row.isoDate" class="grid min-h-12 grid-cols-[8.5rem_minmax(0,1fr)_6.5rem] items-center gap-x-4 py-2">
       <span class="text-[0.9375rem]" :class="row.isToday ? 'font-semibold text-highlighted' : 'text-toned'">{{ row.label }}</span>
       <span class="flex min-w-0 flex-col gap-1">
-        <!-- A régua só reforça o número escrito ao lado; não é o único sinal. -->
-        <span class="h-2 overflow-hidden rounded-full bg-(--lagoa-rule)" aria-hidden="true">
-          <span class="block h-full rounded-full bg-primary" :style="{ width: `${Math.round(row.ratio * 100)}%` }" />
-        </span>
+        <!-- Os risquinhos só reforçam o número escrito ao lado; não são o único sinal. -->
+        <TallyMarks v-if="row.count > 0" :count="row.count" />
+        <span v-else class="h-px w-8 bg-(--lagoa-slot)" aria-hidden="true" />
         <span v-if="row.detail" class="truncate text-sm text-muted">{{ row.detail }}</span>
       </span>
       <span class="tabular text-right text-[0.9375rem]" :class="row.isToday ? 'font-semibold text-highlighted' : 'text-default'">{{ row.visits }}</span>

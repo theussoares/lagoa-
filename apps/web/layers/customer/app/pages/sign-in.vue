@@ -54,12 +54,7 @@ function backToPhone(): void {
     <SignInHero v-if="step.name === 'phone'" :brand="t('app.name')" :caption="t('signIn.heroCaption')" />
 
     <form v-if="step.name === 'phone'" class="flex flex-1 flex-col gap-6" novalidate @submit.prevent="requestCode(phoneDraft)">
-      <div class="flex flex-col gap-2">
-        <h1 class="text-[1.75rem] leading-[1.15] font-bold text-balance text-highlighted [font-stretch:90%]">
-          {{ t('signIn.title') }}
-        </h1>
-        <p class="text-pretty text-toned">{{ t('signIn.lead') }}</p>
-      </div>
+      <PageTitle :title="t('signIn.title')" :lead="t('signIn.lead')" />
 
       <UFormField :label="t('signIn.phoneLabel')" :hint="t('signIn.phoneHint')" :error="phoneError" name="phone" size="xl">
         <template #error="{ error: message }">
@@ -83,20 +78,23 @@ function backToPhone(): void {
     </form>
 
     <form v-else class="flex flex-1 flex-col gap-6" novalidate @submit.prevent="submitCode">
-      <div class="flex flex-col gap-2">
-        <h1 class="text-[1.75rem] leading-[1.15] font-bold text-highlighted [font-stretch:90%]">{{ t('signIn.codeTitle') }}</h1>
-        <p class="text-toned">
+      <PageTitle :title="t('signIn.codeTitle')">
+        <p class="type-lead">
           <i18n-t keypath="signIn.codeLead" scope="global">
             <template #phone>
               <span class="tabular font-semibold whitespace-nowrap text-highlighted">{{ sentTo }}</span>
             </template>
           </i18n-t>
           {{ ' ' }}
-          <UButton variant="link" class="min-h-0 p-0 align-baseline text-base" :label="t('signIn.changePhone')" @click="backToPhone" />
+          <UButton variant="link" class="relative min-h-0 p-0 align-baseline text-base after:absolute after:-inset-x-1 after:-inset-y-2.5 after:content-['']" :label="t('signIn.changePhone')" @click="backToPhone" />
         </p>
-      </div>
+      </PageTitle>
 
-      <UAlert v-if="mockCode" color="info" variant="subtle" icon="i-ph-info" :description="t('signIn.mockHint', { code: mockCode })" />
+      <InkNote
+        v-if="mockCode"
+        tone="pencil"
+        :description="t('signIn.mockHint', { code: mockCode })"
+      />
 
       <UFormField ref="codeField" :label="t('signIn.codeLabel')" :error="codeError" name="code">
         <template #error="{ error: message }">
@@ -121,11 +119,11 @@ function backToPhone(): void {
         size="lg"
         :label="t('signIn.consentLabel')"
         :description="t('signIn.consentHint')"
-        :ui="{ root: 'items-start gap-3', label: 'text-base font-medium text-highlighted', description: 'text-[0.9375rem] text-muted' }"
+        :ui="{ root: 'items-start gap-3', label: 'text-base font-medium text-highlighted', description: 'text-base text-muted' }"
       />
 
       <div class="mt-auto flex flex-col gap-3">
-        <p class="text-[0.9375rem] text-muted">{{ t('signIn.terms') }}</p>
+        <p class="text-base text-muted">{{ t('signIn.terms') }}</p>
         <UButton type="submit" size="xl" block :loading="pending" :label="t('signIn.submit')" />
         <UButton
           variant="ghost"

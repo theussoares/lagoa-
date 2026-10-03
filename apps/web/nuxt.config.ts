@@ -25,8 +25,8 @@ export default defineNuxtConfig({
       title: 'Lagoa+',
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
-        { name: 'theme-color', content: '#E9EEF0', media: '(prefers-color-scheme: light)' },
-        { name: 'theme-color', content: '#181B1D', media: '(prefers-color-scheme: dark)' },
+        { name: 'theme-color', content: '#FFFFFF', media: '(prefers-color-scheme: light)' },
+        { name: 'theme-color', content: '#08201F', media: '(prefers-color-scheme: dark)' },
       ],
     },
   },
@@ -45,8 +45,8 @@ export default defineNuxtConfig({
       scope: '/',
       display: 'standalone',
       orientation: 'portrait',
-      background_color: '#E9EEF0',
-      theme_color: '#E9EEF0',
+      background_color: '#08201F',
+      theme_color: '#08201F',
       // Ícones entram quando existir logo (PRODUCT.md: nada de marca inventada).
       icons: [],
     },

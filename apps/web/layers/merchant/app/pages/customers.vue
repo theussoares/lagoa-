@@ -74,10 +74,7 @@ const tableLabels = computed<CustomerTableLabels>(() => ({
 
 <template>
   <div class="mx-auto flex max-w-[1200px] flex-col gap-5">
-    <header class="flex flex-col gap-1">
-      <h1 class="text-[1.75rem] leading-tight font-bold text-highlighted [font-stretch:90%]">{{ t('customers.title') }}</h1>
-      <p class="text-muted">{{ t('customers.lead') }}</p>
-    </header>
+    <PageTitle :title="t('customers.title')" :lead="t('customers.lead')" />
 
     <PanelModule :title="t('customers.listTitle')">
       <template #actions>
@@ -130,13 +127,13 @@ const tableLabels = computed<CustomerTableLabels>(() => ({
             <USkeleton class="h-4 w-20" />
           </div>
         </div>
-        <UAlert
+        <InkNote
           v-else-if="state.status === 'error'"
-          color="error"
-          variant="subtle"
+          tone="error"
           icon="i-ph-warning-circle"
           :description="t(`errors.${state.error.code}`)"
-          :actions="[{ label: t('common.retry'), color: 'neutral', variant: 'outline', onClick: reload }]"
+          :actions="[{ label: t('common.retry'), onClick: reload }]"
+          live
         />
         <p v-else-if="rows.length === 0" class="py-10 text-center text-muted">{{ t(`customers.empty.${filter}`, { days: LAPSED_AFTER_DAYS }) }}</p>
         <CustomerTable v-else :rows="rows" :labels="tableLabels" :caption="t('customers.table.caption')" />

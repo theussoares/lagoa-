@@ -116,10 +116,7 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', warnBeforeUnloa
 
     <div v-if="step !== 'poster'" class="mx-auto grid w-full max-w-[1200px] flex-1 items-start gap-10 px-8 py-8 lg:grid-cols-12">
       <form class="flex min-w-0 flex-col gap-6 lg:col-span-7" novalidate @submit.prevent="submitStep">
-        <div class="flex flex-col gap-2">
-          <h1 tabindex="-1" class="text-[1.75rem] leading-tight font-bold text-balance text-highlighted [font-stretch:90%] focus:outline-none">{{ t(`clubSetup.${step}.title`) }}</h1>
-          <p class="text-pretty text-muted">{{ t(`clubSetup.${step}.lead`) }}</p>
-        </div>
+        <PageTitle :title="t(`clubSetup.${step}.title`)" :lead="t(`clubSetup.${step}.lead`)" focusable />
 
         <fieldset :disabled="submitState.status === 'creating'" class="flex min-w-0 flex-col gap-5">
           <PanelModule v-if="step === 'shop'" :title="t('clubSetup.shop.module')">
@@ -139,7 +136,7 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', warnBeforeUnloa
               />
             </PanelModule>
             <PanelModule :title="t('program.visitRules.title')">
-              <ProgramVisitRulesFields v-model:check-in="form.program.checkIn" v-model:expiration="form.program.expirationPolicy" :labels="labels.visitRules.value" />
+              <ProgramVisitRulesFields v-model:check-in="form.program.checkIn" v-model:expiration="form.program.expirationPolicy" :labels="labels.visitRules.value" :errors="programErrors" />
             </PanelModule>
           </template>
 
@@ -160,13 +157,13 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', warnBeforeUnloa
           </template>
         </fieldset>
 
-        <UAlert
+        <InkNote
           v-if="submitError"
-          color="error"
-          variant="subtle"
+          tone="error"
           icon="i-ph-warning-circle"
           :description="t(`errors.${submitError}`)"
-          :actions="submitError === 'signUpExpired' ? [{ label: t('clubSetup.confirmPhoneAgain'), color: 'neutral', variant: 'outline', to: MERCHANT_SIGN_IN_PATH }] : []"
+          :actions="submitError === 'signUpExpired' ? [{ label: t('clubSetup.confirmPhoneAgain'), to: MERCHANT_SIGN_IN_PATH }] : []"
+          live
         />
 
         <div class="flex items-center justify-between gap-3 border-t border-(--lagoa-rule) pt-5">

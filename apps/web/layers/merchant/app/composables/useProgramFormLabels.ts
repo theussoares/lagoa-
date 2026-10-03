@@ -2,9 +2,10 @@ import { BONUS_UNITS_MAX, POINTS_RATE_MAX, PROGRAM_TARGET_MAX, PROGRAM_TARGET_MI
 import { unitOf } from '#shared/domain/programStrategies'
 import type { ProgramDraft } from '#shared/schemas/program'
 import { COOLDOWN_HOUR_OPTIONS, EXPIRATION_MONTH_OPTIONS } from '../utils/programForm'
+import { cooldownLabel, toProgramSummaries } from '../utils/programSummary'
+import type { ProgramSectionSummaries } from '../utils/programSummary'
 import type { BonusFieldsLabels, EarnFieldsLabels, ProgramFieldLimits, SelectOption, VisitRulesLabels } from '../utils/programFormLabels'
 
-const HOURS_PER_DAY = 24
 const RATE_MIN = 1
 const BONUS_UNITS_MIN = 1
 
@@ -13,17 +14,14 @@ export interface ProgramFormLabels {
   earn: ComputedRef<EarnFieldsLabels>
   bonus: ComputedRef<BonusFieldsLabels>
   visitRules: ComputedRef<VisitRulesLabels>
+  /** Uma linha por seção fechada; null antes do rascunho carregar. */
+  summaries: ComputedRef<ProgramSectionSummaries | null>
 }
 
 /** Monta os textos do editor a partir do rascunho (a unidade e os limites mudam com o modo). */
 export function useProgramFormLabels(draft: Readonly<Ref<ProgramDraft | null>>): ProgramFormLabels {
   const { t } = useI18n()
-
-  function cooldownLabel(hours: number): string {
-    return hours % HOURS_PER_DAY === 0
-      ? t('program.visitRules.cooldownDays', { count: hours / HOURS_PER_DAY }, hours / HOURS_PER_DAY)
-      : t('program.visitRules.cooldownHours', { count: hours }, hours)
-  }
+  const translate = useTranslate()
 
   // Um valor salvo fora da lista (vindo do backend) continua aparecendo no seletor.
   function withCurrent(options: readonly number[], current: number | null): number[] {
@@ -54,6 +52,7 @@ export function useProgramFormLabels(draft: Readonly<Ref<ProgramDraft | null>>):
         pointsPerVisit: { label: t('program.earn.modes.pointsPerVisit.label'), description: t('program.earn.modes.pointsPerVisit.description') },
       },
       modeLocked: t('program.earn.modeLocked'),
+      modeLockedTag: t('program.card.locked'),
       target: t(`program.earn.target.${unit}`),
       targetHint: t('program.earn.targetHint', { min: targetMin, max: targetMax }),
       targetError: t('program.errors.range', { min: targetMin, max: targetMax }),
@@ -99,12 +98,15 @@ export function useProgramFormLabels(draft: Readonly<Ref<ProgramDraft | null>>):
       checkIn: { label: t('program.visitRules.checkIn.label'), description: t('program.visitRules.checkIn.description') },
       cooldown: t('program.visitRules.cooldown'),
       cooldownHint: t('program.visitRules.cooldownHint'),
-      cooldownOptions: withCurrent(COOLDOWN_HOUR_OPTIONS, cooldown).map((value) => ({ label: cooldownLabel(value), value: String(value) })),
+      cooldownOptions: withCurrent(COOLDOWN_HOUR_OPTIONS, cooldown).map((value) => ({ label: cooldownLabel(value, translate), value: String(value) })),
       expiration: t('program.visitRules.expiration'),
       expirationHint: t('program.visitRules.expirationHint'),
       expirationOptions,
+      optionError: t('program.errors.option'),
     }
   })
 
-  return { limits, earn, bonus, visitRules }
+  const summaries = computed(() => (draft.value === null ? null : toProgramSummaries(draft.value, translate)))
+
+  return { limits, earn, bonus, visitRules, summaries }
 }

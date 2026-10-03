@@ -49,9 +49,9 @@ const hidden = computed(() => rest.value.length - peeks.value.length)
           :aria-label="showLabel(card)"
           @click="emit('select', card.id)"
         >
-          <span class="letreiro min-w-0 truncate text-[0.9375rem] text-highlighted">{{ card.shopName }}</span>
+          <span class="font-display min-w-0 truncate text-base font-bold text-highlighted">{{ card.shopName }}</span>
           <span
-            class="tabular flex shrink-0 items-center gap-1.5 text-[0.9375rem] font-semibold"
+            class="tabular flex shrink-0 items-center gap-1.5 text-base font-semibold"
             :class="card.rewardReady ? 'text-secondary' : 'text-muted'"
           >
             <UIcon v-if="card.rewardReady" name="i-ph-gift-bold" class="size-4" aria-hidden="true" />

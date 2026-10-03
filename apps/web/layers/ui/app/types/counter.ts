@@ -27,6 +27,8 @@ export interface CounterKeypadLabels {
 /** O cartão do cliente logo depois do lançamento, para o atendente conferir de relance. */
 export interface LaunchReceiptModel {
   readonly tone: 'ink' | 'reward'
+  /** Inclinação fixa da impressão grande do recibo. */
+  readonly tilt: number
   /** "+1 carimbo para (67) 9••••-0374" */
   readonly title: string
   /** "Agora tem 7 de 10. Faltam 3 para Corte grátis." */

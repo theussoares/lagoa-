@@ -16,7 +16,7 @@ import { LedgerKindSchema } from '#shared/schemas/visit'
  * Banco do backend falso. Só existe no mock: é o "servidor" que guarda o
  * celular completo. Nada daqui sai para a UI sem passar pelos handlers.
  */
-export const MOCK_STATE_VERSION = 5
+export const MOCK_STATE_VERSION = 7
 
 export const ShopRecordSchema = ShopSchema.extend({ checkInCode: CheckInCodeSchema })
 export type ShopRecord = z.infer<typeof ShopRecordSchema>
@@ -26,6 +26,8 @@ export const CustomerRecordSchema = z.object({
   phone: PhoneNumberSchema,
   firstName: z.string().nullable(),
   birthday: BirthdaySchema.nullable(),
+  /** Última vez que uma data foi salva (tirar a data não conta). */
+  birthdayChangedAt: IsoDateTimeSchema.nullable(),
   consent: ConsentSchema,
   termsAcceptedAt: IsoDateTimeSchema.nullable(),
   createdAt: IsoDateTimeSchema,

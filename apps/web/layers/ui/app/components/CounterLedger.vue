@@ -17,9 +17,9 @@ defineProps<Props>()
         class="grid min-h-14 grid-cols-[3.25rem_minmax(0,1fr)_auto_2.5rem] items-center gap-x-4 border-b border-(--lagoa-rule) py-2 text-[0.9375rem] last:border-b-0"
       >
         <span class="tabular text-muted">{{ entry.time }}</span>
-        <span class="flex min-w-0 items-center gap-2">
+        <span class="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">
           <span class="tabular font-semibold whitespace-nowrap text-highlighted">{{ entry.phone }}</span>
-          <UBadge v-if="entry.badge" :label="entry.badge" color="success" variant="subtle" size="sm" class="shrink-0" />
+          <StampTag v-if="entry.badge" :label="entry.badge" tone="success" />
         </span>
         <span class="tabular text-right font-semibold" :class="entry.tone === 'reward' ? 'text-secondary' : 'text-primary'">
           {{ entry.action }}

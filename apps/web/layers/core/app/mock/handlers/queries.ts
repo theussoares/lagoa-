@@ -48,6 +48,7 @@ export function toShopSummary(shop: ShopRecord, program: Program): ShopSummary {
     category: shop.category,
     neighborhood: shop.neighborhood,
     addressLine: shop.addressLine,
+    showcase: shop.showcase,
     program: {
       unit: unitOf(program.rules),
       target: program.rules.target,
@@ -66,6 +67,7 @@ export function ensureCustomer(ctx: MockContext, phone: PhoneNumber): { customer
     phone,
     firstName: null,
     birthday: null,
+    birthdayChangedAt: null,
     consent: { notifications: false, updatedAt: null },
     termsAcceptedAt: null,
     createdAt: toIso(ctx.now),

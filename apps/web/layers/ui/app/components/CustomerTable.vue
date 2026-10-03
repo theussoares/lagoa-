@@ -40,15 +40,9 @@ const columns = computed<TableColumn<CustomerRowModel>[]>(() => [
       <span class="flex min-w-40 flex-col gap-1.5">
         <span class="flex items-center gap-2">
           <span class="tabular">{{ row.original.progress }}</span>
-          <UBadge v-if="row.original.rewardReady" :label="labels.rewardReady" color="secondary" variant="subtle" size="sm" icon="i-ph-gift" />
+          <StampTag v-if="row.original.rewardReady" :label="labels.rewardReady" tone="reward" icon="i-ph-gift" />
         </span>
-        <UProgress
-          :model-value="row.original.progressRatio * 100"
-          :color="row.original.rewardReady ? 'secondary' : 'primary'"
-          size="xs"
-          aria-hidden="true"
-          class="max-w-40"
-        />
+        <InkRule :fraction="row.original.progressRatio" :tone="row.original.rewardReady ? 'reward' : 'ink'" class="max-w-40" />
       </span>
     </template>
 
@@ -59,7 +53,7 @@ const columns = computed<TableColumn<CustomerRowModel>[]>(() => [
     <template #lastVisit-cell="{ row }">
       <span class="flex items-center gap-2">
         <span class="tabular">{{ row.original.lastVisit }}</span>
-        <UBadge v-if="row.original.isLapsed" :label="labels.lapsed" color="warning" variant="subtle" size="sm" />
+        <StampTag v-if="row.original.isLapsed" :label="labels.lapsed" tone="warning" />
       </span>
     </template>
 

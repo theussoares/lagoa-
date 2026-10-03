@@ -108,6 +108,7 @@ export function toLaunchReceipt(result: VisitRegistered, rewardTitle: string, t:
 
   return {
     tone: card.rewardReady ? 'reward' : 'ink',
+    tilt: stampTilt(card.cardId, card.balance),
     title,
     detail: parts.filter((part) => part !== null).join(' '),
     body: receiptBody(result, t),

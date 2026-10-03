@@ -12,10 +12,10 @@ export default defineNuxtConfig({
       colors: ['primary', 'secondary', 'success', 'info', 'warning', 'error'],
     },
   },
-  // Abre no claro; o escuro é escolha da pessoa (Perfil / Configurações), não do sistema.
+  // Abre no escuro; o claro é escolha da pessoa (Perfil / Configurações), não do sistema.
   colorMode: {
-    preference: 'light',
-    fallback: 'light',
+    preference: 'dark',
+    fallback: 'dark',
   },
   icon: {
     // Só Phosphor, servido do pacote local (@iconify-json/ph).

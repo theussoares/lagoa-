@@ -10,10 +10,7 @@ const themeLabels = computed(() => ({ legend: t('theme.legend'), light: t('theme
 
 <template>
   <div class="mx-auto flex w-full max-w-[1200px] flex-col gap-6">
-    <div class="flex flex-col gap-1">
-      <h1 class="text-[1.75rem] leading-tight font-bold text-highlighted [font-stretch:90%]">{{ t('merchantSettings.title') }}</h1>
-      <p class="text-muted">{{ t('merchantSettings.lead') }}</p>
-    </div>
+    <PageTitle :title="t('merchantSettings.title')" :lead="t('merchantSettings.lead')" />
     <div class="max-w-[520px]">
       <PanelModule :title="t('merchantSettings.appearance')">
         <ThemeChoice v-model="theme" :labels="themeLabels" />

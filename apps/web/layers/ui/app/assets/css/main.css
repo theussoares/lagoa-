@@ -1,24 +1,26 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 @import "@fontsource-variable/archivo/wdth.css";
+@import "@fontsource-variable/bricolage-grotesque/index.css";
 
 /* Lagoa+ "Carimbo e Caderneta". Fonte da verdade: design-system/lagoa/MASTER.md */
 
 @theme static {
   --font-sans: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque Variable", "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
 
-  /* tinta: almofada de carimbo azul (ação, carimbos) */
-  --color-tinta-50: #ECF7FF;
-  --color-tinta-100: #DEECFF;
-  --color-tinta-200: #C5DAFF;
-  --color-tinta-300: #A4BFFF;
-  --color-tinta-400: #7899F7;
-  --color-tinta-500: #5476E7;
-  --color-tinta-600: #3B5ACA;
-  --color-tinta-700: #2E48A7;
-  --color-tinta-800: #223785;
-  --color-tinta-900: #172763;
-  --color-tinta-950: #0B163F;
+  /* tinta: almofada de carimbo verde-petróleo (ação, carimbos) */
+  --color-tinta-50: #EFFBF3;
+  --color-tinta-100: #D9F6E4;
+  --color-tinta-200: #B4EBC9;
+  --color-tinta-300: #82DBA8;
+  --color-tinta-400: #52CC87;
+  --color-tinta-500: #2FB66C;
+  --color-tinta-600: #1F9558;
+  --color-tinta-700: #167A48;
+  --color-tinta-800: #0F5E3D;
+  --color-tinta-900: #0A4440;
+  --color-tinta-950: #0B3538;
 
   /* carimbo: tinta vermelha, só prêmio e resgate */
   --color-carimbo-50: #FFEEE8;
@@ -46,26 +48,47 @@
   --color-folha-900: #00391C;
   --color-folha-950: #00220E;
 
+  /* lima: acento vivo (progresso, "aberta agora", destaque positivo). Teste 2: verde-limão */
+  --color-lima-50: #F7FDE6;
+  --color-lima-100: #EBFBC3;
+  --color-lima-200: #D7F68C;
+  --color-lima-400: #BEEB4B;
+  --color-lima-500: #A4DE28;
+  --color-lima-600: #80B616;
+  --color-lima-700: #4D7C0F;
+  --color-lima-900: #2A4306;
+
+  /* sol: acento quente, só selo de destaque (nunca ação) */
+  --color-sol-50: #FFF6EA;
+  --color-sol-100: #FFE9CF;
+  --color-sol-200: #FFD3A1;
+  --color-sol-500: #F28A1E;
+  --color-sol-700: #B4570A;
+  --color-sol-800: #8F4308;
+  --color-sol-900: #5C2B05;
+
   /* mesa: neutro frio de papel e balcão */
-  --color-mesa-50: #F3F7FA;
-  --color-mesa-100: #E9EEF0;
-  --color-mesa-200: #D7DCDE;
-  --color-mesa-300: #BDC2C5;
-  --color-mesa-400: #9A9FA2;
-  --color-mesa-500: #7B8184;
-  --color-mesa-600: #61676A;
-  --color-mesa-700: #4E5356;
-  --color-mesa-800: #3C4143;
-  --color-mesa-900: #2A2F31;
-  --color-mesa-950: #181B1D;
+  --color-mesa-50: #FAFAF8;
+  --color-mesa-100: #F3F3F0;
+  --color-mesa-200: #E4E5E1;
+  --color-mesa-300: #C9CBC5;
+  --color-mesa-400: #A1A49D;
+  --color-mesa-500: #7A7E78;
+  --color-mesa-600: #5C615B;
+  --color-mesa-700: #454A45;
+  --color-mesa-800: #313531;
+  --color-mesa-900: #1D211E;
+  --color-mesa-950: #14171A;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-stamp: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --ease-elegant: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 :root {
   --ui-radius: 0.625rem; /* controles 10px; cartões usam --radius-card */
-  --radius-card: 0.875rem;
+  --radius-card: 1.5rem;
+  --radius-header: 1.75rem;
 
   --ui-primary: var(--ui-color-primary-700);
   --ui-secondary: var(--ui-color-secondary-600);
@@ -79,7 +102,7 @@
   --ui-bg-elevated: var(--color-mesa-100);
   --ui-bg-accented: var(--color-mesa-200);
   --ui-text: var(--color-mesa-800);
-  --ui-text-highlighted: var(--color-mesa-950);
+  --ui-text-highlighted: var(--color-tinta-950);
   --ui-text-toned: var(--color-mesa-700);
   --ui-text-muted: var(--color-mesa-600);
   --ui-text-dimmed: var(--color-mesa-600);
@@ -87,14 +110,18 @@
   --ui-border-muted: var(--color-mesa-100);
   --ui-border-accented: var(--color-mesa-300);
 
-  --lagoa-desk: var(--color-mesa-100);
+  --lagoa-desk: #FFFFFF;
+  --lagoa-header: var(--color-tinta-900);
+  --lagoa-scrim: linear-gradient(180deg, rgb(11 53 56 / 0.55), rgb(11 53 56 / 0.82));
   --lagoa-rule: var(--color-mesa-200);
   --lagoa-slot: var(--color-mesa-500);
-  --lagoa-shadow-card: 0 1px 2px rgb(24 27 29 / 0.06), 0 12px 24px -10px rgb(24 27 29 / 0.22);
+  --lagoa-shadow-card: 0 0 0 1px rgb(11 53 56 / 0.09), 0 1px 0 rgb(11 53 56 / 0.04), 0 14px 32px -18px rgb(11 53 56 / 0.2);
+  --lagoa-glow: 0 0 22px rgb(164 222 40 / 0.45);
 
   --lagoa-dur-fast: 120ms;
   --lagoa-dur-base: 200ms;
   --lagoa-dur-stamp: 420ms;
+  --lagoa-dur-rise: 520ms;
 }
 
 .dark {
@@ -104,23 +131,25 @@
   --ui-error: var(--ui-color-error-400);
   --ui-warning: var(--ui-color-warning-400);
 
-  --ui-bg: #212628;
-  --ui-bg-muted: var(--color-mesa-900);
-  --ui-bg-elevated: var(--color-mesa-800);
-  --ui-bg-accented: var(--color-mesa-700);
-  --ui-text: var(--color-mesa-200);
-  --ui-text-highlighted: var(--color-mesa-50);
-  --ui-text-toned: var(--color-mesa-300);
-  --ui-text-muted: var(--color-mesa-400);
-  --ui-text-dimmed: var(--color-mesa-400);
-  --ui-border: var(--color-mesa-800);
-  --ui-border-muted: var(--color-mesa-900);
-  --ui-border-accented: var(--color-mesa-700);
+  --ui-bg: #0F2A2D;
+  --ui-bg-muted: #133438;
+  --ui-bg-elevated: #194147;
+  --ui-bg-accented: #235157;
+  --ui-text: #D3E6DC;
+  --ui-text-highlighted: #F3FBF6;
+  --ui-text-toned: #B3CCBF;
+  --ui-text-muted: #8FB0A1;
+  --ui-text-dimmed: #8FB0A1;
+  --ui-border: rgb(255 255 255 / 0.1);
+  --ui-border-muted: rgb(255 255 255 / 0.06);
+  --ui-border-accented: rgb(255 255 255 / 0.18);
 
-  --lagoa-desk: var(--color-mesa-950);
-  --lagoa-rule: var(--color-mesa-800);
-  --lagoa-slot: var(--color-mesa-500);
-  --lagoa-shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 24px -10px rgb(0 0 0 / 0.55);
+  --lagoa-desk: #08201F;
+  --lagoa-header: var(--color-tinta-950);
+  --lagoa-scrim: linear-gradient(180deg, rgb(0 0 0 / 0.5), rgb(0 0 0 / 0.8));
+  --lagoa-rule: rgb(255 255 255 / 0.1);
+  --lagoa-slot: #6F9686;
+  --lagoa-shadow-card: 0 0 0 1px rgb(255 255 255 / 0.06), 0 14px 32px -16px rgb(0 0 0 / 0.7);
 }
 
 body {
@@ -157,6 +186,61 @@ body {
   letter-spacing: 0.02em;
 }
 
+/*
+ * Escala de tipo (MASTER > Tipografia). Título de tela é letreiro: o mesmo tipo
+ * condensado do cartão, grande, sobre a régua dupla da caderneta.
+ */
+.type-title {
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  line-height: 1.02;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  color: var(--ui-text-highlighted);
+  text-wrap: balance;
+}
+
+.type-h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ui-text-highlighted);
+  text-wrap: balance;
+}
+
+.type-lead {
+  color: var(--ui-text-toned);
+  text-wrap: pretty;
+  max-width: 62ch;
+}
+
+.type-tag {
+  font-size: 0.875rem;
+  line-height: 1.2;
+  font-weight: 650;
+  font-stretch: 75%;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Régua dupla de caderneta: traço de tinta grosso sobre a pauta fina. */
+.ledger-rule {
+  position: relative;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--lagoa-rule);
+}
+
+.ledger-rule::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 3px;
+  height: 2px;
+  background: var(--ui-text-highlighted);
+}
+
 @keyframes stamp-press {
   0% { opacity: 0; transform: translateY(-14px) scale(1.35) rotate(var(--stamp-tilt-from, -14deg)); filter: blur(2px); }
   60% { opacity: 1; transform: translateY(0) scale(0.94) rotate(var(--stamp-tilt, -4deg)); filter: blur(0); }
@@ -187,6 +271,69 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .ticket-char {
+    animation: none;
+  }
+}
+
+/* Display: Bricolage Grotesque com tracking negativo, o tom de "produto" (MASTER > Tipografia). */
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
+}
+
+/* Rótulo pequeno: caixa-alta com respiro largo. */
+.eyebrow-tag {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* Entrada escalonada: cada filho define --i. */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: none; }
+}
+
+.rise {
+  animation: rise var(--lagoa-dur-rise) var(--ease-elegant) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+
+/* Ícone que "estala" ao entrar. */
+@keyframes pop-tilt {
+  0% { opacity: 0; transform: scale(0.5) rotate(-12deg); }
+  70% { opacity: 1; transform: scale(1.08); }
+  100% { opacity: 1; transform: none; }
+}
+
+.pop-tilt {
+  animation: pop-tilt 480ms var(--ease-elegant) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+
+/* Anel que pulsa: "aberta agora", "ao vivo". */
+@keyframes live-dot {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(164 222 40 / 0.5); }
+  60% { box-shadow: 0 0 0 8px rgb(164 222 40 / 0); }
+}
+
+.live-dot {
+  animation: live-dot 2s ease-out infinite;
+}
+
+/* Panorâmica lenta da foto da cidade. */
+@keyframes slow-pan {
+  from { transform: scale(1.08) translateX(-2%); }
+  to { transform: scale(1.14) translateX(2%); }
+}
+
+.slow-pan {
+  animation: slow-pan 18s ease-in-out infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise, .pop-tilt, .live-dot, .slow-pan {
     animation: none;
   }
 }
