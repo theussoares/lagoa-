@@ -14,7 +14,7 @@ const STEPS = ['call', 'reply', 'setup'] as const
         <WhatsAppButton />
         <p class="flex flex-col">
           <span class="text-[0.9375rem] text-muted">{{ t('closing.phoneLabel') }}</span>
-          <a :href="href" target="_blank" rel="noopener" class="tabular inline-flex min-h-11 items-center font-display text-[1.75rem] font-bold text-highlighted underline-offset-4 hover:underline">
+          <a :href="href" target="_blank" rel="noopener noreferrer" class="tabular inline-flex min-h-11 items-center font-display text-[1.75rem] font-bold text-highlighted underline-offset-4 hover:underline">
             {{ displayNumber }}<span class="sr-only"> {{ t('cta.newTab') }}</span>
           </a>
         </p>

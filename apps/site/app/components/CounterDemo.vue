@@ -54,7 +54,8 @@ function restart(): void {
 </script>
 
 <template>
-  <div v-reveal class="rounded-(--radius-card) bg-default shadow-(--lagoa-shadow-card)">
+  <!-- touch-manipulation: toques rápidos no teclado não viram zoom de toque duplo no celular. -->
+  <div v-reveal class="rounded-(--radius-card) bg-default shadow-(--lagoa-shadow-card) [&_button]:touch-manipulation">
     <header class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-(--lagoa-rule) px-4 py-4 sm:px-6">
       <p class="letreiro text-lg text-highlighted">{{ t('counter.panelTitle') }}</p>
       <p class="text-[0.9375rem] text-(--color-lima-200)">{{ t('counter.tryIt') }}</p>

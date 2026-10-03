@@ -5,6 +5,7 @@
   },
   "nav": {
     "label": "Navegação principal",
+    "skip": "Pular para o conteúdo",
     "home": "Lagoa+, início",
     "counter": "Balcão",
     "lapsed": "Clientes sumidos",
