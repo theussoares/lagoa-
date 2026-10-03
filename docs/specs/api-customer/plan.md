@@ -51,7 +51,11 @@ Telas: Carteira, Cartão da loja. Front: `WalletService`.
 - Carimbos (`stamps`) derivados do ledger, sem tabela própria.
 - Mapa dos tipos do ledger do banco (`welcomeBonus`, `referralBonus`, `expiration`)
   para os do `shared` (`LedgerKind`); se faltar tipo, ajuste no `shared` combinado com o front.
-- Estado de expiração calculado na leitura (prêmio guardado 30 dias, inatividade).
+- Entram só `visit`, `amount`, `checkIn` e `redemption` na caderneta (os tipos do `shared`); bônus de
+  boas-vindas e indicação aparecem como carimbos do cartão (`source`). Ampliar `LedgerKind` fica para
+  quando o front tiver os textos.
+- A expiração (prêmio guardado 30 dias, inatividade) é toda da fase 5, na leitura e na escrita.
+- Índices do ledger com `id` no fim (desempate do mesmo instante) e consultas `nulls last`.
 - Queries em lote (cartões + último ledger) sem N+1.
 
 ## Fase 4: Check-in e Carimbo ganho
@@ -94,6 +98,16 @@ Tela: Resgate. Front: `RewardRedemptionService`.
 | Testes de repository Drizzle (filtro `approved`, ordem, lock) contra Postgres de verdade, hoje só validados à mão | `apps/api` | 5 |
 | Índice `(status, name, id)` para a ordem da vitrine, se passar de centenas de lojas | `shops` | 5 |
 | Rotação da chave de cifra de PII (prefixo de versão no payload) | `pii.service.ts` | 5 |
+
+## Decisões registradas
+
+- **Histórico de loja suspensa:** a caderneta do cliente continua mostrando o histórico (é dado dele);
+  o cartão some da carteira e do `getCard` enquanto a loja não estiver `approved`. PO confirma.
+- **Migrations 0002/0003:** o índice do ledger por cliente nasceu sem `id` e foi refeito na 0003.
+  Ambas já estão aplicadas no projeto `lagoa-`; não se reescreve histórico aplicado.
+- **Contrato do ledger (fase 4, com o Caio):** `occurred_at` usa `now()` da transação, então visita e
+  boas-vindas gravadas juntas têm o mesmo instante e o desempate é o `id` (UUID v7, ordem de inserção).
+  O serviço de ledger insere as **boas-vindas antes da visita**, para ficarem nas casas 1 e 2.
 
 ## Pontos de contato com o Caio
 

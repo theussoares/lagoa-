@@ -20,6 +20,10 @@ export const CHECK_IN_CODE_LENGTH = 6
 export const CHECK_IN_LINK_PARAM = 'loja'
 /** Teto da vitrine do Descobrir: o piloto é uma cidade; lista sempre limitada. */
 export const DISCOVER_SHOPS_LIMIT = 200
+/** A carteira de uma pessoa cabe em dezenas de cartões; a lista é limitada de qualquer jeito. */
+export const WALLET_CARDS_LIMIT = 100
+export const WALLET_ACTIVITY_DEFAULT_LIMIT = 20
+export const WALLET_ACTIVITY_MAX_LIMIT = 50
 /** Código do convite de indicação do cliente, no link `/convite?ref=`. */
 export const REFERRAL_CODE_LENGTH = 8
 export const PHONE_INPUT_MAX_LENGTH = 32

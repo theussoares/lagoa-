@@ -15,6 +15,20 @@
       "when": 1791051161318,
       "tag": "0001_enable_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791070299870,
+      "tag": "0002_ledger_customer_index",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791070446420,
+      "tag": "0003_ledger_index_tiebreak",
+      "breakpoints": true
     }
   ]
 }
