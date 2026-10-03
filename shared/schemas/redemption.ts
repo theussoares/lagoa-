@@ -23,6 +23,10 @@ export const RedemptionSchema = z.object({
 })
 export type Redemption = z.infer<typeof RedemptionSchema>
 
+/** O cliente pede o código de um cartão seu; quem manda o id é o app, quem decide é o servidor. */
+export const RedemptionRequestSchema = z.object({ cardId: z.uuid() })
+export type RedemptionRequest = z.infer<typeof RedemptionRequestSchema>
+
 /** O que o Balcão vê depois de validar o código, antes de entregar o prêmio. */
 export const RedemptionPreviewSchema = z.object({
   redemptionId: RedemptionIdSchema,

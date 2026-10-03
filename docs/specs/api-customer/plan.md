@@ -72,20 +72,27 @@ Telas: Check-in, Carimbo ganho. Front: `CheckInService`.
   a janela é `checkInAvailableAt`. O Balcão chama `planEarning` com `input` de visita ou de valor.
 - Limite de requisições mais estrito nesta rota.
 
-## Fase 5: Resgate, Indicação e fechamento
-Tela: Resgate. Front: `RewardRedemptionService`.
+## Fase 5: Resgate, Expiração, Indicação e fechamento
+Tela: Resgate. Front: `RewardRedemptionService`. Entregue em três PRs.
 
-- `POST /v1/redemptions` (gera ou devolve o código ativo; 6 caracteres legíveis,
-  10 min), `GET /v1/redemptions/:id` (expira sozinho na leitura).
-- A validação e a entrega no Balcão são do Caio; o contrato do débito no ledger
-  (`redemption`) é o do serviço de ledger da fase 4.
-- **Indicação:** link `ref` + `loja` guardado no cadastro; na primeira visita válida
-  cria `Referral` e paga `referralBonus` no cartão do indicador, com todas as
-  regras do `docs/database-model.md`.
-- **Expiração:** rotina agendada para prêmio não resgatado (30 dias) e carimbos
-  vencidos por inatividade.
-- Fechamento: revisão de segurança de ponta a ponta, `EXPLAIN` das queries críticas,
-  README da API, checklist de integração com o front (`Http*Service`).
+**5.1 Resgate** (feito)
+- `POST /v1/redemptions` `{ cardId }` (gera ou devolve o código ativo; 6 caracteres legíveis, 10 min; um código
+  ativo por cartão garantido por índice único parcial), `GET /v1/redemptions/:id` (vencido sai como `expired`
+  e libera o código da loja).
+- Migration `0004`: `redemptions.created_at` e `redemptions_active_card_uq`.
+- `LedgerStore.settleRedemption`: a entrega no Balcão (débito da meta no ledger, `redeemed`, cartão que recomeça
+  com boas-vindas, nunca duas vezes). O Balcão do Caio só valida o código e chama.
+
+**5.2 Expiração**
+- Regra pura em `shared/domain` (inatividade e prêmio guardado por `REWARD_HOLD_DAYS`), aplicada dentro do
+  `LedgerStore` antes de creditar e de pedir resgate (persiste linha `expiration` no ledger) e na leitura da
+  Carteira (saldo efetivo). Sem job: o vencimento vale quando o cartão é lido ou recebe qualquer lançamento.
+
+**5.3 Indicação + fechamento**
+- `Referral` pendente criado pelo link (`ref` + `loja`); pago na primeira visita válida (check-in ou Balcão) com
+  todas as regras do `docs/database-model.md`, dentro da mesma transação do `LedgerStore`.
+- `Idempotency-Key` no check-in, README da API, revisão de segurança de ponta a ponta, `EXPLAIN` das queries
+  críticas, checklist de integração com o front (`Http*Service`).
 
 ## Pendências registradas (revisões)
 

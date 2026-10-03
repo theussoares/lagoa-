@@ -1,0 +1,2 @@
+ALTER TABLE "redemptions" ADD COLUMN "created_at" timestamp with time zone DEFAULT now() NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "redemptions_active_card_uq" ON "redemptions" USING btree ("card_id") WHERE "redemptions"."status" = 'active';

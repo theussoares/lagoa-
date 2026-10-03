@@ -29,6 +29,13 @@
       "when": 1791070446420,
       "tag": "0003_ledger_index_tiebreak",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791071485997,
+      "tag": "0004_redemption_created_at_and_active_card",
+      "breakpoints": true
     }
   ]
 }

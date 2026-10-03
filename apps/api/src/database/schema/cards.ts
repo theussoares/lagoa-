@@ -44,6 +44,7 @@ export const redemptions = pgTable(
     rewardTitle: text('reward_title').notNull(),
     code: char('code', { length: 6 }).notNull(),
     status: redemptionStatus('status').notNull().default('active'),
+    createdAt: createdAt(),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     redeemedAt: timestamp('redeemed_at', { withTimezone: true }),
     redeemedBy: uuid('redeemed_by').references(() => appUsers.id),
@@ -51,6 +52,10 @@ export const redemptions = pgTable(
   (t) => [
     uniqueIndex('redemptions_active_code_uq')
       .on(t.shopId, t.code)
+      .where(sql`${t.status} = 'active'`),
+    // Um código ativo por cartão: dois pedidos simultâneos não geram dois códigos.
+    uniqueIndex('redemptions_active_card_uq')
+      .on(t.cardId)
       .where(sql`${t.status} = 'active'`),
   ],
 )
