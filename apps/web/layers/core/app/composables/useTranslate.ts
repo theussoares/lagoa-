@@ -1,4 +1,4 @@
-import type { Translate } from '../utils/translate'
+import type { Translate } from '../types/i18n'
 
 /** O `t` do vue-i18n na forma que os mapeadores puros (utils) aceitam. */
 export function useTranslate(): Translate {

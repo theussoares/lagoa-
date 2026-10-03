@@ -4,22 +4,7 @@ import { LoginCodeSchema } from '#shared/schemas/session'
 import type { DomainErrorCode } from '#shared/types/errors'
 import { parsePhoneNumber } from '#shared/utils/phone'
 import { useClubSetupStore } from '../stores/clubSetup'
-
-export type MerchantSignInStep = { name: 'phone' } | { name: 'code'; phone: PhoneNumber }
-
-/** `signUp`: celular confirmado sem loja; a página leva ao Criar o clube. */
-export type MerchantSignInOutcome = 'signedIn' | 'signUp' | 'failed'
-
-export interface MerchantSignIn {
-  step: Readonly<Ref<MerchantSignInStep>>
-  pending: Readonly<Ref<boolean>>
-  error: Readonly<Ref<DomainErrorCode | null>>
-  resendIn: Readonly<Ref<number>>
-  requestCode: (rawPhone: string) => Promise<void>
-  resendCode: () => Promise<void>
-  verify: (rawCode: string) => Promise<MerchantSignInOutcome>
-  changePhone: () => void
-}
+import type { MerchantSignInStep, MerchantSignInOutcome, MerchantSignIn } from '../types/signIn'
 
 /** Entrar no painel com o celular da loja + código. O celular fica só em memória. */
 export function useMerchantSignIn(): MerchantSignIn {

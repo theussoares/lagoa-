@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { StampCardModel } from '#layers/ui/app/types/wallet'
+import { formatShortDate } from '#shared/utils/dateFormat'
 
 definePageMeta({ path: '/carteira', layout: 'customer', middleware: 'customer-auth' })
 

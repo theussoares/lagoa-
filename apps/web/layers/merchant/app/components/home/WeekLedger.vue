@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { WeekDayRow } from '../../utils/homeModels'
+import type { WeekDayRow } from '../../types/home'
 
 interface Props {
   rows: readonly WeekDayRow[]

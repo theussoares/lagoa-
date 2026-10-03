@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import type { BonusRules } from '#shared/schemas/program'
+import type { BonusRules, ProgramUnit } from '#shared/schemas/program'
 import { IsoDateSchema } from '#shared/schemas/common'
-import type { ProgramFieldErrors } from '../../utils/programForm'
-import type { BonusFieldsLabels, ProgramFieldLimits } from '../../utils/programFormLabels'
+import type { ProgramFieldErrors, ProgramFieldLimits } from '../../types/program'
 
 interface Props {
-  labels: BonusFieldsLabels
+  unit: ProgramUnit
   limits: ProgramFieldLimits
   errors: ProgramFieldErrors
 }
 
 defineProps<Props>()
 const bonus = defineModel<BonusRules>('bonus', { required: true })
+const translate = useTranslate()
 
 function toggle(rule: keyof BonusRules, enabled: boolean): void {
   bonus.value = { ...bonus.value, [rule]: { ...bonus.value[rule], enabled } }
@@ -32,16 +32,16 @@ function setSurpriseDate(value: string | number): void {
     <div class="flex flex-col gap-3 pb-4">
       <USwitch
         :model-value="bonus.welcomeBonus.enabled"
-        :label="labels.welcome.label"
-        :description="labels.welcome.description"
+        :label="$t('program.bonus.welcome.label')"
+        :description="$t('program.bonus.welcome.description', { units: unitsText(translate, unit, bonus.welcomeBonus.units) })"
         size="lg"
         class="min-h-11"
         @update:model-value="toggle('welcomeBonus', $event)"
       />
       <UFormField
         v-if="bonus.welcomeBonus.enabled"
-        :label="labels.welcomeUnits"
-        :error="errors.welcomeUnits ? labels.welcomeUnitsError : undefined"
+        :label="$t(`program.bonus.unitsLabel.${unit}`)"
+        :error="errors.welcomeUnits ? $t('program.errors.welcomeUnits', { ...limits.welcomeUnits }) : undefined"
         name="welcomeUnits"
         class="ml-12 max-w-48"
       >
@@ -52,8 +52,8 @@ function setSurpriseDate(value: string | number): void {
     <div class="py-4">
       <USwitch
         :model-value="bonus.birthdayMultiplier.enabled"
-        :label="labels.birthday.label"
-        :description="labels.birthday.description"
+        :label="$t('program.bonus.birthday.label')"
+        :description="$t('program.bonus.birthday.description')"
         size="lg"
         class="min-h-11"
         @update:model-value="toggle('birthdayMultiplier', $event)"
@@ -63,16 +63,16 @@ function setSurpriseDate(value: string | number): void {
     <div class="flex flex-col gap-3 py-4">
       <USwitch
         :model-value="bonus.referralBonus.enabled"
-        :label="labels.referral.label"
-        :description="labels.referral.description"
+        :label="$t('program.bonus.referral.label')"
+        :description="$t('program.bonus.referral.description', { units: unitsText(translate, unit, bonus.referralBonus.units) })"
         size="lg"
         class="min-h-11"
         @update:model-value="toggle('referralBonus', $event)"
       />
       <UFormField
         v-if="bonus.referralBonus.enabled"
-        :label="labels.referralUnits"
-        :error="errors.referralUnits ? labels.referralUnitsError : undefined"
+        :label="$t(`program.bonus.unitsLabel.${unit}`)"
+        :error="errors.referralUnits ? $t('program.errors.range', { ...limits.referralUnits }) : undefined"
         name="referralUnits"
         class="ml-12 max-w-48"
       >
@@ -83,22 +83,22 @@ function setSurpriseDate(value: string | number): void {
     <div class="flex flex-col gap-3 pt-4">
       <USwitch
         :model-value="bonus.surpriseDay.enabled"
-        :label="labels.surprise.label"
-        :description="labels.surprise.description"
+        :label="$t('program.bonus.surprise.label')"
+        :description="$t('program.bonus.surprise.description')"
         size="lg"
         class="min-h-11"
         @update:model-value="toggle('surpriseDay', $event)"
       />
       <UFormField
         v-if="bonus.surpriseDay.enabled"
-        :label="labels.surpriseDate"
-        :error="errors.surpriseDate ? labels.surpriseDateError : undefined"
+        :label="$t('program.bonus.surprise.date')"
+        :error="errors.surpriseDate ? $t('program.errors.surpriseDate') : undefined"
         name="surpriseDate"
         class="ml-12 max-w-56"
       >
         <UInput type="date" size="lg" :ui="{ base: 'min-h-11' }" :model-value="bonus.surpriseDay.date ?? ''" class="w-full" @update:model-value="setSurpriseDate" />
       </UFormField>
-      <p class="text-[0.9375rem] text-muted">{{ labels.noStacking }}</p>
+      <p class="text-[0.9375rem] text-muted">{{ $t('program.bonus.noStacking') }}</p>
     </div>
   </div>
 </template>

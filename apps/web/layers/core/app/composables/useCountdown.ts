@@ -1,5 +1,7 @@
+import type { Countdown } from '../types/countdown'
+
 /** Contagem regressiva em segundos (ex.: "Reenviar código em 24s"). Para sozinha ao desmontar. */
-export function useCountdown(): { remaining: Readonly<Ref<number>>; start: (seconds: number) => void } {
+export function useCountdown(): Countdown {
   const remaining = ref(0)
   let timer: ReturnType<typeof setInterval> | undefined
 

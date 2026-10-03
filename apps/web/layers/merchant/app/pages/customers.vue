@@ -3,7 +3,7 @@ import type { TabsItem } from '@nuxt/ui'
 import { LAPSED_AFTER_DAYS } from '#shared/constants/domain'
 import { isReachableForReminder } from '#shared/domain/customer'
 import { CustomerFilterSchema } from '#shared/schemas/customer'
-import type { CustomerTableLabels } from '#layers/ui/app/types/customers'
+import type { CustomerTableLabels } from '../types/customer'
 import { CUSTOMER_FILTER_QUERY, customerFilterFromSlug, customerFilterSlug } from '../utils/customerFilterQuery'
 import { toCustomerRowModel } from '../utils/customerModels'
 
@@ -136,7 +136,7 @@ const tableLabels = computed<CustomerTableLabels>(() => ({
           live
         />
         <p v-else-if="rows.length === 0" class="py-10 text-center text-muted">{{ t(`customers.empty.${filter}`, { days: LAPSED_AFTER_DAYS }) }}</p>
-        <CustomerTable v-else :rows="rows" :labels="tableLabels" :caption="t('customers.table.caption')" />
+        <CustomersTable v-else :rows="rows" :labels="tableLabels" :caption="t('customers.table.caption')" />
       </div>
     </PanelModule>
   </div>

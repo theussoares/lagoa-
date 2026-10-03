@@ -3,7 +3,7 @@ import { HOME_LAPSED_PREVIEW_LIMIT, LAPSED_AFTER_DAYS, WEEK_SUMMARY_DAYS } from 
 import { CUSTOMER_FILTER_QUERY, customerFilterSlug } from '../utils/customerFilterQuery'
 import { toCustomerRowModel } from '../utils/customerModels'
 import { toWeekDayRows, toWeekHeadline } from '../utils/homeModels'
-import type { LapsedPreviewLabels } from '../utils/homeModels'
+import type { LapsedPreviewLabels } from '../types/home'
 
 definePageMeta({ path: '/painel', layout: 'merchant', middleware: 'merchant-auth' })
 

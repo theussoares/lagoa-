@@ -1,35 +1,9 @@
 import type { CheckInResult } from '#shared/schemas/visit'
 import { addDays, localDateParts } from '#shared/utils/time'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 import type { CheckInError } from '../services/CheckInService'
-import { formatShortDate, formatTime } from './ledgerEntryModel'
-
-/** De onde veio o código: muda como o erro é explicado e como a pessoa tenta de novo. */
-export type CheckInSource = 'camera' | 'typed' | 'link'
-
-export type CheckInRecovery = 'scanAgain' | 'retry' | 'wallet'
-
-export interface CheckInNoticeModel {
-  readonly tone: 'warning' | 'error'
-  readonly icon: string
-  readonly title: string
-  readonly message: string
-  readonly recovery: CheckInRecovery
-}
-
-/** Que batida foi essa: comum, a penúltima (quase lá) ou a que liberou o prêmio. */
-export type CheckInMoment = 'earned' | 'almost' | 'reward'
-
-export interface CheckInEarnedModel {
-  readonly moment: CheckInMoment
-  readonly title: string
-  readonly lead: string
-  /** "Falta só 1 carimbo!": só no quase lá. */
-  readonly cheer: string | null
-  readonly next: string
-  /** Frase única para o leitor de tela anunciar o carimbo. */
-  readonly announcement: string
-}
+import { formatShortDate, formatTime } from '#shared/utils/dateFormat'
+import type { CheckInSource, CheckInNoticeModel, CheckInMoment, CheckInEarnedModel } from '../types/checkIn'
 
 /** "hoje às 18:40", "amanhã às 09:00", "em 5 de out. às 09:00" — no fuso da cidade. */
 export function formatCheckInWhen(iso: string, now: Date, t: Translate): string {

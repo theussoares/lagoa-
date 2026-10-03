@@ -20,10 +20,10 @@ const emit = defineEmits<Emits>()
 const MAX_PEEKS = 3
 const expanded = ref(false)
 
-const active = computed(() => props.cards.find((card) => card.id === props.activeId) ?? props.cards[0])
-const rest = computed(() => props.cards.filter((card) => card.id !== active.value?.id))
-const peeks = computed(() => (expanded.value ? rest.value : rest.value.slice(0, MAX_PEEKS)))
-const hidden = computed(() => rest.value.length - peeks.value.length)
+const stack = computed(() => stackPeeks(props.cards, props.activeId, expanded.value, MAX_PEEKS))
+const active = computed(() => stack.value.active)
+const peeks = computed(() => stack.value.peeks)
+const hidden = computed(() => stack.value.hidden)
 </script>
 
 <template>

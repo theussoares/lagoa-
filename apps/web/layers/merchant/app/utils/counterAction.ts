@@ -1,10 +1,6 @@
 import { unitOf } from '#shared/domain/programStrategies'
-import type { ProgramRules, ProgramUnit } from '#shared/schemas/program'
-
-/** O que o botão principal do Balcão faz, conforme o modo do clube. */
-export type CounterAction =
-  | { readonly kind: 'visit'; readonly unit: ProgramUnit; readonly units: number }
-  | { readonly kind: 'amount'; readonly pointsPerReal: number }
+import type { ProgramRules } from '#shared/schemas/program'
+import type { CounterAction } from '../types/counter'
 
 export function counterActionFor(rules: ProgramRules): CounterAction {
   if (rules.mode === 'pointsPerCurrency') return { kind: 'amount', pointsPerReal: rules.pointsPerReal }

@@ -1,0 +1,3 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`check-in page: typed code > shows the earned stamp and moves the focus to the title for a valid code 1`] = `"Carimbo ganho. Falta só 1 carimbo! Barbearia Navalha: 9 de 10. Falta 1 carimbo para Corte grátis.Carimbo ganho+1 carimbo no seu cartão.Falta só 1 carimbo!Barbearia NavalhaCentro09/10Barbearia Navalha: 9 de 10. Falta 1 carimbo para Corte grátis.1carimbo para ganharCorte grátisPróximo check-in aqui: hoje às 16:00.Ver carteira"`;

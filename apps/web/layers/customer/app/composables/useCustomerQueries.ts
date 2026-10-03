@@ -1,4 +1,4 @@
-import type { AsyncResult } from '#layers/core/app/composables/useAsyncResult'
+import type { AsyncResult } from '#layers/core/app/types/asyncResult'
 import type { WalletCard } from '#shared/schemas/loyaltyCard'
 import type { CustomerProfile } from '#shared/schemas/customer'
 import type { Challenge } from '#shared/schemas/discover'

@@ -8,7 +8,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "typecheck": "nuxt typecheck && tsc -p tsconfig.test.json",
+    "typecheck": "nuxt typecheck && tsc -p tsconfig.test.json && vue-tsc --noEmit -p tsconfig.nuxt-test.json",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -31,6 +31,7 @@
   },
   "devDependencies": {
     "@nuxt/test-utils": "^4.3.2",
+    "@types/node": "26.6.3",
     "@vue/test-utils": "^2.5.1",
     "happy-dom": "^20.14.5",
     "typescript": "^5.9.0",

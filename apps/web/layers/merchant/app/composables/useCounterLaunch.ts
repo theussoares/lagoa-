@@ -1,22 +1,6 @@
 import type { VisitRegistered } from '#shared/schemas/visit'
-import type { DomainErrorCode } from '#shared/types/errors'
 import { parsePhoneNumber } from '#shared/utils/phone'
-import type { CounterAction } from '../utils/counterAction'
-
-export type CounterLaunchState =
-  | { status: 'idle' }
-  | { status: 'pending' }
-  | { status: 'error'; code: DomainErrorCode }
-  | { status: 'success'; result: VisitRegistered }
-
-export interface CounterLaunch {
-  phone: Ref<string>
-  amount: Ref<string>
-  state: Readonly<Ref<CounterLaunchState>>
-  /** Lança a visita (ou o valor). Devolve o resultado para a caderneta, ou null. */
-  submit: (action: CounterAction) => Promise<VisitRegistered | null>
-  clear: () => void
-}
+import type { CounterAction, CounterLaunchState, CounterLaunch } from '../types/counter'
 
 /** Lançar visita no Balcão: digitou o celular, carimbou. */
 export function useCounterLaunch(): CounterLaunch {

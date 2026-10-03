@@ -21,7 +21,8 @@ const input = useTemplateRef<HTMLInputElement>('input')
 const typed = computed(() => formatPhoneInput(props.modelValue))
 // formatPhoneInput é sempre prefixo de formatPhoneDraft: o resto é a máscara ainda vazia.
 const rest = computed(() => formatPhoneDraft(props.modelValue).slice(typed.value.length))
-const describedBy = computed(() => [props.hint && hintId, props.error && errorId].filter(Boolean).join(' ') || undefined)
+const describedById = computed(() => describedBy([props.hint && hintId, props.error && errorId]))
+const { focus, caretToEnd } = useInputCaret(input)
 
 function onInput(event: Event): void {
   if (!(event.target instanceof HTMLInputElement)) return
@@ -29,17 +30,6 @@ function onInput(event: Event): void {
   emit('update:modelValue', digits)
   // Letra ou símbolo não muda os dígitos; o campo volta para a máscara.
   event.target.value = formatPhoneInput(digits)
-}
-
-function caretToEnd(): void {
-  const element = input.value
-  if (element === null) return
-  element.setSelectionRange(element.value.length, element.value.length)
-}
-
-function focus(): void {
-  input.value?.focus()
-  caretToEnd()
 }
 
 defineExpose({ focus })
@@ -68,7 +58,7 @@ defineExpose({ focus })
         autocomplete="off"
         :disabled="disabled"
         :aria-invalid="error ? true : undefined"
-        :aria-describedby="describedBy"
+        :aria-describedby="describedById"
         class="absolute inset-0 size-full cursor-text opacity-0"
         @input="onInput"
         @focus="caretToEnd"

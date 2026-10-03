@@ -1,6 +1,7 @@
 import { BirthdaySchema } from '#shared/schemas/common'
 import type { Birthday } from '#shared/schemas/common'
 import { PILOT_TIME_ZONE } from '#shared/utils/time'
+import type { BirthdayOption, BirthdayParts } from '../types/profile'
 
 /** Ano bissexto de referência: 29 de fevereiro é um aniversário válido. */
 const LEAP_REFERENCE_YEAR = 2024
@@ -9,16 +10,6 @@ const MONTHS_IN_YEAR = 12
 const monthFormat = new Intl.DateTimeFormat('pt-BR', { month: 'long', timeZone: 'UTC' })
 const changeDateFormat = new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: PILOT_TIME_ZONE })
 const birthdayFormat = new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long', timeZone: 'UTC' })
-
-export interface BirthdayOption {
-  readonly label: string
-  readonly value: string
-}
-
-export interface BirthdayParts {
-  readonly day: number | null
-  readonly month: number | null
-}
 
 export function daysInMonth(month: number): number {
   return new Date(Date.UTC(LEAP_REFERENCE_YEAR, month, 0)).getUTCDate()

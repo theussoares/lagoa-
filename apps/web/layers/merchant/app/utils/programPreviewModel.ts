@@ -2,18 +2,13 @@ import { STAMPS_TARGET_MAX } from '#shared/constants/domain'
 import { welcomeUnits } from '#shared/domain/bonusRules'
 import { earnRateOf, unitOf } from '#shared/domain/programStrategies'
 import type { ProgramDraft } from '#shared/schemas/program'
-import type { Translate } from '#layers/core/app/utils/translate'
-import type { StampCardBody, StampCardModel } from '#layers/ui/app/types/wallet'
+import type { Translate } from '#layers/core/app/types/i18n'
+import type { StampCardBody } from '#layers/ui/app/types/wallet'
 import { stampTilt } from '#layers/ui/app/utils/stampTilt'
+import type { ProgramPreview } from '../types/program'
 
 const PREVIEW_CARD_ID = 'program-preview'
 const PREVIEW_ICON = 'i-ph-storefront'
-
-export interface ProgramPreview {
-  readonly card: StampCardModel
-  /** "1 carimbo por visita", "1 ponto por real gasto". */
-  readonly earnLine: string
-}
 
 function pad(value: number, width: number): string {
   return String(value).padStart(width, '0')

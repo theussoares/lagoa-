@@ -25,8 +25,7 @@ const code = computed({
 })
 
 function focus(): void {
-  const root: unknown = pin.value?.$el
-  if (root instanceof HTMLElement) root.querySelector('input')?.focus()
+  focusFirstInput(pin.value)
 }
 
 defineExpose({ focus })

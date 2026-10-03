@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { RedemptionTicketState } from '#layers/ui/app/types/redemption'
+import { formatShortDate } from '#shared/utils/dateFormat'
 
 definePageMeta({ path: '/premios/:cardId', layout: 'customer', middleware: 'customer-auth' })
 

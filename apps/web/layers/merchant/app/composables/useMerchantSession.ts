@@ -1,17 +1,13 @@
 import { useSessionStore } from '#layers/core/app/stores/session'
-import type { MerchantSession } from '#shared/schemas/session'
 import { useClubSetupStore } from '../stores/clubSetup'
+import type { MerchantSessionControl } from '../types/session'
 
 export const MERCHANT_SIGN_IN_PATH = '/balcao/entrar'
 export const MERCHANT_HOME_PATH = '/balcao'
 export const CLUB_SETUP_PATH = '/balcao/criar-clube'
 export const MERCHANT_PANEL_PATH = '/painel'
 
-export function useMerchantSession(): {
-  session: ComputedRef<MerchantSession | null>
-  start: (session: MerchantSession) => void
-  signOut: () => Promise<void>
-} {
+export function useMerchantSession(): MerchantSessionControl {
   const sessions = useSessionStore()
   const clubSetup = useClubSetupStore()
 

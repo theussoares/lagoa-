@@ -1,7 +1,7 @@
 import type { IsoDateTime } from '#shared/schemas/common'
 import type { SignUpTicket } from '#shared/schemas/session'
 import { emptyClubSetupForm } from '../utils/clubSetupForm'
-import type { ClubSetupForm } from '../utils/clubSetupForm'
+import type { ClubSetupForm } from '../types/clubSetup'
 
 /**
  * Criar o clube, só em memória: recarregar a página volta para o login, onde o

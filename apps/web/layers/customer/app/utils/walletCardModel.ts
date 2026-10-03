@@ -1,9 +1,10 @@
 import { isRewardReady, remainingUnits } from '#shared/domain/loyaltyCard'
 import type { WalletCard } from '#shared/schemas/loyaltyCard'
 import type { StampCardBody, StampCardModel, StampCardStatus, StampSlotModel } from '#layers/ui/app/types/wallet'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 import { stampTilt } from '#layers/ui/app/utils/stampTilt'
 import { categoryIcon } from './categoryIcon'
+import type { WalletCardModelOptions } from '../types/wallet'
 
 /** Acima disso a grade de casas deixa de caber em 390px e o cartão vira régua. */
 const MAX_SLOTS = 20
@@ -58,13 +59,6 @@ function statusFor(card: WalletCard, seenBalance: number, t: Translate, formatDa
     unitLine: t(`wallet.card.unitsFor.${card.unit}`, {}, remaining),
     reward: card.rewardTitle,
   }
-}
-
-export interface WalletCardModelOptions {
-  readonly t: Translate
-  /** Saldo que a pessoa já tinha visto neste cartão; o que passar disso recebe a batida. */
-  readonly seenBalance: number
-  readonly formatDate: (iso: string) => string
 }
 
 export function toStampCardModel(card: WalletCard, options: WalletCardModelOptions): StampCardModel {

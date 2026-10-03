@@ -1,13 +1,17 @@
 import type { CustomerSession, MerchantSession } from '#shared/schemas/session'
 import type { ShopStatus } from '#shared/schemas/shop'
+import type { StoredSessions } from '../types/session'
 import { readStoredSessions, writeStoredSessions } from '../utils/sessionPersistence'
 
 export const useSessionStore = defineStore('session', () => {
-  const stored = readStoredSessions(window.localStorage)
+  const stored: StoredSessions = import.meta.client
+    ? readStoredSessions(window.localStorage)
+    : { customer: null, merchant: null }
   const customer = ref<CustomerSession | null>(stored.customer)
   const merchant = ref<MerchantSession | null>(stored.merchant)
 
   function persist(): void {
+    if (!import.meta.client) return
     writeStoredSessions(window.localStorage, { customer: customer.value, merchant: merchant.value })
   }
 

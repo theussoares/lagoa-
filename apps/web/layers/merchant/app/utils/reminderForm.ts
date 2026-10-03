@@ -2,24 +2,7 @@ import { REMINDER_BONUS_MIN_UNITS } from '#shared/constants/domain'
 import { isBonusWithinLimits } from '#shared/domain/campaign'
 import { ReminderDraftSchema } from '#shared/schemas/campaign'
 import type { ReminderBonusLimits, ReminderDraft } from '#shared/schemas/campaign'
-
-export type ReminderField = 'message' | 'bonusUnits'
-export type ReminderFieldErrors = Partial<Record<ReminderField, true>>
-
-export interface ReminderFieldsLabels {
-  readonly message: string
-  readonly messageHint: string
-  readonly messageError: string
-  readonly bonus: string
-  readonly bonusHint: string
-  readonly bonusError: string
-}
-
-export interface ReminderFieldLimits {
-  readonly messageMax: number
-  readonly bonusMin: number
-  readonly bonusMax: number
-}
+import type { ReminderField, ReminderFieldErrors } from '../types/campaign'
 
 function isReminderField(value: unknown): value is ReminderField {
   return value === 'message' || value === 'bonusUnits'

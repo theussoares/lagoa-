@@ -2,38 +2,8 @@ import type { Program, ProgramDraft, ProgramMode } from '#shared/schemas/program
 import type { TransportError } from '#shared/types/errors'
 import { ok } from '#shared/types/result'
 import type { Result } from '#shared/types/result'
-import type { AsyncResultState } from '#layers/core/app/composables/useAsyncResult'
-import type { UpdateProgramError } from '../services/ProgramService'
 import { isSameDraft, programFieldErrors, switchMode, toProgramDraft } from '../utils/programForm'
-import type { ProgramFieldErrors } from '../utils/programForm'
-
-interface ProgramSnapshot {
-  readonly program: Program
-  readonly activeCards: number
-}
-
-export type ProgramSaveState =
-  | { status: 'idle' }
-  | { status: 'saving' }
-  | { status: 'saved' }
-  | { status: 'error'; code: UpdateProgramError['code'] }
-
-export interface ProgramEditor {
-  state: ComputedRef<AsyncResultState<ProgramSnapshot, TransportError>>
-  /** Rascunho editável; `null` até o programa carregar. */
-  draft: Ref<ProgramDraft | null>
-  modeLocked: ComputedRef<boolean>
-  /** Meta diferente da salva com cartões em andamento: a tela avisa que vale para eles. */
-  targetChanged: ComputedRef<boolean>
-  isDirty: ComputedRef<boolean>
-  /** Só aparecem depois da primeira tentativa de salvar. */
-  fieldErrors: ComputedRef<ProgramFieldErrors>
-  saveState: Readonly<Ref<ProgramSaveState>>
-  reload: () => Promise<void>
-  setMode: (mode: ProgramMode) => void
-  save: () => Promise<void>
-  discard: () => void
-}
+import type { ProgramFieldErrors, ProgramSaveState, ProgramEditor, ProgramSnapshot } from '../types/program'
 
 export function useProgramEditor(): ProgramEditor {
   const { program: programService } = useMerchantServices()

@@ -2,19 +2,7 @@ import { PROGRAM_TARGET_MAX, PROGRAM_TARGET_MIN, REFERENCE_TICKET_REAIS, STAMPS_
 import { visitWorthOf } from '#shared/domain/programStrategies'
 import { ProgramDraftSchema } from '#shared/schemas/program'
 import type { Program, ProgramDraft, ProgramMode, ProgramRules } from '#shared/schemas/program'
-
-export type ProgramField =
-  | 'rewardTitle'
-  | 'target'
-  | 'pointsPerReal'
-  | 'pointsPerVisit'
-  | 'welcomeUnits'
-  | 'referralUnits'
-  | 'surpriseDate'
-  | 'cooldownHours'
-  | 'expirationMonths'
-
-export type ProgramFieldErrors = Partial<Record<ProgramField, true>>
+import type { ProgramField, ProgramFieldErrors } from '../types/program'
 
 const fieldByPath: Readonly<Record<string, ProgramField>> = {
   'reward.title': 'rewardTitle',

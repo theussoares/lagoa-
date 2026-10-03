@@ -1,18 +1,6 @@
 import { computed, onMounted, shallowRef } from 'vue'
-import type { ComputedRef } from 'vue'
 import type { Result } from '#shared/types/result'
-
-export type AsyncResultState<T, E> =
-  | { status: 'loading' }
-  | { status: 'error'; error: E }
-  | { status: 'success'; value: T }
-
-export interface AsyncResult<T, E> {
-  state: ComputedRef<AsyncResultState<T, E>>
-  reload: () => Promise<void>
-  /** Troca o valor depois de uma escrita que já devolveu o dado novo. */
-  set: (value: T) => void
-}
+import type { AsyncResultState, AsyncResult } from '../types/asyncResult'
 
 /** Carrega um service ao montar e expõe o estado como união discriminada. */
 export function useAsyncResult<T, E>(load: () => Promise<Result<T, E>>): AsyncResult<T, E> {

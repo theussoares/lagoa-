@@ -2,15 +2,10 @@ import { isRewardReady, remainingUnits } from '#shared/domain/loyaltyCard'
 import type { WalletCard } from '#shared/schemas/loyaltyCard'
 import type { ProgressModel } from '#layers/ui/app/types/progress'
 import type { ReadyRewardModel, UpcomingRewardModel } from '#layers/ui/app/types/rewards'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 import { stampTilt } from '#layers/ui/app/utils/stampTilt'
 import { categoryIcon } from './categoryIcon'
-
-export interface RewardGroups {
-  readonly ready: readonly WalletCard[]
-  /** Na ordem da carteira: o mais perto do prêmio primeiro. */
-  readonly upcoming: readonly WalletCard[]
-}
+import type { RewardGroups } from '../types/reward'
 
 export function groupRewards(cards: readonly WalletCard[]): RewardGroups {
   return {

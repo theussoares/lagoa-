@@ -1,9 +1,9 @@
 import type { ShopPoster } from '#shared/schemas/shop'
 import { checkInLink } from '#shared/utils/checkInCode'
-import type { Translate } from '#layers/core/app/utils/translate'
-import type { CheckInPosterModel } from '#layers/ui/app/types/poster'
+import type { Translate } from '#layers/core/app/types/i18n'
+import type { CheckInPosterModel } from '../types/poster'
 import { qrPath } from '#layers/ui/app/utils/qrPath'
-import { unitsText } from './counterModels'
+import { unitsText } from '#layers/core/app/utils/units'
 
 /** O QR leva ao check-in neste mesmo endereço do app; o código embaixo serve para quem prefere digitar. */
 export function toCheckInPosterModel(poster: ShopPoster, origin: string, t: Translate): CheckInPosterModel {

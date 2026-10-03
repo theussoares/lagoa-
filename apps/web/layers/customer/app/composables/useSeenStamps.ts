@@ -1,9 +1,8 @@
 import { z } from 'zod'
+import type { SeenBalances, SeenStamps } from '../types/wallet'
 
 const STORAGE_KEY = 'lagoa:seen-balances'
 const SeenSchema = z.record(z.string(), z.number().int().nonnegative())
-
-type SeenBalances = Readonly<Record<string, number>>
 
 function read(): SeenBalances {
   try {
@@ -19,7 +18,7 @@ function read(): SeenBalances {
  * Lembra, só neste aparelho, quanto a pessoa já viu de cada cartão. O que chegou
  * depois (balcão, check-in, outra aba) entra com a batida do carimbo.
  */
-export function useSeenStamps(): { snapshot: () => SeenBalances; remember: (balances: SeenBalances) => void } {
+export function useSeenStamps(): SeenStamps {
   function remember(balances: SeenBalances): void {
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...read(), ...balances }))

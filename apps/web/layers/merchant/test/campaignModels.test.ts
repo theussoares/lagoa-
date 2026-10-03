@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { CampaignSchema } from '#shared/schemas/campaign'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 import { toCampaignHistoryRow, toReachModel, toReminderPreview } from '../app/utils/campaignModels'
 import { initialReminderDraft, reminderFieldErrors, withSuggestedBonus } from '../app/utils/reminderForm'
 

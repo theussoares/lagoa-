@@ -1,24 +1,7 @@
 import { RedemptionCodeSchema } from '#shared/schemas/redemption'
-import type { RedemptionPreview } from '#shared/schemas/redemption'
 import type { CounterEntry } from '#shared/schemas/visit'
 import type { DomainErrorCode } from '#shared/types/errors'
-
-export type RedemptionCheckState =
-  | { status: 'idle' }
-  | { status: 'checking' }
-  | { status: 'error'; code: DomainErrorCode }
-  | { status: 'preview'; preview: RedemptionPreview }
-  | { status: 'confirming'; preview: RedemptionPreview }
-  | { status: 'delivered'; rewardTitle: string }
-
-export interface RedemptionCheck {
-  code: Ref<string[]>
-  state: Readonly<Ref<RedemptionCheckState>>
-  validate: () => Promise<void>
-  /** Entrega o prêmio. Devolve a linha da caderneta, ou null. */
-  confirm: () => Promise<CounterEntry | null>
-  reset: () => void
-}
+import type { RedemptionCheckState, RedemptionCheck } from '../types/counter'
 
 /** Conferir o canhoto: o servidor diz se o código vale; o Balcão só mostra e confirma a entrega. */
 export function useRedemptionCheck(): RedemptionCheck {

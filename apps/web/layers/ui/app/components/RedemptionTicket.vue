@@ -9,14 +9,9 @@ interface Props {
   state: RedemptionTicketState
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
 const titleId = useId()
-
-const code = computed(() => (props.state.kind === 'redeemed' ? '' : props.state.code))
-// Leitor de tela soletra letra por letra, do jeito que o cliente lê em voz alta no balcão.
-const spelledCode = computed(() => code.value.split('').join(' '))
-const groups = computed(() => [code.value.slice(0, 3), code.value.slice(3)])
 </script>
 
 <template>
@@ -44,43 +39,15 @@ const groups = computed(() => [code.value.slice(0, 3), code.value.slice(3)])
       </template>
 
       <template v-else>
-        <div class="flex flex-col items-center gap-1">
-          <span class="text-base font-medium text-muted" aria-hidden="true">{{ codeLabel }}</span>
-          <p
-            role="img"
-            :aria-label="`${codeLabel}: ${spelledCode}`"
-            class="ticket-code flex gap-[0.35em] text-[4rem] leading-none font-extrabold uppercase tabular [font-stretch:62%]"
-            :class="state.kind === 'active' ? 'text-secondary' : 'text-muted line-through decoration-2'"
-          >
-            <span v-for="(group, groupIndex) in groups" :key="groupIndex" class="flex gap-[0.08em]">
-              <span
-                v-for="(char, charIndex) in group"
-                :key="`${code}-${groupIndex}-${charIndex}`"
-                class="ticket-char"
-                :style="{ animationDelay: `${(groupIndex * 3 + charIndex) * 45}ms` }"
-              >{{ char }}</span>
-            </span>
-          </p>
-        </div>
+        <RedemptionTicketCode :code="state.code" :code-label="codeLabel" :active="state.kind === 'active'" />
 
-        <div v-if="state.kind === 'active'" class="flex flex-col gap-2">
-          <p
-            class="flex items-center justify-center gap-1.5 text-base font-medium"
-            :class="state.urgent ? 'text-warning' : 'text-toned'"
-          >
-            <UIcon :name="state.urgent ? 'i-ph-warning-circle' : 'i-ph-timer'" class="size-5" aria-hidden="true" />
-            <span>{{ state.clockLabel }}</span>
-            <span class="tabular font-semibold" role="timer" aria-live="off">{{ state.clock }}</span>
-          </p>
-          <!-- Régua do prazo: encolhe junto com a contagem. -->
-          <div class="h-1 overflow-hidden rounded-full bg-(--lagoa-rule)" aria-hidden="true">
-            <div
-              class="h-full origin-left rounded-full transition-transform duration-1000 ease-linear motion-reduce:transition-none"
-              :class="state.urgent ? 'bg-warning' : 'bg-secondary'"
-              :style="{ transform: `scaleX(${state.remainingFraction})` }"
-            />
-          </div>
-        </div>
+        <RedemptionTicketTimer
+          v-if="state.kind === 'active'"
+          :clock="state.clock"
+          :clock-label="state.clockLabel"
+          :urgent="state.urgent"
+          :remaining-fraction="state.remainingFraction"
+        />
 
         <p v-else class="flex items-start justify-center gap-1.5 text-center text-pretty text-warning">
           <UIcon name="i-ph-warning-circle" class="mt-0.5 size-5 shrink-0" aria-hidden="true" />

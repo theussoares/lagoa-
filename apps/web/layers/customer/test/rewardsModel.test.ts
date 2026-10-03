@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { WalletCardSchema } from '#shared/schemas/loyaltyCard'
 import type { WalletCard } from '#shared/schemas/loyaltyCard'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 import { closestRewardLine, groupRewards, toReadyRewardModel, toUpcomingRewardModel } from '../app/utils/rewardsModel'
 
 const t: Translate = (key, named = {}, plural) =>

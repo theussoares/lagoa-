@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { slotColumns, slotGridStyle } from '../app/utils/slotGrid'
+import { previewGridStyle, slotColumns, slotGridStyle } from '../app/utils/slotGrid'
 
 describe('slotColumns', () => {
   it.each([
@@ -21,6 +21,16 @@ describe('slotColumns', () => {
 
   it('falls back to a full row for an empty card', () => {
     expect(slotColumns(0, 5)).toBe(5)
+  })
+})
+
+describe('previewGridStyle', () => {
+  it('never goes below the minimum number of columns', () => {
+    expect(previewGridStyle(6, 10)).toEqual({ gridTemplateColumns: 'repeat(10, minmax(0, 1fr))' })
+  })
+
+  it('grows with the card when it has more slots than the minimum', () => {
+    expect(previewGridStyle(12, 10)).toEqual({ gridTemplateColumns: 'repeat(12, minmax(0, 1fr))' })
   })
 })
 

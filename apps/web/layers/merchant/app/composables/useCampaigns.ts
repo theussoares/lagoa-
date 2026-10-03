@@ -1,29 +1,6 @@
-import type { CampaignOverview, ReminderBonusLimits, ReminderDraft } from '#shared/schemas/campaign'
-import type { AsyncResultState } from '#layers/core/app/composables/useAsyncResult'
-import type { CampaignOverviewError, SendReminderError } from '../services/CampaignService'
+import type { ReminderDraft } from '#shared/schemas/campaign'
 import { initialReminderDraft, reminderFieldErrors, withSuggestedBonus } from '../utils/reminderForm'
-import type { ReminderFieldErrors } from '../utils/reminderForm'
-
-export type ReminderSendState =
-  | { status: 'idle' }
-  | { status: 'sending' }
-  | { status: 'sent'; recipientsCount: number }
-  | { status: 'error'; code: SendReminderError['code'] }
-
-export interface Campaigns {
-  state: ComputedRef<AsyncResultState<CampaignOverview, CampaignOverviewError>>
-  draft: Ref<ReminderDraft>
-  bonusLimits: ComputedRef<ReminderBonusLimits | null>
-  /** Só aparecem depois da primeira tentativa de mandar. */
-  fieldErrors: ComputedRef<ReminderFieldErrors>
-  reachable: ComputedRef<number>
-  sendState: Readonly<Ref<ReminderSendState>>
-  reload: () => Promise<void>
-  /** Confere o rascunho antes de pedir a confirmação; `false` mostra os erros. */
-  validate: () => boolean
-  /** `expectedRecipients` é o número que o lojista viu ao confirmar. */
-  send: (expectedRecipients: number) => Promise<void>
-}
+import type { ReminderFieldErrors, ReminderSendState, Campaigns } from '../types/campaign'
 
 export function useCampaigns(defaultMessage: string): Campaigns {
   const { campaigns } = useMerchantServices()

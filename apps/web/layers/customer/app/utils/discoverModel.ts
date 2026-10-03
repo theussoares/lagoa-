@@ -2,18 +2,13 @@ import { PILOT_CITY } from '#shared/constants/domain'
 import type { Challenge } from '#shared/schemas/discover'
 import type { ShopSummary } from '#shared/schemas/shop'
 import type { ChallengeModel, KnownShopModel, ShopPreview, ShopShowcaseModel, ShopTeaserModel } from '#layers/ui/app/types/discover'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 import { stampTilt } from '#layers/ui/app/utils/stampTilt'
 import { categoryIcon } from './categoryIcon'
+import type { ShopGroups } from '../types/discover'
 
 /** Acima disso as casas de exemplo não cabem numa linha de 390px. */
 const MAX_PREVIEW_SLOTS = 12
-
-export interface ShopGroups {
-  /** Lojas onde a pessoa ainda não tem cartão. */
-  readonly fresh: readonly ShopSummary[]
-  readonly known: readonly ShopSummary[]
-}
 
 export function groupShops(shops: readonly ShopSummary[], walletShopIds: ReadonlySet<string>): ShopGroups {
   return {

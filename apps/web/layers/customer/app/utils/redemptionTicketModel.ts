@@ -1,6 +1,6 @@
 import type { Redemption } from '#shared/schemas/redemption'
 import type { RedemptionTicketState } from '#layers/ui/app/types/redemption'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 
 /** No último minuto a contagem vira aviso (MASTER: "código perto de expirar"). */
 export const REDEMPTION_URGENT_SECONDS = 60
