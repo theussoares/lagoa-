@@ -163,12 +163,12 @@ describe('check-in components: CodeForm', () => {
     expect(page.emitted('submit')?.length).toBeGreaterThanOrEqual(1)
   })
 
-  it('takes the focus only for a code request', async () => {
+  it('brings the focus back to the first cell for a code request', async () => {
     const page = await mountIt(CodeForm, formProps)
-    await page.setProps({ focusRequest: { target: 'earnedHeading', id: 1 } })
-    await flushPromises()
+    // A casa do código já nasce com autofocus: tira o foco antes de pedir.
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
     expect(document.activeElement).not.toBe(cells(page)[0]?.element)
-    await page.setProps({ focusRequest: { target: 'code', id: 2 } })
+    await page.setProps({ focusRequest: { target: 'code', id: 1 } })
     await flushPromises()
     expect(document.activeElement).toBe(cells(page)[0]?.element)
   })
