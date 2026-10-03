@@ -18,9 +18,10 @@ export default defineNuxtConfig({
     strategy: 'no_prefix',
     locales: [{ code: 'pt-BR', language: 'pt-BR', name: 'Português', file: 'pt-BR.json' }],
   },
-  // A LP segue o sistema da pessoa; o hero, o Balcão e o fechamento são sempre a faixa escura de tinta.
+  // A LP é clara: a composição alterna o branco com as faixas de tinta (.dark no hero, Balcão,
+  // preço e fechamento). O "abre no escuro" da layer ui vale para o app, não para cá.
   colorMode: {
-    preference: 'system',
+    preference: 'light',
     fallback: 'light',
   },
   nitro: {

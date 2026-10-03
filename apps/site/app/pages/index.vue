@@ -1,4 +1,7 @@
 <script setup lang="ts">
+// Força o claro mesmo para quem tem "escuro" guardado pelo plugin de tema da layer ui.
+definePageMeta({ colorMode: 'light' })
+
 const { t } = useI18n()
 const { siteUrl } = useRuntimeConfig().public
 
