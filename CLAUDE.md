@@ -135,13 +135,36 @@ composables  → stores (Pinia, estado)
 
 ### Componentes
 
-- **Dumb components** por padrão: recebem dados por props, avisam por emits,
-  não acessam store, service, rota nem i18n de domínio por conta própria
-  (recebem o texto pronto ou a chave).
+- **Página = rota + composição.** Só `definePageMeta`, `usePageTitle`, uma
+  chamada a `use<Tela>Screen()` (e `useRoute` para parâmetro de rota) e o
+  template com componentes. Script ≤ 30 linhas, template ≤ 60, nenhuma função
+  de regra, formatação ou foco. A página não desestrutura o retorno do
+  composable de tela (é um `reactive`).
+- **Composable de tela** (`composables/use<Tela>Screen.ts`, na raiz da pasta):
+  orquestra composables de dado, guarda de sessão, foco e textos derivados.
+  ≤ 150 linhas; acima disso, sub-composable por bloco.
 - **Smart** só a página (ou um container explícito `*Container.vue`): lê o
-  composable/store e repassa para os dumb.
-- Um componente, uma responsabilidade; acima de ~150 linhas de template,
-  quebrar.
+  composable de tela e repassa para os dumb.
+- **Dumb components** por padrão: dados por props, avisos por emits, sem
+  acesso a store, service ou rota. Script ≤ 40 linhas, sem `watch`; template
+  ≤ 80 linhas — acima disso, quebrar por bloco de tela.
+- **Textos.** Componente de superfície (`customer`, `merchant`, `admin`) chama
+  `$t()` com chave em inglês do próprio domínio e recebe **códigos** de erro,
+  não mensagens. Frase composta de dado (plural, regra) vem pronta de um
+  mapeador puro em `utils/`. Componente de `layers/ui` não conhece i18n:
+  recebe texto pronto (props ou `labels`).
+- **Browser API** (`window`, `document`, `navigator`, foco, vibração, câmera,
+  impressão, `beforeunload`) só em composable dedicado (`useFocusRequest`,
+  `useHaptics`, `useQrScanner`, `usePrint`, `useLeaveGuard`). Exceções
+  nomeadas: persistência da sessão (`core/app/stores/session.ts`) e o mock
+  (`core/app/plugins/backend.ts`, `core/app/mock/**`).
+- **Pastas.** `components/<arquivo-da-página>/<Bloco>.vue` nas superfícies
+  (nome no template: `<Pasta><Bloco>`); componente usado por várias telas fica
+  na pasta do domínio dono. `layers/ui` só tem peças do design system sem
+  domínio de uma superfície.
+- **Store × composable.** Vira store `use<Domínio>Store` só estado que
+  sobrevive à troca de página, é lido por mais de uma página/layout, ou é a
+  sessão. O resto é composable da tela. Celular digitado nunca vai para store.
 
 ### Tipagem
 
@@ -156,6 +179,16 @@ composables  → stores (Pinia, estado)
 - Uniões discriminadas para estados (`{ status: 'idle' | 'loading' | 'error' | 'success' }`)
   e para resultados de service (`Result<T, DomainError>`), em vez de
   `null`/exceção solta.
+- **Tipos em arquivo próprio:** `layers/<layer>/app/types/<domínio>.ts`
+  (nome do glossário, singular) para props compartilhadas, view-models,
+  estados e retornos de composable. Fora de `types/` não há
+  `export interface`/`export type`; em `.vue`, `utils/`, `composables/` e
+  `services/` só `import type`. Exceções: `interface Props`/`Emits` locais e
+  **não exportadas** do SFC, e a interface do service com as uniões de erro da
+  sua assinatura (ficam no arquivo do service). Arquivo em `types/` importa
+  `Ref`/`ComputedRef` de `'vue'`.
+- Tipo de domínio não se reescreve: deriva de `shared/schemas`
+  (`z.infer`, `Omit`, `Pick`); celular em view-model é sempre `MaskedPhone`.
 
 ## Superfícies
 
