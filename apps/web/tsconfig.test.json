@@ -34,6 +34,7 @@
     "layers/ui/app/utils/**/*.ts",
     "layers/ui/app/types/**/*.ts",
     "layers/customer/test/**/*.ts",
+    "layers/ui/test/**/*.ts",
     "layers/merchant/app/services/**/*.ts",
     "layers/merchant/test/**/*.ts"
   ],
