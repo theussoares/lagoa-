@@ -23,14 +23,12 @@ const TRANSITIONAL_EXPORTED_TYPES: readonly string[] = []
 /** `window.` / `navigator.` / `document.` fora de composable de browser. */
 const TRANSITIONAL_BROWSER_API: readonly string[] = [
   'layers/customer/app/composables/useSeenStamps.ts',
-  'layers/customer/app/pages/check-in.vue',
   'layers/merchant/app/pages/club-setup.vue',
   'layers/merchant/app/pages/program.vue',
 ]
 
 /** Página com mais de 30 linhas de script. */
 const TRANSITIONAL_PAGE_SCRIPT: readonly string[] = [
-  'layers/customer/app/pages/check-in.vue',
   'layers/customer/app/pages/discover.vue',
   'layers/customer/app/pages/profile.vue',
   'layers/customer/app/pages/reward-redemption.vue',
@@ -46,7 +44,6 @@ const TRANSITIONAL_PAGE_SCRIPT: readonly string[] = [
 
 /** Página com mais de 60 linhas de template. */
 const TRANSITIONAL_PAGE_TEMPLATE: readonly string[] = [
-  'layers/customer/app/pages/check-in.vue',
   'layers/customer/app/pages/discover.vue',
   'layers/customer/app/pages/rewards.vue',
   'layers/customer/app/pages/sign-in.vue',

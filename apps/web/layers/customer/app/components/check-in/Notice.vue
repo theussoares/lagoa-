@@ -5,7 +5,13 @@ interface Props {
   notice: CheckInNoticeModel
 }
 
+interface Emits {
+  recover: []
+  typeCode: []
+}
+
 defineProps<Props>()
+const emit = defineEmits<Emits>()
 </script>
 
 <template>
@@ -23,7 +29,17 @@ defineProps<Props>()
       </div>
     </div>
     <div class="flex flex-col gap-3">
-      <slot />
+      <UButton v-if="notice.recovery === 'wallet'" to="/carteira" size="xl" block :label="$t('checkIn.toWallet')" />
+      <template v-else>
+        <UButton
+          size="xl"
+          block
+          :icon="notice.recovery === 'retry' ? 'i-ph-arrow-counter-clockwise' : 'i-ph-qr-code'"
+          :label="notice.recovery === 'retry' ? $t('common.retry') : $t('checkIn.scanAgain')"
+          @click="emit('recover')"
+        />
+        <UButton variant="outline" color="neutral" size="xl" block icon="i-ph-keyboard" :label="$t('checkIn.typeCode')" @click="emit('typeCode')" />
+      </template>
     </div>
   </div>
 </template>
