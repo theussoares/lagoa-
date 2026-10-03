@@ -199,3 +199,17 @@ caminho por linha, ordem alfabética) — conflito trivial na integração.
   Opcionais aplicados: `hasErrorCode` com `readonly DomainErrorCode[]`; testes de reavaliação do Balcão com fonte parada em erro.
   Nota para o lote C: `reward-redemption.vue`/`profile.vue` usam `watch(state)`; trocar pela guarda só perde o caso
   `unauthorized → unauthorized` sem `pending` (já fora da tela) — registrar no PR.
+- **Lote A** — N-A1 (Balcão), N-A2 (check-in), N-A3 (criar o clube + `program/*` + fiação em `program.vue`) integrados por merge;
+  conflito só nas listas transitórias do `conventions.test.ts` (as 3 páginas saíram de todas). Testes de página do QA-0 e snapshots
+  inalterados; `programPage.nuxt.test.ts` com snapshot de texto criado antes da fiação.
+- **QA-A** — integrado: +162 testes (composables de tela e componentes de `counter/`, `check-in/`, `club-setup/`, `program/`).
+  Sem bug de comportamento. Observações: `@complete` do `UPinInput` dispara 2× no happy-dom (inofensivo: `validate` ignora repetido);
+  `aria-label` das casas do `UPinInput` em inglês, vindo do Nuxt UI (fora deste refactor, ver pendências).
+- **Revisão `code-reviewer` do lote A** — aprovado, nada bloqueante. Aplicado o achado importante: `club-setup/RulesStep.vue` e
+  `RewardStep.vue` não mutam mais o `defineModel('program')` por dentro; emitem o rascunho inteiro (+ teste).
+  Pendências opcionais (não aplicadas): `program/EarnFields.vue` com script de 47 linhas (> 40) → extrair `program/ModeField.vue`;
+  `club-setup/FormStep.vue`/`PosterStep.vue` importam rotas de `composables/useMerchantSession` → mover para `utils/`;
+  comentário no `check-in/ScanStep.vue` sobre o `<video>` lido só ao montar; `placeholder="R$ 0,00"` solto em `counter/AmountField.vue`
+  (já existia); `aria-label` pt-BR do `UPinInput`.
+- **Antes do PR do lote A:** registrar o teste manual da câmera em aparelho (ajuste 6) e a conferência manual de `beforeunload`/print.
+- **Lote A encerrado.** 559 testes, typecheck verde. Próximo: lote B (N-B1..B4 + QA-B).

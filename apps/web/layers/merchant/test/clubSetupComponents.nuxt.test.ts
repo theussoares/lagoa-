@@ -233,6 +233,17 @@ describe('club setup components: shop, rules and reward steps', () => {
     expect(page.find('input[name="rewardTitle"], input[maxlength]').exists()).toBe(true)
   })
 
+  it('emits a new program draft with the edited reward title, without mutating the prop', async () => {
+    const { program } = emptyClubSetupForm()
+    const before = JSON.stringify(program)
+    const page = await mountIt(RewardStep, { program, options, errors: {} })
+    await page.get('input[maxlength]').setValue('Corte grátis')
+    const emitted = page.emitted('update:program')?.at(-1)?.[0]
+    expect(emitted).toMatchObject({ reward: { title: 'Corte grátis' } })
+    expect(emitted).not.toBe(program)
+    expect(JSON.stringify(program)).toBe(before)
+  })
+
   it('flags the reward title when it is invalid', async () => {
     const { program } = emptyClubSetupForm()
     const page = await mountIt(RewardStep, { program, options, errors: { rewardTitle: true } })
