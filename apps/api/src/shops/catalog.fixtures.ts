@@ -1,5 +1,5 @@
 import type { BonusRules } from '#shared/schemas/program'
-import type { DiscoverShop } from './discover.repository'
+import type { CatalogShop } from './catalog-shop'
 
 export const NO_BONUS: BonusRules = {
   welcomeBonus: { enabled: false, units: 1 },
@@ -8,7 +8,7 @@ export const NO_BONUS: BonusRules = {
   surpriseDay: { enabled: false, multiplier: 2, date: null },
 }
 
-export function discoverShop(overrides: Partial<DiscoverShop> = {}): DiscoverShop {
+export function catalogShop(overrides: Partial<CatalogShop> = {}): CatalogShop {
   return {
     id: '0190a000-0000-7000-8000-0000000000a1',
     name: 'Barbearia do Zé',

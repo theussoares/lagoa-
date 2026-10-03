@@ -51,7 +51,11 @@ Telas: Carteira, Cartão da loja. Front: `WalletService`.
 - Carimbos (`stamps`) derivados do ledger, sem tabela própria.
 - Mapa dos tipos do ledger do banco (`welcomeBonus`, `referralBonus`, `expiration`)
   para os do `shared` (`LedgerKind`); se faltar tipo, ajuste no `shared` combinado com o front.
-- Estado de expiração calculado na leitura (prêmio guardado 30 dias, inatividade).
+- Entram só `visit`, `amount`, `checkIn` e `redemption` na caderneta (os tipos do `shared`); bônus de
+  boas-vindas e indicação aparecem como carimbos do cartão (`source`). Ampliar `LedgerKind` fica para
+  quando o front tiver os textos.
+- A expiração (prêmio guardado 30 dias, inatividade) é toda da fase 5, na leitura e na escrita.
+- Índices do ledger com `id` no fim (desempate do mesmo instante) e consultas `nulls last`.
 - Queries em lote (cartões + último ledger) sem N+1.
 
 ## Fase 4: Check-in e Carimbo ganho

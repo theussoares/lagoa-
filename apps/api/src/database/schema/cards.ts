@@ -79,8 +79,10 @@ export const ledgerEntries = pgTable(
     occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    index('ledger_card_occurred_idx').on(t.cardId, t.occurredAt.desc()),
+    // O `id` (UUID v7, ordenado no tempo) desempata linhas do mesmo instante, ex.: visita + boas-vindas.
+    index('ledger_card_occurred_idx').on(t.cardId, t.occurredAt.desc(), t.id.desc()),
     index('ledger_shop_occurred_idx').on(t.shopId, t.occurredAt.desc()),
+    index('ledger_customer_occurred_idx').on(t.customerId, t.occurredAt.desc(), t.id.desc()),
   ],
 )
 

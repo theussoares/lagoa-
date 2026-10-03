@@ -7,17 +7,18 @@ import { DISCOVER_SHOPS_LIMIT } from '#shared/constants/domain'
 import { ENV } from '../../config/config.module'
 import { AllExceptionsFilter } from '../../common/http/all-exceptions.filter'
 import { FakeAuthGuard } from '../../test-support/fake-auth.guard'
-import { discoverShop } from './discover.fixtures'
+import { catalogShop } from '../../shops/catalog.fixtures'
+import type { CatalogShop } from '../../shops/catalog-shop'
 import { DiscoverController } from './discover.controller'
-import { type DiscoverShop, DiscoverRepository } from './discover.repository'
+import { DiscoverRepository } from './discover.repository'
 import { DiscoverService } from './discover.service'
 
 class RecordingDiscoverRepository extends DiscoverRepository {
   lastLimit: number | null = null
-  constructor(public shops: DiscoverShop[]) {
+  constructor(public shops: CatalogShop[]) {
     super()
   }
-  async listApprovedShops(limit: number): Promise<DiscoverShop[]> {
+  async listApprovedShops(limit: number): Promise<CatalogShop[]> {
     this.lastLimit = limit
     return this.shops
   }
@@ -25,7 +26,7 @@ class RecordingDiscoverRepository extends DiscoverRepository {
 
 describe('discover HTTP', () => {
   let app: INestApplication
-  const repository = new RecordingDiscoverRepository([discoverShop()])
+  const repository = new RecordingDiscoverRepository([catalogShop()])
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -53,7 +54,7 @@ describe('discover HTTP', () => {
 
   it('leaves a shop out instead of failing the whole list when it breaks the contract', async () => {
     const original = repository.shops
-    repository.shops = [discoverShop(), discoverShop({ id: 'bad', name: 'x'.repeat(200) })]
+    repository.shops = [catalogShop(), catalogShop({ id: 'bad', name: 'x'.repeat(200) })]
     const response = await request(app.getHttpServer()).get('/discover/shops').expect(200)
     expect(response.body).toHaveLength(1)
     repository.shops = original

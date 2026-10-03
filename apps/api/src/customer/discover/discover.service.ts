@@ -5,7 +5,7 @@ import type { ShopSummary } from '#shared/schemas/shop'
 import { ok, type Result } from '#shared/types/result'
 import { ENV } from '../../config/config.module'
 import type { Env } from '../../config/env'
-import { toShopSummary } from './discover.mapper'
+import { toShopSummary } from '../../shops/shop-summary.mapper'
 import { DiscoverRepository } from './discover.repository'
 
 @Injectable()

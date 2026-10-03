@@ -3,11 +3,11 @@ import { earnRateOf, unitOf } from '#shared/domain/programStrategies'
 import { type ShopSummary, ShopSummarySchema } from '#shared/schemas/shop'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
-import { shopAssetUrl } from '../../storage/shop-assets'
-import type { DiscoverShop } from './discover.repository'
+import { shopAssetUrl } from '../storage/shop-assets'
+import type { CatalogShop } from './catalog-shop'
 
 /** Valida a saída contra o contrato do `shared`: loja que não cabe nele não chega ao app. */
-export function toShopSummary(shop: DiscoverShop, supabaseUrl: string): Result<ShopSummary, ErrorOf<'invalidProgram'>> {
+export function toShopSummary(shop: CatalogShop, supabaseUrl: string): Result<ShopSummary, ErrorOf<'invalidProgram'>> {
   const { rules, rewardTitle, bonusRules } = shop.program
   const parsed = ShopSummarySchema.safeParse({
     id: shop.id,

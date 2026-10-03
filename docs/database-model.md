@@ -218,8 +218,8 @@ em log nem URL.
 - `AppUser(emailHash)` e `AppUser(phoneHash)` únicos; `CustomerProfile(referralCode)` único.
 - `LoyaltyCard(shopId, customerId)` único; `(customerId)` para a carteira;
   `(shopId, lastVisitAt)` para clientes sumidos.
-- `LedgerEntry(cardId, occurredAt DESC)`, `(shopId, occurredAt DESC)` e
-  `(idempotencyKey)` único.
+- `LedgerEntry(cardId, occurredAt DESC, id DESC)`, `(shopId, occurredAt DESC)`,
+  `(customerId, occurredAt DESC, id DESC)` (caderneta do cliente; o `id` desempata o mesmo instante) e `(idempotencyKey)` único.
 - `Redemption(shopId, code) WHERE status='active'` único.
 - `Referral(shopId, referredId)` único; `(referrerId)`.
 - `Shop(checkInCode)` único; `Shop(status)`; `Shop(ownerUserId)`.

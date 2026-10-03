@@ -1,0 +1,1 @@
+CREATE INDEX "ledger_customer_occurred_idx" ON "ledger_entries" USING btree ("customer_id","occurred_at" DESC NULLS LAST);

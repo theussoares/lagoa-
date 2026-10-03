@@ -31,7 +31,11 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
   por padrão (`SupabaseAuthGuard` global; `@Public()` é a exceção). Toda query
   filtra pelo `user.id` do JWT, nunca por id vindo do cliente. Celular/e-mail só
   saem mascarados e nunca entram em log. Escrita que depende de leitura usa
-  transação com `FOR UPDATE` dentro do repository.
+  transação com `FOR UPDATE` dentro do repository. Índice `DESC` criado pelo
+  Drizzle é `NULLS LAST`: a consulta precisa de `order by ... desc nulls last`,
+  senão o planner ignora o índice e ordena a tabela inteira (medido: 9 ms → 0,15 ms
+  em 20 mil linhas). Lista que cresce sempre sai com `limit` e sem N+1 (use
+  `LATERAL ... LIMIT` para "as N mais novas de cada").
 - **Backend (histórico):** ainda não definido. Até o ADR do CTO sair, o front consome
   services com interface e implementação mock em `layers/core` — nenhum
   componente chama `fetch`/`$fetch` direto. O mock é um servidor falso único
