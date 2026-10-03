@@ -1,7 +1,7 @@
 import { isRewardReady, remainingUnits } from '#shared/domain/loyaltyCard'
 import type { WalletCard } from '#shared/schemas/loyaltyCard'
 import type { StampCardBody, StampCardModel, StampCardStatus, StampSlotModel } from '#layers/ui/app/types/wallet'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 import { stampTilt } from '#layers/ui/app/utils/stampTilt'
 import { categoryIcon } from './categoryIcon'
 

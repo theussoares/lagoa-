@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { MerchantCustomerRowSchema } from '#shared/schemas/customer'
 import type { MerchantCustomerRow } from '#shared/schemas/customer'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 import { toCustomerRowModel } from '../app/utils/customerModels'
 
 const t: Translate = (key, named = {}, plural) =>

@@ -2,7 +2,7 @@ import { STAMPS_TARGET_MAX } from '#shared/constants/domain'
 import { welcomeUnits } from '#shared/domain/bonusRules'
 import { earnRateOf, unitOf } from '#shared/domain/programStrategies'
 import type { ProgramDraft } from '#shared/schemas/program'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 import type { StampCardBody, StampCardModel } from '#layers/ui/app/types/wallet'
 import { stampTilt } from '#layers/ui/app/utils/stampTilt'
 

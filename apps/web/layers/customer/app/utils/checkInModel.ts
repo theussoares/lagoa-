@@ -1,6 +1,6 @@
 import type { CheckInResult } from '#shared/schemas/visit'
 import { addDays, localDateParts } from '#shared/utils/time'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 import type { CheckInError } from '../services/CheckInService'
 import { formatShortDate, formatTime } from './ledgerEntryModel'
 

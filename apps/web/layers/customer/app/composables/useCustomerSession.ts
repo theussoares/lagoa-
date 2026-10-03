@@ -1,14 +1,10 @@
 import { useSessionStore } from '#layers/core/app/stores/session'
-import type { CustomerSession } from '#shared/schemas/session'
+import type { CustomerSessionControl } from '../types/session'
 
 export const SIGN_IN_PATH = '/entrar'
 export const HOME_PATH = '/carteira'
 
-export function useCustomerSession(): {
-  session: ComputedRef<CustomerSession | null>
-  start: (session: CustomerSession) => void
-  signOut: () => Promise<void>
-} {
+export function useCustomerSession(): CustomerSessionControl {
   const sessions = useSessionStore()
 
   async function signOut(): Promise<void> {

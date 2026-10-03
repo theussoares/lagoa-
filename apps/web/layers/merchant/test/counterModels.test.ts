@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { CounterEntrySchema, VisitRegisteredSchema } from '#shared/schemas/visit'
 import type { CounterEntry, VisitRegistered } from '#shared/schemas/visit'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 import { amountDigits, counterActionFor } from '../app/utils/counterAction'
 import { toCounterLedgerModel, toLaunchReceipt } from '../app/utils/counterModels'
 

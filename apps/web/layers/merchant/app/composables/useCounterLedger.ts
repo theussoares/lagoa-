@@ -1,6 +1,6 @@
 import type { CounterEntry } from '#shared/schemas/visit'
 import type { TransportError } from '#shared/types/errors'
-import type { AsyncResultState } from '#layers/core/app/composables/useAsyncResult'
+import type { AsyncResultState } from '#layers/core/app/types/asyncResult'
 
 export interface CounterLedger {
   state: ComputedRef<AsyncResultState<CounterEntry[], TransportError>>

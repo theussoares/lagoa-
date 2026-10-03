@@ -1,5 +1,5 @@
 import type { CampaignOverview, ReminderBonusLimits, ReminderDraft } from '#shared/schemas/campaign'
-import type { AsyncResultState } from '#layers/core/app/composables/useAsyncResult'
+import type { AsyncResultState } from '#layers/core/app/types/asyncResult'
 import type { CampaignOverviewError, SendReminderError } from '../services/CampaignService'
 import { initialReminderDraft, reminderFieldErrors, withSuggestedBonus } from '../utils/reminderForm'
 import type { ReminderFieldErrors } from '../utils/reminderForm'

@@ -1,7 +1,7 @@
 import type { WalletActivity } from '#shared/schemas/visit'
 import { addDays, localDateParts, PILOT_TIME_ZONE } from '#shared/utils/time'
 import type { LedgerEntryModel } from '#layers/ui/app/types/wallet'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 
 const timeFormat = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: PILOT_TIME_ZONE })
 const dayFormat = new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'short', timeZone: PILOT_TIME_ZONE })

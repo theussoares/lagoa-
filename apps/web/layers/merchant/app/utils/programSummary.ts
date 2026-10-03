@@ -1,6 +1,6 @@
 import { unitOf } from '#shared/domain/programStrategies'
 import type { ProgramDraft } from '#shared/schemas/program'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 import type { ProgramField, ProgramFieldErrors } from './programForm'
 
 const HOURS_PER_DAY = 24

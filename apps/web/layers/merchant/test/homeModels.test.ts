@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { WeekSummary } from '#shared/schemas/weekSummary'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 import { customerFilterFromSlug, customerFilterSlug } from '../app/utils/customerFilterQuery'
 import { toWeekDayRows, toWeekHeadline } from '../app/utils/homeModels'
 

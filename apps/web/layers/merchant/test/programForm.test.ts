@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { STAMPS_TARGET_MAX } from '#shared/constants/domain'
 import { ProgramDraftSchema } from '#shared/schemas/program'
 import type { ProgramDraft } from '#shared/schemas/program'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 import { isSameDraft, programFieldErrors, switchMode } from '../app/utils/programForm'
 import { toProgramPreview } from '../app/utils/programPreviewModel'
 

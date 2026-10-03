@@ -2,7 +2,7 @@ import { LAPSED_AFTER_DAYS } from '#shared/constants/domain'
 import type { Campaign, ReminderDraft, ReminderReach } from '#shared/schemas/campaign'
 import type { ProgramUnit } from '#shared/schemas/program'
 import { PILOT_TIME_ZONE } from '#shared/utils/time'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 import { unitsText } from './counterModels'
 
 const sentAtFormat = new Intl.DateTimeFormat('pt-BR', {

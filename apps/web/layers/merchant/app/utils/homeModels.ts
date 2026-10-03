@@ -1,7 +1,7 @@
 import { WEEK_SUMMARY_DAYS } from '#shared/constants/domain'
 import type { WeekSummary } from '#shared/schemas/weekSummary'
 import { PILOT_TIME_ZONE } from '#shared/utils/time'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 
 const dayFormat = new Intl.DateTimeFormat('pt-BR', { weekday: 'short', day: 'numeric', month: 'short', timeZone: PILOT_TIME_ZONE })
 /** Meio-dia UTC cai no mesmo dia em Três Lagoas (UTC−4). */

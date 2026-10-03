@@ -2,7 +2,7 @@ import type { Program, ProgramDraft, ProgramMode } from '#shared/schemas/program
 import type { TransportError } from '#shared/types/errors'
 import { ok } from '#shared/types/result'
 import type { Result } from '#shared/types/result'
-import type { AsyncResultState } from '#layers/core/app/composables/useAsyncResult'
+import type { AsyncResultState } from '#layers/core/app/types/asyncResult'
 import type { UpdateProgramError } from '../services/ProgramService'
 import { isSameDraft, programFieldErrors, switchMode, toProgramDraft } from '../utils/programForm'
 import type { ProgramFieldErrors } from '../utils/programForm'

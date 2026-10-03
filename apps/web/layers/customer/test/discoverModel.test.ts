@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { ChallengeSchema } from '#shared/schemas/discover'
 import { ShopSummarySchema } from '#shared/schemas/shop'
 import type { ShopSummary } from '#shared/schemas/shop'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 import {
   groupShops,
   pendingChallengeShopIds,

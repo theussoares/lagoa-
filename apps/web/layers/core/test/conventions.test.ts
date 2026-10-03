@@ -19,9 +19,6 @@ const PERMANENT_IO_EXCEPTIONS: readonly string[] = [
 
 /** `export interface|type` fora de `types/` (services e mock ficam de fora da regra). */
 const TRANSITIONAL_EXPORTED_TYPES: readonly string[] = [
-  'layers/core/app/composables/useAsyncResult.ts',
-  'layers/core/app/utils/sessionPersistence.ts',
-  'layers/core/app/utils/translate.ts',
   'layers/customer/app/components/profile/BirthdayForm.vue',
   'layers/customer/app/composables/useCheckIn.ts',
   'layers/customer/app/composables/useCustomerSignIn.ts',
@@ -53,8 +50,6 @@ const TRANSITIONAL_EXPORTED_TYPES: readonly string[] = [
   'layers/merchant/app/utils/programPreviewModel.ts',
   'layers/merchant/app/utils/programSummary.ts',
   'layers/merchant/app/utils/reminderForm.ts',
-  'layers/ui/app/utils/qrPath.ts',
-  'layers/ui/app/utils/tallyGroups.ts',
 ]
 
 /** `window.` / `navigator.` / `document.` fora de composable de browser. */

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { CheckInResultSchema } from '#shared/schemas/visit'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 import { formatCheckInWhen, seenBalanceBefore, toCheckInEarnedModel, toCheckInNotice } from '../app/utils/checkInModel'
 
 const t: Translate = (key, named = {}, plural) =>

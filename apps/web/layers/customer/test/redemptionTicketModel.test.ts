@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { RedemptionSchema } from '#shared/schemas/redemption'
 import type { Redemption } from '#shared/schemas/redemption'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 import {
   formatClock,
   minutesLeftAnnouncement,

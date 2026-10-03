@@ -2,7 +2,7 @@ import { PILOT_CITY } from '#shared/constants/domain'
 import type { Challenge } from '#shared/schemas/discover'
 import type { ShopSummary } from '#shared/schemas/shop'
 import type { ChallengeModel, KnownShopModel, ShopPreview, ShopShowcaseModel, ShopTeaserModel } from '#layers/ui/app/types/discover'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 import { stampTilt } from '#layers/ui/app/utils/stampTilt'
 import { categoryIcon } from './categoryIcon'
 

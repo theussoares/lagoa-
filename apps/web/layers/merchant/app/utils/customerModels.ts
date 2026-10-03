@@ -1,7 +1,7 @@
 import type { MerchantCustomerRow } from '#shared/schemas/customer'
 import { isRewardReady } from '#shared/domain/loyaltyCard'
 import { calendarDaysBetween } from '#shared/utils/time'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 import type { CustomerRowModel } from '../types/customer'
 
 function lastVisitText(lastVisitAt: string | null, now: Date, t: Translate): string {

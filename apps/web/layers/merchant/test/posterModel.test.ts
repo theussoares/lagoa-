@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { CheckInCodeSchema } from '#shared/schemas/shop'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 import { toCheckInPosterModel } from '../app/utils/posterModel'
 
 const t: Translate = (key, named = {}) => [key, ...Object.entries(named).map(([name, value]) => `${name}=${String(value)}`)].join(' ')

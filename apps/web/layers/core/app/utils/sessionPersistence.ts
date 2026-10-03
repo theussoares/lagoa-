@@ -1,18 +1,13 @@
 import { z } from 'zod'
 import { CustomerSessionSchema, MerchantSessionSchema } from '#shared/schemas/session'
-import type { CustomerSession, MerchantSession } from '#shared/schemas/session'
+import type { StoredSessions } from '../types/session'
 
 const STORAGE_KEY = 'lagoa:sessions'
 
 const StoredSessionsSchema = z.object({
   customer: CustomerSessionSchema.nullable(),
   merchant: MerchantSessionSchema.nullable(),
-})
-
-export interface StoredSessions {
-  customer: CustomerSession | null
-  merchant: MerchantSession | null
-}
+}) satisfies z.ZodType<StoredSessions>
 
 const EMPTY: StoredSessions = { customer: null, merchant: null }
 

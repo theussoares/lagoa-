@@ -1,6 +1,6 @@
 import type { CustomerFilter, MerchantCustomerRow } from '#shared/schemas/customer'
 import type { TransportError } from '#shared/types/errors'
-import type { AsyncResultState } from '#layers/core/app/composables/useAsyncResult'
+import type { AsyncResultState } from '#layers/core/app/types/asyncResult'
 
 export interface MerchantCustomers {
   filter: Ref<CustomerFilter>

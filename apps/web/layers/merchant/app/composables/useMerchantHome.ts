@@ -3,7 +3,7 @@ import type { WeekSummary } from '#shared/schemas/weekSummary'
 import type { TransportError } from '#shared/types/errors'
 import { err, ok } from '#shared/types/result'
 import type { Result } from '#shared/types/result'
-import type { AsyncResultState } from '#layers/core/app/composables/useAsyncResult'
+import type { AsyncResultState } from '#layers/core/app/types/asyncResult'
 
 export interface MerchantHomeSnapshot {
   readonly week: WeekSummary

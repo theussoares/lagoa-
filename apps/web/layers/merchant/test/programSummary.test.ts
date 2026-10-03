@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ProgramDraftSchema } from '#shared/schemas/program'
 import type { ProgramDraft } from '#shared/schemas/program'
-import type { Translate } from '#layers/core/app/utils/translate'
+import type { Translate } from '#layers/core/app/types/i18n'
 import { cooldownLabel, sectionHasError, toProgramSummaries } from '../app/utils/programSummary'
 
 const t: Translate = (key, named = {}, plural) =>
