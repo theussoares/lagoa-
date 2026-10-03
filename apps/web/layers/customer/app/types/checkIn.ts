@@ -2,6 +2,9 @@ import type { WalletCard } from '#shared/schemas/loyaltyCard'
 import type { CheckInResult } from '#shared/schemas/visit'
 import type { CheckInError } from '../services/CheckInService'
 import type { Ref } from 'vue'
+import type { LoyaltyCardId } from '#shared/schemas/ids'
+import type { FocusRequest } from '#layers/ui/app/types/focus'
+import type { StampCardModel } from '#layers/ui/app/types/wallet'
 
 /** De onde veio o código: muda como o erro é explicado e como a pessoa tenta de novo. */
 export type CheckInSource = 'camera' | 'typed' | 'link'
@@ -44,4 +47,43 @@ export interface CheckIn {
   /** Repete o último código (depois de falha de rede). */
   retry: () => Promise<void>
   reset: () => void
+}
+
+export type CheckInFocusTarget = 'earnedHeading' | 'code'
+export type CheckInMode = 'scan' | 'type'
+export type CameraIssue = 'denied' | 'unavailable'
+export type ViewfinderStatus = 'busy' | 'scanning' | 'starting'
+
+export interface CheckInHeroStamp {
+  readonly icon: string
+  readonly tilt: number
+  readonly tone: 'ink' | 'reward'
+}
+
+export interface CheckInEarnedView {
+  readonly text: CheckInEarnedModel
+  readonly card: StampCardModel | null
+  readonly heroStamp: CheckInHeroStamp
+  /** Cartão do botão "Resgatar": só quando o prêmio liberou. */
+  readonly rewardCardId: LoyaltyCardId | null
+}
+
+export interface CheckInScreen {
+  readonly view: 'earned' | 'notice' | 'scan' | 'type'
+  /** Frase do leitor de tela (aria-live). */
+  readonly announcement: string
+  readonly earned: CheckInEarnedView | null
+  readonly notice: CheckInNoticeModel | null
+  readonly viewfinderStatus: ViewfinderStatus
+  readonly cameraIssue: CameraIssue | null
+  code: string[]
+  readonly codeInvalid: boolean
+  readonly typing: boolean
+  readonly mockCode: string | null
+  readonly focusRequest: FocusRequest<CheckInFocusTarget> | null
+  readonly setVideo: (video: HTMLVideoElement | null) => void
+  readonly submitTyped: () => void
+  readonly typeCode: () => void
+  readonly switchToCamera: () => void
+  readonly recover: () => void
 }
