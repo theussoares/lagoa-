@@ -1,13 +1,16 @@
 import { Body, Controller, Get, HttpCode, Post, Put } from '@nestjs/common'
-import { z } from 'zod'
-import { ProfileUpdateSchema, type CustomerProfile, type ProfileUpdate } from '#shared/schemas/customer'
+import {
+  type ConsentUpdate,
+  ConsentUpdateSchema,
+  type CustomerProfile,
+  type ProfileUpdate,
+  ProfileUpdateSchema,
+} from '#shared/schemas/customer'
 import { CurrentUser } from '../../auth/current-user.decorator'
 import type { AuthUser } from '../../auth/auth.types'
 import { unwrap } from '../../common/http/domain-exception'
 import { ZodValidationPipe } from '../../common/http/zod-validation.pipe'
 import { ProfileService } from './profile.service'
-
-const ConsentBodySchema = z.object({ granted: z.boolean() })
 
 @Controller('customer/profile')
 export class ProfileController {
@@ -29,7 +32,7 @@ export class ProfileController {
   @Put('consent')
   async setConsent(
     @CurrentUser() user: AuthUser,
-    @Body(new ZodValidationPipe(ConsentBodySchema)) body: z.infer<typeof ConsentBodySchema>,
+    @Body(new ZodValidationPipe(ConsentUpdateSchema)) body: ConsentUpdate,
   ): Promise<CustomerProfile> {
     return unwrap(await this.profiles.setNotificationConsent(user.id, body.granted))
   }

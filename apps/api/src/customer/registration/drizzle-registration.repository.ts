@@ -5,7 +5,6 @@ import { uniqueViolationConstraint } from '../../database/unique-violation'
 import { type NewCustomer, type RegistrationOutcome, RegistrationRepository } from './registration.repository'
 
 const OUTCOME_BY_CONSTRAINT: Readonly<Record<string, RegistrationOutcome>> = {
-  app_users_pkey: 'alreadyRegistered',
   customer_profiles_pkey: 'alreadyRegistered',
   app_users_email_hash_unique: 'emailTaken',
   app_users_phone_hash_unique: 'phoneTaken',
@@ -21,13 +20,17 @@ export class DrizzleRegistrationRepository extends RegistrationRepository {
   async register(customer: NewCustomer): Promise<RegistrationOutcome> {
     try {
       await this.db.transaction(async (tx) => {
-        await tx.insert(appUsers).values({
-          id: customer.userId,
-          emailEncrypted: customer.emailEncrypted,
-          emailHash: customer.emailHash,
-          phoneEncrypted: customer.phoneEncrypted,
-          phoneHash: customer.phoneHash,
-        })
+        // Quem já é lojista tem `app_users`: aproveita a linha (e o celular que ela guarda) e cria só o perfil.
+        await tx
+          .insert(appUsers)
+          .values({
+            id: customer.userId,
+            emailEncrypted: customer.emailEncrypted,
+            emailHash: customer.emailHash,
+            phoneEncrypted: customer.phoneEncrypted,
+            phoneHash: customer.phoneHash,
+          })
+          .onConflictDoNothing({ target: appUsers.id })
         await tx.insert(customerProfiles).values({ userId: customer.userId, referralCode: customer.referralCode })
       })
       return 'created'

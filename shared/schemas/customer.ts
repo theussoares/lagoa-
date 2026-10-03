@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { PHONE_INPUT_MAX_LENGTH } from '../constants/domain'
 import { BirthdaySchema, IsoDateTimeSchema } from './common'
 import { CustomerIdSchema } from './ids'
 import { MaskedPhoneSchema } from './phone'
@@ -28,6 +29,13 @@ export const ProfileUpdateSchema = z.object({
   birthday: BirthdaySchema.nullable(),
 })
 export type ProfileUpdate = z.infer<typeof ProfileUpdateSchema>
+
+export const ConsentUpdateSchema = z.object({ granted: z.boolean() })
+export type ConsentUpdate = z.infer<typeof ConsentUpdateSchema>
+
+/** Cadastro do cliente: o e-mail vem do login; o celular é declarado, sem verificação por SMS. */
+export const CustomerRegistrationSchema = z.object({ phone: z.string().max(PHONE_INPUT_MAX_LENGTH) })
+export type CustomerRegistration = z.infer<typeof CustomerRegistrationSchema>
 
 /** Linha da tela Clientes do lojista. */
 export const MerchantCustomerRowSchema = z.object({

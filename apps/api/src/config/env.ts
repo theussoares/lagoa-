@@ -4,8 +4,10 @@ const EnvSchema = z.object({
   PORT: z.coerce.number().int().default(3333),
   DATABASE_URL: z.string().min(1),
   SUPABASE_URL: z.url(),
-  PII_ENCRYPTION_KEY: z.base64().length(44),
+  PII_ENCRYPTION_KEY: z.base64().refine((key) => Buffer.from(key, 'base64').length === 32, 'must decode to 32 bytes'),
   PII_HASH_PEPPER: z.string().min(16),
+  /** Quantos proxies (load balancer) existem na frente da API; define de onde vem o IP real. */
+  TRUST_PROXY_HOPS: z.coerce.number().int().min(0).default(0),
   CORS_ORIGIN: z.string().default('http://localhost:3000'),
 })
 

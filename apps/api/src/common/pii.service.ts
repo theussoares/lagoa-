@@ -1,5 +1,6 @@
 import { createCipheriv, createDecipheriv, createHmac, randomBytes } from 'node:crypto'
 import { Inject, Injectable } from '@nestjs/common'
+import type { PhoneNumber } from '#shared/schemas/phone'
 import { ENV } from '../config/config.module'
 import type { Env } from '../config/env'
 
@@ -33,8 +34,17 @@ export class PiiService {
     return Buffer.concat([decipher.update(body), decipher.final()]).toString('utf8')
   }
 
-  /** Determinístico: serve para busca e unicidade (`phone_hash`, `email_hash`). */
-  hash(normalized: string): Buffer {
+  /** Único formato de hash do celular (11 dígitos): cadastro e Balcão têm de achar a mesma linha. */
+  hashPhone(phone: PhoneNumber): Buffer {
+    return this.hash(`phone:${phone}`)
+  }
+
+  hashEmail(email: string): Buffer {
+    return this.hash(`email:${email.trim().toLowerCase()}`)
+  }
+
+  /** Determinístico, com prefixo por tipo (um e-mail nunca colide com um celular): serve para busca e unicidade (`phone_hash`, `email_hash`). */
+  private hash(normalized: string): Buffer {
     return createHmac('sha256', this.pepper).update(normalized).digest()
   }
 }

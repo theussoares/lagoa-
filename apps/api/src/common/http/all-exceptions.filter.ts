@@ -1,5 +1,5 @@
 import { type ArgumentsHost, Catch, type ExceptionFilter, HttpException, Logger } from '@nestjs/common'
-import type { Response } from 'express'
+import type { Request, Response } from 'express'
 
 const CODE_BY_STATUS: Readonly<Record<number, string>> = {
   401: 'unauthorized',
@@ -20,7 +20,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger('Exceptions')
 
   catch(exception: unknown, host: ArgumentsHost): void {
-    const response = host.switchToHttp().getResponse<Response>()
+    const http = host.switchToHttp()
+    const response = http.getResponse<Response>()
     if (exception instanceof HttpException) {
       const body = exception.getResponse()
       const status = exception.getStatus()
@@ -29,7 +30,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
     }
     const name = exception instanceof Error ? exception.name : typeof exception
     const pgCode = typeof exception === 'object' && exception !== null && 'code' in exception ? String(exception.code) : '-'
-    this.logger.error(`Unhandled ${name} (code ${pgCode})`)
+    const request = http.getRequest<Request>()
+    // Só método e rota (padrão, sem query nem parâmetros): a URL real pode carregar dado pessoal.
+    this.logger.error(`Unhandled ${name} (code ${pgCode}) on ${request.method} ${request.route?.path ?? '-'}`)
     response.status(500).json({ code: 'internal' })
   }
 }

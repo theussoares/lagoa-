@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest'
 import { randomBytes } from 'node:crypto'
-import { PiiService } from './pii.service'
+import { describe, expect, it } from 'vitest'
+import { PhoneNumberSchema } from '#shared/schemas/phone'
 import type { Env } from '../config/env'
+import { PiiService } from './pii.service'
 
 const env = {
   PII_ENCRYPTION_KEY: randomBytes(32).toString('base64'),
@@ -12,15 +13,24 @@ describe('PiiService', () => {
   const pii = new PiiService(env)
 
   it('round-trips encrypted values', () => {
-    expect(pii.decrypt(pii.encrypt('67 99999-0374'))).toBe('67 99999-0374')
+    expect(pii.decrypt(pii.encrypt('67991230374'))).toBe('67991230374')
   })
 
   it('uses a fresh iv so ciphertexts differ', () => {
     expect(pii.encrypt('x').equals(pii.encrypt('x'))).toBe(false)
   })
 
-  it('hashes deterministically for lookup', () => {
-    expect(pii.hash('67 99999-0374').equals(pii.hash('67 99999-0374'))).toBe(true)
-    expect(pii.hash('a').equals(pii.hash('b'))).toBe(false)
+  it('hashes the phone deterministically for lookup', () => {
+    const phone = PhoneNumberSchema.parse('67991230374')
+    expect(pii.hashPhone(phone).equals(pii.hashPhone(phone))).toBe(true)
+    expect(pii.hashPhone(phone).equals(pii.hashPhone(PhoneNumberSchema.parse('67991230375')))).toBe(false)
+  })
+
+  it('treats e-mails that differ only by case or spaces as the same person', () => {
+    expect(pii.hashEmail(' Ana@Example.com ').equals(pii.hashEmail('ana@example.com'))).toBe(true)
+  })
+
+  it('keeps phone and e-mail hashes apart even for the same text', () => {
+    expect(pii.hashEmail('67991230374').equals(pii.hashPhone(PhoneNumberSchema.parse('67991230374')))).toBe(false)
   })
 })

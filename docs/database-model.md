@@ -172,7 +172,7 @@ rastreável em log e histórico do navegador.
 ## Balcão e celular
 
 O Balcão digita o celular do cliente e o Nest busca por `phoneHash` (hash com pepper,
-mesmo formato normalizado `67 9xxxx-xxxx`). Como o celular é obrigatório no cadastro,
+só os 11 dígitos, sem máscara nem +55 (`67991230374`); use sempre `PiiService.hashPhone`). Como o celular é obrigatório no cadastro,
 todo cliente é encontrável. Como não há SMS, o celular é **declarado, não verificado**:
 um cliente pode errar ou usar o número de outra pessoa. O risco é tolerado no MVP; a
 indicação compensa com a checagem de mesmo celular/e-mail.

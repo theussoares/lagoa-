@@ -1,42 +1,51 @@
-import { randomBytes } from 'node:crypto'
 import type { INestApplication } from '@nestjs/common'
 import { APP_FILTER, APP_GUARD } from '@nestjs/core'
 import { Test } from '@nestjs/testing'
 import request from 'supertest'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import type { AuthenticatedRequest } from '../../auth/auth.types'
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { AllExceptionsFilter } from '../../common/http/all-exceptions.filter'
 import { PiiService } from '../../common/pii.service'
-import type { Env } from '../../config/env'
+import { FakeAuthGuard, TEST_USER } from '../../test-support/fake-auth.guard'
+import { createTestPii } from '../../test-support/pii'
+import { profileRecord } from '../profile/profile.fixtures'
+import { type ProfileRecord, ProfileRepository } from '../profile/profile.repository'
+import { SessionService } from '../session/session.service'
+import { type NewCustomer, type RegistrationOutcome, RegistrationRepository } from './registration.repository'
 import { RegistrationController } from './registration.controller'
-import { type RegistrationOutcome, RegistrationRepository } from './registration.repository'
 import { RegistrationService } from './registration.service'
 
-const USER_ID = '0190a000-0000-7000-8000-000000000001'
-let outcome: RegistrationOutcome = 'created'
+class SwitchableRegistrationRepository extends RegistrationRepository {
+  outcome: RegistrationOutcome = 'created'
+  failWith: Error | null = null
+  async register(_customer: NewCustomer): Promise<RegistrationOutcome> {
+    if (this.failWith) throw this.failWith
+    return this.outcome
+  }
+}
 
-const fakeAuthGuard = {
-  canActivate: (context: { switchToHttp: () => { getRequest: () => AuthenticatedRequest } }): boolean => {
-    context.switchToHttp().getRequest().user = { id: USER_ID, email: 'ana@example.com' }
-    return true
-  },
+class FixedProfileRepository extends ProfileRepository {
+  async findByUserId(): Promise<ProfileRecord> {
+    return profileRecord({ userId: TEST_USER.id })
+  }
+  async update(): Promise<never> {
+    throw new Error('not used')
+  }
 }
 
 describe('customer registration HTTP', () => {
   let app: INestApplication
+  const repository = new SwitchableRegistrationRepository()
 
   beforeAll(async () => {
-    const pii = new PiiService({
-      PII_ENCRYPTION_KEY: randomBytes(32).toString('base64'),
-      PII_HASH_PEPPER: 'a-long-enough-test-pepper',
-    } as Env)
     const moduleRef = await Test.createTestingModule({
       controllers: [RegistrationController],
       providers: [
         RegistrationService,
-        { provide: PiiService, useValue: pii },
-        { provide: RegistrationRepository, useValue: { register: async () => outcome } },
-        { provide: APP_GUARD, useValue: fakeAuthGuard },
+        SessionService,
+        { provide: PiiService, useValue: createTestPii() },
+        { provide: RegistrationRepository, useValue: repository },
+        { provide: ProfileRepository, useClass: FixedProfileRepository },
+        { provide: APP_GUARD, useClass: FakeAuthGuard },
         { provide: APP_FILTER, useClass: AllExceptionsFilter },
       ],
     }).compile()
@@ -46,16 +55,26 @@ describe('customer registration HTTP', () => {
 
   afterAll(async () => app.close())
 
+  beforeEach(() => {
+    repository.outcome = 'created'
+    repository.failWith = null
+  })
+
   it('registers and answers with the customer session', async () => {
-    outcome = 'created'
-    const response = await request(app.getHttpServer()).post('/customer/registration').send({ phone: '(67) 99123-0374' }).expect(201)
-    expect(response.body).toEqual({ role: 'customer', customerId: USER_ID, isNewCustomer: true })
+    const response = await request(app.getHttpServer()).post('/customer/registration').send({ phone: PHONE }).expect(201)
+    expect(response.body).toEqual({ role: 'customer', customerId: TEST_USER.id, isNewCustomer: true })
   })
 
   it('answers 409 phoneAlreadyUsed without echoing the number', async () => {
-    outcome = 'phoneTaken'
-    const response = await request(app.getHttpServer()).post('/customer/registration').send({ phone: '67991230374' }).expect(409)
+    repository.outcome = 'phoneTaken'
+    const response = await request(app.getHttpServer()).post('/customer/registration').send({ phone: PHONE }).expect(409)
     expect(response.body).toEqual({ code: 'phoneAlreadyUsed' })
+  })
+
+  it('answers 409 emailAlreadyUsed so the app does not loop on a fake 401', async () => {
+    repository.outcome = 'emailTaken'
+    const response = await request(app.getHttpServer()).post('/customer/registration').send({ phone: PHONE }).expect(409)
+    expect(response.body).toEqual({ code: 'emailAlreadyUsed' })
   })
 
   it('answers 400 invalidPhone for a malformed number', async () => {
@@ -64,13 +83,11 @@ describe('customer registration HTTP', () => {
   })
 
   it('answers 500 internal with no detail when the repository blows up', async () => {
-    const original = outcome
-    const failing = app.get(RegistrationRepository)
-    failing.register = async () => {
-      throw new Error('duplicate key value violates unique constraint (phone_hash)=(secret)')
-    }
-    const response = await request(app.getHttpServer()).post('/customer/registration').send({ phone: '67991230374' }).expect(500)
+    repository.failWith = new Error('duplicate key value violates unique constraint (phone_hash)=(secret)')
+    const response = await request(app.getHttpServer()).post('/customer/registration').send({ phone: PHONE }).expect(500)
     expect(response.body).toEqual({ code: 'internal' })
-    outcome = original
+    expect(JSON.stringify(response.body)).not.toContain('secret')
   })
 })
+
+const PHONE = '67991230374'

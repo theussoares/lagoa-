@@ -1,15 +1,15 @@
-import { randomBytes } from 'node:crypto'
 import { type INestApplication } from '@nestjs/common'
-import { APP_GUARD } from '@nestjs/core'
+import { APP_FILTER, APP_GUARD } from '@nestjs/core'
 import { Test } from '@nestjs/testing'
 import request from 'supertest'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import type { Result } from '#shared/types/result'
 import { ok } from '#shared/types/result'
-import type { AuthenticatedRequest } from '../../auth/auth.types'
 import { Clock } from '../../common/clock'
 import { PiiService } from '../../common/pii.service'
-import type { Env } from '../../config/env'
+import { AllExceptionsFilter } from '../../common/http/all-exceptions.filter'
+import { FakeAuthGuard, TEST_USER } from '../../test-support/fake-auth.guard'
+import { createTestPii } from '../../test-support/pii'
 import { ProfileController } from './profile.controller'
 import {
   type ProfileNotFound,
@@ -20,10 +20,10 @@ import {
 import { ProfileService } from './profile.service'
 import { profileRecord } from './profile.fixtures'
 
-const env = { PII_ENCRYPTION_KEY: randomBytes(32).toString('base64'), PII_HASH_PEPPER: 'a-long-enough-test-pepper' } as Env
-const pii = new PiiService(env)
-const USER_ID = '0190a000-0000-7000-8000-000000000001'
+const pii = createTestPii()
+const USER_ID = TEST_USER.id
 const NOW = new Date('2026-10-03T12:00:00Z')
+const now = { current: NOW }
 
 class InMemoryProfileRepository extends ProfileRepository {
   record: ProfileRecord | null = null
@@ -42,14 +42,6 @@ class InMemoryProfileRepository extends ProfileRepository {
   }
 }
 
-/** Troca o JWT por um usuário fixo; a validação do token tem teste próprio. */
-const fakeAuthGuard = {
-  canActivate: (context: { switchToHttp: () => { getRequest: () => AuthenticatedRequest } }): boolean => {
-    context.switchToHttp().getRequest().user = { id: USER_ID, email: 'ana@example.com' }
-    return true
-  },
-}
-
 describe('customer profile HTTP', () => {
   let app: INestApplication
   const repository = new InMemoryProfileRepository()
@@ -61,8 +53,9 @@ describe('customer profile HTTP', () => {
         ProfileService,
         { provide: ProfileRepository, useValue: repository },
         { provide: PiiService, useValue: pii },
-        { provide: Clock, useValue: { now: () => NOW } },
-        { provide: APP_GUARD, useValue: fakeAuthGuard },
+        { provide: Clock, useValue: { now: () => now.current } },
+        { provide: APP_GUARD, useClass: FakeAuthGuard },
+        { provide: APP_FILTER, useClass: AllExceptionsFilter },
       ],
     }).compile()
     app = moduleRef.createNestApplication()
@@ -72,6 +65,7 @@ describe('customer profile HTTP', () => {
   afterAll(async () => app.close())
 
   beforeEach(() => {
+    now.current = NOW
     repository.record = profileRecord({ userId: USER_ID, phoneEncrypted: pii.encrypt('67991230374') })
   })
 
@@ -131,6 +125,9 @@ describe('customer profile HTTP', () => {
   })
 
   it('accepts terms once and keeps the first timestamp', async () => {
+    await request(app.getHttpServer()).post('/customer/profile/terms').expect(200)
+    expect(repository.record?.termsAcceptedAt).toEqual(NOW)
+    now.current = new Date('2026-12-25T12:00:00Z')
     await request(app.getHttpServer()).post('/customer/profile/terms').expect(200)
     expect(repository.record?.termsAcceptedAt).toEqual(NOW)
   })
