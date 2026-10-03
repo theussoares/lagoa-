@@ -57,7 +57,8 @@
       "newCustomer": "Cliente novo ganha o cartão na hora",
       "byValue": "Lance por visita ou pelo valor da compra",
       "checkIn": "Ou o cliente lê o QR do balcão e ganha o carimbo sozinho"
-    }
+    },
+    "phoneError": "Esse número não é de celular. Use DDD + 9 + 8 números, como (67) 99123-4567."
   },
   "lapsed": {
     "title": "Veja quem sumiu. E chame de volta.",

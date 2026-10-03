@@ -21,8 +21,9 @@ const POINTS = [
         </ul>
       </div>
 
-      <!-- Interativo só no cliente: o HTML pré-renderizado já mostra o painel inteiro. -->
-      <LazyCounterDemo hydrate-on-visible />
+      <!-- Hidrata junto com a página: com hidratação tardia, o que se digitava antes
+           aparecia no campo mas não chegava ao estado, e o botão ficava travado. -->
+      <CounterDemo />
     </div>
   </section>
 </template>
