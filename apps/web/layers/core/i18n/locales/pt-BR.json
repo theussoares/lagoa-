@@ -110,6 +110,7 @@
     "birthdayLocked": "A data do aniversário só pode ser trocada uma vez por ano.",
     "notFound": "Não encontramos o que você procurou.",
     "invalidPhone": "Esse celular não parece certo. Use DDD + 9 dígitos, ex.: (67) 99123-4567.",
+    "phoneAlreadyUsed": "Esse celular já está em uso em outra conta. Confira o número ou fale com a loja.",
     "invalidLoginCode": "Código errado. Confira o SMS e digite de novo.",
     "loginCodeExpired": "Esse código venceu. Peça um novo.",
     "invalidAmount": "Valor inválido. Digite o valor da compra em reais.",

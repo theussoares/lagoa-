@@ -7,6 +7,7 @@ const STATUS_BY_CODE: Record<DomainErrorCode, number> = {
   network: 503,
   notFound: 404,
   invalidPhone: 400,
+  phoneAlreadyUsed: 409,
   invalidLoginCode: 400,
   loginCodeExpired: 400,
   invalidAmount: 400,

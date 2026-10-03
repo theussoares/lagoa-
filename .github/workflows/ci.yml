@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install -g pnpm@12
+      - run: pnpm install --frozen-lockfile
+      - name: API typecheck
+        run: pnpm typecheck:api
+      - name: API tests
+        run: pnpm test:api
+      - name: API build
+        run: pnpm build:api
+      - name: Web tests
+        run: pnpm test

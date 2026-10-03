@@ -45,7 +45,7 @@ class InMemoryProfileRepository extends ProfileRepository {
 /** Troca o JWT por um usuário fixo; a validação do token tem teste próprio. */
 const fakeAuthGuard = {
   canActivate: (context: { switchToHttp: () => { getRequest: () => AuthenticatedRequest } }): boolean => {
-    context.switchToHttp().getRequest().user = { id: USER_ID }
+    context.switchToHttp().getRequest().user = { id: USER_ID, email: 'ana@example.com' }
     return true
   },
 }

@@ -28,7 +28,7 @@ export class SupabaseAuthGuard implements CanActivate {
     try {
       const { payload } = await jwtVerify(token, this.jwks, { issuer: this.issuer, audience: 'authenticated', algorithms: ['ES256', 'RS256'] })
       if (!payload.sub) throw new UnauthorizedException()
-      request.user = { id: payload.sub }
+      request.user = { id: payload.sub, email: typeof payload.email === 'string' ? payload.email : undefined }
       return true
     } catch {
       throw new UnauthorizedException()

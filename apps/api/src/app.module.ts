@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common'
-import { APP_GUARD } from '@nestjs/core'
+import { APP_FILTER, APP_GUARD } from '@nestjs/core'
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
 import { SupabaseAuthGuard } from './auth/supabase-auth.guard'
+import { AllExceptionsFilter } from './common/http/all-exceptions.filter'
 import { CommonModule } from './common/common.module'
 import { ConfigModule } from './config/config.module'
 import { CustomerModule } from './customer/customer.module'
@@ -18,6 +19,7 @@ import { HealthController } from './health/health.controller'
   ],
   controllers: [HealthController],
   providers: [
+    { provide: APP_FILTER, useClass: AllExceptionsFilter },
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: SupabaseAuthGuard },
   ],
