@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ReachModel } from '../../utils/campaignModels'
+import type { ReachModel } from '../../types/campaign'
 
 interface Props {
   model: ReachModel

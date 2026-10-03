@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { CheckInPolicy, ExpirationPolicy } from '#shared/schemas/program'
-import type { ProgramFieldErrors } from '../../utils/programForm'
-import type { VisitRulesLabels } from '../../utils/programFormLabels'
+import type { ProgramFieldErrors, VisitRulesLabels } from '../../types/program'
 
 interface Props {
   labels: VisitRulesLabels

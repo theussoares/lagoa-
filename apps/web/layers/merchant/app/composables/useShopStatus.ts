@@ -1,13 +1,5 @@
 import { useSessionStore } from '#layers/core/app/stores/session'
-import type { ShopStatus } from '#shared/schemas/shop'
-
-export interface ShopStatusSync {
-  status: ComputedRef<ShopStatus | null>
-  /** Relê a situação da loja no servidor e atualiza a sessão guardada. */
-  refresh: () => Promise<void>
-  /** Atalho de teste do mock (o admin aprova); `null` fora do mock. */
-  approveForTesting: (() => Promise<boolean>) | null
-}
+import type { ShopStatusSync } from '../types/session'
 
 /** A sessão guarda a situação da loja do login; o servidor é quem sabe se ela mudou. */
 export function useShopStatus(): ShopStatusSync {

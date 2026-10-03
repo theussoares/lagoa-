@@ -1,7 +1,5 @@
 import type { ProgramMode } from '#shared/schemas/program'
-import type { ShopPoster } from '#shared/schemas/shop'
 import { useClubSetupStore } from '../stores/clubSetup'
-import type { CreateClubError } from '../services/ClubSetupService'
 import {
   firstStepWithErrors,
   programErrorsForSteps,
@@ -9,33 +7,12 @@ import {
   stepHasErrors,
   toClubSetupDraft,
 } from '../utils/clubSetupForm'
-import type { ClubSetupForm, ClubSetupFormStep, ClubSetupStep, ShopFieldErrors } from '../utils/clubSetupForm'
-import type { ProgramFieldErrors } from '../utils/programForm'
+import type { ClubSetupFormStep, ClubSetupStep, ShopFieldErrors, ClubSetupSubmitState, ClubPosterState, ClubSetup } from '../types/clubSetup'
+import type { ProgramFieldErrors } from '../types/program'
 import { switchMode } from '../utils/programForm'
 
 const NEXT_STEP: Readonly<Record<ClubSetupFormStep, ClubSetupFormStep | null>> = { shop: 'rules', rules: 'reward', reward: null }
 const PREVIOUS_STEP: Readonly<Record<ClubSetupFormStep, ClubSetupFormStep | null>> = { shop: null, rules: 'shop', reward: 'rules' }
-
-export type ClubSetupSubmitState = { status: 'idle' } | { status: 'creating' } | { status: 'error'; code: CreateClubError['code'] }
-
-export type ClubPosterState =
-  | { status: 'loading' }
-  | { status: 'error' }
-  | { status: 'success'; poster: ShopPoster }
-
-export interface ClubSetup {
-  step: Readonly<Ref<ClubSetupStep>>
-  form: Ref<ClubSetupForm>
-  shopErrors: ComputedRef<ShopFieldErrors>
-  programErrors: ComputedRef<ProgramFieldErrors>
-  submitState: Readonly<Ref<ClubSetupSubmitState>>
-  posterState: Readonly<Ref<ClubPosterState>>
-  next: () => void
-  back: () => void
-  setMode: (mode: ProgramMode) => void
-  create: () => Promise<void>
-  loadPoster: () => Promise<void>
-}
 
 /** Loja → Regra → Prêmio; "Criar o clube" envia tudo de uma vez e mostra o cartaz. */
 export function useClubSetup(): ClubSetup {

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import type { BonusRules } from '#shared/schemas/program'
 import { IsoDateSchema } from '#shared/schemas/common'
-import type { ProgramFieldErrors } from '../../utils/programForm'
-import type { BonusFieldsLabels, ProgramFieldLimits } from '../../utils/programFormLabels'
+import type { ProgramFieldErrors, BonusFieldsLabels, ProgramFieldLimits } from '../../types/program'
 
 interface Props {
   labels: BonusFieldsLabels

@@ -18,29 +18,7 @@ const PERMANENT_IO_EXCEPTIONS: readonly string[] = [
 ]
 
 /** `export interface|type` fora de `types/` (services e mock ficam de fora da regra). */
-const TRANSITIONAL_EXPORTED_TYPES: readonly string[] = [
-  'layers/merchant/app/composables/useCampaigns.ts',
-  'layers/merchant/app/composables/useClubSetup.ts',
-  'layers/merchant/app/composables/useCounterLaunch.ts',
-  'layers/merchant/app/composables/useCounterLedger.ts',
-  'layers/merchant/app/composables/useMerchantCustomers.ts',
-  'layers/merchant/app/composables/useMerchantHome.ts',
-  'layers/merchant/app/composables/useMerchantSignIn.ts',
-  'layers/merchant/app/composables/useProgramEditor.ts',
-  'layers/merchant/app/composables/useProgramFormLabels.ts',
-  'layers/merchant/app/composables/useRedemptionCheck.ts',
-  'layers/merchant/app/composables/useShopStatus.ts',
-  'layers/merchant/app/utils/campaignModels.ts',
-  'layers/merchant/app/utils/clubSetupForm.ts',
-  'layers/merchant/app/utils/clubSetupLabels.ts',
-  'layers/merchant/app/utils/counterAction.ts',
-  'layers/merchant/app/utils/homeModels.ts',
-  'layers/merchant/app/utils/programForm.ts',
-  'layers/merchant/app/utils/programFormLabels.ts',
-  'layers/merchant/app/utils/programPreviewModel.ts',
-  'layers/merchant/app/utils/programSummary.ts',
-  'layers/merchant/app/utils/reminderForm.ts',
-]
+const TRANSITIONAL_EXPORTED_TYPES: readonly string[] = []
 
 /** `window.` / `navigator.` / `document.` fora de composable de browser. */
 const TRANSITIONAL_BROWSER_API: readonly string[] = [

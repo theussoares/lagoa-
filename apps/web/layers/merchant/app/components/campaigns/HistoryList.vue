@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CampaignHistoryRow } from '../../utils/campaignModels'
+import type { CampaignHistoryRow } from '../../types/campaign'
 
 interface Props {
   rows: readonly CampaignHistoryRow[]

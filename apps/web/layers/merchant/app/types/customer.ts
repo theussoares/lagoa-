@@ -1,5 +1,9 @@
 import type { CustomerId } from '#shared/schemas/ids'
 import type { MaskedPhone } from '#shared/schemas/phone'
+import type { CustomerFilter, MerchantCustomerRow } from '#shared/schemas/customer'
+import type { TransportError } from '#shared/types/errors'
+import type { AsyncResultState } from '#layers/core/app/types/asyncResult'
+import type { ComputedRef, Ref } from 'vue'
 
 /** Modelos de exibição da tela Clientes. Texto pronto em pt-BR; celular só mascarado. */
 
@@ -34,4 +38,10 @@ export interface CustomerTableLabels {
   readonly lapsed: string
   readonly acceptsNotifications: string
   readonly noNotifications: string
+}
+
+export interface MerchantCustomers {
+  filter: Ref<CustomerFilter>
+  state: ComputedRef<AsyncResultState<MerchantCustomerRow[], TransportError>>
+  reload: () => Promise<void>
 }

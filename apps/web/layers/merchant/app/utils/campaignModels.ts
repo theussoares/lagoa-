@@ -4,6 +4,7 @@ import type { ProgramUnit } from '#shared/schemas/program'
 import { PILOT_TIME_ZONE } from '#shared/utils/time'
 import type { Translate } from '#layers/core/app/types/i18n'
 import { unitsText } from './counterModels'
+import type { ReachLine, ReachModel, ReminderPreviewModel, CampaignHistoryRow } from '../types/campaign'
 
 const sentAtFormat = new Intl.DateTimeFormat('pt-BR', {
   day: 'numeric',
@@ -12,35 +13,6 @@ const sentAtFormat = new Intl.DateTimeFormat('pt-BR', {
   minute: '2-digit',
   timeZone: PILOT_TIME_ZONE,
 })
-
-export interface ReachLine {
-  readonly key: 'lapsed' | 'withoutConsent' | 'expired' | 'alreadyReminded'
-  readonly icon: string
-  readonly text: string
-}
-
-export interface ReachModel {
-  readonly reachable: number
-  readonly headline: string
-  readonly lines: readonly ReachLine[]
-  /** Explica por que ninguém recebe agora; `null` quando alguém recebe. */
-  readonly emptyHint: string | null
-}
-
-export interface ReminderPreviewModel {
-  readonly shopName: string
-  readonly message: string
-  /** "+1 carimbo de presente no seu cartão"; `null` sem bônus. */
-  readonly bonus: string | null
-}
-
-export interface CampaignHistoryRow {
-  readonly id: string
-  readonly sentAt: string
-  readonly recipients: string
-  readonly bonus: string
-  readonly message: string
-}
 
 export function toReachModel(reach: ReminderReach, t: Translate): ReachModel {
   const lines: ReachLine[] = [

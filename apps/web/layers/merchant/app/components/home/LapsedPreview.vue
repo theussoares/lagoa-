@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { CustomerRowModel } from '../../types/customer'
-import type { LapsedPreviewLabels } from '../../utils/homeModels'
+import type { LapsedPreviewLabels } from '../../types/home'
 
 interface Props {
   rows: readonly CustomerRowModel[]

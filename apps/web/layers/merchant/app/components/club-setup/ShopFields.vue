@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import type { SelectItem } from '@nuxt/ui'
 import { ShopCategorySchema } from '#shared/schemas/shop'
-import type { ShopFieldErrors, ShopProfileForm } from '../../utils/clubSetupForm'
-import type { ShopFieldLimits, ShopFieldsLabels } from '../../utils/clubSetupLabels'
+import type { ShopFieldErrors, ShopProfileForm, ShopFieldLimits, ShopFieldsLabels } from '../../types/clubSetup'
 
 interface Props {
   labels: ShopFieldsLabels

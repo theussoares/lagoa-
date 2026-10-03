@@ -2,31 +2,11 @@ import { ClubSetupDraftSchema } from '#shared/schemas/onboarding'
 import type { ClubSetupDraft } from '#shared/schemas/onboarding'
 import type { ProgramDraft } from '#shared/schemas/program'
 import { ShopProfileDraftSchema } from '#shared/schemas/shop'
-import type { ShopCategory } from '#shared/schemas/shop'
 import { programFieldErrors } from './programForm'
-import type { ProgramField, ProgramFieldErrors } from './programForm'
+import type { ProgramField, ProgramFieldErrors } from '../types/program'
+import type { ClubSetupStep, ClubSetupFormStep, ShopField, ShopFieldErrors, ShopProfileForm, ClubSetupForm } from '../types/clubSetup'
 
-export const CLUB_SETUP_STEPS = ['shop', 'rules', 'reward', 'poster'] as const
-export type ClubSetupStep = (typeof CLUB_SETUP_STEPS)[number]
-/** Etapas com formulário; o cartaz vem depois que o clube foi criado. */
-export type ClubSetupFormStep = Exclude<ClubSetupStep, 'poster'>
-
-export type ShopField = 'name' | 'category' | 'neighborhood' | 'addressLine'
-export type ShopFieldErrors = Partial<Record<ShopField, true>>
-
-/** Categoria começa vazia: o lojista escolhe, não herda um palpite. */
-export interface ShopProfileForm {
-  name: string
-  category: ShopCategory | null
-  neighborhood: string
-  addressLine: string
-}
-
-export interface ClubSetupForm {
-  shop: ShopProfileForm
-  program: ProgramDraft
-}
-
+export const CLUB_SETUP_STEPS: readonly ClubSetupStep[] = ['shop', 'rules', 'reward', 'poster']
 const programFieldsByStep: Readonly<Record<Exclude<ClubSetupFormStep, 'shop'>, readonly ProgramField[]>> = {
   rules: ['target', 'pointsPerReal', 'pointsPerVisit', 'cooldownHours', 'expirationMonths'],
   reward: ['rewardTitle', 'welcomeUnits', 'referralUnits', 'surpriseDate'],

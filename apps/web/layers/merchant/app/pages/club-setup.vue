@@ -3,7 +3,7 @@ import type { SelectItem } from '@nuxt/ui'
 import { REWARD_TITLE_MAX_LENGTH, SHOP_ADDRESS_MAX_LENGTH, SHOP_NAME_MAX_LENGTH, SHOP_NEIGHBORHOOD_MAX_LENGTH } from '#shared/constants/domain'
 import { ShopCategorySchema } from '#shared/schemas/shop'
 import { CLUB_SETUP_STEPS } from '../utils/clubSetupForm'
-import type { PosterStepLabels, SetupStepItem, ShopFieldLimits, ShopFieldsLabels } from '../utils/clubSetupLabels'
+import type { PosterStepLabels, SetupStepItem, ShopFieldLimits, ShopFieldsLabels } from '../types/clubSetup'
 import { toCheckInPosterModel } from '../utils/posterModel'
 import { toProgramPreview } from '../utils/programPreviewModel'
 

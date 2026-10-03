@@ -3,20 +3,11 @@ import { unitOf } from '#shared/domain/programStrategies'
 import type { ProgramDraft } from '#shared/schemas/program'
 import { COOLDOWN_HOUR_OPTIONS, EXPIRATION_MONTH_OPTIONS } from '../utils/programForm'
 import { cooldownLabel, toProgramSummaries } from '../utils/programSummary'
-import type { ProgramSectionSummaries } from '../utils/programSummary'
-import type { BonusFieldsLabels, EarnFieldsLabels, ProgramFieldLimits, SelectOption, VisitRulesLabels } from '../utils/programFormLabels'
+import type { BonusFieldsLabels, EarnFieldsLabels, ProgramFieldLimits, VisitRulesLabels, ProgramFormLabels } from '../types/program'
+import type { SelectOption } from '#layers/ui/app/types/form'
 
 const RATE_MIN = 1
 const BONUS_UNITS_MIN = 1
-
-export interface ProgramFormLabels {
-  limits: ComputedRef<ProgramFieldLimits>
-  earn: ComputedRef<EarnFieldsLabels>
-  bonus: ComputedRef<BonusFieldsLabels>
-  visitRules: ComputedRef<VisitRulesLabels>
-  /** Uma linha por seção fechada; null antes do rascunho carregar. */
-  summaries: ComputedRef<ProgramSectionSummaries | null>
-}
 
 /** Monta os textos do editor a partir do rascunho (a unidade e os limites mudam com o modo). */
 export function useProgramFormLabels(draft: Readonly<Ref<ProgramDraft | null>>): ProgramFormLabels {

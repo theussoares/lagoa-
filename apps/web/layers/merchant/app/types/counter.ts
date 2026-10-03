@@ -1,5 +1,11 @@
 import type { MaskedPhone } from '#shared/schemas/phone'
 import type { StampCardBody } from '#layers/ui/app/types/wallet'
+import type { ProgramUnit } from '#shared/schemas/program'
+import type { CounterEntry, VisitRegistered } from '#shared/schemas/visit'
+import type { DomainErrorCode, TransportError } from '#shared/types/errors'
+import type { ComputedRef, Ref } from 'vue'
+import type { AsyncResultState } from '#layers/core/app/types/asyncResult'
+import type { RedemptionPreview } from '#shared/schemas/redemption'
 
 /** Modelos de exibição do Balcão. Texto pronto em pt-BR; celular só mascarado. */
 
@@ -30,4 +36,49 @@ export interface LaunchReceiptModel {
   /** "Agora tem 7 de 10. Faltam 3 para Corte grátis." */
   readonly detail: string
   readonly body: StampCardBody
+}
+
+/** O que o botão principal do Balcão faz, conforme o modo do clube. */
+export type CounterAction =
+  | { readonly kind: 'visit'; readonly unit: ProgramUnit; readonly units: number }
+  | { readonly kind: 'amount'; readonly pointsPerReal: number }
+
+export type CounterLaunchState =
+  | { status: 'idle' }
+  | { status: 'pending' }
+  | { status: 'error'; code: DomainErrorCode }
+  | { status: 'success'; result: VisitRegistered }
+
+export interface CounterLaunch {
+  phone: Ref<string>
+  amount: Ref<string>
+  state: Readonly<Ref<CounterLaunchState>>
+  /** Lança a visita (ou o valor). Devolve o resultado para a caderneta, ou null. */
+  submit: (action: CounterAction) => Promise<VisitRegistered | null>
+  clear: () => void
+}
+
+export interface CounterLedger {
+  state: ComputedRef<AsyncResultState<CounterEntry[], TransportError>>
+  /** Linhas lançadas nesta tela: entram com a batida do carimbo. */
+  freshIds: Readonly<Ref<ReadonlySet<string>>>
+  reload: () => Promise<void>
+  prepend: (entry: CounterEntry) => void
+}
+
+export type RedemptionCheckState =
+  | { status: 'idle' }
+  | { status: 'checking' }
+  | { status: 'error'; code: DomainErrorCode }
+  | { status: 'preview'; preview: RedemptionPreview }
+  | { status: 'confirming'; preview: RedemptionPreview }
+  | { status: 'delivered'; rewardTitle: string }
+
+export interface RedemptionCheck {
+  code: Ref<string[]>
+  state: Readonly<Ref<RedemptionCheckState>>
+  validate: () => Promise<void>
+  /** Entrega o prêmio. Devolve a linha da caderneta, ou null. */
+  confirm: () => Promise<CounterEntry | null>
+  reset: () => void
 }

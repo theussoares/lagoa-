@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SetupStepItem } from '../../utils/clubSetupLabels'
+import type { SetupStepItem } from '../../types/clubSetup'
 
 interface Props {
   steps: readonly SetupStepItem[]

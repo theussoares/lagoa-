@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import type { RadioGroupItem } from '@nuxt/ui'
 import type { ProgramMode, ProgramRules } from '#shared/schemas/program'
-import type { ProgramFieldErrors } from '../../utils/programForm'
-import type { EarnFieldsLabels, ProgramFieldLimits } from '../../utils/programFormLabels'
+import type { ProgramFieldErrors, EarnFieldsLabels, ProgramFieldLimits } from '../../types/program'
 
 interface Props {
   labels: EarnFieldsLabels

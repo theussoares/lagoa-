@@ -2,27 +2,11 @@ import { WEEK_SUMMARY_DAYS } from '#shared/constants/domain'
 import type { WeekSummary } from '#shared/schemas/weekSummary'
 import { PILOT_TIME_ZONE } from '#shared/utils/time'
 import type { Translate } from '#layers/core/app/types/i18n'
+import type { WeekDayRow } from '../types/home'
 
 const dayFormat = new Intl.DateTimeFormat('pt-BR', { weekday: 'short', day: 'numeric', month: 'short', timeZone: PILOT_TIME_ZONE })
 /** Meio-dia UTC cai no mesmo dia em Três Lagoas (UTC−4). */
 const NOON_UTC = 'T12:00:00Z'
-
-export interface WeekDayRow {
-  readonly isoDate: string
-  readonly label: string
-  readonly isToday: boolean
-  /** "3 visitas". */
-  readonly visits: string
-  /** Visitas do dia, desenhadas como risquinhos de caderneta. */
-  readonly count: number
-  /** "1 cliente novo · 1 prêmio entregue"; `null` sem nada além de visitas. */
-  readonly detail: string | null
-}
-
-export interface LapsedPreviewLabels {
-  readonly caption: string
-  readonly noName: string
-}
 
 /** Os números da semana numa frase, não em cards de métrica. */
 export function toWeekHeadline(week: WeekSummary, t: Translate): string {

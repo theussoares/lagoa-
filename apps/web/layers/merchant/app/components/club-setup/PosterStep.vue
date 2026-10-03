@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { CheckInPosterModel } from '../../types/poster'
-import type { PosterStepLabels } from '../../utils/clubSetupLabels'
+import type { PosterStepLabels } from '../../types/clubSetup'
 
 interface Props {
   status: 'loading' | 'error' | 'success'

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ReminderPreviewModel } from '../../utils/campaignModels'
+import type { ReminderPreviewModel } from '../../types/campaign'
 
 interface Props {
   preview: ReminderPreviewModel

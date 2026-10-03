@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ReminderDraft } from '#shared/schemas/campaign'
-import type { ReminderFieldErrors, ReminderFieldLimits, ReminderFieldsLabels } from '../../utils/reminderForm'
+import type { ReminderFieldErrors, ReminderFieldLimits, ReminderFieldsLabels } from '../../types/campaign'
 
 interface Props {
   labels: ReminderFieldsLabels

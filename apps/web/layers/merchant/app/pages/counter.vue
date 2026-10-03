@@ -6,7 +6,7 @@ import { PILOT_TIME_ZONE } from '#shared/utils/time'
 import type { ComponentPublicInstance } from 'vue'
 import type { CounterKeypadLabels } from '#layers/ui/app/types/keypad'
 import { amountDigits, counterActionFor } from '../utils/counterAction'
-import type { CounterAction } from '../utils/counterAction'
+import type { CounterAction } from '../types/counter'
 import { toCounterLedgerModel, toLaunchReceipt, unitsText } from '../utils/counterModels'
 
 definePageMeta({ path: '/balcao', layout: 'merchant', middleware: 'merchant-auth' })

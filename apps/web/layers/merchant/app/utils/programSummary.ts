@@ -1,18 +1,10 @@
 import { unitOf } from '#shared/domain/programStrategies'
 import type { ProgramDraft } from '#shared/schemas/program'
 import type { Translate } from '#layers/core/app/types/i18n'
-import type { ProgramField, ProgramFieldErrors } from './programForm'
+import type { ProgramField, ProgramFieldErrors, ProgramFoldSection, ProgramSectionSummaries } from '../types/program'
 
 const HOURS_PER_DAY = 24
 const SUMMARY_SEPARATOR = ' · '
-
-/** Seções do Programa que ficam fechadas até o lojista abrir. */
-export type ProgramFoldSection = 'bonus' | 'visitRules'
-
-export interface ProgramSectionSummaries {
-  readonly bonus: string
-  readonly visitRules: string
-}
 
 const FIELDS_BY_SECTION: Readonly<Record<ProgramFoldSection, readonly ProgramField[]>> = {
   bonus: ['welcomeUnits', 'referralUnits', 'surpriseDate'],

@@ -2,7 +2,7 @@
 import { REMINDER_MESSAGE_MAX_LENGTH } from '#shared/constants/domain'
 import { toCampaignHistoryRow, toReachModel, toReminderPreview } from '../utils/campaignModels'
 import { unitsText } from '../utils/counterModels'
-import type { ReminderFieldLimits, ReminderFieldsLabels } from '../utils/reminderForm'
+import type { ReminderFieldLimits, ReminderFieldsLabels } from '../types/campaign'
 
 definePageMeta({ path: '/campanhas', layout: 'merchant', middleware: 'merchant-auth' })
 
