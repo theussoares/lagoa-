@@ -32,7 +32,7 @@ function isActive(item: TabBarItem): boolean {
     :aria-label="label"
     class="fixed inset-x-0 bottom-0 z-30 border-t border-(--lagoa-rule) bg-default pb-[env(safe-area-inset-bottom)]"
   >
-    <ul class="mx-auto grid h-16 max-w-[480px] grid-cols-5 items-stretch px-2">
+    <ul class="mx-auto grid h-[4.75rem] max-w-[480px] grid-cols-5 items-stretch px-2">
       <li v-for="item in left" :key="item.to">
         <NuxtLink :to="item.to" :class="tabClass(item)" :aria-current="isActive(item) ? 'page' : undefined">
           <UIcon :name="isActive(item) ? item.activeIcon : item.icon" class="size-6" aria-hidden="true" />
@@ -42,7 +42,7 @@ function isActive(item: TabBarItem): boolean {
       <li class="flex justify-center">
         <NuxtLink
           :to="action.to"
-          class="-mt-5 flex flex-col items-center gap-1 text-sm font-semibold text-highlighted"
+          class="-mt-6 flex flex-col items-center gap-1 text-sm font-semibold text-highlighted"
           :aria-current="isActive(action) ? 'page' : undefined"
         >
           <span class="grid size-16 place-items-center rounded-full bg-primary text-inverted shadow-(--lagoa-shadow-card) ring-4 ring-(--lagoa-desk) transition-transform duration-(--lagoa-dur-fast) active:scale-95">
