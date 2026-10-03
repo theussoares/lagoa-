@@ -13,7 +13,7 @@
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "types": [],
+    "types": ["node"],
     "paths": {
       "#shared/*": ["../../shared/*"],
       "#layers/core/*": ["./layers/core/*"],
@@ -36,5 +36,7 @@
     "layers/customer/test/**/*.ts",
     "layers/merchant/app/services/**/*.ts",
     "layers/merchant/test/**/*.ts"
-  ]
+  ],
+  // Testes de página rodam no ambiente Nuxt (auto-imports, .vue, #imports): `nuxt typecheck` é quem os checa.
+  "exclude": ["layers/*/test/**/*.nuxt.ts", "layers/*/test/**/*.nuxt.test.ts"]
 }
