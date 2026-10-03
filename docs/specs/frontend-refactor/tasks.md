@@ -180,3 +180,10 @@ caminho por linha, ordem alfabética) — conflito trivial na integração.
 ## Registro de execução
 
 (atualizado pelo Engenheiro a cada onda)
+
+- **QA-0** — integrado (cherry-pick de `f140ef9`). 288 testes (234 + 54), typecheck verde.
+  Novidades: `vitest` com projetos `unit`/`nuxt`; `tsconfig.nuxt-test.json` e
+  `vue-tsc` no `typecheck`; `@types/node`. Lacunas aceitas: câmera real
+  (manual no N-A2), `USelect` de categoria (entra pelo store no teste), cartaz
+  sem snapshot (código aleatório do mock; coberto por asserts), cliente
+  "novo" do Balcão usa número do seed.
