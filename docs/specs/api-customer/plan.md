@@ -38,8 +38,10 @@ Tela: Descobrir. Front: `DiscoverService`.
   (`ShopSummary`: unidade, meta, prêmio, taxa, `welcomeUnits`).
 - `GET /v1/discover/shops`, `GET /v1/discover/challenges` (lista vazia: desafios
   estão fora do MVP, ver `docs/database-model.md`).
-- Busca de loja por `checkInCode` (peça reutilizada pelo check-in na fase 4).
-- Seed de desenvolvimento (lojas e programas de exemplo) para as fases seguintes.
+- `programs/program-rules.mapper.ts`: traduz a regra "achatada" do banco para o `ProgramRules` do `shared`
+  (reutilizado nas fases 3 e 4). A busca de loja por `checkInCode` entra na fase 4, onde é usada.
+- Seed de desenvolvimento: `pnpm --filter @lagoa/api db:seed` (idempotente) e `db:seed -- --reset`
+  (remove). Lojas fictícias: 3 aprovadas, 1 pendente, 1 suspensa.
 
 ## Fase 3: Carteira e Cartão da loja
 Telas: Carteira, Cartão da loja. Front: `WalletService`.

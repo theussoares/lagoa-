@@ -3,14 +3,15 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "dev": "node --watch --require @swc-node/register src/main.ts",
+    "dev": "node --env-file-if-exists=.env --watch --require @swc-node/register src/main.ts",
     "build": "rm -rf dist && cd ../.. && apps/api/node_modules/.bin/swc apps/api/src shared --config-file apps/api/.swcrc -d apps/api/dist --ignore \"**/*.test.ts\"",
     "start": "node dist/apps/api/src/main.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "node --env-file-if-exists=.env --require @swc-node/register src/database/seed.ts"
   },
   "dependencies": {
     "@nestjs/common": "^12.1.2",
