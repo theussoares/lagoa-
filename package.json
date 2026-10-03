@@ -10,5 +10,11 @@
     "typecheck": "pnpm --filter @lagoa/web typecheck",
     "test": "pnpm --filter @lagoa/web test",
     "test:watch": "pnpm --filter @lagoa/web test:watch"
+  },
+  "dependencies": {
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "vitest": "^5.0.3"
   }
 }

@@ -15,7 +15,7 @@
     "noEmit": true,
     "types": [],
     "paths": {
-      "#shared/*": ["./shared/*"],
+      "#shared/*": ["../../shared/*"],
       "#layers/core/*": ["./layers/core/*"],
       "#layers/customer/*": ["./layers/customer/*"],
       "#layers/merchant/*": ["./layers/merchant/*"],
@@ -23,7 +23,7 @@
     }
   },
   "include": [
-    "shared/**/*.ts",
+    "../../shared/**/*.ts",
     "layers/core/app/services/**/*.ts",
     "layers/core/app/mock/**/*.ts",
     "layers/core/test/**/*.ts",

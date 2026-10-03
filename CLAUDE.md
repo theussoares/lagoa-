@@ -23,7 +23,10 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
   guarda o estado no `localStorage` (cliente e Balcão em abas diferentes veem os
   mesmos dados). Dados de exemplo em `seed.example.ts`; código de login do mock:
   `246810`. Por isso o app roda como SPA (`ssr: false`) por enquanto.
-- **Rodar:** `pnpm dev` (cliente em `/carteira`, lojista em `/balcao`),
+- **Monorepo (pnpm workspace):** o front vive em `apps/web` (Nuxt + `layers/`);
+  `shared/` fica na raiz (alias `#shared`) para o futuro `apps/api` reusar
+  os contratos. Caminhos `layers/...` neste documento são relativos a `apps/web/`.
+- **Rodar (da raiz):** `pnpm dev` (cliente em `/carteira`, lojista em `/balcao`),
   `pnpm test`, `pnpm typecheck`.
 
 ## Idioma

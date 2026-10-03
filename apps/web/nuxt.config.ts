@@ -1,6 +1,10 @@
 // As layers em ./layers (core, ui, customer, merchant, admin) são registradas
 // automaticamente pelo Nuxt 4 e ganham os aliases #layers/<nome>.
+import { fileURLToPath } from 'node:url'
+
 export default defineNuxtConfig({
+  // `shared/` mora na raiz do monorepo para o futuro `apps/api` usar os mesmos contratos.
+  alias: { '#shared': fileURLToPath(new URL('../../shared', import.meta.url)) },
   compatibilityDate: '2026-10-01',
   // SPA enquanto o backend é mock: o "servidor" falso vive no navegador
   // (localStorage) e SSR renderizaria outro estado. Revisar no ADR do backend.
