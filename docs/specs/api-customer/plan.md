@@ -96,8 +96,12 @@ Tela: Resgate. Front: `RewardRedemptionService`.
 | Lojista que vira cliente com celular diferente do já gravado: o gravado vence, sem aviso | `drizzle-registration.repository.ts` | 5 |
 | Versão dos termos aceitos (`termsVersion`) para auditoria LGPD; exige migration | `customer_profiles` | 5 |
 | Quem tira o aniversário e quer repor a mesma data fica travado até 365 dias: PO confirmar | `profile.rules.ts` | PO |
-| Testes de repository Drizzle (filtro `approved`, ordem, lock) contra Postgres de verdade, hoje só validados à mão | `apps/api` | 5 |
+| Testes de integração com Postgres: check-in já cobre lock, rollback e ordem (`check-in.integration.test.ts`); faltam Descobrir, Carteira, perfil e cadastro | `apps/api` | 5 |
 | Índice `(status, name, id)` para a ordem da vitrine, se passar de centenas de lojas | `shops` | 5 |
+| `Idempotency-Key` no check-in (devolver o carimbo já gravado ao reenviar) | `check-in` | 5 |
+| Boas-vindas do cartão que recomeça depois do resgate: `credit` usa a chave fixa `welcome:<cardId>`; o resgate precisa de chave própria (ex.: `welcome:<redemptionId>`) | `ledger.store.ts` | 5 |
+| Expiração por inatividade e prêmio vencido: aplicar dentro do `LedgerStore`, antes do `planEarning`, senão o cartão vencido "revive" ao creditar | `ledger.store.ts`, `earning.ts` | 5 |
+| Regras do clube lidas fora do lock no check-in: ok hoje; reavaliar quando o lojista puder trocar o modo | `drizzle-check-in.repository.ts` | 5 |
 | Rotação da chave de cifra de PII (prefixo de versão no payload) | `pii.service.ts` | 5 |
 
 ## Decisões registradas
@@ -106,9 +110,12 @@ Tela: Resgate. Front: `RewardRedemptionService`.
   o cartão some da carteira e do `getCard` enquanto a loja não estiver `approved`. PO confirma.
 - **Migrations 0002/0003:** o índice do ledger por cliente nasceu sem `id` e foi refeito na 0003.
   Ambas já estão aplicadas no projeto `lagoa-`; não se reescreve histórico aplicado.
-- **Contrato do ledger (fase 4, com o Caio):** `occurred_at` usa `now()` da transação, então visita e
-  boas-vindas gravadas juntas têm o mesmo instante e o desempate é o `id` (UUID v7, ordem de inserção).
-  O serviço de ledger insere as **boas-vindas antes da visita**, para ficarem nas casas 1 e 2.
+- **Contrato do ledger (com o Caio):** `occurred_at` vem do `Clock` da aplicação (nunca recua em relação
+  ao último lançamento do cartão, sob o lock). Visita e boas-vindas gravadas juntas têm o mesmo instante e
+  o desempate é o `id` (UUID v7, ordem de inserção): o `LedgerStore.credit` insere as **boas-vindas antes
+  da visita**, para ficarem nas casas 1 e 2. Toda escrita no ledger passa por `LedgerStore`.
+- **Retry do check-in:** sem `Idempotency-Key`, quem reenvia por timeout recebe `checkInCooldown` (a janela
+  já impede o lançamento duplo) e vê o carimbo na carteira. `Idempotency-Key` fica para a fase 5.
 
 ## Pontos de contato com o Caio
 

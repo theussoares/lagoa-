@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { unitOf } from '#shared/domain/programStrategies'
+import { baseUnitsFor, unitOf } from '#shared/domain/programStrategies'
 import { CheckInCodeSchema } from '#shared/schemas/shop'
 import { type CheckInResult, CheckInResultSchema } from '#shared/schemas/visit'
 import type { ErrorOf } from '#shared/types/errors'
@@ -24,11 +24,13 @@ export class CheckInService {
     if (!code.success) return err({ code: 'invalidShopQr' })
     const target = await this.repository.findShopByCode(code.data)
     if (target === null) return err({ code: 'invalidShopQr' })
-    if (!target.checkInEnabled) return err({ code: 'checkInDisabled' })
+    // Recusar antes da transação: sem lock, sem cartão criado só para ser desfeito.
+    const earnsByVisit = baseUnitsFor(target.shop.program.rules, { kind: 'visit' }).ok
+    if (!target.checkInEnabled || !earnsByVisit) return err({ code: 'checkInDisabled' })
 
     const now = this.clock.now()
     const recorded = await this.repository.record({ customerId, shop: target, now }, (state) =>
-      decideCheckIn(target, target.cooldownHours, state, now),
+      decideCheckIn(target, state, now),
     )
     if (!recorded.ok) return recorded
 

@@ -1,6 +1,6 @@
-import { applyVisitBonuses, welcomeUnits } from '#shared/domain/bonusRules'
+import { welcomeUnits } from '#shared/domain/bonusRules'
+import { planEarning } from '#shared/domain/earning'
 import { addUnits, isRewardReady } from '#shared/domain/loyaltyCard'
-import { baseUnitsFor } from '#shared/domain/programStrategies'
 import type { EarnError, EarnInput } from '#shared/domain/programStrategies'
 import { VisitIdSchema } from '#shared/schemas/ids'
 import type { EarnSource, LoyaltyCard } from '#shared/schemas/loyaltyCard'
@@ -9,7 +9,7 @@ import type { CounterEntry, WalletActivity } from '#shared/schemas/visit'
 import { REWARD_HOLD_DAYS } from '#shared/constants/domain'
 import { err, ok } from '#shared/types/result'
 import type { Result } from '#shared/types/result'
-import { addDays, localDateParts, toIso } from '#shared/utils/time'
+import { addDays, toIso } from '#shared/utils/time'
 import type { MockContext } from './context'
 import { findCard, findShop, maskedPhoneOf, newCard, replaceCard } from './queries'
 import type { CustomerRecord, LedgerRecord } from '../state'
@@ -20,14 +20,16 @@ export function visitUnits(
   program: Program,
   input: EarnInput,
 ): Result<number, EarnError> {
-  const base = baseUnitsFor(program.rules, input)
-  if (!base.ok) return base
-  const today = localDateParts(ctx.now)
-  const { units } = applyVisitBonuses(base.value, program.bonusRules, {
-    today: { isoDate: today.isoDate, monthDay: today.monthDay },
+  // Mesma conta do servidor (`planEarning`); as boas-vindas do cartão novo o mock aplica em `creditCard`.
+  const plan = planEarning({
+    rules: program.rules,
+    bonusRules: program.bonusRules,
     customerBirthday: customer.birthday,
+    card: null,
+    input,
+    now: ctx.now,
   })
-  return ok(units)
+  return plan.ok ? ok(plan.value.units) : plan
 }
 
 /** Credita unidades no cartão (criando-o com boas-vindas se for o primeiro). */

@@ -9,8 +9,7 @@ export type CheckInDecisionError = ErrorOf<'checkInCooldown' | 'checkInDisabled'
 
 /** Antifraude primeiro (janela de qualquer visita), depois o que a visita rende. */
 export function decideCheckIn(
-  { shop }: CheckInShop,
-  cooldownHours: number,
+  { shop, cooldownHours }: CheckInShop,
   state: CheckInState,
   now: Date,
 ): Result<EarningPlan, CheckInDecisionError> {

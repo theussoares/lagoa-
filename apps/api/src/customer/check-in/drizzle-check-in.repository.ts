@@ -76,7 +76,7 @@ export class DrizzleCheckInRepository extends CheckInRepository {
           throw new RollbackSignal()
         }
 
-        // O estado em que a decisão foi tomada entra na chave: o mesmo pedido repetido não grava de novo.
+        // Rede de segurança: sob o lock a janela já barra o repetido; a chave garante no banco.
         const { entryId } = await this.ledger.credit(tx, {
           card,
           shopId: target.shop.id,

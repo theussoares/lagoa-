@@ -72,7 +72,10 @@ export class LedgerStore {
    * primeiras casas do cartão. Devolve o id da linha da visita.
    */
   async credit(tx: Tx, command: CreditCommand): Promise<{ entryId: string }> {
-    const { card, plan, now } = command
+    const { card, plan } = command
+    // O relógio é o da aplicação, lido antes de esperar o lock: sob o lock nunca recua em relação
+    // ao último lançamento do cartão (senão `lastVisitAt` regride e a ordem do ledger inverte).
+    const now = card.lastVisitAt !== null && card.lastVisitAt > command.now ? card.lastVisitAt : command.now
     const common = { cardId: card.id, shopId: command.shopId, customerId: command.customerId, occurredAt: now }
 
     if (plan.welcomeUnits > 0) {
