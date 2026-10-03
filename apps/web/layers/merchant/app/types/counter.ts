@@ -6,6 +6,7 @@ import type { DomainErrorCode, TransportError } from '#shared/types/errors'
 import type { ComputedRef, Ref } from 'vue'
 import type { AsyncResultState } from '#layers/core/app/types/asyncResult'
 import type { RedemptionPreview } from '#shared/schemas/redemption'
+import type { FocusRequest } from '#layers/ui/app/types/focus'
 
 /** Modelos de exibição do Balcão. Texto pronto em pt-BR; celular só mascarado. */
 
@@ -81,4 +82,70 @@ export interface RedemptionCheck {
   /** Entrega o prêmio. Devolve a linha da caderneta, ou null. */
   confirm: () => Promise<CounterEntry | null>
   reset: () => void
+}
+
+/** Texto do botão principal e da dica do valor, conforme o modo do clube. */
+export interface LaunchFormText {
+  readonly submitLabel: string
+  readonly amountHint: string | undefined
+}
+
+export type CounterField = 'phone' | 'amount'
+export type CounterFocusTarget = CounterField | 'redemptionCode'
+export type CounterFocus = (target: CounterFocusTarget) => void
+
+export interface CounterLaunchView {
+  /** Só dígitos; v-model do visor. */
+  phone: string
+  readonly amountText: string
+  readonly action: CounterAction | null
+  readonly submitLabel: string
+  readonly amountHint: string | undefined
+  readonly pending: boolean
+  readonly phoneErrorCode: 'invalidPhone' | null
+  readonly amountErrorCode: 'invalidAmount' | null
+  /** Erro que não é de campo. */
+  readonly alertCode: DomainErrorCode | null
+  readonly programFailed: boolean
+  readonly receipt: { readonly key: string; readonly model: LaunchReceiptModel } | null
+  readonly setActiveField: (field: CounterField) => void
+  readonly inputAmount: (value: string | number) => void
+  readonly pressDigit: (digit: string) => void
+  readonly pressBackspace: () => void
+  readonly clear: () => void
+  readonly submit: () => Promise<void>
+  readonly retryProgram: () => Promise<void>
+}
+
+export interface CounterRedemptionPreviewModel {
+  readonly rewardTitle: string
+  /** "(67) 9••••-0374 · vale até 14:32": só o celular mascarado do canhoto. */
+  readonly customerLine: string
+  readonly confirming: boolean
+}
+
+export interface CounterRedemptionView {
+  code: string[]
+  readonly status: RedemptionCheckState['status']
+  readonly errorCode: DomainErrorCode | null
+  readonly preview: CounterRedemptionPreviewModel | null
+  readonly deliveredReward: string | null
+  readonly complete: () => Promise<void>
+  readonly deliver: () => Promise<void>
+  readonly cancel: () => void
+}
+
+export interface CounterLedgerView {
+  readonly status: 'loading' | 'error' | 'success'
+  readonly errorCode: TransportError['code'] | null
+  readonly rows: readonly CounterLedgerEntryModel[]
+  readonly reload: () => Promise<void>
+}
+
+export interface CounterScreen {
+  readonly today: string
+  readonly focusRequest: FocusRequest<CounterFocusTarget> | null
+  readonly launch: CounterLaunchView
+  readonly redemption: CounterRedemptionView
+  readonly ledger: CounterLedgerView
 }

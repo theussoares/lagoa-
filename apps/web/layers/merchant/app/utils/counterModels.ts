@@ -3,7 +3,14 @@ import { formatCurrency } from '#shared/utils/currency'
 import { formatTime } from '#shared/utils/dateFormat'
 import type { Translate } from '#layers/core/app/types/i18n'
 import { unitsText } from '#layers/core/app/utils/units'
-import type { CounterLedgerEntryModel, LaunchReceiptModel } from '../types/counter'
+import type { RedemptionPreview } from '#shared/schemas/redemption'
+import type {
+  CounterAction,
+  CounterLedgerEntryModel,
+  CounterRedemptionPreviewModel,
+  LaunchFormText,
+  LaunchReceiptModel,
+} from '../types/counter'
 import type { StampCardBody } from '#layers/ui/app/types/wallet'
 import { stampTilt } from '#layers/ui/app/utils/stampTilt'
 
@@ -105,5 +112,26 @@ export function toLaunchReceipt(result: VisitRegistered, rewardTitle: string, t:
     title,
     detail: parts.filter((part) => part !== null).join(' '),
     body: receiptBody(result, t),
+  }
+}
+
+/** Botão principal e dica do valor do formulário de lançamento. */
+export function toLaunchFormText(action: CounterAction | null, t: Translate): LaunchFormText {
+  if (action === null) return { submitLabel: t('counter.launch.give', { units: unitsText(t, 'stamp', 1) }), amountHint: undefined }
+  if (action.kind === 'amount') {
+    return {
+      submitLabel: t('counter.launch.giveAmount'),
+      amountHint: t('counter.launch.amountHint', { points: unitsText(t, 'point', action.pointsPerReal) }),
+    }
+  }
+  return { submitLabel: t('counter.launch.give', { units: unitsText(t, action.unit, action.units) }), amountHint: undefined }
+}
+
+/** O canhoto conferido: prêmio e a linha do cliente, só com o celular mascarado que o servidor devolveu. */
+export function toRedemptionPreviewModel(preview: RedemptionPreview, confirming: boolean, t: Translate): CounterRedemptionPreviewModel {
+  return {
+    rewardTitle: preview.rewardTitle,
+    customerLine: t('counter.redemption.customer', { phone: preview.maskedPhone, time: formatTime(preview.expiresAt) }),
+    confirming,
   }
 }
