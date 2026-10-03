@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { LaunchReceiptModel } from '../types/counter'
-import { slotGridStyle } from '../utils/slotGrid'
-import { REWARD_STAMP_ICON } from '../utils/stampIcons'
+import type { LaunchReceiptModel } from '../../types/counter'
+import { slotGridStyle } from '#layers/ui/app/utils/slotGrid'
+import { REWARD_STAMP_ICON } from '#layers/ui/app/utils/stampIcons'
 
 interface Props {
   receipt: LaunchReceiptModel

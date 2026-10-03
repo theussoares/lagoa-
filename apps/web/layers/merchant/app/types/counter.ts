@@ -1,4 +1,5 @@
-import type { StampCardBody } from './wallet'
+import type { MaskedPhone } from '#shared/schemas/phone'
+import type { StampCardBody } from '#layers/ui/app/types/wallet'
 
 /** Modelos de exibição do Balcão. Texto pronto em pt-BR; celular só mascarado. */
 
@@ -7,7 +8,7 @@ export interface CounterLedgerEntryModel {
   /** "14:32" */
   readonly time: string
   /** `(67) 9••••-0374` — nunca o número completo. */
-  readonly phone: string
+  readonly phone: MaskedPhone
   /** "Cliente novo" quando o cartão nasceu neste lançamento. */
   readonly badge: string | null
   /** "+1 carimbo", "+24 pontos · R$ 24,00", "Prêmio entregue: Corte grátis". */
@@ -17,11 +18,6 @@ export interface CounterLedgerEntryModel {
   readonly tilt: number
   /** Lançada agora, nesta tela: entra com a batida do carimbo. */
   readonly fresh: boolean
-}
-
-export interface CounterKeypadLabels {
-  readonly clear: string
-  readonly backspace: string
 }
 
 /** O cartão do cliente logo depois do lançamento, para o atendente conferir de relance. */

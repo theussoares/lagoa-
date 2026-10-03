@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CounterKeypadLabels } from '../types/counter'
+import type { CounterKeypadLabels } from '../types/keypad'
 
 interface Props {
   labels: CounterKeypadLabels

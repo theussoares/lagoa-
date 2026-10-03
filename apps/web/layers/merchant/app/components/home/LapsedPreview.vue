@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CustomerRowModel } from '#layers/ui/app/types/customers'
+import type { CustomerRowModel } from '../../types/customer'
 import type { LapsedPreviewLabels } from '../../utils/homeModels'
 
 interface Props {

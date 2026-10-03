@@ -4,7 +4,7 @@ import { formatCurrency } from '#shared/utils/currency'
 import { phoneDigits } from '#shared/utils/phone'
 import { PILOT_TIME_ZONE } from '#shared/utils/time'
 import type { ComponentPublicInstance } from 'vue'
-import type { CounterKeypadLabels } from '#layers/ui/app/types/counter'
+import type { CounterKeypadLabels } from '#layers/ui/app/types/keypad'
 import { amountDigits, counterActionFor } from '../utils/counterAction'
 import type { CounterAction } from '../utils/counterAction'
 import { toCounterLedgerModel, toLaunchReceipt, unitsText } from '../utils/counterModels'
@@ -221,7 +221,7 @@ onMounted(focusPhone)
               :description="t('counter.launch.programProblem')"
               :actions="[{ label: t('common.retry'), onClick: program.reload }]"
             />
-            <LaunchReceipt v-else-if="receipt" :key="launch.state.value.status === 'success' ? launch.state.value.result.entry.id : ''" :receipt="receipt" :icon="STAMP_ICON" />
+            <CounterLaunchReceipt v-else-if="receipt" :key="launch.state.value.status === 'success' ? launch.state.value.result.entry.id : ''" :receipt="receipt" :icon="STAMP_ICON" />
           </div>
         </PanelModule>
       </div>

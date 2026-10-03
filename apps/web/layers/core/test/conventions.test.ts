@@ -22,7 +22,7 @@ const TRANSITIONAL_EXPORTED_TYPES: readonly string[] = [
   'layers/core/app/composables/useAsyncResult.ts',
   'layers/core/app/utils/sessionPersistence.ts',
   'layers/core/app/utils/translate.ts',
-  'layers/customer/app/components/BirthdayForm.vue',
+  'layers/customer/app/components/profile/BirthdayForm.vue',
   'layers/customer/app/composables/useCheckIn.ts',
   'layers/customer/app/composables/useCustomerSignIn.ts',
   'layers/customer/app/composables/useQrScanner.ts',

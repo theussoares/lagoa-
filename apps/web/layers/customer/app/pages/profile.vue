@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Birthday } from '#shared/schemas/common'
-import type { BirthdayAction } from '../components/BirthdayForm.vue'
+import type { BirthdayAction } from '../components/profile/BirthdayForm.vue'
 import { formatBirthday, formatChangeableAt } from '../utils/birthdayModel'
 
 definePageMeta({ path: '/perfil', layout: 'customer', middleware: 'customer-auth' })
@@ -111,7 +111,7 @@ async function saveBirthday(birthday: Birthday | null, action: BirthdayAction): 
     <section v-if="state.status === 'success'" aria-labelledby="birthday-title" class="flex flex-col gap-3">
       <h2 id="birthday-title" class="letreiro text-base text-toned">{{ t('profile.birthday.title') }}</h2>
       <div class="rounded-(--radius-card) bg-default p-4 shadow-(--lagoa-shadow-card)">
-        <BirthdayForm
+        <ProfileBirthdayForm
           :birthday="state.value.birthday"
           :labels="birthdayLabels"
           :pending="birthdayPending"

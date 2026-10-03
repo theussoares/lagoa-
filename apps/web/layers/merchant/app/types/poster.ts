@@ -1,4 +1,4 @@
-import type { QrPath } from '../utils/qrPath'
+import type { QrPath } from '#layers/ui/app/utils/qrPath'
 
 /** Cartaz do balcão, texto pronto em pt-BR. */
 export interface CheckInPosterModel {

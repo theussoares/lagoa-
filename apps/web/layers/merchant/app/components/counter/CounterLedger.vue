@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CounterLedgerEntryModel } from '../types/counter'
+import type { CounterLedgerEntryModel } from '../../types/counter'
 
 interface Props {
   entries: readonly CounterLedgerEntryModel[]

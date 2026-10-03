@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CheckInPosterModel } from '#layers/ui/app/types/poster'
+import type { CheckInPosterModel } from '../../types/poster'
 import type { PosterStepLabels } from '../../utils/clubSetupLabels'
 
 interface Props {
@@ -55,7 +55,7 @@ const emit = defineEmits<Emits>()
         :actions="[{ label: labels.retry, onClick: () => emit('retry') }]"
         live
       />
-      <CheckInPoster v-else-if="poster" :poster="poster" />
+      <ClubSetupPoster v-else-if="poster" :poster="poster" />
     </div>
   </div>
 </template>

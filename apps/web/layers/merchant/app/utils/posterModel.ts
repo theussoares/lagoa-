@@ -1,7 +1,7 @@
 import type { ShopPoster } from '#shared/schemas/shop'
 import { checkInLink } from '#shared/utils/checkInCode'
 import type { Translate } from '#layers/core/app/utils/translate'
-import type { CheckInPosterModel } from '#layers/ui/app/types/poster'
+import type { CheckInPosterModel } from '../types/poster'
 import { qrPath } from '#layers/ui/app/utils/qrPath'
 import { unitsText } from './counterModels'
 

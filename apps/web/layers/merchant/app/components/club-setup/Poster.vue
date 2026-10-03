@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CheckInPosterModel } from '../types/poster'
+import type { CheckInPosterModel } from '../../types/poster'
 
 interface Props {
   poster: CheckInPosterModel

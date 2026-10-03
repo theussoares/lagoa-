@@ -4,7 +4,7 @@ import type { ProgramUnit } from '#shared/schemas/program'
 import { formatCurrency } from '#shared/utils/currency'
 import { PILOT_TIME_ZONE } from '#shared/utils/time'
 import type { Translate } from '#layers/core/app/utils/translate'
-import type { CounterLedgerEntryModel, LaunchReceiptModel } from '#layers/ui/app/types/counter'
+import type { CounterLedgerEntryModel, LaunchReceiptModel } from '../types/counter'
 import type { StampCardBody } from '#layers/ui/app/types/wallet'
 import { stampTilt } from '#layers/ui/app/utils/stampTilt'
 

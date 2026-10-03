@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Birthday } from '#shared/schemas/common'
-import { dayOptions, joinBirthday, monthOptions, splitBirthday } from '../utils/birthdayModel'
+import { dayOptions, joinBirthday, monthOptions, splitBirthday } from '../../utils/birthdayModel'
 
 export interface BirthdayFormLabels {
   readonly legend: string

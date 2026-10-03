@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
-import type { CustomerRowModel, CustomerTableLabels } from '../types/customers'
+import type { CustomerRowModel, CustomerTableLabels } from '../../types/customer'
 
 interface Props {
   rows: readonly CustomerRowModel[]

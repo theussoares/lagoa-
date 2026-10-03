@@ -111,7 +111,7 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', warnBeforeUnloa
           {{ shopName ? t('clubSetup.creatingFor', { shop: shopName }) : t('clubSetup.creating') }}
         </p>
       </div>
-      <SetupSteps :steps="stepItems" :label="t('clubSetup.stepsLabel')" :done-label="t('clubSetup.stepDone')" />
+      <ClubSetupSteps :steps="stepItems" :label="t('clubSetup.stepsLabel')" :done-label="t('clubSetup.stepDone')" />
     </header>
 
     <div v-if="step !== 'poster'" class="mx-auto grid w-full max-w-[1200px] flex-1 items-start gap-10 px-8 py-8 lg:grid-cols-12">
@@ -120,7 +120,7 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', warnBeforeUnloa
 
         <fieldset :disabled="submitState.status === 'creating'" class="flex min-w-0 flex-col gap-5">
           <PanelModule v-if="step === 'shop'" :title="t('clubSetup.shop.module')">
-            <SetupShopFields v-model:shop="form.shop" :labels="shopLabels" :limits="shopLimits" :categories="categories" :errors="shopErrors" />
+            <ClubSetupShopFields v-model:shop="form.shop" :labels="shopLabels" :limits="shopLimits" :categories="categories" :errors="shopErrors" />
           </PanelModule>
 
           <template v-else-if="step === 'rules'">
@@ -197,7 +197,7 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', warnBeforeUnloa
       </aside>
     </div>
 
-    <SetupPosterStep
+    <ClubSetupPosterStep
       v-else
       :status="posterState.status"
       :poster="poster"
