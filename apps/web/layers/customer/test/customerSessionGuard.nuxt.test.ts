@@ -53,6 +53,16 @@ describe('useCustomerSessionGuard', () => {
     expect(signOutMock).toHaveBeenCalledTimes(2)
   })
 
+  it('does not sign out again while a source stays unauthorized and another one changes', async () => {
+    const a = shallowRef<ErrorCarrier>(SUCCESS)
+    const b = shallowRef<ErrorCarrier>(SUCCESS)
+    await mountGuard([a, b])
+    await set(a, unauthorized)
+    await set(b, PENDING)
+    await set(b, SUCCESS)
+    expect(signOutMock).toHaveBeenCalledTimes(1)
+  })
+
   it('ignores other errors and logs nothing', async () => {
     const a = shallowRef<ErrorCarrier>(SUCCESS)
     await mountGuard([a])
