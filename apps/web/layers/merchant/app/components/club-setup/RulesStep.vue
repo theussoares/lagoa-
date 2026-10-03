@@ -15,12 +15,17 @@ interface Emits {
 defineProps<Props>()
 const emit = defineEmits<Emits>()
 const program = defineModel<ClubSetupProgramForm>('program', { required: true })
+
+function update<K extends keyof ClubSetupProgramForm>(key: K, value: ClubSetupProgramForm[K]): void {
+  program.value = { ...program.value, [key]: value }
+}
 </script>
 
 <template>
   <PanelModule :title="$t('program.earn.title')">
     <ProgramEarnFields
-      v-model:rules="program.rules"
+      :rules="program.rules"
+      @update:rules="update('rules', $event)"
       :unit="options.unit"
       :limits="options.limits"
       :errors="errors"
@@ -31,8 +36,10 @@ const program = defineModel<ClubSetupProgramForm>('program', { required: true })
   </PanelModule>
   <PanelModule :title="$t('program.visitRules.title')">
     <ProgramVisitRulesFields
-      v-model:check-in="program.checkIn"
-      v-model:expiration="program.expirationPolicy"
+      :check-in="program.checkIn"
+      :expiration="program.expirationPolicy"
+      @update:check-in="update('checkIn', $event)"
+      @update:expiration="update('expirationPolicy', $event)"
       :cooldown-options="options.cooldownOptions"
       :expiration-options="options.expirationOptions"
       :errors="errors"
