@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { REWARD_TITLE_MAX_LENGTH } from '#shared/constants/domain'
 import { MERCHANT_SIGN_IN_PATH } from '../composables/useMerchantSession'
 import { toProgramPreview } from '../utils/programPreviewModel'
 import { sectionHasError } from '../utils/programSummary'
@@ -13,7 +12,7 @@ useHead({ title: () => `${t('program.title')} · ${t('app.name')}` })
 
 const editor = useProgramEditor()
 const { draft, state, saveState, fieldErrors } = editor
-const labels = useProgramFormLabels(draft)
+const options = useProgramFieldOptions(draft)
 
 // O essencial (prêmio, tipo e meta) fica aberto; bônus e validade dobram num resumo.
 const bonusOpen = ref(false)
@@ -73,18 +72,11 @@ onBeforeRouteLeave((to) => {
       <!-- Travado durante o save: o que fosse digitado agora seria trocado pela resposta do servidor. -->
       <fieldset :disabled="saveState.status === 'saving'" class="flex min-w-0 flex-col gap-5 lg:col-span-7">
         <PanelModule :title="t('program.card.title')">
-          <UFormField
-            :label="t('program.reward.label')"
-            :hint="t('program.reward.hint', { max: REWARD_TITLE_MAX_LENGTH })"
-            :error="fieldErrors.rewardTitle ? t('program.errors.rewardTitle', { max: REWARD_TITLE_MAX_LENGTH }) : undefined"
-            name="rewardTitle"
-          >
-            <UInput v-model="draft.reward.title" :maxlength="REWARD_TITLE_MAX_LENGTH" size="lg" class="w-full" :placeholder="t('program.reward.placeholder')" />
-          </UFormField>
+          <ProgramRewardTitleField v-model:title="draft.reward.title" :invalid="fieldErrors.rewardTitle === true" />
           <ProgramEarnFields
             v-model:rules="draft.rules"
-            :labels="labels.earn.value"
-            :limits="labels.limits.value"
+            :unit="options.unit"
+            :limits="options.limits"
             :errors="fieldErrors"
             :mode-locked="editor.modeLocked.value"
             :target-changed="editor.targetChanged.value"
@@ -93,22 +85,28 @@ onBeforeRouteLeave((to) => {
           />
         </PanelModule>
 
-        <FoldModule v-model:open="bonusOpen" :title="t('program.bonus.title')" :summary="labels.summaries.value?.bonus ?? ''">
-          <ProgramBonusFields v-model:bonus="draft.bonusRules" :labels="labels.bonus.value" :limits="labels.limits.value" :errors="fieldErrors" />
+        <FoldModule v-model:open="bonusOpen" :title="t('program.bonus.title')" :summary="options.summaries?.bonus ?? ''">
+          <ProgramBonusFields v-model:bonus="draft.bonusRules" :unit="options.unit" :limits="options.limits" :errors="fieldErrors" />
         </FoldModule>
 
-        <FoldModule v-model:open="visitRulesOpen" :title="t('program.visitRules.title')" :summary="labels.summaries.value?.visitRules ?? ''">
-          <ProgramVisitRulesFields v-model:check-in="draft.checkIn" v-model:expiration="draft.expirationPolicy" :labels="labels.visitRules.value" :errors="fieldErrors" />
+        <FoldModule v-model:open="visitRulesOpen" :title="t('program.visitRules.title')" :summary="options.summaries?.visitRules ?? ''">
+          <ProgramVisitRulesFields
+            v-model:check-in="draft.checkIn"
+            v-model:expiration="draft.expirationPolicy"
+            :cooldown-options="options.cooldownOptions"
+            :expiration-options="options.expirationOptions"
+            :errors="fieldErrors"
+          />
         </FoldModule>
       </fieldset>
 
-      <aside class="flex flex-col gap-3 lg:sticky lg:top-6 lg:col-span-5" :aria-label="t('program.preview.label')">
-        <p class="letreiro text-[0.9375rem] text-toned">{{ t('program.preview.title') }}</p>
-        <StampCard v-if="preview" :card="preview.card" heading-level="h3" />
-        <p v-if="preview" class="flex items-center gap-1.5 text-[0.9375rem] text-toned">
-          <UIcon name="i-ph-seal-check" class="size-4 shrink-0 text-primary" aria-hidden="true" />{{ preview.earnLine }}
-        </p>
-      </aside>
+      <ProgramPreviewAside
+        v-if="preview"
+        :preview="preview"
+        :label="t('program.preview.label')"
+        :title="t('program.preview.title')"
+        heading-level="h3"
+      />
 
       <div class="fixed inset-x-0 bottom-0 z-10 border-t border-(--lagoa-rule) bg-default/95 backdrop-blur left-(--merchant-sidebar-width)">
         <div class="mx-auto flex max-w-[1200px] items-center justify-end gap-3 px-8 py-3">

@@ -2,7 +2,8 @@ import type { ClubSetupDraft } from '#shared/schemas/onboarding'
 import type { ShopCategory, ShopPoster, ShopProfileDraft } from '#shared/schemas/shop'
 import type { ProgramMode } from '#shared/schemas/program'
 import type { CreateClubError } from '../services/ClubSetupService'
-import type { ProgramFieldErrors } from './program'
+import type { ProgramFieldErrors, ProgramFieldOptions, ProgramPreview } from './program'
+import type { CheckInPosterModel } from './poster'
 import type { ComputedRef, Ref } from 'vue'
 
 export type ClubSetupStep = 'shop' | 'rules' | 'reward' | 'poster'
@@ -22,44 +23,11 @@ export interface ClubSetupForm {
   program: ClubSetupDraft['program']
 }
 
+export type ClubSetupProgramForm = ClubSetupForm['program']
+
 export interface SetupStepItem {
-  readonly key: string
-  readonly label: string
+  readonly key: ClubSetupStep
   readonly state: 'done' | 'current' | 'next'
-}
-
-export interface ShopFieldsLabels {
-  readonly name: string
-  readonly namePlaceholder: string
-  readonly nameError: string
-  readonly category: string
-  readonly categoryPlaceholder: string
-  readonly categoryError: string
-  readonly neighborhood: string
-  readonly neighborhoodError: string
-  readonly addressLine: string
-  readonly addressHint: string
-  readonly addressError: string
-}
-
-export interface ShopFieldLimits {
-  readonly name: number
-  readonly neighborhood: number
-  readonly addressLine: number
-}
-
-export interface PosterStepLabels {
-  readonly title: string
-  readonly lead: string
-  readonly pendingTitle: string
-  readonly pendingDescription: string
-  readonly approveForTesting: string
-  readonly approved: string
-  readonly print: string
-  readonly goToPanel: string
-  readonly loading: string
-  readonly loadError: string
-  readonly retry: string
 }
 
 export type ClubSetupSubmitState = { status: 'idle' } | { status: 'creating' } | { status: 'error'; code: CreateClubError['code'] }
@@ -81,4 +49,30 @@ export interface ClubSetup {
   setMode: (mode: ProgramMode) => void
   create: () => Promise<void>
   loadPoster: () => Promise<void>
+}
+
+/** O que a página de criar o clube lê: já desembrulhado (sem `.value`), pronto para o template. */
+export interface ClubSetupScreen {
+  readonly step: ClubSetupStep
+  /** Nome digitado, sem espaços nas pontas. */
+  readonly shopName: string
+  readonly steps: readonly SetupStepItem[]
+  /** Rascunho do store: os campos fazem `v-model` direto nele. */
+  form: ClubSetupForm
+  readonly shopErrors: ShopFieldErrors
+  readonly programErrors: ProgramFieldErrors
+  readonly fieldOptions: ProgramFieldOptions
+  readonly creating: boolean
+  readonly submitError: CreateClubError['code'] | null
+  readonly preview: ProgramPreview
+  readonly posterStatus: ClubPosterState['status']
+  readonly poster: CheckInPosterModel | null
+  readonly isPending: boolean
+  readonly canApprove: boolean
+  readonly submitStep: () => Promise<void>
+  readonly back: () => void
+  readonly setMode: (mode: ProgramMode) => void
+  readonly approve: () => Promise<void>
+  readonly print: () => void
+  readonly retryPoster: () => Promise<void>
 }
