@@ -9,7 +9,10 @@
     "preview": "pnpm --filter @lagoa/web preview",
     "typecheck": "pnpm --filter @lagoa/web typecheck",
     "test": "pnpm --filter @lagoa/web test",
-    "test:watch": "pnpm --filter @lagoa/web test:watch"
+    "test:watch": "pnpm --filter @lagoa/web test:watch",
+    "dev:site": "pnpm --filter @lagoa/site dev",
+    "generate:site": "pnpm --filter @lagoa/site generate",
+    "typecheck:site": "pnpm --filter @lagoa/site typecheck"
   },
   "dependencies": {
     "zod": "^4.6.5"
