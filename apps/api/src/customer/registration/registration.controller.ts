@@ -12,9 +12,9 @@ import { RegistrationService } from './registration.service'
 export class RegistrationController {
   constructor(private readonly registrations: RegistrationService) {}
 
-  /** Limite curto: o erro de celular repetido não pode servir para varrer números cadastrados. */
+  /** Limite curto por conta e por IP: o erro de celular repetido não pode servir para varrer números cadastrados. */
   @Post()
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Throttle({ default: { limit: 5, ttl: 60_000 }, ip: { limit: 15, ttl: 60_000 } })
   async register(
     @CurrentUser() user: AuthUser,
     @Body(new ZodValidationPipe(CustomerRegistrationSchema)) body: CustomerRegistration,

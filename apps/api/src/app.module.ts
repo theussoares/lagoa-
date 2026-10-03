@@ -17,7 +17,11 @@ import { HealthController } from './health/health.controller'
     DatabaseModule,
     CommonModule,
     AuthModule,
-    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
+    ThrottlerModule.forRoot([
+      { name: 'default', ttl: 60_000, limit: 120 },
+      // Teto por IP (confiável com TRUST_PROXY_HOPS): contas diferentes no mesmo IP somam aqui.
+      { name: 'ip', ttl: 60_000, limit: 600, getTracker: (request) => String(request.ip ?? 'unknown') },
+    ]),
     CustomerModule,
   ],
   controllers: [HealthController],

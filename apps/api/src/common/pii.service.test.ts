@@ -1,13 +1,12 @@
 import { randomBytes } from 'node:crypto'
 import { describe, expect, it } from 'vitest'
 import { PhoneNumberSchema } from '#shared/schemas/phone'
-import type { Env } from '../config/env'
 import { PiiService } from './pii.service'
 
 const env = {
   PII_ENCRYPTION_KEY: randomBytes(32).toString('base64'),
   PII_HASH_PEPPER: 'a-long-enough-test-pepper',
-} as Env
+}
 
 describe('PiiService', () => {
   const pii = new PiiService(env)

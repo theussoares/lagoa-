@@ -35,7 +35,7 @@ export class RegistrationService {
     for (let attempt = 0; attempt < REFERRAL_CODE_ATTEMPTS; attempt++) {
       const customer: NewCustomer = {
         userId,
-        emailEncrypted: this.pii.encrypt(email.trim().toLowerCase()),
+        emailEncrypted: this.pii.encryptEmail(email),
         emailHash: this.pii.hashEmail(email),
         phoneEncrypted: this.pii.encrypt(phone.value),
         phoneHash: this.pii.hashPhone(phone.value),

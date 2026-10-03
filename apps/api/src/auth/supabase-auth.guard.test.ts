@@ -1,14 +1,13 @@
-import type { ExecutionContext } from '@nestjs/common'
 import { UnauthorizedException } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
+import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host'
 import { createLocalJWKSet, exportJWK, generateKeyPair, type JWK, SignJWT } from 'jose'
 import { beforeAll, describe, expect, it } from 'vitest'
-import type { Env } from '../config/env'
 import type { AuthenticatedRequest } from './auth.types'
 import { IS_PUBLIC } from './public.decorator'
 import { SupabaseAuthGuard } from './supabase-auth.guard'
 
-const env = { SUPABASE_URL: 'https://project.supabase.co' } as Env
+const env = { SUPABASE_URL: 'https://project.supabase.co' }
 const ISSUER = 'https://project.supabase.co/auth/v1'
 const USER_ID = '0190a000-0000-7000-8000-000000000001'
 
@@ -26,15 +25,11 @@ async function token(overrides: { key?: CryptoKey; alg?: string; issuer?: string
   return jwt.sign(overrides.key ?? privateKey)
 }
 
-function contextFor(authorization: string | undefined, isPublic = false): { context: ExecutionContext; request: Partial<AuthenticatedRequest> } {
+function contextFor(authorization: string | undefined, isPublic = false): { context: ExecutionContextHost; request: Partial<AuthenticatedRequest> } {
   const request: Partial<AuthenticatedRequest> = { headers: { authorization } }
   const handler = (): void => undefined
   if (isPublic) Reflect.defineMetadata(IS_PUBLIC, true, handler)
-  const context = {
-    switchToHttp: () => ({ getRequest: () => request }),
-    getHandler: () => handler,
-    getClass: () => class {},
-  } as unknown as ExecutionContext
+  const context = new ExecutionContextHost([request, {}, () => undefined], class {}, handler)
   return { context, request }
 }
 
@@ -65,6 +60,7 @@ describe('SupabaseAuthGuard', () => {
     ['wrong audience', async () => `Bearer ${await token({ audience: 'service_role' })}`],
     ['expired', async () => `Bearer ${await token({ expiresIn: '-1m' })}`],
     ['no subject', async () => `Bearer ${await token({ subject: null })}`],
+    ['symmetric HS256 signed with the public key material', async () => `Bearer ${await new SignJWT({}).setProtectedHeader({ alg: 'HS256' }).setIssuer(ISSUER).setAudience('authenticated').setSubject(USER_ID).setExpirationTime('5m').sign(new TextEncoder().encode('any-shared-secret-of-sufficient-length-32'))}`],
     ['garbage', async () => 'Bearer abc.def.ghi'],
   ])('rejects %s', async (_name, header) => {
     await expect(guard.canActivate(contextFor(await header()).context)).rejects.toBeInstanceOf(UnauthorizedException)

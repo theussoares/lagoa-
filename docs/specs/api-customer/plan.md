@@ -80,6 +80,17 @@ Tela: Resgate. Front: `RewardRedemptionService`.
 - Fechamento: revisão de segurança de ponta a ponta, `EXPLAIN` das queries críticas,
   README da API, checklist de integração com o front (`Http*Service`).
 
+## Pendências registradas (revisões)
+
+| Item | Onde | Fase |
+|---|---|---|
+| Teto diário de respostas `phoneAlreadyUsed` por conta (sondagem de celular) | cadastro | 5 |
+| Requisição com token inválido não passa pelo limite (custo baixo: ES256 com JWKS em cache) | `app.module.ts` | 5 |
+| Lojista que vira cliente com celular diferente do já gravado: o gravado vence, sem aviso | `drizzle-registration.repository.ts` | 5 |
+| Versão dos termos aceitos (`termsVersion`) para auditoria LGPD; exige migration | `customer_profiles` | 5 |
+| Quem tira o aniversário e quer repor a mesma data fica travado até 365 dias: PO confirmar | `profile.rules.ts` | PO |
+| Rotação da chave de cifra de PII (prefixo de versão no payload) | `pii.service.ts` | 5 |
+
 ## Pontos de contato com o Caio
 
 | Item | Quando |

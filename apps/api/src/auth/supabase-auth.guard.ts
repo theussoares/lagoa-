@@ -15,7 +15,7 @@ export class SupabaseAuthGuard implements CanActivate {
   private readonly issuer: string
 
   constructor(
-    @Inject(ENV) env: Env,
+    @Inject(ENV) env: Pick<Env, 'SUPABASE_URL'>,
     @Inject(JWKS) private readonly jwks: Jwks,
     private readonly reflector: Reflector,
   ) {

@@ -4,6 +4,8 @@ import type { PhoneNumber } from '#shared/schemas/phone'
 import { ENV } from '../config/config.module'
 import type { Env } from '../config/env'
 
+const normalizeEmail = (email: string): string => email.trim().toLowerCase()
+
 const IV_BYTES = 12
 const TAG_BYTES = 16
 
@@ -13,7 +15,7 @@ export class PiiService {
   private readonly key: Buffer
   private readonly pepper: Buffer
 
-  constructor(@Inject(ENV) env: Env) {
+  constructor(@Inject(ENV) env: Pick<Env, 'PII_ENCRYPTION_KEY' | 'PII_HASH_PEPPER'>) {
     this.key = Buffer.from(env.PII_ENCRYPTION_KEY, 'base64')
     this.pepper = Buffer.from(env.PII_HASH_PEPPER)
   }
@@ -39,8 +41,12 @@ export class PiiService {
     return this.hash(`phone:${phone}`)
   }
 
+  encryptEmail(email: string): Buffer {
+    return this.encrypt(normalizeEmail(email))
+  }
+
   hashEmail(email: string): Buffer {
-    return this.hash(`email:${email.trim().toLowerCase()}`)
+    return this.hash(`email:${normalizeEmail(email)}`)
   }
 
   /** Determinístico, com prefixo por tipo (um e-mail nunca colide com um celular): serve para busca e unicidade (`phone_hash`, `email_hash`). */
