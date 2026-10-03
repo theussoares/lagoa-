@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { t } = useI18n()
+const { siteUrl } = useRuntimeConfig().public
 
 useSeoMeta({
   title: () => t('seo.title'),
@@ -8,6 +9,12 @@ useSeoMeta({
   ogDescription: () => t('seo.description'),
   ogType: 'website',
   ogLocale: 'pt_BR',
+  ogUrl: siteUrl || undefined,
+  twitterCard: 'summary',
+})
+
+useHead({
+  link: siteUrl ? [{ rel: 'canonical', href: siteUrl }] : [],
 })
 </script>
 
@@ -16,10 +23,10 @@ useSeoMeta({
     <SiteHeader />
     <main>
       <HeroSection />
-      <ValuesSection />
+      <LapsedSection />
+      <CounterSection />
       <HowSection />
       <BonusSection />
-      <LapsedSection />
       <NetworkSection />
       <PricingSection />
       <FaqSection />

@@ -18,7 +18,7 @@ export default defineNuxtConfig({
     strategy: 'no_prefix',
     locales: [{ code: 'pt-BR', language: 'pt-BR', name: 'Português', file: 'pt-BR.json' }],
   },
-  // A LP segue o sistema da pessoa; o hero e o fechamento são sempre a faixa escura de tinta.
+  // A LP segue o sistema da pessoa; o hero, o Balcão e o fechamento são sempre a faixa escura de tinta.
   colorMode: {
     preference: 'system',
     fallback: 'light',
@@ -28,10 +28,22 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      /** Só dígitos com DDI (5567...). Vazio abre o WhatsApp para escolher o contato. */
-      whatsappNumber: '',
+      /** WhatsApp da rede, só dígitos com DDI. É número comercial, público. */
+      whatsappNumber: '5567992171768',
       /** Onde o lojista já aprovado entra no Balcão. */
       appUrl: 'http://localhost:3000',
+      /** Endereço público da LP, para canonical e og:url. Vazio omite as duas. */
+      siteUrl: '',
+    },
+  },
+  hooks: {
+    // O prerender congela o runtimeConfig no HTML: um build com o Balcão em localhost
+    // publicaria links quebrados. Para gerar local, defina NUXT_PUBLIC_APP_URL mesmo assim.
+    'prerender:routes': () => {
+      const appUrl = process.env.NUXT_PUBLIC_APP_URL ?? ''
+      if (appUrl === '') {
+        throw new Error('apps/site: defina NUXT_PUBLIC_APP_URL (endereço do Balcão) antes de gerar a LP.')
+      }
     },
   },
   app: {

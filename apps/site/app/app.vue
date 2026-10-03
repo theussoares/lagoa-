@@ -3,7 +3,8 @@ import { pt_br } from '@nuxt/ui/locale'
 </script>
 
 <template>
-  <UApp :locale="pt_br">
+  <!-- A LP não tem avisos transitórios: sem toaster, sem região "Notifications" vazia. -->
+  <UApp :locale="pt_br" :toaster="null">
     <NuxtPage />
   </UApp>
 </template>

@@ -30,7 +30,7 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
   `pnpm test`, `pnpm typecheck`.
 - **Landing page do lojista:** `apps/site` (Nuxt pré-renderizado, herda
   `apps/web/layers/ui`). `pnpm dev:site` (porta 3001), `pnpm generate:site`.
-  CTA no WhatsApp via `NUXT_PUBLIC_WHATSAPP_NUMBER`.
+  O `generate` exige `NUXT_PUBLIC_APP_URL` (link do Balcão congelado no HTML).
 
 ## Idioma
 

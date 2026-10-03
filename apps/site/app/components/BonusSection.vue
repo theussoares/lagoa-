@@ -10,26 +10,25 @@ const RULES = [
 </script>
 
 <template>
-  <section id="regras" class="dark bg-(--lagoa-desk) text-default">
-    <div class="mx-auto max-w-6xl px-4 py-24 sm:px-6 lg:py-32">
-      <div v-reveal>
-        <SectionHeading :eyebrow="t('bonus.eyebrow')" :title="t('bonus.title')" :lead="t('bonus.lead')" />
-      </div>
-
-      <ul class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <li v-for="rule in RULES" :key="rule.key" v-reveal class="flex flex-col gap-5 rounded-(--radius-card) bg-default p-6 shadow-(--lagoa-shadow-card)">
-          <div class="flex items-start justify-between">
-            <span class="size-16">
-              <StampImpression :icon="rule.icon" :tilt="rule.tilt" />
-            </span>
-            <StampTag :label="t(`bonus.${rule.key}.tag`)" />
-          </div>
-          <div class="flex flex-col gap-2">
-            <h3 class="type-card-title">{{ t(`bonus.${rule.key}.title`) }}</h3>
-            <p class="text-toned">{{ t(`bonus.${rule.key}.body`) }}</p>
-          </div>
-        </li>
-      </ul>
+  <section id="regras" class="mx-auto max-w-6xl px-4 py-24 sm:px-6 lg:py-32">
+    <div v-reveal>
+      <SectionHeading :title="t('bonus.title')" :lead="t('bonus.lead')" />
     </div>
+
+    <!-- Página de caderneta: cada regra é uma linha pautada com o bônus batido como carimbo. -->
+    <ul class="mt-12 grid border-t-2 border-highlighted md:grid-cols-2 md:gap-x-12">
+      <li v-for="rule in RULES" :key="rule.key" v-reveal class="flex items-start gap-5 border-b border-(--lagoa-rule) py-7">
+        <span class="relative size-20 shrink-0">
+          <StampImpression :icon="rule.icon" :tilt="rule.tilt" />
+          <span class="letreiro tabular absolute -right-2 -bottom-1 grid min-w-10 -rotate-6 place-items-center rounded-full bg-primary px-2 py-1 text-lg leading-none text-inverted">
+            {{ t(`bonus.${rule.key}.tag`) }}
+          </span>
+        </span>
+        <div class="flex flex-col gap-1.5 pt-1">
+          <h3 class="type-card-title">{{ t(`bonus.${rule.key}.title`) }}</h3>
+          <p class="text-toned">{{ t(`bonus.${rule.key}.body`) }}</p>
+        </div>
+      </li>
+    </ul>
   </section>
 </template>

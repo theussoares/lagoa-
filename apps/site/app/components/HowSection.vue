@@ -16,16 +16,16 @@ const codeChars = computed(() => t('how.redeemCode').split(''))
     <div class="mx-auto grid max-w-6xl gap-14 px-4 py-24 sm:px-6 lg:grid-cols-[1fr_0.8fr] lg:gap-20 lg:py-32">
       <div class="flex flex-col gap-12">
         <div v-reveal>
-          <SectionHeading :eyebrow="t('how.eyebrow')" :title="t('how.title')" :lead="t('how.lead')" />
+          <SectionHeading :title="t('how.title')" :lead="t('how.lead')" />
         </div>
 
+        <!-- A ordem importa (criar, lançar, acompanhar, resgatar): por isso é lista numerada. -->
         <ol class="flex flex-col">
-          <li v-for="(step, index) in STEPS" :key="step.key" v-reveal class="flex gap-5 border-t border-(--lagoa-rule) py-7 first:border-t-0 first:pt-0">
+          <li v-for="step in STEPS" :key="step.key" v-reveal class="flex gap-5 border-t border-(--lagoa-rule) py-7 first:border-t-0 first:pt-0">
             <span class="size-14 shrink-0">
               <StampImpression :icon="step.icon" :tilt="step.tilt" />
             </span>
             <div class="flex flex-col gap-1.5">
-              <p class="type-tag tabular text-muted">{{ String(index + 1).padStart(2, '0') }}</p>
               <h3 class="type-card-title">{{ t(`how.steps.${step.key}.title`) }}</h3>
               <p class="text-toned">{{ t(`how.steps.${step.key}.body`) }}</p>
             </div>
@@ -35,19 +35,24 @@ const codeChars = computed(() => t('how.redeemCode').split(''))
 
       <div class="flex flex-col gap-5 lg:sticky lg:top-28 lg:self-start">
         <!-- Canhoto do resgate: o vermelho aparece porque há código em jogo. -->
-        <div v-reveal class="rounded-(--radius-card) bg-default p-6 shadow-(--lagoa-shadow-card)">
-          <p class="eyebrow-tag text-secondary">{{ t('how.redeemTitle') }}</p>
-          <p class="mt-5 flex justify-between gap-1.5" :aria-label="t('how.redeemCode')">
-            <span
-              v-for="(char, index) in codeChars"
-              :key="index"
-              class="grid h-16 flex-1 place-items-center rounded-(--ui-radius) bg-(--ui-bg-muted) text-[2rem] font-bold text-highlighted uppercase [font-stretch:62%]"
-              aria-hidden="true"
-            >{{ char }}</span>
-          </p>
-          <p class="mt-4 flex items-center gap-2 text-muted">
-            <UIcon name="i-ph-timer" class="size-5" aria-hidden="true" />{{ t('how.redeemHint') }}
-          </p>
+        <!-- Os recortes do picote pintam a cor do fundo desta faixa. -->
+        <div v-reveal class="rounded-(--radius-card) bg-default shadow-(--lagoa-shadow-card)" style="--lagoa-desk: var(--ui-bg-muted)">
+          <h3 class="letreiro px-6 pt-5 text-lg text-secondary">{{ t('how.redeemTitle') }}</h3>
+          <StubPerforation class="my-4" />
+          <div class="px-6 pb-6">
+            <p class="flex justify-between gap-1.5">
+              <span class="sr-only">{{ t('how.redeemCodeLabel') }}</span>
+              <span
+                v-for="(char, index) in codeChars"
+                :key="index"
+                class="grid h-16 flex-1 place-items-center rounded-(--ui-radius) bg-(--ui-bg-muted) text-[2rem] font-bold text-highlighted uppercase [font-stretch:62%]"
+                aria-hidden="true"
+              >{{ char }}</span>
+            </p>
+            <p class="mt-4 flex items-center gap-2 text-muted">
+              <UIcon name="i-ph-timer" class="size-5" aria-hidden="true" />{{ t('how.redeemHint') }}
+            </p>
+          </div>
         </div>
 
         <div v-reveal class="flex gap-4 rounded-(--radius-card) bg-default p-6 shadow-(--lagoa-shadow-card)">
