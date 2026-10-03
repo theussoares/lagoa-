@@ -11,8 +11,9 @@
   },
   "wallet": {
     "title": "Carteira",
-    "greeting": "Carteira de {name}",
+    "greeting": "Olá, {name}",
     "greetingAnonymous": "Sua carteira",
+    "lead": "Continue juntando carimbos pela cidade e ganhe prêmios.",
     "profileLink": "Abrir seu perfil",
     "stackLabel": "Seus cartões",
     "showCard": "Mostrar o cartão de {shop}",
@@ -495,8 +496,8 @@
   },
   "discover": {
     "title": "Descobrir",
-    "lead": "Todas estas lojas valem na mesma carteira. O primeiro carimbo já abre o cartão.",
-    "challengesTitle": "Desafio da cidade | Desafios da cidade",
+        "challengesTitle": "Desafio da cidade | Desafios da cidade",
+    "challengeBadge": "Desafio do mês",
     "challenge": {
       "deadline": "Até {date}",
       "progress": "{done} de {total} visitadas",
@@ -504,8 +505,18 @@
       "stopVisited": "{shop}: visitada",
       "stopPending": "{shop}: falta visitar"
     },
-    "freshTitle": "Novas para você",
-    "howTo": "Para abrir o cartão, peça o carimbo no balcão ou faça check-in pelo QR da loja.",
+    "lead": "Lugares que combinam com você.",
+    "searchLabel": "Buscar lojas",
+    "searchPlaceholder": "Buscar lojas ou bairros…",
+    "noResults": "Nenhuma loja com esse nome. Tente outra palavra.",
+    "mapLink": "Ver mapa",
+    "mapLinkLabel": "Ver as lojas da rede no mapa (abre o mapa)",
+    "freshTitle": "Perto de você",
+    "howTo": "Peça o carimbo no balcão ou faça check-in pelo QR da loja.",
+    "showcase": {
+      "openNow": "Aberta agora",
+      "distance": "{distance} km"
+    },
     "freshEmpty": "Você já tem cartão em todas as lojas da rede. Quando uma loja nova entrar, ela aparece aqui.",
     "knownTitle": "Já na sua carteira",
     "openWallet": "Abrir a carteira",

@@ -26,6 +26,16 @@ export interface ChallengeModel {
 
 export type ShopPreview = { readonly kind: 'slots'; readonly total: number; readonly welcome: number } | RulerProgress
 
+export interface ShopShowcaseModel {
+  readonly image: string | null
+  /** "4,8" */
+  readonly rating: string | null
+  /** "0,8 km" */
+  readonly distance: string | null
+  /** "Aberta agora" quando aberta; nulo quando fechada ou desconhecida. */
+  readonly openLabel: string | null
+}
+
 export interface ShopTeaserModel {
   readonly id: string
   readonly shopName: string
@@ -42,6 +52,7 @@ export interface ShopTeaserModel {
   readonly preview: ShopPreview
   /** "Conta no desafio" */
   readonly tag: string | null
+  readonly showcase: ShopShowcaseModel
   /** Link para o mapa: o card leva até a loja, que é onde o cartão abre. */
   readonly directions: ExternalLinkModel
 }
@@ -59,4 +70,5 @@ export interface KnownShopModel {
   readonly icon: string
   readonly tilt: number
   readonly rule: string
+  readonly showcase: ShopShowcaseModel
 }

@@ -76,6 +76,7 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
 | Criar o clube (cadastro)  | `clubSetup`                    |
 | Ticket do cadastro (celular confirmado sem loja) | `signUpTicket` |
 | Cartaz do balcão (QR)     | `poster` (`checkInPoster`)     |
+| Cabeçalho de tela / card herói | `screenHeader` / `heroCard` |
 | Situação da loja          | `shopStatus` (`pending` \| `approved` \| `suspended`) |
 | Plano / cobrança          | `plan` / `billing`             |
 

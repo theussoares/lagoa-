@@ -48,6 +48,7 @@ export function toShopSummary(shop: ShopRecord, program: Program): ShopSummary {
     category: shop.category,
     neighborhood: shop.neighborhood,
     addressLine: shop.addressLine,
+    showcase: shop.showcase,
     program: {
       unit: unitOf(program.rules),
       target: program.rules.target,

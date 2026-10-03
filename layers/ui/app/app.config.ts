@@ -25,7 +25,7 @@ export default defineAppConfig({
     },
     button: {
       slots: {
-        base: 'font-semibold transition-transform duration-[var(--lagoa-dur-fast)] active:scale-[0.98]',
+        base: 'rounded-full font-semibold transition-transform duration-[var(--lagoa-dur-fast)] active:scale-[0.98]',
       },
       variants: {
         size: {

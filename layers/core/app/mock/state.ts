@@ -16,7 +16,7 @@ import { LedgerKindSchema } from '#shared/schemas/visit'
  * Banco do backend falso. Só existe no mock: é o "servidor" que guarda o
  * celular completo. Nada daqui sai para a UI sem passar pelos handlers.
  */
-export const MOCK_STATE_VERSION = 6
+export const MOCK_STATE_VERSION = 7
 
 export const ShopRecordSchema = ShopSchema.extend({ checkInCode: CheckInCodeSchema })
 export type ShopRecord = z.infer<typeof ShopRecordSchema>

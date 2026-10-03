@@ -78,8 +78,21 @@ const defaultBonus: BonusRules = {
   surpriseDay: { enabled: false, multiplier: 2, date: null },
 }
 
+/** Fotos e números de exemplo da vitrine: ilustrações em public/example, nada do piloto. */
+const EXAMPLE_SHOWCASE: Record<ShopRecord['category'], NonNullable<ShopRecord['showcase']>> = {
+  barbershop: { imageUrl: '/example/barbershop.svg', rating: 4.8, distanceKm: 0.8, openNow: true },
+  cafe: { imageUrl: '/example/cafe.svg', rating: 4.7, distanceKm: 1.1, openNow: true },
+  pizzeria: { imageUrl: '/example/pizzeria.svg', rating: 4.5, distanceKm: 2.3, openNow: false },
+  petShop: { imageUrl: '/example/pet.svg', rating: 4.6, distanceKm: 3.0, openNow: true },
+  gym: { imageUrl: '/example/gym.svg', rating: 4.4, distanceKm: 2.7, openNow: true },
+  bakery: { imageUrl: '/example/bakery.svg', rating: 4.6, distanceKm: 1.4, openNow: true },
+  beauty: { imageUrl: '/example/beauty.svg', rating: 4.8, distanceKm: 1.7, openNow: false },
+  restaurant: { imageUrl: '/example/cafe.svg', rating: 4.5, distanceKm: 1.9, openNow: true },
+  other: { imageUrl: '/example/cafe.svg', rating: 4.3, distanceKm: 2.0, openNow: true },
+}
+
 function shop(id: ShopId, name: string, category: ShopRecord['category'], neighborhood: string, checkInCode: CheckInCode, status: ShopRecord['status'] = 'approved'): ShopRecord {
-  return { id, name, category, neighborhood, addressLine: `Endereço de exemplo, ${neighborhood}`, status, checkInCode }
+  return { id, name, category, neighborhood, addressLine: `Endereço de exemplo, ${neighborhood}`, status, checkInCode, showcase: EXAMPLE_SHOWCASE[category] }
 }
 
 function program(shopId: ShopId, rewardTitle: string, rules: ProgramRules, cooldownHours: number, bonusRules: BonusRules = defaultBonus): Program {

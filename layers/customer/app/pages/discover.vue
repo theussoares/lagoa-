@@ -21,14 +21,24 @@ const walletShopIds = computed(
 // Sem saber a carteira, toda loja ia parecer nova: a lista espera os cartões.
 const loading = computed(() => shopsState.value.status === 'loading' || cardsState.value.status === 'loading')
 
-const groups = computed(() => groupShops(shops.value, walletShopIds.value))
+const query = ref('')
+const searching = computed(() => query.value.trim() !== '')
+const visibleShops = computed(() => filterShops(shops.value, query.value))
+const groups = computed(() => groupShops(visibleShops.value, walletShopIds.value))
 const challengeShopIds = computed(() => pendingChallengeShopIds(challenges.value))
-const fresh = computed(() => groups.value.fresh.map((shop) => toShopTeaserModel(shop, challengeShopIds.value, translate)))
+const fresh = computed(() => sortByDistance(groups.value.fresh).map((shop) => toShopTeaserModel(shop, challengeShopIds.value, translate)))
 const known = computed(() => groups.value.known.map((shop) => toKnownShopModel(shop, translate)))
 const challengeModels = computed(() => {
   const byId = new Map<string, ShopSummary>(shops.value.map((shop) => [shop.id, shop]))
   return challenges.value.map((challenge) => toChallengeModel(challenge, byId, translate, formatShortDate))
 })
+
+// O primeiro desafio em andamento vira o herói da tela; os outros seguem como cartões.
+const heroChallenge = computed(() => challengeModels.value.find((challenge) => !challenge.done) ?? null)
+const otherChallenges = computed(() => challengeModels.value.filter((challenge) => challenge.id !== heroChallenge.value?.id))
+
+const CITY_HEADER_IMAGE = '/example/city.svg'
+const mapUrl = shopsMapUrl()
 
 const unauthorized = computed(() =>
   [shopsState.value, challengesState.value, cardsState.value].some(
@@ -41,8 +51,42 @@ watch(unauthorized, (value) => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-8">
-    <PageTitle :title="t('discover.title')" :lead="t('discover.lead')" />
+  <div>
+    <ScreenHeader :title="t('discover.title')" :lead="t('discover.lead')" :image="CITY_HEADER_IMAGE">
+      <template #actions>
+        <a
+          :href="mapUrl"
+          target="_blank"
+          rel="noopener"
+          class="grid size-11 shrink-0 place-items-center rounded-full bg-white text-(--lagoa-header) shadow-(--lagoa-shadow-card)"
+          :aria-label="t('discover.mapLinkLabel')"
+        >
+          <UIcon name="i-ph-map-trifold" class="size-6" aria-hidden="true" />
+        </a>
+      </template>
+      <UInput
+        v-model="query"
+        type="search"
+        size="xl"
+        icon="i-ph-magnifying-glass"
+        :placeholder="t('discover.searchPlaceholder')"
+        :aria-label="t('discover.searchLabel')"
+        class="w-full"
+        :ui="{ base: 'rounded-full bg-default' }"
+      />
+    </ScreenHeader>
+    <HeroCard
+      v-if="!loading && heroChallenge && !searching"
+      :badge="t('discover.challengeBadge')"
+      :title="heroChallenge.title"
+      :description="heroChallenge.description"
+      :progress="heroChallenge.progress"
+      :filled="heroChallenge.stops.filter((stop) => stop.visited).length"
+      :total="heroChallenge.stops.length"
+      :note="heroChallenge.deadline"
+      icon="i-ph-map-pin-area"
+    />
+    <div class="flex flex-col gap-8 pt-8">
 
     <div v-if="loading" class="flex flex-col gap-4" role="status" :aria-label="t('common.loading')">
       <USkeleton class="h-52 rounded-(--radius-card)" />
@@ -61,12 +105,12 @@ watch(unauthorized, (value) => {
     </p>
 
     <template v-else>
-      <section v-if="challengeModels.length > 0" class="flex flex-col gap-3" aria-labelledby="challenges-title">
-        <h2 id="challenges-title" class="text-[1.375rem] leading-tight font-semibold text-highlighted [font-stretch:95%]">
-          {{ t('discover.challengesTitle', {}, challengeModels.length) }}
+      <section v-if="otherChallenges.length > 0 && !searching" class="flex flex-col gap-3" aria-labelledby="challenges-title">
+        <h2 id="challenges-title" class="type-h2">
+          {{ t('discover.challengesTitle', {}, otherChallenges.length) }}
         </h2>
         <ChallengeCard
-          v-for="challenge in challengeModels"
+          v-for="challenge in otherChallenges"
           :key="challenge.id"
           :challenge="challenge"
           :done-label="t('discover.challenge.done')"
@@ -75,30 +119,39 @@ watch(unauthorized, (value) => {
 
       <section class="flex flex-col gap-3" aria-labelledby="fresh-title">
         <div class="flex flex-col gap-1">
-          <h2 id="fresh-title" class="text-[1.375rem] leading-tight font-semibold text-highlighted [font-stretch:95%]">
-            {{ t('discover.freshTitle') }}
-          </h2>
+          <div class="flex items-baseline justify-between gap-3">
+            <h2 id="fresh-title" class="type-h2">
+              {{ t('discover.freshTitle') }}
+            </h2>
+            <a :href="mapUrl" target="_blank" rel="noopener" class="flex shrink-0 items-center gap-1 font-semibold text-primary" :aria-label="t('discover.mapLinkLabel')">
+              {{ t('discover.mapLink') }}
+              <UIcon name="i-ph-arrow-right" class="size-4" aria-hidden="true" />
+            </a>
+          </div>
           <p v-if="fresh.length > 0" class="text-pretty text-toned">{{ t('discover.howTo') }}</p>
         </div>
         <ul v-if="fresh.length > 0" class="flex flex-col gap-4">
-          <li v-for="shop in fresh" :key="shop.id">
-            <ShopTeaserCard :shop="shop" />
+          <li v-for="(shop, index) in fresh" :key="shop.id" :style="{ '--i': index + 1 }" class="rise">
+            <ShopCard :shop="shop" class="!animate-none" />
           </li>
         </ul>
         <p v-else class="rounded-(--radius-card) border-2 border-dashed border-(--lagoa-slot) px-5 py-4 text-pretty text-toned">
-          {{ t('discover.freshEmpty') }}
+          {{ searching ? t('discover.noResults') : t('discover.freshEmpty') }}
         </p>
       </section>
 
       <section v-if="known.length > 0" class="flex flex-col gap-3" aria-labelledby="known-title">
-        <h2 id="known-title" class="text-[1.375rem] leading-tight font-semibold text-highlighted [font-stretch:95%]">
+        <h2 id="known-title" class="type-h2">
           {{ t('discover.knownTitle') }}
         </h2>
-        <div class="rounded-(--radius-card) bg-default px-5 py-1 shadow-(--lagoa-shadow-card)">
-          <KnownShopList :shops="known" />
-        </div>
+        <ul class="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-3 [scrollbar-width:none]">
+          <li v-for="(shop, index) in known" :key="shop.id" :style="{ '--i': index + 1 }" class="rise shrink-0 snap-start">
+            <ShopTile :shop="shop" to="/carteira" class="!animate-none" />
+          </li>
+        </ul>
         <UButton to="/carteira" variant="ghost" color="neutral" trailing-icon="i-ph-arrow-right" :label="t('discover.openWallet')" class="self-start" />
       </section>
     </template>
+    </div>
   </div>
 </template>
