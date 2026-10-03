@@ -29,6 +29,17 @@ const lapsedRows = computed(() => {
 const lapsedTotal = computed(() => snapshot.value?.lapsed.length ?? 0)
 const reachable = computed(() => snapshot.value?.reachable ?? null)
 
+const metrics = computed(() => {
+  const week = snapshot.value?.week
+  if (week === undefined) return []
+  const hint = t('home.metrics.period', { days: WEEK_SUMMARY_DAYS })
+  return [
+    { label: t('home.metrics.visits'), value: String(week.visits), hint, icon: 'i-ph-stamp' },
+    { label: t('home.metrics.customers'), value: String(week.customers), hint, icon: 'i-ph-users' },
+    { label: t('home.metrics.newCustomers'), value: String(week.newCustomers), hint, icon: 'i-ph-user-plus' },
+  ]
+})
+
 const lapsedLink = { path: '/clientes', query: { [CUSTOMER_FILTER_QUERY]: customerFilterSlug('lapsed') } }
 const lapsedLabels = computed<LapsedPreviewLabels>(() => ({ caption: t('home.lapsed.caption'), noName: t('customers.table.noName') }))
 </script>
@@ -68,6 +79,15 @@ const lapsedLabels = computed<LapsedPreviewLabels>(() => ({ caption: t('home.lap
     />
 
     <div v-else-if="snapshot" class="grid items-start gap-5 lg:grid-cols-12">
+      <div class="grid gap-5 sm:grid-cols-3 lg:col-span-12">
+        <MetricTile
+          v-for="(metric, index) in metrics"
+          :key="metric.label"
+          v-bind="metric"
+          :style="{ '--i': index }"
+        />
+      </div>
+
       <PanelModule :title="t('home.week.title')" class="lg:col-span-7">
         <div class="flex flex-col gap-4">
           <p class="text-lg text-highlighted">{{ headline }}</p>

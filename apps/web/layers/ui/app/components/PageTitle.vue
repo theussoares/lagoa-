@@ -16,7 +16,7 @@ defineExpose({ focus: (): void => heading.value?.focus() })
 
 <template>
   <header class="flex flex-col gap-3">
-    <div class="ledger-rule flex min-h-12 items-end justify-between gap-4">
+    <div class="flex min-h-12 items-end justify-between gap-4">
       <h1 :id="headingId" ref="heading" class="type-title focus:outline-none" :tabindex="focusable ? -1 : undefined">{{ title }}</h1>
       <slot name="actions" />
     </div>

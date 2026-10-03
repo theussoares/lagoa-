@@ -439,6 +439,12 @@
     }
   },
   "home": {
+    "metrics": {
+      "visits": "Visitas",
+      "customers": "Clientes",
+      "newCustomers": "Clientes novos",
+      "period": "nos últimos {days} dias"
+    },
     "title": "Início",
     "lead": "O que aconteceu na loja nos últimos {days} dias e quem vale chamar de volta.",
     "counterAction": "Ir para o Balcão",

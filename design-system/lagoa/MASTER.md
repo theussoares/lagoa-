@@ -79,7 +79,7 @@ Duas famílias, ambas self-hosted via `@fontsource-variable`:
 | Papel | Tamanho / altura | Peso | Fonte | Uso |
 | --- | --- | --- | --- | --- |
 | `count` | 56 / 1.0 | 800 | display | o número que falta ("2") |
-| `title` (`.type-title`) | 36 / 1.02 | 750 | display, -0.03em | título de tela (painel: sobre a régua dupla, `PageTitle`) |
+| `title` (`.type-title`) | 36 / 1.02 | 750 | display, -0.03em | título de tela (`PageTitle` no painel, `ScreenHeader` no app) |
 | `h2` (`.type-h2`) | 24 / 1.15 | 700 | display, -0.02em | seção |
 | `letreiro` | 20 / 1.1, caixa-alta, +0.02em | 700 | Archivo 75% | carimbo, selo, abas de módulo |
 | `body` | 17 / 1.5 (app) · 16 / 1.5 (painel) | 400 | Archivo | texto |
@@ -197,6 +197,7 @@ esquerda, título em letreiro, régua tracejada em cima e embaixo (não caixa ci
 | `ScreenHeader` | faixa de topo do app do cliente: título, frase, foto opcional com véu e ações (busca, mapa, perfil). Substitui o `PageTitle` nas abas do app; o painel do lojista segue com `PageTitle` |
 | `HeroCard` | o card único de destaque da tela (próximo prêmio, desafio do mês): selo `sol`, título, frase, progresso em `SlotRow` e ação. Uma por tela, sobe sobre a faixa do cabeçalho |
 | `ShopCard` | loja com foto de capa, logo, nota, distância, status (Aberta agora) e a linha do prêmio. Sem foto, usa a cor da loja com o ícone dela |
+| `MetricTile` | número do painel do lojista: rótulo `eyebrow-tag`, ícone em medalhão lima, valor em display 48px e frase de período. Três no topo do Início; o resto (caderneta da semana, sumidos) segue em `PanelModule` |
 | `ShopTile` | versão compacta (foto + nome + nota) para carrossel horizontal de "Novas" |
 
 Componentes de domínio são dumb (props/emits), recebem texto pronto e seguem
@@ -235,14 +236,14 @@ A moldura das telas também é do mundo, não só os cartões:
 
 | Em vez de | Use | Por quê |
 | --- | --- | --- |
-| `h1` solto com classes avulsas (painel) | `PageTitle` (letreiro 32px sobre `.ledger-rule`) | toda tela abre como página de caderneta |
+| `h1` solto com classes avulsas | `PageTitle` (título display 36px, sem régua) | toda tela abre igual; no app do cliente o `ScreenHeader` faz esse papel |
 | `UAlert` (caixa colorida) | `InkNote` (recorte pautado com carimbinho; tons `ink`, `warning`, `error`, `success`, `pencil` para modo de teste) | aviso é anotação na margem, não banner de SaaS |
 | `UBadge` | `StampTag` (letreiro em moldura de tinta, levemente torto) | etiqueta batida, legível (14px) |
 | barra de progresso (`UProgress`, trilho arredondado) | `SlotRow` (casas de carimbo) ou `InkRule` (régua com marcações) | progresso é casa carimbada ou marca na régua, nunca barra |
 | gráfico de barras por dia | `TallyMarks` (risquinhos em grupos de 5) | contagem de caderneta |
 | módulos abertos em fila (paredão de formulário) | `FoldModule` (folha dobrada: título + resumo do que vale; abre ao clicar ou sozinha quando há erro dentro) | o essencial fica aberto, o resto se lê sem abrir |
 | `URadioGroup` desabilitado para opção travada | linha só de leitura com `StampTag` "Travado" | travado é decisão tomada, não controle apagado |
-| `UNavigationMenu` na barra do painel | `SpineNav` (linhas pautadas; página aberta leva carimbinho) | a barra é a lombada da caderneta |
+| `UNavigationMenu` na barra do painel | `SpineNav` (pílula por página; a aberta ganha fundo claro e ponto lima pulsando) | a barra lateral é sempre escura (`--lagoa-header`), no claro e no escuro |
 
 ## Telas do app do cliente (evolução)
 
