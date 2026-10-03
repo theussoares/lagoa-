@@ -6,7 +6,7 @@ const fromRoot = (path: string): string => fileURLToPath(new URL(path, import.me
 export default defineConfig({
   resolve: {
     alias: {
-      '#shared': fromRoot('./shared'),
+      '#shared': fromRoot('../../shared'),
       '#layers/core': fromRoot('./layers/core'),
       '#layers/customer': fromRoot('./layers/customer'),
       '#layers/merchant': fromRoot('./layers/merchant'),
@@ -14,6 +14,6 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['shared/**/*.test.ts', 'layers/*/test/**/*.test.ts'],
+    include: ['../../shared/**/*.test.ts', 'layers/*/test/**/*.test.ts'],
   },
 })
