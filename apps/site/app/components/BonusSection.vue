@@ -10,7 +10,7 @@ const RULES = [
 </script>
 
 <template>
-  <section id="regras" class="mx-auto max-w-6xl px-4 py-24 sm:px-6 lg:py-32">
+  <section id="regras" class="mx-auto max-w-6xl px-4 py-16 sm:py-24 sm:px-6 lg:py-32">
     <div v-reveal>
       <SectionHeading :title="t('bonus.title')" :lead="t('bonus.lead')" />
     </div>

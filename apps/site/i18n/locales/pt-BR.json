@@ -40,7 +40,7 @@
   },
   "counter": {
     "title": "O Balcão é rápido como anotar no papel.",
-    "lead": "Digite o celular do cliente e dê o carimbo. Cliente novo ganha o cartão na hora, e quem fecha o cartão leva o prêmio na mesma tela.",
+    "lead": "Digite o celular do cliente e dê o carimbo. Quem fecha o cartão leva o prêmio na mesma tela.",
     "tryIt": "Experimente: este cliente está a 1 carimbo do prêmio.",
     "panelTitle": "Balcão",
     "phoneLabel": "Celular do cliente",

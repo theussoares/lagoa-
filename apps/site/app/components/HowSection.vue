@@ -13,7 +13,7 @@ const codeChars = computed(() => t('how.redeemCode').split(''))
 
 <template>
   <section id="como-funciona" class="bg-(--ui-bg-muted)">
-    <div class="mx-auto grid max-w-6xl gap-14 px-4 py-24 sm:px-6 lg:grid-cols-[1fr_0.8fr] lg:gap-20 lg:py-32">
+    <div class="mx-auto grid max-w-6xl gap-14 px-4 py-16 sm:py-24 sm:px-6 lg:grid-cols-[1fr_0.8fr] lg:gap-20 lg:py-32">
       <div class="flex flex-col gap-12">
         <div v-reveal>
           <SectionHeading :title="t('how.title')" :lead="t('how.lead')" />

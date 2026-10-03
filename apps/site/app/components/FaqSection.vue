@@ -6,8 +6,8 @@ const QUESTIONS = ['next', 'app', 'checkIn', 'system', 'fraud', 'reward', 'chang
 
 <template>
   <section id="duvidas" class="bg-(--ui-bg-muted)">
-    <div class="mx-auto grid max-w-6xl gap-12 px-4 py-24 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:py-32">
-      <div v-reveal>
+    <div class="mx-auto grid max-w-6xl gap-12 px-4 py-16 sm:py-24 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:py-32">
+      <div v-reveal class="lg:sticky lg:top-28 lg:self-start">
         <SectionHeading :title="t('faq.title')" />
       </div>
 

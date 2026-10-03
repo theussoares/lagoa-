@@ -73,21 +73,22 @@ function restart(): void {
         />
       </div>
 
-      <div class="flex min-w-0 flex-col justify-between gap-6">
-        <div aria-live="polite" class="flex min-h-56 flex-col justify-center">
+      <div class="flex min-w-0 flex-col gap-6">
+        <div aria-live="polite" class="flex flex-1 flex-col justify-center">
           <div v-if="receipt" class="flex flex-col items-start gap-5">
             <RewardSeal :label="t('counter.seal')" pressed />
             <LaunchReceipt :receipt="receipt" icon="i-ph-scissors-bold" />
           </div>
-          <p v-else class="grid min-h-56 place-items-center rounded-2xl border-[1.5px] border-dashed border-(--lagoa-slot) p-6 text-center text-muted">
+          <p v-else class="grid min-h-28 flex-1 place-items-center md:min-h-56 rounded-2xl border-[1.5px] border-dashed border-(--lagoa-slot) p-6 text-center text-muted">
             {{ t('counter.waiting') }}
           </p>
         </div>
 
-        <UButton v-if="receipt" size="xl" block color="neutral" variant="outline" icon="i-ph-arrow-counter-clockwise" @click="restart">
+        <!-- No celular o botão fica logo abaixo do teclado; o canhoto aparece depois dele. -->
+        <UButton v-if="receipt" class="max-md:order-first" size="xl" block color="neutral" variant="outline" icon="i-ph-arrow-counter-clockwise" @click="restart">
           {{ t('counter.restart') }}
         </UButton>
-        <UButton v-else size="xl" block icon="i-ph-seal-check" @click="giveStamp">
+        <UButton v-else class="max-md:order-first" size="xl" block icon="i-ph-seal-check" @click="giveStamp">
           {{ t('counter.give') }}
         </UButton>
       </div>

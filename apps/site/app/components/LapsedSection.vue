@@ -10,7 +10,7 @@ const SAMPLE_LAPSED = [
 </script>
 
 <template>
-  <section id="sumidos" class="mx-auto grid max-w-6xl items-center gap-14 px-4 py-24 sm:px-6 lg:grid-cols-2 lg:gap-20 lg:py-32">
+  <section id="sumidos" class="mx-auto grid max-w-6xl items-center gap-14 px-4 py-16 sm:py-24 sm:px-6 lg:grid-cols-2 lg:gap-20 lg:py-32">
     <div v-reveal class="flex flex-col gap-6">
       <SectionHeading :title="t('lapsed.title')" :lead="t('lapsed.lead')" />
       <p class="flex items-start gap-3 text-toned">

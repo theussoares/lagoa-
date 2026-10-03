@@ -32,7 +32,7 @@ const challenge = computed<ChallengeModel>(() => ({
 
 <template>
   <section id="rede" class="bg-(--ui-bg-muted)">
-    <div class="mx-auto grid max-w-6xl items-center gap-14 px-4 py-24 sm:px-6 lg:grid-cols-2 lg:gap-20 lg:py-32">
+    <div class="mx-auto grid max-w-6xl items-center gap-14 px-4 py-16 sm:py-24 sm:px-6 lg:grid-cols-2 lg:gap-20 lg:py-32">
       <div v-reveal>
         <SectionHeading :title="t('network.title')" :lead="t('network.lead')" />
       </div>

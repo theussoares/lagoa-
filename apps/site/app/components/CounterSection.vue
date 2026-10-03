@@ -10,7 +10,7 @@ const POINTS = [
 
 <template>
   <section id="balcao" class="dark bg-(--lagoa-header) text-default">
-    <div class="mx-auto flex max-w-6xl flex-col gap-12 px-4 py-24 sm:px-6 lg:gap-16 lg:py-32">
+    <div class="mx-auto flex max-w-6xl flex-col gap-12 px-4 py-16 sm:py-24 sm:px-6 lg:gap-16 lg:py-32">
       <div v-reveal class="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-end lg:gap-16">
         <SectionHeading :title="t('counter.title')" :lead="t('counter.lead')" />
         <ul class="flex flex-col">
