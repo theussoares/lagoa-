@@ -18,9 +18,9 @@ export const LAPSED_AFTER_DAYS = 30
 export const CHECK_IN_CODE_LENGTH = 6
 /** O QR da loja é um link `/check-in?loja=<código>`: a câmera do celular já abre o app no check-in. */
 export const CHECK_IN_LINK_PARAM = 'loja'
-/** Código do convite de indicação do cliente, no link `/convite?ref=`. */
 /** Teto da vitrine do Descobrir: o piloto é uma cidade; lista sempre limitada. */
 export const DISCOVER_SHOPS_LIMIT = 200
+/** Código do convite de indicação do cliente, no link `/convite?ref=`. */
 export const REFERRAL_CODE_LENGTH = 8
 export const PHONE_INPUT_MAX_LENGTH = 32
 export const LOGIN_CODE_LENGTH = 6

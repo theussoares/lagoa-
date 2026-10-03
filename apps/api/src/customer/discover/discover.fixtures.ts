@@ -16,7 +16,7 @@ export function discoverShop(overrides: Partial<DiscoverShop> = {}): DiscoverSho
     neighborhood: 'Centro',
     addressLine: 'Rua Antônio Trajano, 100',
     logoPath: null,
-    program: { mode: 'stamps', earnUnits: 1, target: 10, rewardTitle: 'Corte grátis', bonusRules: NO_BONUS },
+    program: { rules: { mode: 'stamps', target: 10 }, rewardTitle: 'Corte grátis', bonusRules: NO_BONUS },
     ...overrides,
   }
 }

@@ -91,6 +91,8 @@ Tela: Resgate. Front: `RewardRedemptionService`.
 | Lojista que vira cliente com celular diferente do já gravado: o gravado vence, sem aviso | `drizzle-registration.repository.ts` | 5 |
 | Versão dos termos aceitos (`termsVersion`) para auditoria LGPD; exige migration | `customer_profiles` | 5 |
 | Quem tira o aniversário e quer repor a mesma data fica travado até 365 dias: PO confirmar | `profile.rules.ts` | PO |
+| Testes de repository Drizzle (filtro `approved`, ordem, lock) contra Postgres de verdade, hoje só validados à mão | `apps/api` | 5 |
+| Índice `(status, name, id)` para a ordem da vitrine, se passar de centenas de lojas | `shops` | 5 |
 | Rotação da chave de cifra de PII (prefixo de versão no payload) | `pii.service.ts` | 5 |
 
 ## Pontos de contato com o Caio

@@ -68,7 +68,7 @@ export const SEED_SHOPS: readonly SeedShop[] = [
     category: 'pizzeria',
     neighborhood: 'Vila Nova',
     addressLine: 'Rua Dom Aquino, 800',
-    checkInCode: 'PIZ7M2',
+    checkInCode: 'PCX7M2',
     status: 'approved',
     program: { rewardTitle: 'Pizza média', mode: 'pointsPerVisit', earnUnits: 10, target: 100, bonusRules: BONUS_ON, checkInCooldownHours: 24 },
   }),

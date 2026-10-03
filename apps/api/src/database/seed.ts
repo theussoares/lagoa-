@@ -1,15 +1,21 @@
 import { drizzle } from 'drizzle-orm/postgres-js'
 import { eq, inArray } from 'drizzle-orm'
 import postgres from 'postgres'
+import { earnRateOf, unitOf } from '#shared/domain/programStrategies'
 import { PhoneNumberSchema } from '#shared/schemas/phone'
 import { PiiService } from '../common/pii.service'
 import { parseEnv } from '../config/env'
+import { toProgramRules } from '../programs/program-rules.mapper'
 import * as schema from './schema'
 import { SEED_OWNER_EMAIL, SEED_OWNER_ID, SEED_OWNER_PHONE, SEED_SHOPS } from './seed-data'
 
-/** `pnpm db:seed` cria os dados de exemplo (idempotente); `pnpm db:seed -- --reset` só os remove. */
+/**
+ * `pnpm db:seed` cria os dados de exemplo (idempotente: não atualiza o que já existe);
+ * `pnpm db:seed -- --reset` os remove, e falha enquanto houver cartões ou resgates ligados a eles.
+ * Só roda com `ALLOW_SEED=true`, que fica no `.env` local de quem aponta para um banco de dev.
+ */
 async function main(): Promise<void> {
-  if (process.env.NODE_ENV === 'production') throw new Error('Refusing to seed in production')
+  if (process.env.ALLOW_SEED !== 'true') throw new Error('Refusing to seed: set ALLOW_SEED=true in a dev .env')
   const env = parseEnv(process.env)
   const client = postgres(env.DATABASE_URL, { prepare: false })
   const db = drizzle(client, { schema })
@@ -38,14 +44,16 @@ async function main(): Promise<void> {
         .onConflictDoNothing()
       for (const { programId, program, ...shop } of SEED_SHOPS) {
         await tx.insert(schema.shops).values({ ...shop, ownerUserId: SEED_OWNER_ID }).onConflictDoNothing()
+        const rules = toProgramRules(program)
+        if (!rules.ok) throw new Error(`Seed shop ${shop.name} has an invalid program`)
         await tx
           .insert(schema.programs)
           .values({
             id: programId,
             shopId: shop.id,
             ...program,
-            unit: program.mode === 'stamps' ? 'stamp' : 'point',
-            earnPer: program.mode === 'pointsPerCurrency' ? 'real' : 'visit',
+            unit: unitOf(rules.value),
+            earnPer: earnRateOf(rules.value).per,
           })
           .onConflictDoNothing()
       }
@@ -56,4 +64,7 @@ async function main(): Promise<void> {
   }
 }
 
-void main()
+main().catch((error: unknown) => {
+  console.error(error instanceof Error ? error.message : 'Seed failed')
+  process.exitCode = 1
+})

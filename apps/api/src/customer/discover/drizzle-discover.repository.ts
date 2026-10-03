@@ -3,6 +3,7 @@ import { asc, eq } from 'drizzle-orm'
 import { BonusRulesSchema } from '#shared/schemas/program'
 import { DB, type Database } from '../../database/database.module'
 import { programs, shops } from '../../database/schema'
+import { toProgramRules } from '../../programs/program-rules.mapper'
 import { type DiscoverShop, DiscoverRepository } from './discover.repository'
 
 @Injectable()
@@ -35,14 +36,15 @@ export class DrizzleDiscoverRepository extends DiscoverRepository {
       .limit(limit)
 
     return rows.flatMap((row) => {
-      const bonusRules = BonusRulesSchema.safeParse(row.bonusRules)
-      if (!bonusRules.success) {
-        // Uma loja com regra corrompida some da vitrine em vez de derrubar a lista (só o id vai ao log).
-        this.logger.warn(`Shop ${row.id} skipped: invalid bonus rules`)
+      const { mode, earnUnits, target, rewardTitle, bonusRules: rawBonusRules, ...shop } = row
+      const rules = toProgramRules({ mode, earnUnits, target })
+      const bonusRules = BonusRulesSchema.safeParse(rawBonusRules)
+      if (!rules.ok || !bonusRules.success) {
+        // Só o id vai ao log: nome e endereço não precisam sair do banco por causa de um aviso.
+        this.logger.warn(`Shop ${shop.id} skipped: invalid program`)
         return []
       }
-      const { mode, earnUnits, target, rewardTitle, ...shop } = row
-      return [{ ...shop, program: { mode, earnUnits, target, rewardTitle, bonusRules: bonusRules.data } }]
+      return [{ ...shop, program: { rules: rules.value, rewardTitle, bonusRules: bonusRules.data } }]
     })
   }
 }

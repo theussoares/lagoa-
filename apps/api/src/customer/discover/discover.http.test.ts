@@ -14,7 +14,7 @@ import { DiscoverService } from './discover.service'
 
 class RecordingDiscoverRepository extends DiscoverRepository {
   lastLimit: number | null = null
-  constructor(private readonly shops: DiscoverShop[]) {
+  constructor(public shops: DiscoverShop[]) {
     super()
   }
   async listApprovedShops(limit: number): Promise<DiscoverShop[]> {
@@ -49,6 +49,14 @@ describe('discover HTTP', () => {
     expect(response.body).toHaveLength(1)
     expect(response.body[0]).toMatchObject({ name: 'Barbearia do Zé', program: { unit: 'stamp', target: 10 } })
     expect(repository.lastLimit).toBe(DISCOVER_SHOPS_LIMIT)
+  })
+
+  it('leaves a shop out instead of failing the whole list when it breaks the contract', async () => {
+    const original = repository.shops
+    repository.shops = [discoverShop(), discoverShop({ id: 'bad', name: 'x'.repeat(200) })]
+    const response = await request(app.getHttpServer()).get('/discover/shops').expect(200)
+    expect(response.body).toHaveLength(1)
+    repository.shops = original
   })
 
   it('answers an empty list of challenges (out of the MVP)', async () => {
