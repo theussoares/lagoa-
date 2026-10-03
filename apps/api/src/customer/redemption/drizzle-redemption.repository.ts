@@ -32,7 +32,7 @@ export class DrizzleRedemptionRepository extends RedemptionRepository {
   }
 
   async request(
-    { customerId, cardId, expiresAt, newCode }: RedemptionRequestAttempt,
+    { customerId, cardId, createdAt, expiresAt, newCode }: RedemptionRequestAttempt,
     decide: (state: RedemptionRequestState) => RequestDecision,
   ): Promise<Result<RedemptionRecord, ErrorOf<'notFound'> | ErrorOf<'rewardNotReady'>>> {
     return this.db.transaction(async (tx) => {
@@ -69,7 +69,7 @@ export class DrizzleRedemptionRepository extends RedemptionRepository {
         // Só uma colisão de código ativo na loja passa por aqui (o cartão está travado e sem código ativo).
         const [created] = await tx
           .insert(redemptions)
-          .values({ cardId, shopId: card.shopId, rewardTitle: card.rewardTitle, code: newCode(), expiresAt })
+          .values({ cardId, shopId: card.shopId, rewardTitle: card.rewardTitle, code: newCode(), createdAt, expiresAt })
           .onConflictDoNothing({
             target: [redemptions.shopId, redemptions.code],
             where: sql`${redemptions.status} = 'active'`,
@@ -92,10 +92,14 @@ export class DrizzleRedemptionRepository extends RedemptionRepository {
     if (row.status !== 'active' || row.expiresAt > now) return row
 
     // Venceu e ninguém usou: libera o código da loja e responde já como vencido.
-    await this.db
+    const [expired] = await this.db
       .update(redemptions)
       .set({ status: 'expired' })
       .where(and(eq(redemptions.id, row.id), eq(redemptions.status, 'active')))
-    return { ...row, status: 'expired' }
+      .returning(REDEMPTION_COLUMNS)
+    if (expired) return expired
+    // A entrega confirmou no meio do caminho: devolve o que ficou gravado, não um vencido falso.
+    const [current] = await this.db.select(REDEMPTION_COLUMNS).from(redemptions).where(eq(redemptions.id, row.id)).limit(1)
+    return current ?? null
   }
 }

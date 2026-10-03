@@ -30,6 +30,8 @@ export type RequestDecision =
 export interface RedemptionRequestAttempt {
   readonly customerId: string
   readonly cardId: string
+  /** Os dois horários vêm do mesmo relógio: `expiresAt - createdAt` é exatamente o TTL. */
+  readonly createdAt: Date
   readonly expiresAt: Date
   readonly newCode: () => string
 }

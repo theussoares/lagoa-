@@ -1,14 +1,18 @@
 import { Body, Controller, Get, HttpCode, Param, Post } from '@nestjs/common'
 import { Throttle } from '@nestjs/throttler'
-import { z } from 'zod'
-import { type Redemption, type RedemptionRequest, RedemptionRequestSchema } from '#shared/schemas/redemption'
+import {
+  type Redemption,
+  RedemptionIdParamSchema,
+  type RedemptionRequest,
+  RedemptionRequestSchema,
+} from '#shared/schemas/redemption'
 import type { AuthUser } from '../../auth/auth.types'
 import { CurrentUser } from '../../auth/current-user.decorator'
 import { unwrap } from '../../common/http/domain-exception'
 import { ZodValidationPipe } from '../../common/http/zod-validation.pipe'
 import { RedemptionService } from './redemption.service'
 
-const RedemptionIdParam = new ZodValidationPipe(z.uuid())
+const RedemptionIdParam = new ZodValidationPipe(RedemptionIdParamSchema)
 
 @Controller('redemptions')
 export class RedemptionController {

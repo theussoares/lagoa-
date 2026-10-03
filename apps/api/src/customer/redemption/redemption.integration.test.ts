@@ -1,8 +1,9 @@
 import { eq } from 'drizzle-orm'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { SystemClock } from '../../common/clock'
-import { ledgerEntries, loyaltyCards, redemptions } from '../../database/schema'
+import { ledgerEntries, loyaltyCards, programs, redemptions, shops } from '../../database/schema'
 import { LedgerStore } from '../../ledger/ledger.store'
+import { RedemptionLookup } from '../../ledger/redemption-lookup'
 import { NO_BONUS_RULES, TEST_DATABASE_URL, TestDatabase, type TestShop } from '../../test-support/test-database'
 import { DrizzleCheckInRepository } from '../check-in/drizzle-check-in.repository'
 import { CheckInService } from '../check-in/check-in.service'
@@ -134,5 +135,72 @@ describe.skipIf(!TEST_DATABASE_URL)('redemption against a real database', () => 
     await data.db.update(redemptions).set({ expiresAt: new Date(Date.now() - 1000) }).where(eq(redemptions.id, old.value.id))
     const result = await data.db.transaction((tx) => ledger.settleRedemption(tx, { redemptionId: old.value.id, shopId: lapsed.shop.id, recordedBy: owner, now: new Date() }))
     expect(result).toEqual({ ok: false, error: { code: 'redemptionExpired' } })
+  }, SLOW)
+
+  it('delivers a code only once even when the counter confirms it twice at the same time', async () => {
+    const { customer, shop, cardId } = await readyCard({ restartWelcome: false })
+    const created = await service.requestCode(customer, cardId)
+    if (!created.ok) throw new Error('expected a code')
+    const owner = await data.createCustomer({ withProfile: false })
+    const settle = () => data.db.transaction((tx) => ledger.settleRedemption(tx, { redemptionId: created.value.id, shopId: shop.id, recordedBy: owner, now: new Date() }))
+    const results = await Promise.all([settle(), settle(), settle()])
+    expect(results.filter((r) => r.ok)).toHaveLength(1)
+    expect(results.filter((r) => !r.ok).every((r) => !r.ok && r.error.code === 'redemptionAlreadyUsed')).toBe(true)
+    const [card] = await data.db.select().from(loyaltyCards).where(eq(loyaltyCards.id, cardId))
+    expect(card?.balance).toBe(0)
+  }, SLOW)
+
+  it('refuses to deliver, without touching the ledger, when the target went up after the code was issued', async () => {
+    const { customer, shop, cardId } = await readyCard({ restartWelcome: false })
+    const created = await service.requestCode(customer, cardId)
+    if (!created.ok) throw new Error('expected a code')
+    await data.db.update(programs).set({ target: 5 }).where(eq(programs.shopId, shop.id))
+    const owner = await data.createCustomer({ withProfile: false })
+    const result = await data.db.transaction((tx) => ledger.settleRedemption(tx, { redemptionId: created.value.id, shopId: shop.id, recordedBy: owner, now: new Date() }))
+    expect(result).toEqual({ ok: false, error: { code: 'rewardNotReady', remaining: 2 } })
+    const [card] = await data.db.select().from(loyaltyCards).where(eq(loyaltyCards.id, cardId))
+    expect(card?.balance).toBe(3)
+    expect((await data.db.select().from(ledgerEntries).where(eq(ledgerEntries.customerId, customer))).filter((e) => e.kind === 'redemption')).toHaveLength(0)
+    expect((await data.db.select().from(redemptions).where(eq(redemptions.id, created.value.id)))[0]?.status).toBe('expired')
+  }, SLOW)
+
+  it('does not deliver in a suspended shop', async () => {
+    const { customer, shop, cardId } = await readyCard({ restartWelcome: false })
+    const created = await service.requestCode(customer, cardId)
+    if (!created.ok) throw new Error('expected a code')
+    await data.db.update(shops).set({ status: 'suspended' }).where(eq(shops.id, shop.id))
+    const owner = await data.createCustomer({ withProfile: false })
+    const result = await data.db.transaction((tx) => ledger.settleRedemption(tx, { redemptionId: created.value.id, shopId: shop.id, recordedBy: owner, now: new Date() }))
+    expect(result).toEqual({ ok: false, error: { code: 'shopSuspended' } })
+  }, SLOW)
+
+  it('retries with another code when a code collides with an active one in the same shop', async () => {
+    const shop = await data.createShop({ rules: { mode: 'stamps', target: 3 }, bonusRules: WELCOME_BONUS })
+    const [a, b] = [await data.createCustomer(), await data.createCustomer()]
+    await checkIn.checkIn(a, shop.checkInCode)
+    await checkIn.checkIn(b, shop.checkInCode)
+    const [cardA, cardB] = await Promise.all([a, b].map(async (customerId) => (await data.db.select().from(loyaltyCards).where(eq(loyaltyCards.customerId, customerId)))[0]))
+    const repository = new DrizzleRedemptionRepository(data.db)
+    const decide = () => ({ kind: 'create' as const, expireStaleId: null })
+    const attempt = (customerId: string, cardId: string | undefined, codes: string[]) => ({ customerId, cardId: cardId ?? '', createdAt: new Date(), expiresAt: new Date(Date.now() + 600_000), newCode: () => codes.shift() ?? 'ACD299' })
+
+    const first = await repository.request(attempt(a, cardA?.id, ['ACD234']), decide)
+    const second = await repository.request(attempt(b, cardB?.id, ['ACD234', 'ACD235']), decide)
+    expect(first).toMatchObject({ ok: true, value: { code: 'ACD234' } })
+    expect(second).toMatchObject({ ok: true, value: { code: 'ACD235' } })
+  }, SLOW)
+
+  it('lets the counter find an active code by shop and what the person typed, with one answer for "not here"', async () => {
+    const { customer, shop, cardId } = await readyCard({ restartWelcome: false })
+    const created = await service.requestCode(customer, cardId)
+    if (!created.ok) throw new Error('expected a code')
+    const lookup = new RedemptionLookup(data.db)
+    const typed = `${created.value.code.slice(0, 3)}-${created.value.code.slice(3)}`.toLowerCase()
+    expect(await lookup.findActive(shop.id, typed, new Date())).toMatchObject({ ok: true, value: { redemptionId: created.value.id, customerId: customer } })
+
+    const otherShop = await data.createShop()
+    expect(await lookup.findActive(otherShop.id, created.value.code, new Date())).toEqual({ ok: false, error: { code: 'redemptionInvalid' } })
+    expect(await lookup.findActive(shop.id, 'zzzzzz', new Date())).toEqual({ ok: false, error: { code: 'redemptionInvalid' } })
+    expect(await lookup.findActive(shop.id, created.value.code, new Date(Date.now() + 11 * 60_000))).toEqual({ ok: false, error: { code: 'redemptionExpired' } })
   }, SLOW)
 })
