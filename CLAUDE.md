@@ -22,6 +22,16 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
   `database`, `common` são compartilhados. `pnpm dev:api`, `pnpm test:api`,
   `pnpm typecheck:api`; env em `apps/api/.env.example`. Migrations em
   `apps/api/drizzle` (`pnpm --filter @lagoa/api db:generate`).
+- **Padrão da API** (`apps/api/src/<superfície>/<feature>/`): `controller`
+  (só HTTP: valida com `ZodValidationPipe`, devolve `unwrap(result)`) →
+  `service` (orquestra, devolve `Result<T, DomainError>`, sem Drizzle) →
+  `*.rules.ts` (decisão pura, testável sem banco) → `repository` (classe
+  abstrata = contrato; `Drizzle*Repository` = I/O). Tipos e erros vêm de
+  `shared/`; o corpo de erro HTTP é o próprio `DomainError`. Rota é autenticada
+  por padrão (`SupabaseAuthGuard` global; `@Public()` é a exceção). Toda query
+  filtra pelo `user.id` do JWT, nunca por id vindo do cliente. Celular/e-mail só
+  saem mascarados e nunca entram em log. Escrita que depende de leitura usa
+  transação com `FOR UPDATE` dentro do repository.
 - **Backend (histórico):** ainda não definido. Até o ADR do CTO sair, o front consome
   services com interface e implementação mock em `layers/core` — nenhum
   componente chama `fetch`/`$fetch` direto. O mock é um servidor falso único

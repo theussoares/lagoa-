@@ -4,17 +4,16 @@ import type { ErrorOf } from '#shared/types/errors'
 import { err, ok } from '#shared/types/result'
 import type { Result } from '#shared/types/result'
 import { maskPhone } from '#shared/utils/phone'
-import { BIRTHDAY_CHANGE_COOLDOWN_DAYS } from '#shared/constants/domain'
-import { addDays, toIso } from '#shared/utils/time'
+import { birthdayChangeableAt as changeableAtFrom } from '#shared/domain/birthday'
+import { toIso } from '#shared/utils/time'
 import type { MockContext } from './context'
 import type { CustomerRecord } from '../state'
 
 type Unauthorized = ErrorOf<'unauthorized'>
 
 function birthdayChangeableAt(customer: CustomerRecord, now: Date): Date | null {
-  if (customer.birthdayChangedAt === null) return null
-  const changeableAt = addDays(new Date(customer.birthdayChangedAt), BIRTHDAY_CHANGE_COOLDOWN_DAYS)
-  return changeableAt > now ? changeableAt : null
+  const changedAt = customer.birthdayChangedAt === null ? null : new Date(customer.birthdayChangedAt)
+  return changeableAtFrom(changedAt, now)
 }
 
 function toProfile(customer: CustomerRecord, now: Date): CustomerProfile {
