@@ -8,6 +8,11 @@ export interface MerchantSessionControl {
   signOut: () => Promise<void>
 }
 
+export interface MerchantSessionGuardOptions {
+  /** Loja fechada pela rede (`shopPendingApproval` | `shopSuspended`) relê a situação da loja. */
+  refreshShopStatus?: boolean
+}
+
 export interface ShopStatusSync {
   status: ComputedRef<ShopStatus | null>
   /** Relê a situação da loja no servidor e atualiza a sessão guardada. */
