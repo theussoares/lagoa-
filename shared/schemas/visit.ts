@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { CHECK_IN_CODE_INPUT_MAX_LENGTH } from '../constants/domain'
 import { IsoDateTimeSchema } from './common'
 import { LoyaltyCardIdSchema, ShopIdSchema, VisitIdSchema } from './ids'
 import { MaskedPhoneSchema } from './phone'
@@ -53,6 +54,10 @@ export const WalletActivitySchema = z.object({
   createdAt: IsoDateTimeSchema,
 })
 export type WalletActivity = z.infer<typeof WalletActivitySchema>
+
+/** O código vem do QR (já normalizado pelo app) ou digitado; o servidor normaliza de novo e decide. */
+export const CheckInRequestSchema = z.object({ code: z.string().max(CHECK_IN_CODE_INPUT_MAX_LENGTH) })
+export type CheckInRequest = z.infer<typeof CheckInRequestSchema>
 
 export const CheckInResultSchema = z.object({
   activity: WalletActivitySchema,

@@ -16,6 +16,8 @@ export const PILOT_CITY = 'Três Lagoas, MS'
 export const LAPSED_AFTER_DAYS = 30
 /** Código impresso embaixo do QR da loja, para quem prefere digitar. */
 export const CHECK_IN_CODE_LENGTH = 6
+/** Folga para espaços e hífens de quem digita o código impresso embaixo do QR. */
+export const CHECK_IN_CODE_INPUT_MAX_LENGTH = 32
 /** O QR da loja é um link `/check-in?loja=<código>`: a câmera do celular já abre o app no check-in. */
 export const CHECK_IN_LINK_PARAM = 'loja'
 /** Teto da vitrine do Descobrir: o piloto é uma cidade; lista sempre limitada. */

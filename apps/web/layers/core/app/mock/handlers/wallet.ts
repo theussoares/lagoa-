@@ -1,4 +1,5 @@
 import { sortByRewardProximity, toCardProgress } from '#shared/domain/loyaltyCard'
+import { checkInAvailableAt } from '#shared/domain/antifraud'
 import { isVisitKind } from '#shared/domain/ledger'
 import type { Challenge } from '#shared/schemas/discover'
 import type { CustomerId, ShopId } from '#shared/schemas/ids'
@@ -79,8 +80,8 @@ export function checkIn(ctx: MockContext, customerId: CustomerId, code: CheckInC
     .filter((record) => record.customerId === customerId && record.shopId === shop.id && isVisitKind(record.kind))
     .reduce<string | null>((latest, record) => (latest === null || record.createdAt > latest ? record.createdAt : latest), null)
   if (lastVisit !== null) {
-    const availableAt = addHours(new Date(lastVisit), program.checkIn.cooldownHours)
-    if (availableAt > ctx.now) return err({ code: 'checkInCooldown', availableAt: toIso(availableAt) })
+    const availableAt = checkInAvailableAt(new Date(lastVisit), program.checkIn.cooldownHours, ctx.now)
+    if (availableAt !== null) return err({ code: 'checkInCooldown', availableAt: toIso(availableAt) })
   }
 
   const units = visitUnits(ctx, customer, program, { kind: 'visit' })
