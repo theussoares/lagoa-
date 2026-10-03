@@ -1,4 +1,5 @@
 import type { ProgramUnit } from '#shared/schemas/program'
+import type { LedgerKind } from '#shared/schemas/visit'
 import type { CatalogShop } from '../../shops/catalog-shop'
 import type { EarnedEntry } from './stamps'
 
@@ -13,7 +14,13 @@ export interface WalletCardRecord {
   readonly earned: readonly EarnedEntry[]
 }
 
-export type ActivityKind = 'visit' | 'amount' | 'checkIn' | 'redemption'
+/** Tipos do `shared` que a caderneta do cliente mostra (sem presente de campanha). */
+export type ActivityKind = Exclude<LedgerKind, 'campaignBonus'>
+export const ACTIVITY_KINDS: readonly ActivityKind[] = ['visit', 'amount', 'checkIn', 'redemption']
+
+export function isActivityKind(kind: string): kind is ActivityKind {
+  return ACTIVITY_KINDS.some((known) => known === kind)
+}
 
 export interface ActivityRecord {
   readonly id: string

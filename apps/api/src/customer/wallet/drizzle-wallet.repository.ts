@@ -1,14 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common'
-import { and, desc, eq, inArray, sql } from 'drizzle-orm'
+import { and, desc, eq, inArray, type SQL, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { WALLET_CARDS_LIMIT } from '#shared/constants/domain'
 import { DB, type Database } from '../../database/database.module'
 import { ledgerEntries, loyaltyCards, programs, redemptions, shops } from '../../database/schema'
 import { CATALOG_COLUMNS, toCatalogShop } from '../../shops/catalog-row'
-import type { EarnedEntry, EarnedKind } from './stamps'
+import { type EarnedEntry, isEarnedKind } from './stamps'
 import {
   type ActivityKind,
   type ActivityRecord,
+  isActivityKind,
   type WalletCardRecord,
   WalletRepository,
 } from './wallet.repository'
@@ -29,11 +30,11 @@ export class DrizzleWalletRepository extends WalletRepository {
   }
 
   async listCards(customerId: string): Promise<WalletCardRecord[]> {
-    return this.readCards(eq(loyaltyCards.customerId, customerId), WALLET_CARDS_LIMIT)
+    return this.readCards(customerId, undefined, WALLET_CARDS_LIMIT)
   }
 
   async findCard(customerId: string, shopId: string): Promise<WalletCardRecord | null> {
-    const [card] = await this.readCards(and(eq(loyaltyCards.customerId, customerId), eq(loyaltyCards.shopId, shopId)), 1)
+    const [card] = await this.readCards(customerId, eq(loyaltyCards.shopId, shopId), 1)
     return card ?? null
   }
 
@@ -60,14 +61,15 @@ export class DrizzleWalletRepository extends WalletRepository {
   }
 
   /** Cartões em uma consulta e as casas de todos os cartões de carimbos em outra: sem N+1. */
-  private async readCards(where: ReturnType<typeof and>, limit: number): Promise<WalletCardRecord[]> {
+  private async readCards(customerId: string, extra: SQL | undefined, limit: number): Promise<WalletCardRecord[]> {
     const rows = await this.db
       .select(CARD_COLUMNS)
       .from(loyaltyCards)
       .innerJoin(shops, eq(shops.id, loyaltyCards.shopId))
       .innerJoin(programs, eq(programs.id, loyaltyCards.programId))
-      .where(and(where, eq(shops.status, 'approved')))
-      .orderBy(desc(loyaltyCards.lastVisitAt), desc(loyaltyCards.id))
+      // O dono do cartão é parte da assinatura: nenhum chamador consegue esquecer o filtro.
+      .where(and(eq(loyaltyCards.customerId, customerId), extra, eq(shops.status, 'approved')))
+      .orderBy(sql`${loyaltyCards.lastVisitAt} desc nulls last`, desc(loyaltyCards.id))
       .limit(limit)
 
     const cards = rows.flatMap((row) => {
@@ -130,13 +132,3 @@ const EarnedRowSchema = z.object({
   occurred_at: z.coerce.date(),
 })
 
-const ACTIVITY_KINDS: readonly string[] = ['visit', 'amount', 'checkIn', 'redemption']
-const EARNED_KINDS: readonly string[] = ['visit', 'amount', 'checkIn', 'welcomeBonus', 'referralBonus']
-
-function isActivityKind(kind: string): kind is ActivityKind {
-  return ACTIVITY_KINDS.includes(kind)
-}
-
-function isEarnedKind(kind: string): kind is EarnedKind {
-  return EARNED_KINDS.includes(kind)
-}

@@ -7,10 +7,9 @@ import { err, ok, type Result } from '#shared/types/result'
 import { ENV } from '../../config/config.module'
 import type { Env } from '../../config/env'
 import { toWalletActivity, toWalletCard } from './wallet.mapper'
-import { type ActivityKind, WalletRepository } from './wallet.repository'
+import { ACTIVITY_KINDS, type ActivityKind, WalletRepository } from './wallet.repository'
 
-/** Entram na caderneta: o que o cliente ganhou ou resgatou. Bônus aparecem como carimbos no cartão. */
-const ACTIVITY_KINDS: readonly ActivityKind[] = ['visit', 'amount', 'checkIn', 'redemption']
+/** Bônus de boas-vindas e indicação não são linha da caderneta: aparecem como carimbos no cartão. */
 const REWARD_KINDS: readonly ActivityKind[] = ['redemption']
 
 @Injectable()
@@ -51,9 +50,13 @@ export class WalletService {
 
   private async activity(customerId: string, kinds: readonly ActivityKind[], limit: number): Promise<Result<WalletActivity[], never>> {
     const records = await this.repository.listActivity(customerId, kinds, limit)
-    return ok(records.flatMap((record) => {
-      const activity = toWalletActivity(record)
-      return activity.ok ? [activity.value] : []
-    }))
+    return ok(
+      records.flatMap((record) => {
+        const activity = toWalletActivity(record)
+        if (activity.ok) return [activity.value]
+        this.logger.warn(`Ledger entry ${record.id} skipped: breaks the contract`)
+        return []
+      }),
+    )
   }
 }

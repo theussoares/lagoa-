@@ -1,5 +1,4 @@
 import { unitOf } from '#shared/domain/programStrategies'
-import { VisitIdSchema } from '#shared/schemas/ids'
 import { type WalletCard, WalletCardSchema } from '#shared/schemas/loyaltyCard'
 import { type WalletActivity, WalletActivitySchema } from '#shared/schemas/visit'
 import type { ErrorOf } from '#shared/types/errors'
@@ -37,7 +36,7 @@ export function toWalletCard(record: WalletCardRecord, supabaseUrl: string): Res
 /** `units` é o que o cliente ganhou (0 no resgate, onde o ledger guarda o débito). */
 export function toWalletActivity(record: ActivityRecord): Result<WalletActivity, InvalidContract> {
   const parsed = WalletActivitySchema.safeParse({
-    id: VisitIdSchema.parse(record.id),
+    id: record.id,
     shopId: record.shopId,
     shopName: record.shopName,
     kind: record.kind,

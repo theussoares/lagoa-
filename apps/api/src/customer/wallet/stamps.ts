@@ -10,7 +10,7 @@ export interface EarnedEntry {
   readonly occurredAt: Date
 }
 
-const SOURCE_BY_KIND: Readonly<Record<EarnedKind, EarnSource>> = {
+export const SOURCE_BY_KIND: Readonly<Record<EarnedKind, EarnSource>> = {
   visit: 'counter',
   amount: 'counterAmount',
   checkIn: 'checkIn',
@@ -33,4 +33,8 @@ export function deriveStamps(earnedNewestFirst: readonly EarnedEntry[], balance:
     if (newestFirst.length >= balance) break
   }
   return newestFirst.reverse().map((stamp, index) => ({ ...stamp, number: index + 1 }))
+}
+
+export function isEarnedKind(kind: string): kind is EarnedKind {
+  return kind in SOURCE_BY_KIND
 }

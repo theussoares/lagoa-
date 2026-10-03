@@ -16,21 +16,24 @@ import { WalletService } from './wallet.service'
 const SHOP_A = '0190a000-0000-7000-8000-0000000000a1'
 const SHOP_B = '0190a000-0000-7000-8000-0000000000a2'
 
+const OTHER_CUSTOMER = '0190a000-0000-7000-8000-0000000000ff'
+
+/** Guarda os dados por dono, como o banco: quem pergunta só enxerga o que é seu. */
 class FakeWalletRepository extends WalletRepository {
-  cards: WalletCardRecord[] = []
-  activity: ActivityRecord[] = []
+  cards: Record<string, WalletCardRecord[]> = {}
+  activity: Record<string, ActivityRecord[]> = {}
   readonly calls: { customerId: string; kinds?: readonly ActivityKind[]; limit?: number }[] = []
   async listCards(customerId: string): Promise<WalletCardRecord[]> {
     this.calls.push({ customerId })
-    return this.cards
+    return this.cards[customerId] ?? []
   }
   async findCard(customerId: string, shopId: string): Promise<WalletCardRecord | null> {
     this.calls.push({ customerId })
-    return this.cards.find((card) => card.shop.id === shopId) ?? null
+    return (this.cards[customerId] ?? []).find((card) => card.shop.id === shopId) ?? null
   }
   async listActivity(customerId: string, kinds: readonly ActivityKind[], limit: number): Promise<ActivityRecord[]> {
     this.calls.push({ customerId, kinds, limit })
-    return this.activity
+    return this.activity[customerId] ?? []
   }
 }
 
@@ -56,22 +59,37 @@ describe('wallet HTTP', () => {
   afterAll(async () => app.close())
 
   beforeEach(() => {
-    repository.cards = []
-    repository.activity = []
+    repository.cards = {}
+    repository.activity = {}
     repository.calls.length = 0
   })
 
   it('lists the cards closest to the reward first, always for the token user', async () => {
     const far = walletCardRecord({ cardId: 'far', balance: 1, shop: catalogShop({ id: SHOP_A }) })
     const ready = walletCardRecord({ cardId: 'ready', balance: 10, shop: catalogShop({ id: SHOP_B, name: 'Café' }) })
-    repository.cards = [far, ready]
+    repository.cards = { [TEST_USER.id]: [far, ready] }
     const response = await request(app.getHttpServer()).get('/wallet/cards').expect(200)
     expect(response.body.map((card: { id: string }) => card.id)).toEqual(['ready', 'far'])
-    expect(repository.calls[0]?.customerId).toBe(TEST_USER.id)
+    expect(repository.calls.map((call) => call.customerId)).toEqual([TEST_USER.id])
+  })
+
+  it('never shows a card that belongs to someone else, even by shop id', async () => {
+    repository.cards = { [OTHER_CUSTOMER]: [walletCardRecord({ shop: catalogShop({ id: SHOP_A }) })] }
+    await request(app.getHttpServer()).get('/wallet/cards').expect(200, [])
+    await request(app.getHttpServer()).get(`/wallet/cards/${SHOP_A}`).expect(404)
+    expect(repository.calls.every((call) => call.customerId === TEST_USER.id)).toBe(true)
+  })
+
+  it('skips a card that breaks the contract instead of failing the wallet', async () => {
+    const broken = walletCardRecord({ cardId: 'broken', shop: catalogShop({ id: SHOP_B, name: 'x'.repeat(200) }) })
+    const fine = walletCardRecord({ cardId: 'fine', shop: catalogShop({ id: SHOP_A }) })
+    repository.cards = { [TEST_USER.id]: [broken, fine] }
+    const response = await request(app.getHttpServer()).get('/wallet/cards').expect(200)
+    expect(response.body.map((card: { id: string }) => card.id)).toEqual(['fine'])
   })
 
   it('returns one card by shop', async () => {
-    repository.cards = [walletCardRecord({ shop: catalogShop({ id: SHOP_A }) })]
+    repository.cards = { [TEST_USER.id]: [walletCardRecord({ shop: catalogShop({ id: SHOP_A }) })] }
     const response = await request(app.getHttpServer()).get(`/wallet/cards/${SHOP_A}`).expect(200)
     expect(response.body.shopId).toBe(SHOP_A)
   })
@@ -87,15 +105,16 @@ describe('wallet HTTP', () => {
   })
 
   it('reads the activity with the default limit and only earning and redemption kinds', async () => {
-    repository.activity = [activityRecord()]
+    repository.activity = { [TEST_USER.id]: [activityRecord()], [OTHER_CUSTOMER]: [activityRecord({ id: 'foreign' })] }
     const response = await request(app.getHttpServer()).get('/wallet/activity').expect(200)
     expect(response.body).toHaveLength(1)
-    expect(repository.calls[0]).toMatchObject({ limit: WALLET_ACTIVITY_DEFAULT_LIMIT, kinds: ['visit', 'amount', 'checkIn', 'redemption'] })
+    expect(response.body.map((a: { id: string }) => a.id)).not.toContain('foreign')
+    expect(repository.calls[0]).toMatchObject({ customerId: TEST_USER.id, limit: WALLET_ACTIVITY_DEFAULT_LIMIT, kinds: ['visit', 'amount', 'checkIn', 'redemption'] })
   })
 
   it('reads the reward history as redemptions only', async () => {
     await request(app.getHttpServer()).get('/wallet/rewards?limit=20').expect(200)
-    expect(repository.calls[0]).toMatchObject({ limit: 20, kinds: ['redemption'] })
+    expect(repository.calls[0]).toMatchObject({ customerId: TEST_USER.id, limit: 20, kinds: ['redemption'] })
   })
 
   it.each(['0', '-1', 'abc', String(WALLET_ACTIVITY_MAX_LIMIT + 1), '1.5'])('rejects limit=%s', async (limit) => {
