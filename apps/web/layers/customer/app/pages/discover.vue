@@ -72,7 +72,7 @@ watch(unauthorized, (value) => {
         :placeholder="t('discover.searchPlaceholder')"
         :aria-label="t('discover.searchLabel')"
         class="w-full"
-        :ui="{ base: 'rounded-full bg-default' }"
+        :ui="{ base: 'h-12 rounded-full bg-default' }"
       />
     </ScreenHeader>
     <HeroCard
@@ -87,71 +87,64 @@ watch(unauthorized, (value) => {
       icon="i-ph-map-pin-area"
     />
     <div class="flex flex-col gap-8 pt-8">
+      <div v-if="loading" class="flex flex-col gap-4" role="status" :aria-label="t('common.loading')">
+        <USkeleton class="h-52 rounded-(--radius-card)" />
+        <USkeleton class="h-64 rounded-(--radius-card)" />
+      </div>
 
-    <div v-if="loading" class="flex flex-col gap-4" role="status" :aria-label="t('common.loading')">
-      <USkeleton class="h-52 rounded-(--radius-card)" />
-      <USkeleton class="h-64 rounded-(--radius-card)" />
-    </div>
+      <WalletProblem
+        v-else-if="shopsState.status === 'error'"
+        :message="t(`errors.${shopsState.error.code}`)"
+        :action="t('common.retry')"
+        @retry="reloadShops"
+      />
 
-    <WalletProblem
-      v-else-if="shopsState.status === 'error'"
-      :message="t(`errors.${shopsState.error.code}`)"
-      :action="t('common.retry')"
-      @retry="reloadShops"
-    />
+      <p v-else-if="shops.length === 0" class="rounded-(--radius-card) border-2 border-dashed border-(--lagoa-slot) px-5 py-4 text-toned">
+        {{ t('discover.empty') }}
+      </p>
 
-    <p v-else-if="shops.length === 0" class="rounded-(--radius-card) border-2 border-dashed border-(--lagoa-slot) px-5 py-4 text-toned">
-      {{ t('discover.empty') }}
-    </p>
+      <template v-else>
+        <section v-if="otherChallenges.length > 0 && !searching" class="flex flex-col gap-3" aria-labelledby="challenges-title">
+          <h2 id="challenges-title" class="type-h2">
+            {{ t('discover.challengesTitle', {}, otherChallenges.length) }}
+          </h2>
+          <ChallengeCard
+            v-for="challenge in otherChallenges"
+            :key="challenge.id"
+            :challenge="challenge"
+            :done-label="t('discover.challenge.done')"
+          />
+        </section>
 
-    <template v-else>
-      <section v-if="otherChallenges.length > 0 && !searching" class="flex flex-col gap-3" aria-labelledby="challenges-title">
-        <h2 id="challenges-title" class="type-h2">
-          {{ t('discover.challengesTitle', {}, otherChallenges.length) }}
-        </h2>
-        <ChallengeCard
-          v-for="challenge in otherChallenges"
-          :key="challenge.id"
-          :challenge="challenge"
-          :done-label="t('discover.challenge.done')"
-        />
-      </section>
-
-      <section class="flex flex-col gap-3" aria-labelledby="fresh-title">
-        <div class="flex flex-col gap-1">
-          <div class="flex items-baseline justify-between gap-3">
+        <section class="flex flex-col gap-3" aria-labelledby="fresh-title">
+          <div class="flex flex-col gap-1">
             <h2 id="fresh-title" class="type-h2">
               {{ t('discover.freshTitle') }}
             </h2>
-            <a :href="mapUrl" target="_blank" rel="noopener" class="flex shrink-0 items-center gap-1 font-semibold text-primary" :aria-label="t('discover.mapLinkLabel')">
-              {{ t('discover.mapLink') }}
-              <UIcon name="i-ph-arrow-right" class="size-4" aria-hidden="true" />
-            </a>
+            <p v-if="fresh.length > 0" class="text-pretty text-toned">{{ t('discover.howTo') }}</p>
           </div>
-          <p v-if="fresh.length > 0" class="text-pretty text-toned">{{ t('discover.howTo') }}</p>
-        </div>
-        <ul v-if="fresh.length > 0" class="flex flex-col gap-4">
-          <li v-for="(shop, index) in fresh" :key="shop.id" :style="{ '--i': index + 1 }" class="rise">
-            <ShopCard :shop="shop" class="!animate-none" />
-          </li>
-        </ul>
-        <p v-else class="rounded-(--radius-card) border-2 border-dashed border-(--lagoa-slot) px-5 py-4 text-pretty text-toned">
-          {{ searching ? t('discover.noResults') : t('discover.freshEmpty') }}
-        </p>
-      </section>
+          <ul v-if="fresh.length > 0" class="flex flex-col gap-4">
+            <li v-for="(shop, index) in fresh" :key="shop.id" :style="{ '--i': index + 1 }" class="rise">
+              <ShopCard :shop="shop" class="!animate-none" />
+            </li>
+          </ul>
+          <p v-else class="rounded-(--radius-card) border-2 border-dashed border-(--lagoa-slot) px-5 py-4 text-pretty text-toned">
+            {{ searching ? t('discover.noResults') : t('discover.freshEmpty') }}
+          </p>
+        </section>
 
-      <section v-if="known.length > 0" class="flex flex-col gap-3" aria-labelledby="known-title">
-        <h2 id="known-title" class="type-h2">
-          {{ t('discover.knownTitle') }}
-        </h2>
-        <ul class="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-3 [scrollbar-width:none]">
-          <li v-for="(shop, index) in known" :key="shop.id" :style="{ '--i': index + 1 }" class="rise shrink-0 snap-start">
-            <ShopTile :shop="shop" to="/carteira" class="!animate-none" />
-          </li>
-        </ul>
-        <UButton to="/carteira" variant="ghost" color="neutral" trailing-icon="i-ph-arrow-right" :label="t('discover.openWallet')" class="self-start" />
-      </section>
-    </template>
+        <section v-if="known.length > 0" class="flex flex-col gap-3" aria-labelledby="known-title">
+          <h2 id="known-title" class="type-h2">
+            {{ t('discover.knownTitle') }}
+          </h2>
+          <ul class="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-3 [scrollbar-width:none]">
+            <li v-for="(shop, index) in known" :key="shop.id" :style="{ '--i': index + 1 }" class="rise shrink-0 snap-start">
+              <ShopTile :shop="shop" to="/carteira" class="!animate-none" />
+            </li>
+          </ul>
+          <UButton to="/carteira" variant="ghost" color="neutral" trailing-icon="i-ph-arrow-right" :label="t('discover.openWallet')" class="self-start" />
+        </section>
+      </template>
     </div>
   </div>
 </template>

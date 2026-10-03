@@ -25,7 +25,7 @@ const slotGrid = computed(() =>
       <UIcon v-else :name="shop.icon" class="absolute -right-2 -bottom-4 size-28 text-primary opacity-15" />
       <span
         v-if="shop.showcase.openLabel"
-        class="eyebrow-tag absolute top-3 right-3 inline-flex items-center gap-2 rounded-full bg-(--color-lima-100) px-3 py-1.5 text-(--color-lima-900) ring-4 ring-white"
+        class="eyebrow-tag absolute top-3 right-3 inline-flex max-w-[calc(100%-1.5rem)] items-center gap-2 whitespace-nowrap rounded-full bg-(--color-lima-100) px-3 py-1.5 text-(--color-lima-900) ring-4 ring-(--ui-bg)"
       >
         <span class="live-dot size-2 rounded-full bg-(--color-lima-500)" />
         {{ shop.showcase.openLabel }}
@@ -42,7 +42,7 @@ const slotGrid = computed(() =>
           <h3 :id="titleId" class="font-display truncate text-xl font-bold text-highlighted">{{ shop.shopName }}</h3>
           <p v-if="shop.showcase.rating || shop.showcase.distance" class="tabular flex items-center gap-1.5 text-base text-toned">
             <template v-if="shop.showcase.rating">
-              <UIcon name="i-ph-star-fill" class="size-4 text-(--color-sol-500)" aria-hidden="true" />
+              <UIcon name="i-ph-star-fill" class="size-4 text-highlighted" aria-hidden="true" />
               <span class="font-semibold">{{ shop.showcase.rating }}</span>
             </template>
             <span v-if="shop.showcase.rating && shop.showcase.distance" aria-hidden="true">·</span>
@@ -64,13 +64,10 @@ const slotGrid = computed(() =>
         <InkRule v-else :fraction="shop.preview.fraction" class="max-w-[22rem]" />
       </div>
 
-      <div class="flex items-start gap-3 rounded-2xl bg-(--color-lima-50) px-4 py-3 dark:bg-(--color-tinta-950)">
-        <UIcon name="i-ph-gift" class="mt-0.5 size-5 shrink-0 text-(--color-lima-700)" aria-hidden="true" />
-        <p class="flex flex-col text-toned">
-          <span class="font-semibold text-highlighted">{{ shop.rule }}</span>
-          <span>{{ shop.earn }}<template v-if="shop.welcome"> · {{ shop.welcome }}</template></span>
-        </p>
-      </div>
+      <p class="flex flex-col text-toned">
+        <span class="font-semibold text-highlighted">{{ shop.rule }}</span>
+        <span>{{ shop.earn }}<template v-if="shop.welcome"> · {{ shop.welcome }}</template></span>
+      </p>
 
       <UButton
         :to="shop.directions.href"
