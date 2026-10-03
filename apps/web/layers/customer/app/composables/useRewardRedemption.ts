@@ -1,24 +1,9 @@
 import { LoyaltyCardIdSchema } from '#shared/schemas/ids'
 import type { Redemption } from '#shared/schemas/redemption'
-import type { ErrorOf, TransportError } from '#shared/types/errors'
+import type { RewardRedemptionState, RewardRedemption } from '../types/redemption'
 
 /** Quanto a tela espera para perguntar de novo se o balcão já entregou o prêmio. */
 const STATUS_POLL_MS = 3000
-
-export type RewardRedemptionError = ErrorOf<'notFound' | 'rewardNotReady'> | TransportError
-
-export type RewardRedemptionState =
-  | { status: 'loading' }
-  | { status: 'error'; error: RewardRedemptionError }
-  | { status: 'ready'; redemption: Redemption }
-
-export interface RewardRedemption {
-  state: Readonly<Ref<RewardRedemptionState>>
-  /** Segundos até o código vencer; o servidor continua sendo quem decide. */
-  remaining: Readonly<Ref<number>>
-  /** Gera um código novo (ou recupera o que ainda vale). */
-  request: () => Promise<void>
-}
 
 /** `rawCardId` vem da rota; id malformado é tratado como cartão que não existe. */
 export function useRewardRedemption(rawCardId: string): RewardRedemption {

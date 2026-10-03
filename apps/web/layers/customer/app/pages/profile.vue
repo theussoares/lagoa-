@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Birthday } from '#shared/schemas/common'
-import type { BirthdayAction } from '../components/profile/BirthdayForm.vue'
+import type { BirthdayAction } from '../types/profile'
 import { formatBirthday, formatChangeableAt } from '../utils/birthdayModel'
 
 definePageMeta({ path: '/perfil', layout: 'customer', middleware: 'customer-auth' })

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CheckInNoticeModel } from '../../utils/checkInModel'
+import type { CheckInNoticeModel } from '../../types/checkIn'
 
 interface Props {
   notice: CheckInNoticeModel

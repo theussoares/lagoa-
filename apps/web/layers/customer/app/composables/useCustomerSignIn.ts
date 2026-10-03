@@ -3,20 +3,7 @@ import type { PhoneNumber } from '#shared/schemas/phone'
 import { LoginCodeSchema } from '#shared/schemas/session'
 import type { DomainErrorCode } from '#shared/types/errors'
 import { parsePhoneNumber } from '#shared/utils/phone'
-
-export type SignInStep = { name: 'phone' } | { name: 'code'; phone: PhoneNumber }
-
-export interface CustomerSignIn {
-  step: Readonly<Ref<SignInStep>>
-  pending: Readonly<Ref<boolean>>
-  error: Readonly<Ref<DomainErrorCode | null>>
-  /** Segundos até liberar "Reenviar código" (0 = liberado). */
-  resendIn: Readonly<Ref<number>>
-  requestCode: (rawPhone: string) => Promise<void>
-  resendCode: () => Promise<void>
-  verify: (rawCode: string, notificationConsent: boolean) => Promise<boolean>
-  changePhone: () => void
-}
+import type { SignInStep, CustomerSignIn } from '../types/signIn'
 
 /** Entrar por celular + código. O celular fica só em memória: nunca em URL nem storage. */
 export function useCustomerSignIn(): CustomerSignIn {

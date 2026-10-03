@@ -1,27 +1,8 @@
-import type { WalletCard } from '#shared/schemas/loyaltyCard'
 import type { CheckInCode } from '#shared/schemas/shop'
-import type { CheckInResult } from '#shared/schemas/visit'
 import type { Result } from '#shared/types/result'
 import type { ErrorOf } from '#shared/types/errors'
 import { parseCheckInCode, readCheckInQr } from '#shared/utils/checkInCode'
-import type { CheckInError } from '../services/CheckInService'
-import type { CheckInSource } from '../utils/checkInModel'
-
-export type CheckInState =
-  | { status: 'idle' }
-  | { status: 'submitting'; source: CheckInSource }
-  /** `card` é o cartão já atualizado; sem ele (rede caiu no meio) a tela mostra só o resumo. */
-  | { status: 'earned'; result: CheckInResult; card: WalletCard | null }
-  | { status: 'error'; error: CheckInError; source: CheckInSource }
-
-export interface CheckIn {
-  state: Readonly<Ref<CheckInState>>
-  /** `raw` é o conteúdo do QR, o texto digitado ou o `?loja=` do link. */
-  submit: (raw: string, source: CheckInSource) => Promise<void>
-  /** Repete o último código (depois de falha de rede). */
-  retry: () => Promise<void>
-  reset: () => void
-}
+import type { CheckInSource, CheckInState, CheckIn } from '../types/checkIn'
 
 function parse(raw: string, source: CheckInSource): Result<CheckInCode, ErrorOf<'invalidShopQr'>> {
   return source === 'camera' ? readCheckInQr(raw) : parseCheckInCode(raw)

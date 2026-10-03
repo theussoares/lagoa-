@@ -1,15 +1,8 @@
 import type QrScanner from 'qr-scanner'
+import type { QrScannerStatus, QrScannerControl } from '../types/qrScanner'
 
 /** A cada quanto a câmera tenta ler; mais que isso só gasta bateria. */
 const MAX_SCANS_PER_SECOND = 8
-
-export type QrScannerStatus = 'off' | 'starting' | 'scanning' | 'denied' | 'unavailable'
-
-export interface QrScannerControl {
-  status: Readonly<Ref<QrScannerStatus>>
-  start: (video: HTMLVideoElement) => Promise<void>
-  stop: () => void
-}
 
 function isPermissionError(error: unknown): boolean {
   return error instanceof DOMException && (error.name === 'NotAllowedError' || error.name === 'SecurityError')

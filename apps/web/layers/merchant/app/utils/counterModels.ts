@@ -1,5 +1,4 @@
-import type { CounterEntry, VisitRegistered } from '#shared/schemas/visit'
-import type { LedgerKind } from '#shared/schemas/visit'
+import type { CounterEntry, VisitRegistered, LedgerKind } from '#shared/schemas/visit'
 import type { ProgramUnit } from '#shared/schemas/program'
 import { formatCurrency } from '#shared/utils/currency'
 import { PILOT_TIME_ZONE } from '#shared/utils/time'

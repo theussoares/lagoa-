@@ -5,12 +5,7 @@ import type { ReadyRewardModel, UpcomingRewardModel } from '#layers/ui/app/types
 import type { Translate } from '#layers/core/app/types/i18n'
 import { stampTilt } from '#layers/ui/app/utils/stampTilt'
 import { categoryIcon } from './categoryIcon'
-
-export interface RewardGroups {
-  readonly ready: readonly WalletCard[]
-  /** Na ordem da carteira: o mais perto do prêmio primeiro. */
-  readonly upcoming: readonly WalletCard[]
-}
+import type { RewardGroups } from '../types/reward'
 
 export function groupRewards(cards: readonly WalletCard[]): RewardGroups {
   return {
