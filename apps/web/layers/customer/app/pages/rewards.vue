@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { formatShortDate } from '#shared/utils/dateFormat'
+
 definePageMeta({ path: '/premios', layout: 'customer', middleware: 'customer-auth' })
 
 const { t } = useI18n()

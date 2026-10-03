@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ComponentPublicInstance } from 'vue'
 import { CHECK_IN_CODE_LENGTH, CHECK_IN_LINK_PARAM } from '#shared/constants/domain'
+import { formatShortDate } from '#shared/utils/dateFormat'
 import { stampTilt } from '#layers/ui/app/utils/stampTilt'
 import { REWARD_STAMP_ICON } from '#layers/ui/app/utils/stampIcons'
 import { seenBalanceBefore, toCheckInEarnedModel, toCheckInNotice } from '../utils/checkInModel'

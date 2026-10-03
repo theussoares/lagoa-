@@ -2,7 +2,7 @@ import type { CheckInResult } from '#shared/schemas/visit'
 import { addDays, localDateParts } from '#shared/utils/time'
 import type { Translate } from '#layers/core/app/types/i18n'
 import type { CheckInError } from '../services/CheckInService'
-import { formatShortDate, formatTime } from './ledgerEntryModel'
+import { formatShortDate, formatTime } from '#shared/utils/dateFormat'
 import type { CheckInSource, CheckInNoticeModel, CheckInMoment, CheckInEarnedModel } from '../types/checkIn'
 
 /** "hoje às 18:40", "amanhã às 09:00", "em 5 de out. às 09:00" — no fuso da cidade. */

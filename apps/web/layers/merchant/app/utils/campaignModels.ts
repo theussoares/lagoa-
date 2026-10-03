@@ -1,18 +1,10 @@
 import { LAPSED_AFTER_DAYS } from '#shared/constants/domain'
 import type { Campaign, ReminderDraft, ReminderReach } from '#shared/schemas/campaign'
 import type { ProgramUnit } from '#shared/schemas/program'
-import { PILOT_TIME_ZONE } from '#shared/utils/time'
+import { formatShortDateTime } from '#shared/utils/dateFormat'
 import type { Translate } from '#layers/core/app/types/i18n'
-import { unitsText } from './counterModels'
+import { unitsText } from '#layers/core/app/utils/units'
 import type { ReachLine, ReachModel, ReminderPreviewModel, CampaignHistoryRow } from '../types/campaign'
-
-const sentAtFormat = new Intl.DateTimeFormat('pt-BR', {
-  day: 'numeric',
-  month: 'short',
-  hour: '2-digit',
-  minute: '2-digit',
-  timeZone: PILOT_TIME_ZONE,
-})
 
 export function toReachModel(reach: ReminderReach, t: Translate): ReachModel {
   const lines: ReachLine[] = [
@@ -54,7 +46,7 @@ export function toReminderPreview(draft: ReminderDraft, shopName: string, unit: 
 export function toCampaignHistoryRow(campaign: Campaign, t: Translate): CampaignHistoryRow {
   return {
     id: campaign.id,
-    sentAt: sentAtFormat.format(new Date(campaign.sentAt)),
+    sentAt: formatShortDateTime(campaign.sentAt),
     recipients: t('campaigns.history.recipients', { count: campaign.recipientsCount }, campaign.recipientsCount),
     bonus:
       campaign.bonusUnits > 0

@@ -2,12 +2,13 @@
 import { REDEMPTION_CODE_LENGTH } from '#shared/constants/domain'
 import { formatCurrency } from '#shared/utils/currency'
 import { phoneDigits } from '#shared/utils/phone'
-import { PILOT_TIME_ZONE } from '#shared/utils/time'
+import { formatLongWeekdayDate, formatTime } from '#shared/utils/dateFormat'
 import type { ComponentPublicInstance } from 'vue'
 import type { CounterKeypadLabels } from '#layers/ui/app/types/keypad'
 import { amountDigits, counterActionFor } from '../utils/counterAction'
 import type { CounterAction } from '../types/counter'
-import { toCounterLedgerModel, toLaunchReceipt, unitsText } from '../utils/counterModels'
+import { unitsText } from '#layers/core/app/utils/units'
+import { toCounterLedgerModel, toLaunchReceipt } from '../utils/counterModels'
 
 definePageMeta({ path: '/balcao', layout: 'merchant', middleware: 'merchant-auth' })
 
@@ -29,9 +30,7 @@ const amountField = useTemplateRef<ComponentPublicInstance>('amountField')
 const activeField = ref<'phone' | 'amount'>('phone')
 
 const STAMP_ICON = 'i-ph-check-fat-bold'
-const dayFormat = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: PILOT_TIME_ZONE })
-const timeFormat = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: PILOT_TIME_ZONE })
-const today = dayFormat.format(new Date())
+const today = formatLongWeekdayDate(new Date())
 
 // Sessão vencida em qualquer chamada leva de volta ao login do painel; loja fechada
 // pela rede atualiza a faixa do painel, sem derrubar a sessão.
@@ -257,7 +256,7 @@ onMounted(focusPhone)
                 </p>
                 <p class="text-[1.375rem] leading-tight font-bold text-secondary [font-stretch:90%]">{{ redemption.state.value.preview.rewardTitle }}</p>
                 <p class="tabular text-[0.9375rem] text-muted">
-                  {{ t('counter.redemption.customer', { phone: redemption.state.value.preview.maskedPhone, time: timeFormat.format(new Date(redemption.state.value.preview.expiresAt)) }) }}
+                  {{ t('counter.redemption.customer', { phone: redemption.state.value.preview.maskedPhone, time: formatTime(redemption.state.value.preview.expiresAt) }) }}
                 </p>
               </div>
               <div class="flex gap-2">

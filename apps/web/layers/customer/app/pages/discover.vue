@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ShopSummary } from '#shared/schemas/shop'
+import { formatShortDate } from '#shared/utils/dateFormat'
 
 definePageMeta({ path: '/descobrir', layout: 'customer', middleware: 'customer-auth' })
 

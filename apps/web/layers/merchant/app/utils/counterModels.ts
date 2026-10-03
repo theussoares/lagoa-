@@ -1,8 +1,8 @@
 import type { CounterEntry, VisitRegistered, LedgerKind } from '#shared/schemas/visit'
-import type { ProgramUnit } from '#shared/schemas/program'
 import { formatCurrency } from '#shared/utils/currency'
-import { PILOT_TIME_ZONE } from '#shared/utils/time'
+import { formatTime } from '#shared/utils/dateFormat'
 import type { Translate } from '#layers/core/app/types/i18n'
+import { unitsText } from '#layers/core/app/utils/units'
 import type { CounterLedgerEntryModel, LaunchReceiptModel } from '../types/counter'
 import type { StampCardBody } from '#layers/ui/app/types/wallet'
 import { stampTilt } from '#layers/ui/app/utils/stampTilt'
@@ -11,18 +11,12 @@ import { stampTilt } from '#layers/ui/app/utils/stampTilt'
 const MAX_SLOTS = 20
 const STAMP_STAGGER_MS = 70
 
-const timeFormat = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: PILOT_TIME_ZONE })
-
 const ledgerIcons: Readonly<Record<LedgerKind, string>> = {
   visit: 'i-ph-check-fat-bold',
   amount: 'i-ph-receipt-bold',
   checkIn: 'i-ph-qr-code-bold',
   redemption: 'i-ph-gift-bold',
   campaignBonus: 'i-ph-megaphone-bold',
-}
-
-export function unitsText(t: Translate, unit: ProgramUnit, count: number): string {
-  return t(`units.${unit}`, { count }, count)
 }
 
 function ledgerAction(entry: CounterEntry, t: Translate): string {
@@ -44,7 +38,7 @@ function ledgerAction(entry: CounterEntry, t: Translate): string {
 export function toCounterLedgerModel(entry: CounterEntry, t: Translate, fresh: boolean): CounterLedgerEntryModel {
   return {
     id: entry.id,
-    time: timeFormat.format(new Date(entry.createdAt)),
+    time: formatTime(entry.createdAt),
     phone: entry.maskedPhone,
     badge: entry.isNewCustomer ? t('counter.ledger.newCustomer') : null,
     action: ledgerAction(entry, t),
