@@ -8,6 +8,8 @@ import * as schema from './schema'
 export const DB = Symbol('DB')
 export const SQL = Symbol('SQL')
 export type Database = PostgresJsDatabase<typeof schema>
+/** Transação aberta por `db.transaction`: o que os stores recebem para escrever junto. */
+export type Tx = Parameters<Parameters<Database['transaction']>[0]>[0]
 
 @Global()
 @Module({

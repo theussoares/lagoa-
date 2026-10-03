@@ -36,6 +36,11 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
   senão o planner ignora o índice e ordena a tabela inteira (medido: 9 ms → 0,15 ms
   em 20 mil linhas). Lista que cresce sempre sai com `limit` e sem N+1 (use
   `LATERAL ... LIMIT` para "as N mais novas de cada").
+  **Ledger:** a única porta de escrita é o `LedgerStore` (`apps/api/src/ledger`):
+  trava o cartão (`FOR UPDATE`), grava boas-vindas e visita e atualiza o saldo
+  na mesma transação. A conta do que uma visita rende é `planEarning`
+  (`shared/domain/earning.ts`) e a janela de check-in é `checkInAvailableAt`
+  (`shared/domain/antifraud.ts`): check-in e Balcão usam as mesmas, nunca uma cópia.
 - **Backend (histórico):** ainda não definido. Até o ADR do CTO sair, o front consome
   services com interface e implementação mock em `layers/core` — nenhum
   componente chama `fetch`/`$fetch` direto. O mock é um servidor falso único

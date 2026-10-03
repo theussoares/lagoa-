@@ -67,8 +67,9 @@ Telas: Check-in, Carimbo ganho. Front: `CheckInService`.
   modo (`programStrategies`), bônus de aniversário e dia surpresa (vale o maior),
   idempotência por `idempotencyKey`.
 - Cartão chega à meta: define `rewardExpiresAt`.
-- **Ledger compartilhado** (`apps/api/src/ledger`): serviço de escrita usado também
-  pelo Balcão do Caio. Interface combinada antes de codar.
+- **Ledger compartilhado** (`apps/api/src/ledger/ledger.store.ts`): `lockOrCreateCard` + `credit`, usados
+  também pelo Balcão do Caio. A regra do que uma visita rende é `planEarning` (`shared/domain/earning.ts`);
+  a janela é `checkInAvailableAt`. O Balcão chama `planEarning` com `input` de visita ou de valor.
 - Limite de requisições mais estrito nesta rota.
 
 ## Fase 5: Resgate, Indicação e fechamento
