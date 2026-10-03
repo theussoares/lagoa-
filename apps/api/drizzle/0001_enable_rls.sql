@@ -1,0 +1,9 @@
+-- RLS ligado sem policy pública: só a credencial de servidor do Nest lê/escreve.
+ALTER TABLE "app_users" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "customer_profiles" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "shops" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "programs" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "loyalty_cards" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "redemptions" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "ledger_entries" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "referrals" ENABLE ROW LEVEL SECURITY;

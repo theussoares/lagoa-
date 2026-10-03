@@ -12,7 +12,11 @@
     "test:watch": "pnpm --filter @lagoa/web test:watch",
     "dev:site": "pnpm --filter @lagoa/site dev",
     "generate:site": "pnpm --filter @lagoa/site generate",
-    "typecheck:site": "pnpm --filter @lagoa/site typecheck"
+    "typecheck:site": "pnpm --filter @lagoa/site typecheck",
+    "dev:api": "pnpm --filter @lagoa/api dev",
+    "build:api": "pnpm --filter @lagoa/api build",
+    "test:api": "pnpm --filter @lagoa/api test",
+    "typecheck:api": "pnpm --filter @lagoa/api typecheck"
   },
   "dependencies": {
     "zod": "^4.6.5"

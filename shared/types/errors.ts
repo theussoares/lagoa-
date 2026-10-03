@@ -11,6 +11,10 @@ export type DomainError =
   | { readonly code: 'network' }
   | { readonly code: 'notFound'; readonly entity: DomainEntity }
   | { readonly code: 'invalidPhone' }
+  /** Cadastro com celular de outra conta: o celular é único por cliente. */
+  | { readonly code: 'phoneAlreadyUsed' }
+  /** E-mail já ligado a outra conta (ex.: conta de login recriada): precisa de atendimento, não de nova tentativa. */
+  | { readonly code: 'emailAlreadyUsed' }
   | { readonly code: 'invalidLoginCode' }
   | { readonly code: 'loginCodeExpired' }
   | { readonly code: 'invalidAmount' }
