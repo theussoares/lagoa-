@@ -9,7 +9,7 @@ export interface MountedComposable<T> {
 }
 
 /** Roda o composable dentro de um componente real: ciclo de vida, auto-imports e plugins do Nuxt. */
-export async function mountComposable<T>(factory: () => T): Promise<MountedComposable<T>> {
+export async function mountComposable<T>(factory: () => T, options: { route?: string } = {}): Promise<MountedComposable<T>> {
   let result: T | undefined
   const wrapper = await mountSuspended(
     defineComponent({
@@ -18,6 +18,7 @@ export async function mountComposable<T>(factory: () => T): Promise<MountedCompo
         return () => null
       },
     }),
+    { route: options.route },
   )
   await flushPromises()
   if (result === undefined) throw new Error('composable did not run')
