@@ -502,7 +502,7 @@
   },
   "discover": {
     "title": "Descobrir",
-        "challengesTitle": "Desafio da cidade | Desafios da cidade",
+    "challengesTitle": "Desafio da cidade | Desafios da cidade",
     "challengeBadge": "Desafio do mês",
     "challenge": {
       "deadline": "Até {date}",
@@ -664,5 +664,9 @@
       "goToPanel": "Ir para o Início",
       "loadError": "Não conseguimos montar o cartaz agora."
     }
+  },
+  "invite": {
+    "pageTitle": "Convite",
+    "opening": "Abrindo o convite…"
   }
 }

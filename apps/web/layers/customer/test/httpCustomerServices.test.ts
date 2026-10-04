@@ -49,4 +49,11 @@ describe('http customer services', () => {
     await profile.setNotificationConsent(true)
     expect(fetcher.mock.calls[0]?.[1]).toMatchObject({ method: 'PUT', body: '{"granted":true}' })
   })
+
+  it('referral capture posts the invite and accepts the empty 204', async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => new Response(null, { status: 204 }))
+    const { referral } = servicesWith(fetcher)
+    expect(await referral.capture({ referralCode: 'K7M2P9QX', shopCode: 'NAV4K7' })).toEqual({ ok: true, value: undefined })
+    expect(fetcher.mock.calls[0]?.[1]).toMatchObject({ method: 'POST', body: '{"referralCode":"K7M2P9QX","shopCode":"NAV4K7"}' })
+  })
 })

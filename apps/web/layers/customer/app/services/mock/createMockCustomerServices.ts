@@ -1,6 +1,7 @@
 import type { LoyaltyCardId, RedemptionId, ShopId } from '#shared/schemas/ids'
 import type { ProfileUpdate } from '#shared/schemas/customer'
 import type { CheckInCode } from '#shared/schemas/shop'
+import { ReferralInviteSchema } from '#shared/schemas/referral'
 import { ok } from '#shared/types/result'
 import { asCustomer } from '#layers/core/app/mock/withSession'
 import type { CustomerServices } from '../CustomerServices'
@@ -40,6 +41,10 @@ export function createMockCustomerServices(backend: MockBackend, sessions: Custo
       setNotificationConsent: (granted: boolean) =>
         asCustomer(backend, sessions, (ctx, customerId) => setNotificationConsent(ctx, customerId, granted)),
       acceptTerms: () => asCustomer(backend, sessions, acceptTerms),
+    },
+    referral: {
+      capture: () => asCustomer(backend, sessions, () => ok(undefined)),
+      getInvite: () => asCustomer(backend, sessions, () => ok(ReferralInviteSchema.parse({ referralCode: 'MOCKREF2' }))),
     },
   }
 }
