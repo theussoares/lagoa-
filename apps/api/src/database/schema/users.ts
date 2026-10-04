@@ -25,4 +25,7 @@ export const customerProfiles = pgTable('customer_profiles', {
   termsVersion: text('terms_version'),
   notificationsConsent: boolean('notifications_consent').notNull().default(false),
   consentUpdatedAt: timestamp('consent_updated_at', { withTimezone: true }),
+  /** Entrada voluntária no ranking da cidade; sair apaga o apelido. */
+  rankingOptIn: boolean('ranking_opt_in').notNull().default(false),
+  rankingName: text('ranking_name'),
 })

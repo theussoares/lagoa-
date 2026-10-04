@@ -1,6 +1,7 @@
 import type { LoyaltyCardId, RedemptionId, ShopId } from '#shared/schemas/ids'
 import type { ProfileUpdate } from '#shared/schemas/customer'
 import type { CheckInCode } from '#shared/schemas/shop'
+import type { Ranking, RankingConsentUpdate } from '#shared/schemas/ranking'
 import { ReferralInviteSchema } from '#shared/schemas/referral'
 import { ok } from '#shared/types/result'
 import { asCustomer } from '#layers/core/app/mock/withSession'
@@ -12,6 +13,13 @@ import { acceptTerms, getProfile, setNotificationConsent, updateProfile } from '
 import type { CustomerSessionProvider } from '#layers/core/app/services/SessionProvider'
 
 export function createMockCustomerServices(backend: MockBackend, sessions: CustomerSessionProvider): CustomerServices {
+  // O mock não guarda ranking no servidor falso: a pessoa só vê a si mesma, enquanto a aba estiver aberta.
+  let mockName: string | null = null
+  const mockRanking = (): Ranking => ({
+    month: new Date().toISOString().slice(0, 7),
+    entries: mockName === null ? [] : [{ position: 1, name: mockName, visits: 1, isMe: true }],
+    me: { optedIn: mockName !== null, position: mockName === null ? null : 1, visits: 1, name: mockName },
+  })
   return {
     wallet: {
       listCards: () => asCustomer(backend, sessions, (ctx, customerId) => ok(walletCards(ctx, customerId))),
@@ -41,6 +49,23 @@ export function createMockCustomerServices(backend: MockBackend, sessions: Custo
       setNotificationConsent: (granted: boolean) =>
         asCustomer(backend, sessions, (ctx, customerId) => setNotificationConsent(ctx, customerId, granted)),
       acceptTerms: () => asCustomer(backend, sessions, acceptTerms),
+    },
+    dataExport: {
+      exportMyData: () =>
+        asCustomer(backend, sessions, (ctx, customerId) => {
+          const profile = getProfile(ctx, customerId)
+          return profile.ok
+            ? ok({ exportedAt: new Date().toISOString(), profile: profile.value, cards: [], ledger: [], redemptions: [], referrals: { pending: 0, rewarded: 0, rejected: 0 } })
+            : profile
+        }),
+    },
+    ranking: {
+      getRanking: () => asCustomer(backend, sessions, () => ok(mockRanking())),
+      setConsent: (update: RankingConsentUpdate) =>
+        asCustomer(backend, sessions, () => {
+          mockName = update.granted ? update.name : null
+          return ok(mockRanking())
+        }),
     },
     referral: {
       capture: () => asCustomer(backend, sessions, () => ok(undefined)),

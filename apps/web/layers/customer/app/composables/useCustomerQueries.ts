@@ -2,6 +2,7 @@ import type { AsyncResult } from '#layers/core/app/types/asyncResult'
 import type { WalletCard } from '#shared/schemas/loyaltyCard'
 import type { CustomerProfile } from '#shared/schemas/customer'
 import type { Challenge } from '#shared/schemas/discover'
+import type { Ranking } from '#shared/schemas/ranking'
 import type { ShopSummary } from '#shared/schemas/shop'
 import type { WalletActivity } from '#shared/schemas/visit'
 import type { TransportError } from '#shared/types/errors'
@@ -37,4 +38,9 @@ export function useDiscoverShops(): AsyncResult<ShopSummary[], TransportError> {
 export function useDiscoverChallenges(): AsyncResult<Challenge[], TransportError> {
   const { discover } = useCustomerServices()
   return useAsyncResult(() => discover.listChallenges())
+}
+
+export function useRanking(): AsyncResult<Ranking, TransportError> {
+  const { ranking } = useCustomerServices()
+  return useAsyncResult(() => ranking.getRanking())
 }

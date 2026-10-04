@@ -14,6 +14,7 @@ const { signOut } = useCustomerSession()
 const { state, reload, set } = useCustomerProfile()
 const savingConsent = ref(false)
 const birthdayPending = ref<BirthdayAction | null>(null)
+const exporter = useDataExport()
 const theme = useThemePreference()
 const themeLabels = computed(() => ({ legend: t('theme.legend'), light: t('theme.light'), dark: t('theme.dark') }))
 const birthdayLockedUntil = computed(() => {
@@ -55,6 +56,13 @@ async function onConsentChange(granted: boolean): Promise<void> {
   }
   set(result.value)
   toast.add({ color: 'success', icon: 'i-ph-check-circle', title: t('profile.consentSaved') })
+}
+
+async function downloadData(): Promise<void> {
+  const failure = await exporter.download()
+  if (failure === 'unauthorized') return void signOut()
+  if (failure !== null) return void toast.add({ color: 'error', icon: 'i-ph-warning-circle', title: t(`errors.${failure}`) })
+  toast.add({ color: 'success', icon: 'i-ph-check-circle', title: t('profile.dataDownloaded') })
 }
 
 async function saveBirthday(birthday: Birthday | null, action: BirthdayAction): Promise<void> {
@@ -125,6 +133,16 @@ async function saveBirthday(birthday: Birthday | null, action: BirthdayAction): 
       <h2 id="appearance-title" class="letreiro text-base text-toned">{{ t('profile.appearanceTitle') }}</h2>
       <div class="rounded-(--radius-card) bg-default p-4 shadow-(--lagoa-shadow-card)">
         <ThemeChoice v-model="theme" :labels="themeLabels" />
+      </div>
+    </section>
+
+    <UButton to="/ranking" variant="outline" color="neutral" size="lg" block icon="i-ph-trophy" :label="t('ranking.link')" />
+
+    <section aria-labelledby="data-title" class="flex flex-col gap-3">
+      <h2 id="data-title" class="letreiro text-base text-toned">{{ t('profile.dataTitle') }}</h2>
+      <div class="flex flex-col gap-3 rounded-(--radius-card) bg-default p-4 shadow-(--lagoa-shadow-card)">
+        <p class="text-base text-muted">{{ t('profile.dataHelp') }}</p>
+        <UButton variant="outline" color="neutral" size="lg" block icon="i-ph-download-simple" :loading="exporter.pending.value" :label="t('profile.dataDownload')" @click="downloadData" />
       </div>
     </section>
 

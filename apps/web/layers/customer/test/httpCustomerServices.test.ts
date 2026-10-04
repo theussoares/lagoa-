@@ -56,4 +56,21 @@ describe('http customer services', () => {
     expect(await referral.capture({ referralCode: 'K7M2P9QX', shopCode: 'NAV4K7' })).toEqual({ ok: true, value: undefined })
     expect(fetcher.mock.calls[0]?.[1]).toMatchObject({ method: 'POST', body: '{"referralCode":"K7M2P9QX","shopCode":"NAV4K7"}' })
   })
+
+  it('data export reads GET /customer/data-export and rejects a malformed body', async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => json(200, { nope: true }))
+    const { dataExport } = servicesWith(fetcher)
+    expect(await dataExport.exportMyData()).toEqual({ ok: false, error: { code: 'internal' } })
+    expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/customer/data-export')
+  })
+
+  it('ranking sends the nickname to join and nothing but the flag to leave', async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => json(500, { code: 'internal' }))
+    const { ranking } = servicesWith(fetcher)
+    await ranking.setConsent({ granted: true, name: 'Ana' })
+    await ranking.setConsent({ granted: false })
+    expect(fetcher.mock.calls[0]?.[1]).toMatchObject({ method: 'PUT', body: '{"granted":true,"name":"Ana"}' })
+    expect(fetcher.mock.calls[1]?.[1]).toMatchObject({ body: '{"granted":false}' })
+    expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/customer/ranking/consent')
+  })
 })
