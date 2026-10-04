@@ -35,7 +35,8 @@ function expireCards(ctx: MockContext): void {
     const plan = planExpiration(
       {
         balance: card.balance,
-        lastVisitAt: card.lastVisitAt === null ? null : new Date(card.lastVisitAt),
+        // No mock não há bônus fora da visita: atividade = visita.
+        lastActivityAt: card.lastVisitAt === null ? null : new Date(card.lastVisitAt),
         rewardExpiresAt: card.rewardExpiresAt === null ? null : new Date(card.rewardExpiresAt),
       },
       program.expirationPolicy,

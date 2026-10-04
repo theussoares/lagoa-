@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { SystemClock } from '../../common/clock'
 import { ledgerEntries, loyaltyCards, programs, redemptions, shops } from '../../database/schema'
+import { DrizzleReferralSettlement } from '../../ledger/drizzle-referral-settlement'
 import { LedgerStore } from '../../ledger/ledger.store'
 import { RedemptionLookup } from '../../ledger/redemption-lookup'
 import { neverExpires, NO_BONUS_RULES, TEST_DATABASE_URL, TestDatabase, type TestShop } from '../../test-support/test-database'
@@ -27,7 +28,7 @@ describe.skipIf(!TEST_DATABASE_URL)('redemption against a real database', () => 
   beforeAll(() => {
     data = new TestDatabase(TEST_DATABASE_URL ?? '')
     service = new RedemptionService(new DrizzleRedemptionRepository(data.db, ledger), new SystemClock())
-    checkIn = new CheckInService(new DrizzleCheckInRepository(data.db, ledger), new SystemClock())
+    checkIn = new CheckInService(new DrizzleCheckInRepository(data.db, ledger), new SystemClock(), new DrizzleReferralSettlement(data.db, ledger))
     wallet = new WalletService(new DrizzleWalletRepository(data.db), { SUPABASE_URL: 'https://project.supabase.co' }, new SystemClock())
   })
 

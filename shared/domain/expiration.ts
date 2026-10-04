@@ -4,7 +4,8 @@ import { addDays, addMonths } from '../utils/time'
 
 export interface ExpirableCard {
   readonly balance: number
-  readonly lastVisitAt: Date | null
+  /** Última vez que o cartão ganhou unidades (visita ou bônus). O resgate não conta. */
+  readonly lastActivityAt: Date | null
   readonly rewardExpiresAt: Date | null
 }
 
@@ -18,10 +19,10 @@ export interface ExpirationPlan {
   readonly rewardExpiresAt: Date | null
 }
 
-/** Quando o cartão vence por falta de visita; `null` se a regra é "nunca" ou se nunca houve visita. */
-export function inactivityDueAt(lastVisitAt: Date | null, policy: ExpirationPolicy): Date | null {
-  if (policy.kind === 'never' || lastVisitAt === null) return null
-  return addMonths(lastVisitAt, policy.months)
+/** Quando o cartão vence por falta de atividade; `null` se a regra é "nunca" ou se nunca houve. */
+export function inactivityDueAt(lastActivityAt: Date | null, policy: ExpirationPolicy): Date | null {
+  if (policy.kind === 'never' || lastActivityAt === null) return null
+  return addMonths(lastActivityAt, policy.months)
 }
 
 /**
@@ -42,7 +43,7 @@ export function planExpiration(
 ): ExpirationPlan | null {
   if (card.balance <= 0) return null
 
-  const idleDue = inactivityDueAt(card.lastVisitAt, policy)
+  const idleDue = inactivityDueAt(card.lastActivityAt, policy)
   const inactivityDue = idleDue !== null && card.rewardExpiresAt !== null && card.rewardExpiresAt > idleDue ? card.rewardExpiresAt : idleDue
   if (inactivityDue !== null && inactivityDue <= now) {
     return { kind: 'inactivity', dueAt: inactivityDue, unitsLost: card.balance, balanceAfter: 0, rewardExpiresAt: null }

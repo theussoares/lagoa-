@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { localDateParts } from '#shared/utils/time'
 import { SystemClock } from '../../common/clock'
 import { ledgerEntries, loyaltyCards } from '../../database/schema'
+import { DrizzleReferralSettlement } from '../../ledger/drizzle-referral-settlement'
 import { LedgerStore } from '../../ledger/ledger.store'
 import { neverExpires, NO_BONUS_RULES, TEST_DATABASE_URL, TestDatabase } from '../../test-support/test-database'
 import { DrizzleWalletRepository } from '../wallet/drizzle-wallet.repository'
@@ -22,7 +23,7 @@ describe.skipIf(!TEST_DATABASE_URL)('check-in against a real database', () => {
 
   beforeAll(() => {
     data = new TestDatabase(TEST_DATABASE_URL ?? '')
-    service = new CheckInService(new DrizzleCheckInRepository(data.db, ledger), new SystemClock())
+    service = new CheckInService(new DrizzleCheckInRepository(data.db, ledger), new SystemClock(), new DrizzleReferralSettlement(data.db, ledger))
     wallet = new WalletService(new DrizzleWalletRepository(data.db), { SUPABASE_URL: 'https://project.supabase.co' }, new SystemClock())
   })
 

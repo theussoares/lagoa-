@@ -3,6 +3,7 @@ import type { EarningPlan } from '#shared/domain/earning'
 import type { ErrorOf } from '#shared/types/errors'
 import { ok, type Result } from '#shared/types/result'
 import { Clock } from '../../common/clock'
+import { ReferralSettlement, type SettlementOutcome } from '../../ledger/referral-settlement'
 import { TEST_USER } from '../../test-support/fake-auth.guard'
 import { checkInShop } from './check-in.fixtures'
 import {
@@ -33,7 +34,17 @@ class FakeCheckInRepository extends CheckInRepository {
     decide: (state: CheckInState) => Result<EarningPlan, E>,
   ): Promise<Result<CheckInRecorded, E | ErrorOf<'unauthorized'>>> {
     const decision = decide(this.state)
-    return decision.ok ? ok({ cardId: CARD_ID, entryId: ENTRY_ID, plan: decision.value }) : decision
+    return decision.ok ? ok({ cardCreated: this.state.card === null, cardId: CARD_ID, entryId: ENTRY_ID, plan: decision.value }) : decision
+  }
+}
+
+class RecordingReferralSettlement extends ReferralSettlement {
+  calls: { referredId: string; shopId: string }[] = []
+  failWith: Error | null = null
+  async settlePending(referredId: string, shopId: string): Promise<SettlementOutcome> {
+    this.calls.push({ referredId, shopId })
+    if (this.failWith) throw this.failWith
+    return 'none'
   }
 }
 
@@ -41,7 +52,8 @@ const clock: Clock = { now: () => NOW }
 const serviceFor = (shop: CheckInShop | null, state?: CheckInState) => {
   const repository = new FakeCheckInRepository(shop)
   if (state) repository.state = state
-  return { repository, service: new CheckInService(repository, clock) }
+  const referrals = new RecordingReferralSettlement()
+  return { repository, referrals, service: new CheckInService(repository, clock, referrals) }
 }
 
 describe('CheckInService', () => {
@@ -99,5 +111,21 @@ describe('CheckInService', () => {
       ok: false,
       error: { code: 'checkInCooldown', availableAt: '2026-10-04T08:00:00.000Z' },
     })
+  })
+
+  it('settles the referral only on the first visit to the shop, after the visit is recorded', async () => {
+    const first = serviceFor(checkInShop())
+    await first.service.checkIn(TEST_USER.id, 'NAV4K7')
+    expect(first.referrals.calls).toEqual([{ referredId: TEST_USER.id, shopId: '0190a000-0000-7000-8000-0000000000a1' }])
+
+    const returning = serviceFor(checkInShop(), { card: { balance: 4, rewardExpiresAt: null }, lastVisitAt: null, birthday: null })
+    await returning.service.checkIn(TEST_USER.id, 'NAV4K7')
+    expect(returning.referrals.calls).toHaveLength(0)
+  })
+
+  it('still answers the check-in when paying the referral blows up', async () => {
+    const { service, referrals } = serviceFor(checkInShop())
+    referrals.failWith = new Error('db down: key (phone_hash)=(secret)')
+    expect(await service.checkIn(TEST_USER.id, 'NAV4K7')).toMatchObject({ ok: true })
   })
 })

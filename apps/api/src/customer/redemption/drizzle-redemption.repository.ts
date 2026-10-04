@@ -49,6 +49,7 @@ export class DrizzleRedemptionRepository extends RedemptionRepository {
           shopId: loyaltyCards.shopId,
           balance: loyaltyCards.balance,
           lastVisitAt: loyaltyCards.lastVisitAt,
+          lastActivityAt: loyaltyCards.lastActivityAt,
           rewardExpiresAt: loyaltyCards.rewardExpiresAt,
           target: programs.target,
           rewardTitle: programs.rewardTitle,
@@ -74,7 +75,7 @@ export class DrizzleRedemptionRepository extends RedemptionRepository {
       const current = policy.ok
         ? await this.ledger.expireIfDue(
             tx,
-            { id: cardId, shopId: card.shopId, customerId, balance: card.balance, lastVisitAt: card.lastVisitAt, rewardExpiresAt: card.rewardExpiresAt },
+            { id: cardId, shopId: card.shopId, customerId, balance: card.balance, lastVisitAt: card.lastVisitAt, lastActivityAt: card.lastActivityAt, rewardExpiresAt: card.rewardExpiresAt },
             { policy: policy.value, target: card.target, now: createdAt },
           )
         : this.skipExpiry(cardId, card)

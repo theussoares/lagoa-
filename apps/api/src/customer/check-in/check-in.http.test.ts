@@ -7,6 +7,7 @@ import type { EarningPlan } from '#shared/domain/earning'
 import type { ErrorOf } from '#shared/types/errors'
 import { ok, type Result } from '#shared/types/result'
 import { Clock } from '../../common/clock'
+import { ReferralSettlement } from '../../ledger/referral-settlement'
 import { AllExceptionsFilter } from '../../common/http/all-exceptions.filter'
 import { FakeAuthGuard } from '../../test-support/fake-auth.guard'
 import { checkInShop } from './check-in.fixtures'
@@ -25,7 +26,7 @@ class FakeCheckInRepository extends CheckInRepository {
     decide: (state: CheckInState) => Result<EarningPlan, E>,
   ): Promise<Result<CheckInRecorded, E | ErrorOf<'unauthorized'>>> {
     const decision = decide(this.state)
-    return decision.ok ? ok({ cardId: 'card-1', entryId: '0190a000-0000-7000-8000-0000000000e1', plan: decision.value }) : decision
+    return decision.ok ? ok({ cardCreated: false, cardId: 'card-1', entryId: '0190a000-0000-7000-8000-0000000000e1', plan: decision.value }) : decision
   }
 }
 
@@ -39,6 +40,7 @@ describe('check-in HTTP', () => {
       providers: [
         CheckInService,
         { provide: CheckInRepository, useValue: repository },
+        { provide: ReferralSettlement, useValue: { settlePending: async () => 'none' } },
         { provide: Clock, useValue: { now: () => new Date('2026-10-03T12:00:00Z') } },
         { provide: APP_GUARD, useClass: FakeAuthGuard },
         { provide: APP_FILTER, useClass: AllExceptionsFilter },

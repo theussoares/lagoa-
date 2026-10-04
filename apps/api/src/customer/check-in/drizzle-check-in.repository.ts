@@ -86,7 +86,7 @@ export class DrizzleCheckInRepository extends CheckInRepository {
           now,
           idempotencyKey: `checkIn:${card.id}:${card.lastVisitAt?.toISOString() ?? 'first'}`,
         })
-        return ok({ cardId: card.id, entryId, plan: decision.value })
+        return ok({ cardCreated: created, cardId: card.id, entryId, plan: decision.value })
       })
     } catch (error) {
       if (error instanceof RollbackSignal && refusal.error !== null) return err(refusal.error)

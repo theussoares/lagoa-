@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto'
 import { drizzle } from 'drizzle-orm/postgres-js'
-import { inArray } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 import postgres from 'postgres'
+import { REFERRAL_CODE_LENGTH } from '#shared/constants/domain'
 import { earnRateOf, unitOf } from '#shared/domain/programStrategies'
 import type { Birthday } from '#shared/schemas/common'
 import type { BonusRules, ExpirationPolicy, ProgramRules } from '#shared/schemas/program'
@@ -36,7 +37,6 @@ export class TestDatabase {
   private readonly client: postgres.Sql
   private readonly userIds: string[] = []
   private readonly shopIds: string[] = []
-  private phoneSeq = Math.floor(Math.random() * 1_000_000)
 
   constructor(url: string) {
     this.client = postgres(url, { prepare: false, max: 10 })
@@ -45,7 +45,6 @@ export class TestDatabase {
 
   async createCustomer(options: { birthday?: Birthday | null; withProfile?: boolean } = {}): Promise<string> {
     const id = randomUUID()
-    const tag = String(this.phoneSeq++).padStart(6, '0')
     const bytes = Buffer.from(`t-${id}`)
     await this.db.insert(schema.appUsers).values({
       id,
@@ -56,9 +55,15 @@ export class TestDatabase {
     })
     this.userIds.push(id)
     if (options.withProfile !== false) {
-      await this.db.insert(schema.customerProfiles).values({ userId: id, referralCode: `T${tag}`.padEnd(8, 'X').slice(0, 8), birthday: options.birthday ?? null })
+      await this.db.insert(schema.customerProfiles).values({ userId: id, referralCode: generateReadableCode(REFERRAL_CODE_LENGTH), birthday: options.birthday ?? null })
     }
     return id
+  }
+
+  async referralCodeOf(customerId: string): Promise<string> {
+    const [row] = await this.db.select({ code: schema.customerProfiles.referralCode }).from(schema.customerProfiles).where(eq(schema.customerProfiles.userId, customerId))
+    if (!row) throw new Error('profile expected')
+    return row.code
   }
 
   async createShop(options: {
@@ -102,12 +107,16 @@ export class TestDatabase {
   }
 
   async cleanup(): Promise<void> {
+    if (this.shopIds.length > 0) {
+      await this.db.update(schema.referrals).set({ rewardEntryId: null }).where(inArray(schema.referrals.shopId, this.shopIds))
+    }
     if (this.userIds.length > 0) {
       await this.db.delete(schema.ledgerEntries).where(inArray(schema.ledgerEntries.customerId, this.userIds))
       await this.db.delete(schema.redemptions).where(inArray(schema.redemptions.shopId, this.shopIds))
       await this.db.delete(schema.loyaltyCards).where(inArray(schema.loyaltyCards.customerId, this.userIds))
     }
     if (this.shopIds.length > 0) {
+      await this.db.delete(schema.referrals).where(inArray(schema.referrals.shopId, this.shopIds))
       await this.db.delete(schema.programs).where(inArray(schema.programs.shopId, this.shopIds))
       await this.db.delete(schema.shops).where(inArray(schema.shops.id, this.shopIds))
     }

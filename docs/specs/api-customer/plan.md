@@ -95,9 +95,17 @@ Tela: Resgate. Front: `RewardRedemptionService`. Entregue em três PRs.
 - A Carteira mostra o saldo efetivo na leitura (sem gravar). Sem job: o vencimento é gravado no próximo
   lançamento ou pedido de resgate. Telas do lojista que leem `balance` cru devem usar `planExpiration`.
 
-**5.3 Indicação + fechamento**
-- `Referral` pendente criado pelo link (`ref` + `loja`); pago na primeira visita válida (check-in ou Balcão) com
-  todas as regras do `docs/database-model.md`, dentro da mesma transação do `LedgerStore`.
+**5.3 Indicação** (feito)
+- `POST /v1/referrals` `{ referralCode, shopCode }` guarda o convite do link como `Referral` pendente (204 sempre,
+  valendo ou não: não vira oráculo de contas nem de lojas) e `GET /v1/referrals/me` devolve o código do indicador.
+- Pagamento na primeira visita: `ReferralSettlement.settlePending` (em `ledger/`), chamado **depois** do commit da
+  visita, em transação própria (um cartão por transação: sem deadlock entre dois clientes que se indicam).
+  Idempotente, bônus `referralBonus` no cartão do indicador (criado se não existir), `rejected` se a regra foi
+  desligada. O Balcão do Caio chama a mesma coisa depois da primeira visita lançada.
+- Coluna `loyalty_cards.last_activity_at` (migration `0007`): a inatividade conta da última visita **ou bônus**;
+  o antifraude do check-in continua só em `last_visit_at`. A chave do vencimento inclui a última linha do cartão.
+
+**5.4 Fechamento**
 - `Idempotency-Key` no check-in, README da API, revisão de segurança de ponta a ponta, `EXPLAIN` das queries
   críticas, checklist de integração com o front (`Http*Service`).
 
@@ -114,7 +122,6 @@ Tela: Resgate. Front: `RewardRedemptionService`. Entregue em três PRs.
 | Índice `(status, name, id)` para a ordem da vitrine, se passar de centenas de lojas | `shops` | 5 |
 | `Idempotency-Key` no check-in (devolver o carimbo já gravado ao reenviar) | `check-in` | 5 |
 | Regras do clube lidas fora do lock no check-in: ok hoje; reavaliar quando o lojista puder trocar o modo | `drizzle-check-in.repository.ts` | 5 |
-| Créditos sem visita (indicação, bônus de lembrete) em cartão zerado por inatividade: contar a inatividade a partir do último crédito e acrescentar à chave `expiration:` o que muda depois do bônus; hoje repetir a mesma chave estouraria a unicidade | `expiration.ts`, `ledger.store.ts` | 5.3 |
 | Rotação da chave de cifra de PII (prefixo de versão no payload) | `pii.service.ts` | 5 |
 
 ## Decisões registradas

@@ -20,6 +20,8 @@ export interface CheckInState {
 }
 
 export interface CheckInRecorded {
+  /** O cartão nasceu agora: é a primeira visita da pessoa nesta loja (hora de pagar a indicação, se houver). */
+  readonly cardCreated: boolean
   readonly cardId: string
   readonly entryId: string
   readonly plan: EarningPlan

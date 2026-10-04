@@ -7,6 +7,7 @@ export function walletCardRecord(overrides: Partial<WalletCardRecord> = {}): Wal
     programId: '0190a000-0000-7000-8000-0000000000b1',
     balance: 0,
     lastVisitAt: null,
+    lastActivityAt: null,
     rewardExpiresAt: null,
     shop: catalogShop(),
     earned: [],

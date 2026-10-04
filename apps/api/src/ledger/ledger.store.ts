@@ -18,6 +18,7 @@ export interface LockedCard {
   readonly customerId: string
   readonly balance: number
   readonly lastVisitAt: Date | null
+  readonly lastActivityAt: Date | null
   readonly rewardExpiresAt: Date | null
 }
 
@@ -48,6 +49,16 @@ export interface CreditCommand {
   /** Lojista que lançou no balcão; `null` no check-in. */
   readonly recordedBy?: string | null
   readonly amountCents?: number | null
+}
+
+export interface BonusCommand {
+  /** Cartão travado de quem recebe, já com o vencimento aplicado (`lockOrCreateCard`). */
+  readonly card: LockedCard
+  readonly target: number
+  readonly units: number
+  readonly kind: 'referralBonus'
+  readonly now: Date
+  readonly idempotencyKey: string
 }
 
 export interface SettleCommand {
@@ -102,6 +113,7 @@ export class LedgerStore {
         customerId: loyaltyCards.customerId,
         balance: loyaltyCards.balance,
         lastVisitAt: loyaltyCards.lastVisitAt,
+        lastActivityAt: loyaltyCards.lastActivityAt,
         rewardExpiresAt: loyaltyCards.rewardExpiresAt,
       })
       .from(loyaltyCards)
@@ -120,6 +132,7 @@ export class LedgerStore {
     const plan = planExpiration(card, expiry.policy, expiry.target, expiry.now)
     if (plan === null) return card
 
+    const last = await this.lastEntry(tx, card.id)
     await tx.insert(ledgerEntries).values({
       cardId: card.id,
       shopId: card.shopId,
@@ -127,8 +140,9 @@ export class LedgerStore {
       kind: 'expiration',
       unitsDelta: -plan.unitsLost,
       countsAsVisit: false,
-      occurredAt: await this.instantFor(tx, card.id, plan.dueAt),
-      idempotencyKey: `expiration:${card.id}:${plan.kind}:${plan.dueAt.toISOString()}`,
+      occurredAt: last !== undefined && last.occurredAt > plan.dueAt ? last.occurredAt : plan.dueAt,
+      // A última linha do cartão faz parte da chave: o mesmo vencimento pode se repetir depois de um bônus.
+      idempotencyKey: `expiration:${card.id}:${plan.kind}:${plan.dueAt.toISOString()}:${last?.id ?? 'none'}`,
     })
     await tx
       .update(loyaltyCards)
@@ -172,9 +186,37 @@ export class LedgerStore {
 
     await tx
       .update(loyaltyCards)
-      .set({ balance: plan.balanceAfter, lastVisitAt: now, rewardExpiresAt: plan.rewardExpiresAt })
+      .set({ balance: plan.balanceAfter, lastVisitAt: now, lastActivityAt: now, rewardExpiresAt: plan.rewardExpiresAt })
       .where(eq(loyaltyCards.id, card.id))
     return { entryId: visit.id }
+  }
+
+  /**
+   * Crédito sem visita (hoje, o bônus de indicação): soma ao saldo e conta como atividade (adia a
+   * inatividade), mas não mexe em `lastVisitAt`, então não segura o check-in de quem recebeu.
+   */
+  async creditBonus(tx: Tx, command: BonusCommand): Promise<{ entryId: string; balanceAfter: number }> {
+    const { card } = command
+    const now = await this.instantFor(tx, card.id, command.now)
+    const [entry] = await tx
+      .insert(ledgerEntries)
+      .values({
+        cardId: card.id,
+        shopId: card.shopId,
+        customerId: card.customerId,
+        kind: command.kind,
+        unitsDelta: command.units,
+        countsAsVisit: false,
+        occurredAt: now,
+        idempotencyKey: command.idempotencyKey,
+      })
+      .returning({ id: ledgerEntries.id })
+    if (!entry) throw new Error('Ledger insert returned no row')
+
+    const balanceAfter = card.balance + command.units
+    const rewardExpiresAt = card.rewardExpiresAt ?? (balanceAfter >= command.target ? addDays(now, REWARD_HOLD_DAYS) : null)
+    await tx.update(loyaltyCards).set({ balance: balanceAfter, lastActivityAt: now, rewardExpiresAt }).where(eq(loyaltyCards.id, card.id))
+    return { entryId: entry.id, balanceAfter }
   }
 
   /**
@@ -201,6 +243,7 @@ export class LedgerStore {
         customerId: loyaltyCards.customerId,
         balance: loyaltyCards.balance,
         lastVisitAt: loyaltyCards.lastVisitAt,
+        lastActivityAt: loyaltyCards.lastActivityAt,
         rewardExpiresAt: loyaltyCards.rewardExpiresAt,
         target: programs.target,
         bonusRules: programs.bonusRules,
@@ -224,7 +267,7 @@ export class LedgerStore {
     }
     // O prêmio pode ter vencido enquanto o código estava no ar; o cartão entra em dia antes da conta.
     const policy = toExpirationPolicy(row)
-    const locked: LockedCard = { id: row.cardId, shopId: command.shopId, customerId: row.customerId, balance: row.balance, lastVisitAt: row.lastVisitAt, rewardExpiresAt: row.rewardExpiresAt }
+    const locked: LockedCard = { id: row.cardId, shopId: command.shopId, customerId: row.customerId, balance: row.balance, lastVisitAt: row.lastVisitAt, lastActivityAt: row.lastActivityAt, rewardExpiresAt: row.rewardExpiresAt }
     if (!policy.ok) this.logger.warn(`Card ${row.cardId}: invalid expiration policy, skipping expiry`)
     const card = policy.ok ? await this.expireIfDue(tx, locked, { policy: policy.value, target: row.target, now: command.now }) : locked
     if (card.balance < row.target) {
@@ -272,13 +315,18 @@ export class LedgerStore {
    * visita e resgate; a leitura é um passo no índice (card_id, occurred_at DESC, id DESC).
    */
   private async instantFor(tx: Tx, cardId: string, requested: Date): Promise<Date> {
+    const last = await this.lastEntry(tx, cardId)
+    return last !== undefined && last.occurredAt > requested ? last.occurredAt : requested
+  }
+
+  private async lastEntry(tx: Tx, cardId: string): Promise<{ id: string; occurredAt: Date } | undefined> {
     const [last] = await tx
-      .select({ occurredAt: ledgerEntries.occurredAt })
+      .select({ id: ledgerEntries.id, occurredAt: ledgerEntries.occurredAt })
       .from(ledgerEntries)
       .where(eq(ledgerEntries.cardId, cardId))
       .orderBy(sql`${ledgerEntries.occurredAt} desc nulls last`, sql`${ledgerEntries.id} desc nulls last`)
       .limit(1)
-    return last !== undefined && last.occurredAt > requested ? last.occurredAt : requested
+    return last
   }
 
   private welcomeUnitsOf(rawBonusRules: unknown, shopId: string): number {
