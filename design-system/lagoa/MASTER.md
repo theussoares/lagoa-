@@ -147,9 +147,13 @@ da foto do cabeçalho). Todas desligam em `prefers-reduced-motion`.
 **Interação assinatura: a batida do carimbo** (`.stamp-press`). A impressão
 desce de cima maior e desfocada, assenta girando para sua inclinação
 (`--stamp-tilt`, entre −6° e +6°, fixa por carimbo) e a tinta firma. No PWA,
-`navigator.vibrate(15)` quando suportado. É o único momento coreografado do
-produto: aparece no Carimbo ganho, no cartão quando o carimbo chega e na linha
-nova da caderneta do Balcão. Todo o resto é troca de estado curta.
+`navigator.vibrate(15)` quando suportado. É o momento coreografado principal:
+aparece no Carimbo ganho, no cartão quando o carimbo chega e na linha nova da
+caderneta do Balcão. Outros momentos de celebração são permitidos (decisão de
+produto, 2026-10): respingo de tinta no selo
+de prêmio (`.seal-splash`), selos de conquista e progresso de desafio. Regra: sempre
+feitos de papel e tinta (nada de confete genérico), curtos, só `transform`/`opacity`/
+`filter`, desligados em `prefers-reduced-motion`. Todo o resto é troca de estado curta.
 
 Os três tamanhos da batida:
 
