@@ -108,7 +108,21 @@ describe.skipIf(!TEST_DATABASE_URL)('expiration against a real database', () => 
     await data.db.update(loyaltyCards).set({ lastVisitAt: MONTHS_AGO(0) }).where(eq(loyaltyCards.customerId, customer))
     const card = await cardOf(customer)
     expect(await redemption.requestCode(customer, card?.id ?? '')).toMatchObject({ ok: true })
-    expect(await cardOf(customer)).toMatchObject({ balance: 4 })
-    expect((await cardOf(customer))?.rewardExpiresAt).not.toBeNull()
+    const after = await cardOf(customer)
+    expect(after?.balance).toBe(4)
+    // a nova guarda corre a partir do vencimento da anterior (ontem + 30 dias), não de "agora"
+    expect(Math.abs((after?.rewardExpiresAt?.getTime() ?? 0) - (Date.now() + 29 * DAY_MS))).toBeLessThan(2 * 60_000)
+  }, SLOW)
+
+  it('retires the code that is on the screen when the prize lapses and the customer asks again', async () => {
+    const shop = await data.createShop({ rules: { mode: 'stamps', target: 3 }, bonusRules: WELCOME_BONUS })
+    const customer = await data.createCustomer()
+    await checkIn.checkIn(customer, shop.checkInCode)
+    const card = await cardOf(customer)
+    const created = await redemption.requestCode(customer, card?.id ?? '')
+    if (!created.ok) throw new Error('expected a code')
+    await data.db.update(loyaltyCards).set({ rewardExpiresAt: new Date(Date.now() - 1000) }).where(eq(loyaltyCards.customerId, customer))
+    expect(await redemption.requestCode(customer, card?.id ?? '')).toMatchObject({ ok: false, error: { code: 'rewardNotReady' } })
+    expect(await redemption.get(customer, created.value.id)).toMatchObject({ ok: true, value: { status: 'expired' } })
   }, SLOW)
 })

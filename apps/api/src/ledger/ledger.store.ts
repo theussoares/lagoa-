@@ -225,6 +225,7 @@ export class LedgerStore {
     // O prêmio pode ter vencido enquanto o código estava no ar; o cartão entra em dia antes da conta.
     const policy = toExpirationPolicy(row)
     const locked: LockedCard = { id: row.cardId, shopId: command.shopId, customerId: row.customerId, balance: row.balance, lastVisitAt: row.lastVisitAt, rewardExpiresAt: row.rewardExpiresAt }
+    if (!policy.ok) this.logger.warn(`Card ${row.cardId}: invalid expiration policy, skipping expiry`)
     const card = policy.ok ? await this.expireIfDue(tx, locked, { policy: policy.value, target: row.target, now: command.now }) : locked
     if (card.balance < row.target) {
       // A meta subiu ou o prêmio venceu depois do pedido: o código deixa de valer e a entrega não debita.

@@ -63,7 +63,8 @@ describe('planExpiration', () => {
     const card = { balance: 25, lastVisitAt: new Date('2026-09-20T00:00:00Z'), rewardExpiresAt: new Date('2026-10-01T00:00:00Z') }
     const plan = planExpiration(card, NEVER, 10, now)
     expect(plan).toMatchObject({ kind: 'rewardHold', unitsLost: 10, balanceAfter: 15 })
-    expect(plan?.rewardExpiresAt?.toISOString()).toBe('2026-11-02T12:00:00.000Z')
+    // a nova guarda corre a partir do vencimento da anterior (01/10 + 30 dias), não de "agora"
+    expect(plan?.rewardExpiresAt?.toISOString()).toBe('2026-10-31T00:00:00.000Z')
   })
 
   it('does not hold a new reward when what is left is below the target', () => {
@@ -79,6 +80,37 @@ describe('planExpiration', () => {
   it('prefers inactivity over the reward hold: everything is gone anyway', () => {
     const card = { balance: 10, lastVisitAt: new Date('2026-01-01T00:00:00Z'), rewardExpiresAt: new Date('2026-02-01T00:00:00Z') }
     expect(planExpiration(card, SIX_MONTHS, 10, now)?.kind).toBe('inactivity')
+  })
+})
+
+describe('planExpiration over time', () => {
+  const card = { balance: 25, lastVisitAt: new Date('2026-09-20T00:00:00Z'), rewardExpiresAt: new Date('2026-10-01T00:00:00Z') }
+
+  it('gives the same hold date no matter when the card is read, as long as the same holds have lapsed', () => {
+    const early = planExpiration(card, NEVER, 10, new Date('2026-10-03T00:00:00Z'))
+    const later = planExpiration(card, NEVER, 10, new Date('2026-10-20T00:00:00Z'))
+    expect(early?.rewardExpiresAt).toEqual(later?.rewardExpiresAt)
+  })
+
+  it('lapses every hold that already passed, one target each', () => {
+    // 01/10 e 31/10 vencidas em 05/11: perde 20 e sobram 5 (< meta), sem nova guarda
+    const plan = planExpiration(card, NEVER, 10, new Date('2026-11-05T00:00:00Z'))
+    expect(plan).toMatchObject({ unitsLost: 20, balanceAfter: 5, rewardExpiresAt: null })
+  })
+
+  it('keeps going while full rewards remain and their holds lapsed', () => {
+    const big = { balance: 30, lastVisitAt: new Date('2026-09-20T00:00:00Z'), rewardExpiresAt: new Date('2026-10-01T00:00:00Z') }
+    const plan = planExpiration(big, NEVER, 10, new Date('2026-11-05T00:00:00Z'))
+    // 01/10, 31/10 vencidas; sobram 10 e a guarda de 30/11 ainda não venceu
+    expect(plan).toMatchObject({ unitsLost: 20, balanceAfter: 10 })
+    expect(plan?.rewardExpiresAt?.toISOString()).toBe('2026-11-30T00:00:00.000Z')
+  })
+
+  it('does not wipe a card by inactivity before its held reward lapses, even with a 1-month policy', () => {
+    const held = { balance: 10, lastVisitAt: new Date('2026-09-01T00:00:00Z'), rewardExpiresAt: new Date('2026-10-20T00:00:00Z') }
+    // inatividade venceria em 01/10, mas o prêmio está guardado até 20/10
+    expect(planExpiration(held, { kind: 'afterInactivity', months: 1 }, 10, now)).toBeNull()
+    expect(planExpiration(held, { kind: 'afterInactivity', months: 1 }, 10, new Date('2026-10-21T00:00:00Z'))).toMatchObject({ kind: 'inactivity', unitsLost: 10 })
   })
 })
 
