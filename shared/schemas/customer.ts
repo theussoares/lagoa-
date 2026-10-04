@@ -34,7 +34,9 @@ export const ConsentUpdateSchema = z.object({ granted: z.boolean() })
 export type ConsentUpdate = z.infer<typeof ConsentUpdateSchema>
 
 /** Cadastro do cliente: o e-mail vem do login; o celular é declarado, sem verificação por SMS. */
-export const CustomerRegistrationSchema = z.object({ phone: z.string().max(PHONE_INPUT_MAX_LENGTH) })
+export const CustomerRegistrationSchema = z.object({ /** Só no login por e-mail: quem entrou por SMS já tem o celular confirmado no token. */
+  phone: z.string().max(PHONE_INPUT_MAX_LENGTH).optional(),
+})
 export type CustomerRegistration = z.infer<typeof CustomerRegistrationSchema>
 
 /** Linha da tela Clientes do lojista. */

@@ -11,12 +11,20 @@ const EnvSchema = z
     PII_HASH_PEPPER: z.string().min(32),
     /** Quantos proxies (load balancer) existem na frente da API; define de onde vem o IP real. Obrigatório em produção. */
     TRUST_PROXY_HOPS: z.coerce.number().int().min(0).optional(),
+    /** Chave da Comtele (header `auth-key`) e remetente do SMS de login. */
+    COMTELE_AUTH_KEY: z.string().min(1).optional(),
+    COMTELE_SENDER: z.string().min(1).max(11).default('Lagoa'),
+    /** Segredo do Send SMS Hook do Supabase (`v1,whsec_...`): só quem o tem pode mandar a API disparar SMS. */
+    SEND_SMS_HOOK_SECRET: z.string().regex(/^v1,whsec_\S+$/).optional(),
     CORS_ORIGIN: z.string().default('http://localhost:3000'),
   })
   .superRefine((env, context) => {
     if (env.NODE_ENV !== 'production') return
     // Sem isso, atrás de um load balancer todo mundo parece vir do mesmo IP e o limite por IP vira global.
     if (env.TRUST_PROXY_HOPS === undefined) context.addIssue({ code: 'custom', path: ['TRUST_PROXY_HOPS'], message: 'required in production' })
+    for (const key of ['COMTELE_AUTH_KEY', 'SEND_SMS_HOOK_SECRET'] as const) {
+      if (env[key] === undefined) context.addIssue({ code: 'custom', path: [key], message: 'required in production' })
+    }
     // O JWKS é buscado nesta URL: sem TLS, quem está no caminho troca a chave e assina o que quiser.
     if (!env.SUPABASE_URL.startsWith('https://')) context.addIssue({ code: 'custom', path: ['SUPABASE_URL'], message: 'must be https in production' })
   })

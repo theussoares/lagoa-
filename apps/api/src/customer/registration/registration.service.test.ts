@@ -34,23 +34,34 @@ const PHONE = '(67) 99123-0374'
 describe('RegistrationService', () => {
   it('stores the phone encrypted and hashed by its digits, and answers with the session', async () => {
     const { repository, service } = serviceWith(['created'])
-    const result = await service.register(TEST_USER.id, ' Ana@Example.com ', PHONE)
+    const result = await service.register({ ...TEST_USER, email: ' Ana@Example.com ' }, PHONE)
     expect(result).toEqual({ ok: true, value: { role: 'customer', customerId: TEST_USER.id, isNewCustomer: true } })
     const saved = repository.received[0]
     expect(saved?.referralCode).toHaveLength(REFERRAL_CODE_LENGTH)
     expect(saved && pii.decrypt(saved.phoneEncrypted)).toBe('67991230374')
     expect(saved?.phoneHash.equals(pii.hashPhone(PhoneNumberSchema.parse('67991230374')))).toBe(true)
-    expect(saved && pii.decrypt(saved.emailEncrypted)).toBe('ana@example.com')
+    expect(saved?.emailEncrypted && pii.decrypt(saved.emailEncrypted)).toBe('ana@example.com')
+  })
+
+  it('trusts the SMS-verified phone over the typed one and stores no e-mail', async () => {
+    const { repository, service } = serviceWith(['created'])
+    const verified = PhoneNumberSchema.parse('67991230374')
+    const result = await service.register({ ...TEST_USER, email: undefined, phone: verified }, '(11) 98888-7777')
+    expect(result).toMatchObject({ ok: true })
+    const saved = repository.received[0]
+    expect(saved && pii.decrypt(saved.phoneEncrypted)).toBe('67991230374')
+    expect(saved?.emailEncrypted).toBeNull()
+    expect(saved?.emailHash).toBeNull()
   })
 
   it('repeating the registration cannot skip the terms: isNewCustomer still follows the profile', async () => {
     const { service } = serviceWith(['alreadyRegistered'], profileRecord({ userId: TEST_USER.id, termsAcceptedAt: null }))
-    expect(await service.register(TEST_USER.id, 'ana@example.com', PHONE)).toMatchObject({ ok: true, value: { isNewCustomer: true } })
+    expect(await service.register(TEST_USER, PHONE)).toMatchObject({ ok: true, value: { isNewCustomer: true } })
   })
 
   it('rejects a phone that is not a Brazilian mobile number without touching the database', async () => {
     const { repository, service } = serviceWith([])
-    expect(await service.register(TEST_USER.id, 'ana@example.com', '1234')).toEqual({ ok: false, error: { code: 'invalidPhone' } })
+    expect(await service.register(TEST_USER, '1234')).toEqual({ ok: false, error: { code: 'invalidPhone' } })
     expect(repository.received).toHaveLength(0)
   })
 
@@ -59,23 +70,23 @@ describe('RegistrationService', () => {
     ['emailTaken', 'emailAlreadyUsed'],
   ] as const)('maps %s to the %s domain error', async (outcome, code) => {
     const { service } = serviceWith([outcome])
-    expect(await service.register(TEST_USER.id, 'ana@example.com', PHONE)).toEqual({ ok: false, error: { code } })
+    expect(await service.register(TEST_USER, PHONE)).toEqual({ ok: false, error: { code } })
   })
 
   it('needs an e-mail on the token', async () => {
     const { service } = serviceWith([])
-    expect(await service.register(TEST_USER.id, undefined, PHONE)).toEqual({ ok: false, error: { code: 'unauthorized' } })
+    expect(await service.register({ ...TEST_USER, email: undefined }, PHONE)).toEqual({ ok: false, error: { code: 'unauthorized' } })
   })
 
   it('retries with a new referral code when the first one collides', async () => {
     const { repository, service } = serviceWith(['referralCodeTaken', 'created'])
-    expect(await service.register(TEST_USER.id, 'ana@example.com', PHONE)).toMatchObject({ ok: true })
+    expect(await service.register(TEST_USER, PHONE)).toMatchObject({ ok: true })
     expect(repository.received).toHaveLength(2)
     expect(repository.received[0]?.referralCode).not.toBe(repository.received[1]?.referralCode)
   })
 
   it('gives up after repeated collisions instead of looping forever', async () => {
     const { service } = serviceWith(Array.from({ length: 5 }, () => 'referralCodeTaken' as const))
-    await expect(service.register(TEST_USER.id, 'ana@example.com', PHONE)).rejects.toThrow('referral code')
+    await expect(service.register(TEST_USER, PHONE)).rejects.toThrow('referral code')
   })
 })

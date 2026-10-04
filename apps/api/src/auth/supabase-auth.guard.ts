@@ -2,6 +2,8 @@ import { type CanActivate, type ExecutionContext, Inject, Injectable, Unauthoriz
 import { Reflector } from '@nestjs/core'
 import { jwtVerify } from 'jose'
 import { z } from 'zod'
+import type { PhoneNumber } from '#shared/schemas/phone'
+import { parsePhoneNumber } from '#shared/utils/phone'
 import { ENV } from '../config/config.module'
 import type { Env } from '../config/env'
 import type { AuthenticatedRequest } from './auth.types'
@@ -15,6 +17,13 @@ const UserIdSchema = z.uuid()
 function verifiedEmail(claim: unknown): string | undefined {
   const parsed = z.email().safeParse(claim)
   return parsed.success ? parsed.data : undefined
+}
+
+/** O claim `phone` só existe depois que o Supabase confirmou o código por SMS. */
+function verifiedPhone(claim: unknown): PhoneNumber | undefined {
+  if (typeof claim !== 'string') return undefined
+  const parsed = parsePhoneNumber(claim)
+  return parsed.ok ? parsed.value : undefined
 }
 
 /** Valida o JWT do Supabase Auth (chaves assimétricas, via JWKS público); `sub` é o `app_users.id`. */
@@ -45,7 +54,7 @@ export class SupabaseAuthGuard implements CanActivate {
       })
       // Id do Supabase é UUID; conta anônima (sem e-mail verificado) não vira cliente.
       if (!UserIdSchema.safeParse(payload.sub).success || payload.is_anonymous === true) throw new UnauthorizedException()
-      request.user = { id: String(payload.sub), email: verifiedEmail(payload.email) }
+      request.user = { id: String(payload.sub), email: verifiedEmail(payload.email), phone: verifiedPhone(payload.phone) }
       return true
     } catch {
       throw new UnauthorizedException()

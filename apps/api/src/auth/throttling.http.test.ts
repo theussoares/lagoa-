@@ -12,7 +12,7 @@ import { UserThrottlerGuard } from './user-throttler.guard'
 class HeaderAuthGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const http = context.switchToHttp().getRequest<AuthenticatedRequest>()
-    http.user = { id: String(http.headers['x-test-user']), email: undefined }
+    http.user = { id: String(http.headers['x-test-user']), email: undefined, phone: undefined }
     return true
   }
 }

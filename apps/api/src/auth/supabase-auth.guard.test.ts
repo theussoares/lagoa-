@@ -15,8 +15,8 @@ let guard: SupabaseAuthGuard
 let privateKey: CryptoKey
 let strangerKey: CryptoKey
 
-async function token(overrides: { key?: CryptoKey; alg?: string; issuer?: string; audience?: string; subject?: string | null; expiresIn?: string | null; email?: string; anonymous?: boolean } = {}): Promise<string> {
-  const jwt = new SignJWT({ ...(overrides.email !== undefined && { email: overrides.email }), ...(overrides.anonymous && { is_anonymous: true }) })
+async function token(overrides: { key?: CryptoKey; alg?: string; issuer?: string; audience?: string; subject?: string | null; expiresIn?: string | null; email?: string; phone?: string; anonymous?: boolean } = {}): Promise<string> {
+  const jwt = new SignJWT({ ...(overrides.email !== undefined && { email: overrides.email }), ...(overrides.phone !== undefined && { phone: overrides.phone }), ...(overrides.anonymous && { is_anonymous: true }) })
     .setProtectedHeader({ alg: overrides.alg ?? 'ES256', kid: 'test' })
     .setIssuer(overrides.issuer ?? ISSUER)
     .setAudience(overrides.audience ?? 'authenticated')
@@ -45,7 +45,16 @@ describe('SupabaseAuthGuard', () => {
   it('accepts a valid token and exposes the user id and e-mail', async () => {
     const { context, request } = contextFor(`Bearer ${await token({ email: 'ana@example.com' })}`)
     await expect(guard.canActivate(context)).resolves.toBe(true)
-    expect(request.user).toEqual({ id: USER_ID, email: 'ana@example.com' })
+    expect(request.user).toEqual({ id: USER_ID, email: 'ana@example.com', phone: undefined })
+  })
+
+  it('exposes the SMS-verified phone as 11 national digits, and ignores a junk claim', async () => {
+    const verified = contextFor(`Bearer ${await token({ phone: '5567991230374' })}`)
+    await guard.canActivate(verified.context)
+    expect(verified.request.user).toEqual({ id: USER_ID, email: undefined, phone: '67991230374' })
+    const junk = contextFor(`Bearer ${await token({ phone: '123' })}`)
+    await guard.canActivate(junk.context)
+    expect(junk.request.user?.phone).toBeUndefined()
   })
 
   it('lets @Public() routes through without a token', async () => {
@@ -73,7 +82,7 @@ describe('SupabaseAuthGuard', () => {
     for (const email of ['', 'not-an-email']) {
       const { context, request } = contextFor(`Bearer ${await token({ email })}`)
       await guard.canActivate(context)
-      expect(request.user).toEqual({ id: USER_ID, email: undefined })
+      expect(request.user).toEqual({ id: USER_ID, email: undefined, phone: undefined })
     }
   })
 })
