@@ -9,12 +9,13 @@ const { t } = useI18n()
 const toast = useToast()
 useHead({ title: () => `${t('profile.title')} · ${t('app.name')}` })
 
-const { profile } = useCustomerServices()
+const { profile, account } = useCustomerServices()
 const { signOut } = useCustomerSession()
 const { state, reload, set } = useCustomerProfile()
 const savingConsent = ref(false)
 const birthdayPending = ref<BirthdayAction | null>(null)
 const exporter = useDataExport()
+const erasing = ref(false)
 const theme = useThemePreference()
 const themeLabels = computed(() => ({ legend: t('theme.legend'), light: t('theme.light'), dark: t('theme.dark') }))
 const birthdayLockedUntil = computed(() => {
@@ -63,6 +64,15 @@ async function downloadData(): Promise<void> {
   if (failure === 'unauthorized') return void signOut()
   if (failure !== null) return void toast.add({ color: 'error', icon: 'i-ph-warning-circle', title: t(`errors.${failure}`) })
   toast.add({ color: 'success', icon: 'i-ph-check-circle', title: t('profile.dataDownloaded') })
+}
+
+async function eraseAccount(): Promise<void> {
+  erasing.value = true
+  const result = await account.eraseAccount()
+  erasing.value = false
+  if (!result.ok) return void toast.add({ color: 'error', icon: 'i-ph-warning-circle', title: t(`errors.${result.error.code}`) })
+  toast.add({ color: 'success', icon: 'i-ph-check-circle', title: t('profile.erased') })
+  await signOut()
 }
 
 async function saveBirthday(birthday: Birthday | null, action: BirthdayAction): Promise<void> {
@@ -138,13 +148,7 @@ async function saveBirthday(birthday: Birthday | null, action: BirthdayAction): 
 
     <UButton to="/ranking" variant="outline" color="neutral" size="lg" block icon="i-ph-trophy" :label="t('ranking.link')" />
 
-    <section aria-labelledby="data-title" class="flex flex-col gap-3">
-      <h2 id="data-title" class="letreiro text-base text-toned">{{ t('profile.dataTitle') }}</h2>
-      <div class="flex flex-col gap-3 rounded-(--radius-card) bg-default p-4 shadow-(--lagoa-shadow-card)">
-        <p class="text-base text-muted">{{ t('profile.dataHelp') }}</p>
-        <UButton variant="outline" color="neutral" size="lg" block icon="i-ph-download-simple" :loading="exporter.pending.value" :label="t('profile.dataDownload')" @click="downloadData" />
-      </div>
-    </section>
+    <ProfilePrivacySection :downloading="exporter.pending.value" :erasing="erasing" @download="downloadData" @erase="eraseAccount" />
 
     <UButton variant="outline" color="neutral" size="lg" block icon="i-ph-sign-out" :label="t('profile.signOut')" @click="signOut" />
   </div>

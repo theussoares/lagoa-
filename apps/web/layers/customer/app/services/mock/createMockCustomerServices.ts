@@ -59,6 +59,8 @@ export function createMockCustomerServices(backend: MockBackend, sessions: Custo
             : profile
         }),
     },
+    // O mock não tem conta para apagar: só confirma, e a tela encerra a sessão.
+    account: { eraseAccount: () => asCustomer(backend, sessions, () => ok(undefined)) },
     ranking: {
       getRanking: () => asCustomer(backend, sessions, () => ok(mockRanking())),
       setConsent: (update: RankingConsentUpdate) =>
