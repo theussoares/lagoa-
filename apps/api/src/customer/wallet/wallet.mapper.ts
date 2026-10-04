@@ -1,3 +1,4 @@
+import { applyExpiration, planExpiration } from '#shared/domain/expiration'
 import { unitOf } from '#shared/domain/programStrategies'
 import { type WalletCard, WalletCardSchema } from '#shared/schemas/loyaltyCard'
 import { type WalletActivity, WalletActivitySchema } from '#shared/schemas/visit'
@@ -12,8 +13,13 @@ type InvalidContract = ErrorOf<'invalidProgram'>
 
 const isoOrNull = (date: Date | null): string | null => (date === null ? null : toIso(date))
 
-export function toWalletCard(record: WalletCardRecord, supabaseUrl: string): Result<WalletCard, InvalidContract> {
-  const { rules, rewardTitle } = record.shop.program
+/**
+ * Mostra o cartão como está de verdade em `now`: o que já venceu não aparece, mesmo que ninguém tenha
+ * lançado nada ainda (a linha `expiration` é gravada no próximo lançamento, com a mesma conta).
+ */
+export function toWalletCard(record: WalletCardRecord, supabaseUrl: string, now: Date): Result<WalletCard, InvalidContract> {
+  const { rules, rewardTitle, expiration } = record.shop.program
+  const current = applyExpiration(record, planExpiration(record, expiration, rules.target, now))
   const shop = toShopSummary(record.shop, supabaseUrl)
   if (!shop.ok) return err(shop.error)
   const unit = unitOf(rules)
@@ -22,12 +28,12 @@ export function toWalletCard(record: WalletCardRecord, supabaseUrl: string): Res
     shopId: record.shop.id,
     programId: record.programId,
     unit,
-    balance: record.balance,
+    balance: current.balance,
     target: rules.target,
     rewardTitle,
-    stamps: unit === 'stamp' ? deriveStamps(record.earned, record.balance) : [],
+    stamps: unit === 'stamp' ? deriveStamps(record.earned, current.balance) : [],
     lastVisitAt: isoOrNull(record.lastVisitAt),
-    rewardExpiresAt: isoOrNull(record.rewardExpiresAt),
+    rewardExpiresAt: isoOrNull(current.rewardExpiresAt),
     shop: shop.value,
   })
   return parsed.success ? ok(parsed.data) : err({ code: 'invalidProgram' })

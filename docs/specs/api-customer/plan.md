@@ -84,12 +84,16 @@ Tela: Resgate. Front: `RewardRedemptionService`. Entregue em três PRs.
   com boas-vindas `welcome-restart:<id>`, nunca duas vezes; recusa loja não aprovada, código vencido e meta
   que subiu depois do pedido). `RedemptionLookup.findActive(shopId, texto)` acha o código que o lojista digitou.
   Quem chama (Balcão) garante que `recordedBy` é dono/equipe da loja e abre a transação.
-- Até a 5.2, prêmio com `rewardExpiresAt` vencido ainda gera código e é entregue.
 
-**5.2 Expiração**
-- Regra pura em `shared/domain` (inatividade e prêmio guardado por `REWARD_HOLD_DAYS`), aplicada dentro do
-  `LedgerStore` antes de creditar e de pedir resgate (persiste linha `expiration` no ledger) e na leitura da
-  Carteira (saldo efetivo). Sem job: o vencimento vale quando o cartão é lido ou recebe qualquer lançamento.
+**5.2 Expiração** (feito)
+- `shared/domain/expiration.ts` (`planExpiration`/`applyExpiration`): inatividade leva o saldo todo; prêmio guardado
+  e não resgatado em `REWARD_HOLD_DAYS` perde uma meta (e a guarda recomeça se sobrar outra meta inteira).
+  O mock do front usa a mesma função.
+- `LedgerStore.lockOrCreateCard(tx, key, expiry)` já devolve o cartão em dia e grava a linha `expiration`
+  (chave `expiration:<cartão>:<tipo>:<quando venceu>`, uma vez só); o pedido de resgate e a entrega também
+  aplicam. Quem lança (check-in, Balcão) não tem como esquecer.
+- A Carteira mostra o saldo efetivo na leitura (sem gravar). Sem job: o vencimento é gravado no próximo
+  lançamento ou pedido de resgate. Telas do lojista que leem `balance` cru devem usar `planExpiration`.
 
 **5.3 Indicação + fechamento**
 - `Referral` pendente criado pelo link (`ref` + `loja`); pago na primeira visita válida (check-in ou Balcão) com
@@ -109,7 +113,6 @@ Tela: Resgate. Front: `RewardRedemptionService`. Entregue em três PRs.
 | Testes de integração com Postgres: check-in já cobre lock, rollback e ordem (`check-in.integration.test.ts`); faltam Descobrir, Carteira, perfil e cadastro | `apps/api` | 5 |
 | Índice `(status, name, id)` para a ordem da vitrine, se passar de centenas de lojas | `shops` | 5 |
 | `Idempotency-Key` no check-in (devolver o carimbo já gravado ao reenviar) | `check-in` | 5 |
-| Expiração por inatividade e prêmio vencido: aplicar dentro do `LedgerStore`, antes do `planEarning`, senão o cartão vencido "revive" ao creditar | `ledger.store.ts`, `earning.ts` | 5 |
 | Regras do clube lidas fora do lock no check-in: ok hoje; reavaliar quando o lojista puder trocar o modo | `drizzle-check-in.repository.ts` | 5 |
 | Rotação da chave de cifra de PII (prefixo de versão no payload) | `pii.service.ts` | 5 |
 

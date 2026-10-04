@@ -1,4 +1,4 @@
-import type { BonusRules, ProgramRules } from '#shared/schemas/program'
+import type { BonusRules, ExpirationPolicy, ProgramRules } from '#shared/schemas/program'
 import type { ShopCategory } from '#shared/schemas/shop'
 
 /** Loja + clube já validados contra o domínio: leitura comum ao Descobrir e à Carteira. */
@@ -13,5 +13,6 @@ export interface CatalogShop {
     readonly rules: ProgramRules
     readonly rewardTitle: string
     readonly bonusRules: BonusRules
+    readonly expiration: ExpirationPolicy
   }
 }

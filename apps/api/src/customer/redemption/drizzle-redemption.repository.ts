@@ -4,6 +4,8 @@ import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
 import { DB, type Database } from '../../database/database.module'
 import { loyaltyCards, programs, redemptions, shops } from '../../database/schema'
+import { LedgerStore } from '../../ledger/ledger.store'
+import { toExpirationPolicy } from '../../programs/program-rules.mapper'
 import {
   type RedemptionRecord,
   RedemptionRepository,
@@ -27,7 +29,10 @@ const REDEMPTION_COLUMNS = {
 
 @Injectable()
 export class DrizzleRedemptionRepository extends RedemptionRepository {
-  constructor(@Inject(DB) private readonly db: Database) {
+  constructor(
+    @Inject(DB) private readonly db: Database,
+    private readonly ledger: LedgerStore,
+  ) {
     super()
   }
 
@@ -41,8 +46,12 @@ export class DrizzleRedemptionRepository extends RedemptionRepository {
         .select({
           shopId: loyaltyCards.shopId,
           balance: loyaltyCards.balance,
+          lastVisitAt: loyaltyCards.lastVisitAt,
+          rewardExpiresAt: loyaltyCards.rewardExpiresAt,
           target: programs.target,
           rewardTitle: programs.rewardTitle,
+          expirationKind: programs.expirationKind,
+          expirationMonths: programs.expirationMonths,
           shopStatus: shops.status,
         })
         .from(loyaltyCards)
@@ -58,7 +67,17 @@ export class DrizzleRedemptionRepository extends RedemptionRepository {
         .where(and(eq(redemptions.cardId, cardId), eq(redemptions.status, 'active')))
         .limit(1)
 
-      const decision = decide({ balance: card.balance, target: card.target, active: active ?? null })
+      // O prêmio pode ter vencido desde a última vez que alguém mexeu no cartão: entra em dia antes de decidir.
+      const policy = toExpirationPolicy(card)
+      const current = policy.ok
+        ? await this.ledger.expireIfDue(
+            tx,
+            { id: cardId, shopId: card.shopId, customerId, balance: card.balance, lastVisitAt: card.lastVisitAt, rewardExpiresAt: card.rewardExpiresAt },
+            { policy: policy.value, target: card.target, now: createdAt },
+          )
+        : card
+
+      const decision = decide({ balance: current.balance, target: card.target, active: active ?? null })
       if (decision.kind === 'notReady') return err({ code: 'rewardNotReady', remaining: decision.remaining })
       if (decision.kind === 'reuse' && active) return ok(active)
 

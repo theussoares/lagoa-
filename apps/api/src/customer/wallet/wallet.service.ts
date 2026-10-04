@@ -4,6 +4,7 @@ import type { WalletCard } from '#shared/schemas/loyaltyCard'
 import type { WalletActivity } from '#shared/schemas/visit'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
+import { Clock } from '../../common/clock'
 import { ENV } from '../../config/config.module'
 import type { Env } from '../../config/env'
 import { toWalletActivity, toWalletCard } from './wallet.mapper'
@@ -19,13 +20,15 @@ export class WalletService {
   constructor(
     private readonly repository: WalletRepository,
     @Inject(ENV) private readonly env: Pick<Env, 'SUPABASE_URL'>,
+    private readonly clock: Clock,
   ) {}
 
   /** Já ordenados por proximidade do prêmio. */
   async listCards(customerId: string): Promise<Result<WalletCard[], never>> {
     const records = await this.repository.listCards(customerId)
+    const now = this.clock.now()
     const cards = records.flatMap((record) => {
-      const card = toWalletCard(record, this.env.SUPABASE_URL)
+      const card = toWalletCard(record, this.env.SUPABASE_URL, now)
       if (card.ok) return [card.value]
       this.logger.warn(`Card ${record.cardId} skipped: breaks the contract`)
       return []
@@ -35,7 +38,7 @@ export class WalletService {
 
   async getCard(customerId: string, shopId: string): Promise<Result<WalletCard, ErrorOf<'notFound'>>> {
     const record = await this.repository.findCard(customerId, shopId)
-    const card = record === null ? null : toWalletCard(record, this.env.SUPABASE_URL)
+    const card = record === null ? null : toWalletCard(record, this.env.SUPABASE_URL, this.clock.now())
     return card?.ok ? ok(card.value) : err({ code: 'notFound', entity: 'card' })
   }
 

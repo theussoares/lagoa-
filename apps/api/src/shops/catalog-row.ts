@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common'
 import { BonusRulesSchema, type ProgramMode } from '#shared/schemas/program'
 import type { ShopCategory } from '#shared/schemas/shop'
 import { programs, shops } from '../database/schema'
-import { toProgramRules } from '../programs/program-rules.mapper'
+import { toExpirationPolicy, toProgramRules } from '../programs/program-rules.mapper'
 import type { CatalogShop } from './catalog-shop'
 
 /** Colunas de `shops` + `programs` que formam um `CatalogShop`; entram em qualquer select com join. */
@@ -18,6 +18,8 @@ export const CATALOG_COLUMNS = {
   target: programs.target,
   rewardTitle: programs.rewardTitle,
   bonusRules: programs.bonusRules,
+  expirationKind: programs.expirationKind,
+  expirationMonths: programs.expirationMonths,
 }
 
 export interface CatalogRow {
@@ -32,6 +34,8 @@ export interface CatalogRow {
   readonly target: number
   readonly rewardTitle: string
   readonly bonusRules: unknown
+  readonly expirationKind: 'never' | 'afterInactivity'
+  readonly expirationMonths: number | null
 }
 
 const logger = new Logger('ShopCatalog')
@@ -43,7 +47,8 @@ const logger = new Logger('ShopCatalog')
 export function toCatalogShop(row: CatalogRow): CatalogShop | null {
   const rules = toProgramRules(row)
   const bonusRules = BonusRulesSchema.safeParse(row.bonusRules)
-  if (!rules.ok || !bonusRules.success) {
+  const expiration = toExpirationPolicy(row)
+  if (!rules.ok || !bonusRules.success || !expiration.ok) {
     logger.warn(`Shop ${row.shopId} skipped: invalid program`)
     return null
   }
@@ -54,6 +59,6 @@ export function toCatalogShop(row: CatalogRow): CatalogShop | null {
     neighborhood: row.neighborhood,
     addressLine: row.addressLine,
     logoPath: row.logoPath,
-    program: { rules: rules.value, rewardTitle: row.rewardTitle, bonusRules: bonusRules.data },
+    program: { rules: rules.value, rewardTitle: row.rewardTitle, bonusRules: bonusRules.data, expiration: expiration.value },
   }
 }
