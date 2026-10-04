@@ -248,6 +248,8 @@ export class LedgerStore {
         lastVisitAt: loyaltyCards.lastVisitAt,
         lastActivityAt: loyaltyCards.lastActivityAt,
         rewardExpiresAt: loyaltyCards.rewardExpiresAt,
+        programId: loyaltyCards.programId,
+        unit: programs.unit,
         target: programs.target,
         bonusRules: programs.bonusRules,
         expirationKind: programs.expirationKind,
@@ -279,7 +281,9 @@ export class LedgerStore {
       return err({ code: 'rewardNotReady', remaining: row.target - card.balance })
     }
 
-    const welcome = this.welcomeUnitsOf(row.bonusRules, command.shopId)
+    // Cartão fechado: o próximo já nasce na versão ativa do programa (a troca de regras não alcança o que estava em andamento).
+    const next = await this.nextProgramFor(tx, command.shopId, row, card.balance - row.target)
+    const welcome = this.welcomeUnitsOf(next.bonusRules, command.shopId)
     const balanceAfter = card.balance - row.target + welcome
     const now = await this.instantFor(tx, row.cardId, command.now)
     const common = { cardId: row.cardId, shopId: command.shopId, customerId: row.customerId, occurredAt: now, countsAsVisit: false }
@@ -302,7 +306,7 @@ export class LedgerStore {
     }
     await tx
       .update(loyaltyCards)
-      .set({ balance: balanceAfter, rewardExpiresAt: balanceAfter >= row.target ? addDays(now, REWARD_HOLD_DAYS) : null })
+      .set({ programId: next.programId, balance: balanceAfter, rewardExpiresAt: balanceAfter >= next.target ? addDays(now, REWARD_HOLD_DAYS) : null })
       .where(eq(loyaltyCards.id, row.cardId))
     await tx
       .update(redemptions)
@@ -310,6 +314,25 @@ export class LedgerStore {
       .where(eq(redemptions.id, row.redemptionId))
 
     return ok({ cardId: row.cardId, customerId: row.customerId, target: row.target, balanceAfter, welcomeUnits: welcome })
+  }
+
+  /**
+   * Programa do próximo cartão: a versão ativa da loja. Sobra de saldo só atravessa a troca se a unidade
+   * for a mesma (carimbo não vira ponto); senão o cartão segue na versão atual até zerar.
+   */
+  private async nextProgramFor(
+    tx: Tx,
+    shopId: string,
+    current: { programId: string; unit: string; target: number; bonusRules: unknown },
+    leftover: number,
+  ): Promise<{ programId: string; target: number; bonusRules: unknown }> {
+    const [active] = await tx
+      .select({ programId: programs.id, unit: programs.unit, target: programs.target, bonusRules: programs.bonusRules })
+      .from(programs)
+      .where(and(eq(programs.shopId, shopId), eq(programs.active, true)))
+      .limit(1)
+    if (!active || active.programId === current.programId) return current
+    return leftover === 0 || active.unit === current.unit ? active : current
   }
 
   /**

@@ -5,13 +5,15 @@ import type { ErrorOf } from '#shared/types/errors'
 import { CHECK_IN_COOLDOWN_MAX_HOURS } from '#shared/constants/domain'
 import { err, ok, type Result } from '#shared/types/result'
 import { DB, type Database } from '../../database/database.module'
-import { customerProfiles, ledgerEntries, programs, shops } from '../../database/schema'
-import { LedgerStore } from '../../ledger/ledger.store'
+import type { Tx } from '../../database/database.module'
+import { customerProfiles, ledgerEntries, loyaltyCards, programs, shops } from '../../database/schema'
+import { type LockedCard, LedgerStore } from '../../ledger/ledger.store'
 import { CATALOG_COLUMNS, toCatalogShop } from '../../shops/catalog-row'
 import {
   type CheckInAttempt,
   type CheckInRecorded,
   CheckInRepository,
+  ProgramVersionChanged,
   type CheckInShop,
   type CheckInState,
 } from './check-in.repository'
@@ -28,7 +30,16 @@ export class DrizzleCheckInRepository extends CheckInRepository {
     super()
   }
 
-  async findShopByCode(code: string): Promise<CheckInShop | null> {
+  async findShopByCode(code: string, customerId: string): Promise<CheckInShop | null> {
+    const [shopRow] = await this.db.select({ id: shops.id }).from(shops).where(and(eq(shops.checkInCode, code), eq(shops.status, 'approved'))).limit(1)
+    if (!shopRow) return null
+    // Cartão com saldo segue na versão do programa em que nasceu; sem cartão (ou zerado) vale a versão ativa.
+    const [card] = await this.db
+      .select({ programId: loyaltyCards.programId, balance: loyaltyCards.balance })
+      .from(loyaltyCards)
+      .where(and(eq(loyaltyCards.shopId, shopRow.id), eq(loyaltyCards.customerId, customerId)))
+      .limit(1)
+    const version = card && card.balance > 0 ? eq(programs.id, card.programId) : and(eq(programs.shopId, shopRow.id), eq(programs.active, true))
     const [row] = await this.db
       .select({
         ...CATALOG_COLUMNS,
@@ -37,8 +48,8 @@ export class DrizzleCheckInRepository extends CheckInRepository {
         cooldownHours: programs.checkInCooldownHours,
       })
       .from(shops)
-      .innerJoin(programs, eq(programs.shopId, shops.id))
-      .where(and(eq(shops.checkInCode, code), eq(shops.status, 'approved')))
+      .innerJoin(programs, and(eq(programs.shopId, shops.id), version))
+      .where(eq(shops.id, shopRow.id))
       .limit(1)
     if (!row) return null
     // Janela fora de 1..168 h (o CHECK do banco já barra): a loja fica de fora, nunca com check-in ilimitado.
@@ -69,6 +80,7 @@ export class DrizzleCheckInRepository extends CheckInRepository {
           { shopId: target.shop.id, customerId, programId: target.programId },
           { policy: target.shop.program.expiration, target: target.shop.program.rules.target, now },
         )
+        await this.alignProgramVersion(tx, card, target.programId)
         // O mesmo toque reenviado (resposta perdida): devolve o carimbo que já está no ledger, sem decidir de novo.
         const key = clientKey === undefined ? null : `checkIn:${customerId}:${target.shop.id}:${clientKey}`
         if (key !== null) {
@@ -107,5 +119,17 @@ export class DrizzleCheckInRepository extends CheckInRepository {
       if (error instanceof RollbackSignal && refusal.error !== null) return err(refusal.error)
       throw error
     }
+  }
+
+  /**
+   * `findShopByCode` leu a versão do programa antes do lock. Cartão zerado pode mudar para a versão ativa;
+   * com saldo, uma versão diferente da lida significa que o programa mudou no meio do caminho.
+   */
+  private async alignProgramVersion(tx: Tx, card: LockedCard, expectedProgramId: string): Promise<void> {
+    const [current] = await tx.select({ programId: loyaltyCards.programId }).from(loyaltyCards).where(eq(loyaltyCards.id, card.id)).limit(1)
+    if (!current || current.programId === expectedProgramId) return
+    const [expected] = await tx.select({ active: programs.active }).from(programs).where(eq(programs.id, expectedProgramId)).limit(1)
+    if (card.balance > 0 || !expected?.active) throw new ProgramVersionChanged()
+    await tx.update(loyaltyCards).set({ programId: expectedProgramId }).where(eq(loyaltyCards.id, card.id))
   }
 }

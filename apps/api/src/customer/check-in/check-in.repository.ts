@@ -4,6 +4,9 @@ import type { ErrorOf } from '#shared/types/errors'
 import type { Result } from '#shared/types/result'
 import type { CatalogShop } from '../../shops/catalog-shop'
 
+/** O programa da loja mudou entre a leitura e o lock; quem chama lê de novo e tenta uma vez mais. */
+export class ProgramVersionChanged extends Error {}
+
 export interface CheckInShop {
   readonly shop: CatalogShop
   readonly programId: string
@@ -38,8 +41,8 @@ export interface CheckInAttempt {
 }
 
 export abstract class CheckInRepository {
-  /** Só loja aprovada: a pendente ou suspensa é indistinguível de um código que não existe. */
-  abstract findShopByCode(code: string): Promise<CheckInShop | null>
+  /** Versão do programa que vale para esta pessoa: a do cartão com saldo, senão a ativa. Só loja aprovada: a pendente ou suspensa é indistinguível de um código que não existe. */
+  abstract findShopByCode(code: string, customerId: string): Promise<CheckInShop | null>
 
   /**
    * Trava (ou cria) o cartão, deixa `decide` escolher o plano e grava ledger + saldo na mesma

@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm'
-import { boolean, char, check, index, integer, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
+import { boolean, char, check, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
 import type { BonusRules } from '#shared/schemas/program'
 import { createdAt, primaryId } from './columns'
 import { earnPer, expirationKind, programMode, programUnit, shopCategory, shopStatus } from './enums'
@@ -30,8 +30,12 @@ export const programs = pgTable(
   id: primaryId(),
   shopId: uuid('shop_id')
     .notNull()
-    .unique()
     .references(() => shops.id),
+  /**
+   * Versão do programa: trocar as regras cria uma linha nova ativa e desativa a anterior. Cartões em
+   * andamento seguem na versão em que nasceram até fecharem; só o cartão novo (ou zerado) pega a ativa.
+   */
+  active: boolean('active').notNull().default(true),
   rewardTitle: text('reward_title').notNull(),
   mode: programMode('mode').notNull(),
   unit: programUnit('unit').notNull(),
@@ -46,6 +50,7 @@ export const programs = pgTable(
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
+    uniqueIndex('programs_one_active_per_shop_uq').on(t.shopId).where(sql`${t.active}`),
     // Mesma regra do `ExpirationPolicySchema` (24 = EXPIRATION_MAX_MONTHS; o drizzle-kit não resolve `#shared`).
     // `IS NOT NULL` é necessário: CHECK que resulta em NULL passa no Postgres.
     // Janela de check-in de 1 a 168 h (CHECK_IN_COOLDOWN_MAX_HOURS): 0 ou negativo liberaria check-in ilimitado.

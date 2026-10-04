@@ -13,6 +13,7 @@ import {
   CheckInRepository,
   type CheckInShop,
   type CheckInState,
+  ProgramVersionChanged,
 } from './check-in.repository'
 import { CheckInService } from './check-in.service'
 
@@ -24,6 +25,7 @@ class FakeCheckInRepository extends CheckInRepository {
   lookedUp: string[] = []
   attempts: CheckInAttempt[] = []
   replay = false
+  versionChanges = 0
   state: CheckInState = FIRST_VISIT
   constructor(private readonly shop: CheckInShop | null) {
     super()
@@ -37,6 +39,10 @@ class FakeCheckInRepository extends CheckInRepository {
     decide: (state: CheckInState) => Result<EarningPlan, E>,
   ): Promise<Result<CheckInRecorded, E | ErrorOf<'unauthorized'>>> {
     this.attempts.push(attempt)
+    if (this.versionChanges > 0) {
+      this.versionChanges -= 1
+      throw new ProgramVersionChanged()
+    }
     if (this.replay) return ok({ cardId: CARD_ID, entryId: ENTRY_ID, units: 1, balanceAfter: 5, recordedAt: new Date('2026-10-03T11:00:00Z'), replayed: true })
     const decision = decide(this.state)
     return decision.ok ? ok({ cardId: CARD_ID, entryId: ENTRY_ID, units: decision.value.units, balanceAfter: decision.value.balanceAfter, recordedAt: attempt.now, replayed: false }) : decision
@@ -62,6 +68,17 @@ const serviceFor = (shop: CheckInShop | null, state?: CheckInState) => {
 }
 
 describe('CheckInService', () => {
+  it('reads the program version again once when the program changed under the lock, and gives up after that', async () => {
+    const once = serviceFor(checkInShop())
+    once.repository.versionChanges = 1
+    expect((await once.service.checkIn(TEST_USER.id, 'NAV4K7')).ok).toBe(true)
+    expect(once.repository.lookedUp).toHaveLength(2)
+
+    const twice = serviceFor(checkInShop())
+    twice.repository.versionChanges = 2
+    await expect(twice.service.checkIn(TEST_USER.id, 'NAV4K7')).rejects.toBeInstanceOf(ProgramVersionChanged)
+  })
+
   it('normalizes what people type before looking the shop up', async () => {
     const { repository, service } = serviceFor(checkInShop())
     await service.checkIn(TEST_USER.id, ' nav-4k7 ')

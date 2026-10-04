@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common'
-import { asc, eq } from 'drizzle-orm'
+import { and, asc, eq } from 'drizzle-orm'
 import { DB, type Database } from '../../database/database.module'
 import { programs, shops } from '../../database/schema'
 import type { CatalogShop } from '../../shops/catalog-shop'
@@ -16,7 +16,7 @@ export class DrizzleDiscoverRepository extends DiscoverRepository {
     const rows = await this.db
       .select(CATALOG_COLUMNS)
       .from(shops)
-      .innerJoin(programs, eq(programs.shopId, shops.id))
+      .innerJoin(programs, and(eq(programs.shopId, shops.id), eq(programs.active, true)))
       .where(eq(shops.status, 'approved'))
       .orderBy(asc(shops.name), asc(shops.id))
       .limit(limit)

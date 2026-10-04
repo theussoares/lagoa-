@@ -44,7 +44,7 @@ export class DrizzleReferralSettlement extends ReferralSettlement {
         })
         .from(referrals)
         .innerJoin(shops, eq(shops.id, referrals.shopId))
-        .innerJoin(programs, eq(programs.shopId, referrals.shopId))
+        .innerJoin(programs, and(eq(programs.shopId, referrals.shopId), eq(programs.active, true)))
         .leftJoin(loyaltyCards, and(eq(loyaltyCards.shopId, referrals.shopId), eq(loyaltyCards.customerId, referrals.referredId)))
         .where(and(eq(referrals.shopId, shopId), eq(referrals.referredId, referredId), eq(referrals.status, 'pending')))
         .for('update', { of: referrals })
@@ -64,15 +64,28 @@ export class DrizzleReferralSettlement extends ReferralSettlement {
         return 'rejected'
       }
 
-      const policy = toExpirationPolicy(row)
+      // O bônus cai no cartão do indicador, que pode estar numa versão antiga do programa: meta e vencimento são dessa versão.
+      const [own] = await tx
+        .select({
+          programId: programs.id,
+          target: programs.target,
+          expirationKind: programs.expirationKind,
+          expirationMonths: programs.expirationMonths,
+        })
+        .from(loyaltyCards)
+        .innerJoin(programs, eq(programs.id, loyaltyCards.programId))
+        .where(and(eq(loyaltyCards.shopId, shopId), eq(loyaltyCards.customerId, row.referrerId)))
+        .limit(1)
+      const version = own ?? row
+      const policy = toExpirationPolicy(version)
       const { card } = await this.ledger.lockOrCreateCard(
         tx,
-        { shopId, customerId: row.referrerId, programId: row.programId },
-        { policy: policy.ok ? policy.value : NEVER, target: row.target, now },
+        { shopId, customerId: row.referrerId, programId: version.programId },
+        { policy: policy.ok ? policy.value : NEVER, target: version.target, now },
       )
       const bonus = await this.ledger.creditBonus(tx, {
         card,
-        target: row.target,
+        target: version.target,
         units: bonusRules.data.referralBonus.units,
         kind: 'referralBonus',
         now,

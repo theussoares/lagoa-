@@ -32,7 +32,7 @@ export class DrizzleReferralRepository extends ReferralRepository {
       const [shop] = await tx
         .select({ id: shops.id, bonusRules: programs.bonusRules })
         .from(shops)
-        .innerJoin(programs, eq(programs.shopId, shops.id))
+        .innerJoin(programs, and(eq(programs.shopId, shops.id), eq(programs.active, true)))
         .where(and(eq(shops.checkInCode, shopCode), eq(shops.status, 'approved')))
         .limit(1)
       if (!shop) return 'unknownShop'
