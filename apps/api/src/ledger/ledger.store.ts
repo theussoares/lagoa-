@@ -83,6 +83,9 @@ export type SettleError =
   | ErrorOf<'rewardNotReady'>
   | ErrorOf<'shopPendingApproval' | 'shopSuspended'>
 
+/** O instante nunca recua em relação ao último lançamento do cartão (a ordem da caderneta não inverte). */
+const laterOf = (last: Date | undefined, requested: Date): Date => (last !== undefined && last > requested ? last : requested)
+
 /**
  * Única porta de escrita do ledger. Check-in (cliente) e Balcão (lojista) passam por aqui, então
  * antifraude, boas-vindas e cache do cartão não têm duas implementações. Sempre dentro de uma
@@ -140,7 +143,7 @@ export class LedgerStore {
       kind: 'expiration',
       unitsDelta: -plan.unitsLost,
       countsAsVisit: false,
-      occurredAt: last !== undefined && last.occurredAt > plan.dueAt ? last.occurredAt : plan.dueAt,
+      occurredAt: laterOf(last?.occurredAt, plan.dueAt),
       // A última linha do cartão faz parte da chave: o mesmo vencimento pode se repetir depois de um bônus.
       idempotencyKey: `expiration:${card.id}:${plan.kind}:${plan.dueAt.toISOString()}:${last?.id ?? 'none'}`,
     })
@@ -315,8 +318,7 @@ export class LedgerStore {
    * visita e resgate; a leitura é um passo no índice (card_id, occurred_at DESC, id DESC).
    */
   private async instantFor(tx: Tx, cardId: string, requested: Date): Promise<Date> {
-    const last = await this.lastEntry(tx, cardId)
-    return last !== undefined && last.occurredAt > requested ? last.occurredAt : requested
+    return laterOf((await this.lastEntry(tx, cardId))?.occurredAt, requested)
   }
 
   private async lastEntry(tx: Tx, cardId: string): Promise<{ id: string; occurredAt: Date } | undefined> {

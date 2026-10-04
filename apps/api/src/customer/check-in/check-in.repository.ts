@@ -13,15 +13,12 @@ export interface CheckInShop {
 
 /** O que a regra precisa saber, lido com o cartão já travado. */
 export interface CheckInState {
-  /** `null` = cartão recém-criado nesta transação (ganha as boas-vindas). */
-  readonly card: EarningCard | null
-  readonly lastVisitAt: Date | null
+  /** O cartão já existe (travado); `lastVisitAt` nulo = primeira visita da pessoa nesta loja. */
+  readonly card: EarningCard
   readonly birthday: Birthday | null
 }
 
 export interface CheckInRecorded {
-  /** O cartão nasceu agora: é a primeira visita da pessoa nesta loja (hora de pagar a indicação, se houver). */
-  readonly cardCreated: boolean
   readonly cardId: string
   readonly entryId: string
   readonly plan: EarningPlan

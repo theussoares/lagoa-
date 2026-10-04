@@ -38,7 +38,7 @@ export class CheckInService {
     )
     if (!recorded.ok) return recorded
 
-    if (recorded.value.cardCreated) await this.settleReferral(customerId, target.shop.id, now)
+    await this.settleReferral(customerId, target.shop.id, now)
 
     const { shop } = target
     const { rules } = shop.program
@@ -64,7 +64,9 @@ export class CheckInService {
 
   /**
    * A visita já está confirmada. Pagar a indicação é à parte e não pode derrubar o check-in: se falhar,
-   * a pendência continua e o log leva só o tipo do erro.
+   * a pendência continua e o log leva só o tipo do erro. Roda a cada check-in (uma consulta pelo índice único
+   * `(loja, indicado)`), então uma falha passageira é tentada de novo na visita seguinte; o pagamento é
+   * idempotente e só acontece com cartão existente e criado depois do convite.
    */
   private async settleReferral(customerId: string, shopId: string, now: Date): Promise<void> {
     try {

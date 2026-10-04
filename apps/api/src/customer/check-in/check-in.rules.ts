@@ -13,7 +13,7 @@ export function decideCheckIn(
   state: CheckInState,
   now: Date,
 ): Result<EarningPlan, CheckInDecisionError> {
-  const availableAt = checkInAvailableAt(state.lastVisitAt, cooldownHours, now)
+  const availableAt = checkInAvailableAt(state.card.lastVisitAt, cooldownHours, now)
   if (availableAt !== null) return err({ code: 'checkInCooldown', availableAt: toIso(availableAt) })
 
   const plan = planEarning({

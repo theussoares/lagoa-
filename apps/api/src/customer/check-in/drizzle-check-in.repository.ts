@@ -61,14 +61,13 @@ export class DrizzleCheckInRepository extends CheckInRepository {
           throw new RollbackSignal()
         }
 
-        const { card, created } = await this.ledger.lockOrCreateCard(
+        const { card } = await this.ledger.lockOrCreateCard(
           tx,
           { shopId: target.shop.id, customerId, programId: target.programId },
           { policy: target.shop.program.expiration, target: target.shop.program.rules.target, now },
         )
         const decision = decide({
-          card: created ? null : { balance: card.balance, rewardExpiresAt: card.rewardExpiresAt },
-          lastVisitAt: card.lastVisitAt,
+          card: { balance: card.balance, rewardExpiresAt: card.rewardExpiresAt, lastVisitAt: card.lastVisitAt },
           birthday: profile.birthday,
         })
         if (!decision.ok) {
@@ -86,7 +85,7 @@ export class DrizzleCheckInRepository extends CheckInRepository {
           now,
           idempotencyKey: `checkIn:${card.id}:${card.lastVisitAt?.toISOString() ?? 'first'}`,
         })
-        return ok({ cardCreated: created, cardId: card.id, entryId, plan: decision.value })
+        return ok({ cardId: card.id, entryId, plan: decision.value })
       })
     } catch (error) {
       if (error instanceof RollbackSignal && refusal.error !== null) return err(refusal.error)

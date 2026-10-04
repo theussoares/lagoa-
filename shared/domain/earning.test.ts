@@ -18,7 +18,7 @@ function request(overrides: Partial<EarningRequest> = {}): EarningRequest {
     rules: STAMPS,
     bonusRules: NO_BONUS,
     customerBirthday: null,
-    card: { balance: 3, rewardExpiresAt: null },
+    card: { balance: 3, rewardExpiresAt: null, lastVisitAt: new Date('2026-09-01T12:00:00Z') },
     input: { kind: 'visit' },
     now,
     ...overrides,
@@ -58,14 +58,20 @@ describe('planEarning', () => {
   })
 
   it('holds the reward for 30 days when the card reaches the target', () => {
-    const result = plan({ card: { balance: 9, rewardExpiresAt: null } })
+    const result = plan({ card: { balance: 9, rewardExpiresAt: null, lastVisitAt: new Date('2026-09-01T12:00:00Z') } })
     expect(result.balanceAfter).toBe(10)
     expect(result.rewardExpiresAt?.toISOString()).toBe('2026-11-02T12:00:00.000Z')
   })
 
   it('keeps the original hold date when more units arrive on a card that is already ready', () => {
     const held = new Date('2026-10-20T00:00:00Z')
-    expect(plan({ card: { balance: 10, rewardExpiresAt: held } }).rewardExpiresAt).toEqual(held)
+    expect(plan({ card: { balance: 10, rewardExpiresAt: held, lastVisitAt: new Date('2026-09-01T12:00:00Z') } }).rewardExpiresAt).toEqual(held)
+  })
+
+  it('gives the welcome units on the first visit even when the card already exists (born from a referral bonus)', () => {
+    const welcome = { ...NO_BONUS, welcomeBonus: { enabled: true, units: 2 } }
+    const result = plan({ card: { balance: 2, rewardExpiresAt: null, lastVisitAt: null }, bonusRules: welcome })
+    expect(result).toMatchObject({ welcomeUnits: 2, units: 1, balanceAfter: 5 })
   })
 
   it('counts the welcome units toward the target', () => {
