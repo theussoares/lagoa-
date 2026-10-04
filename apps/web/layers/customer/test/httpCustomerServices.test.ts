@@ -73,4 +73,12 @@ describe('http customer services', () => {
     expect(fetcher.mock.calls[1]?.[1]).toMatchObject({ body: '{"granted":false}' })
     expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/customer/ranking/consent')
   })
+
+  it('account erasure is a DELETE that accepts the empty 204', async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => new Response(null, { status: 204 }))
+    const { account } = servicesWith(fetcher)
+    expect(await account.eraseAccount()).toEqual({ ok: true, value: undefined })
+    expect(fetcher.mock.calls[0]?.[1]).toMatchObject({ method: 'DELETE' })
+    expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/customer/account')
+  })
 })

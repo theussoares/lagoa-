@@ -1,6 +1,7 @@
 import type { ApiClient } from '#layers/core/app/services/http/ApiClient'
 import type { CustomerServices } from '../CustomerServices'
 import { HttpCheckInService } from './HttpCheckInService'
+import { HttpAccountService } from './HttpAccountService'
 import { HttpDataExportService } from './HttpDataExportService'
 import { HttpDiscoverService } from './HttpDiscoverService'
 import { HttpProfileService } from './HttpProfileService'
@@ -19,5 +20,6 @@ export function createHttpCustomerServices(api: ApiClient, newIdempotencyKey: ()
     referral: new HttpReferralService(api),
     dataExport: new HttpDataExportService(api),
     ranking: new HttpRankingService(api),
+    account: new HttpAccountService(api),
   }
 }

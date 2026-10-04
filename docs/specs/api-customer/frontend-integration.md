@@ -82,4 +82,8 @@ por SMS, upload de logo (o campo e o bucket existem). Aprovação de loja (`Shop
 
 ## Exportar meus dados (LGPD)
 
-`GET /customer/data-export` (autenticado, 3 por minuto): `{ exportedAt, profile, cards[], ledger[], redemptions[], referrals }` só da própria pessoa, celular mascarado. O app oferece como arquivo JSON no Perfil. A exclusão da conta não existe ainda (precisa apagar o usuário no Supabase Auth, o que exige a chave `service_role`).
+`GET /customer/data-export` (autenticado, 3 por minuto): `{ exportedAt, profile, cards[], ledger[], redemptions[], referrals }` só da própria pessoa, celular mascarado. O app oferece como arquivo JSON no Perfil.
+
+## Apagar minha conta (LGPD)
+
+`DELETE /customer/account` → `204` (3 por minuto). Anonimiza nome, aniversário, celular e e-mail, tira do ranking, expira códigos de resgate abertos e remove o login do Supabase Auth direto pelo banco (sem `service_role`). A caderneta fica, sem dado pessoal. A sessão aberta morre no vencimento do token (até ~1 h). O app confirma antes de chamar e encerra a sessão depois.
