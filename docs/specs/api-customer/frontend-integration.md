@@ -79,3 +79,7 @@ por SMS, upload de logo (o campo e o bucket existem). Aprovação de loja (`Shop
    Navalha) → Carteira → repetir o check-in (cooldown) → reenviar o mesmo `Idempotency-Key` (mesmo carimbo).
 4. O CI da API já prova as regras contra Postgres; o que falta ao front é provar o **contrato** (os schemas do
    `shared` validam a resposta no repository do front, como manda o `CLAUDE.md`).
+
+## Exportar meus dados (LGPD)
+
+`GET /customer/data-export` (autenticado, 3 por minuto): `{ exportedAt, profile, cards[], ledger[], redemptions[], referrals }` só da própria pessoa, celular mascarado. O app oferece como arquivo JSON no Perfil. A exclusão da conta não existe ainda (precisa apagar o usuário no Supabase Auth, o que exige a chave `service_role`).

@@ -8,6 +8,6 @@ import { TermsGuard } from './terms.guard'
 @Module({
   controllers: [ProfileController],
   providers: [ProfileService, TermsGuard, { provide: ProfileRepository, useClass: DrizzleProfileRepository }],
-  exports: [ProfileRepository, TermsGuard],
+  exports: [ProfileRepository, ProfileService, TermsGuard],
 })
 export class ProfileModule {}
