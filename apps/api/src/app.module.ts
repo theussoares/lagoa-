@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common'
 import { APP_FILTER, APP_GUARD } from '@nestjs/core'
 import { ThrottlerModule } from '@nestjs/throttler'
 import { AuthModule } from './auth/auth.module'
+import { SmsModule } from './auth/sms/sms.module'
 import { SupabaseAuthGuard } from './auth/supabase-auth.guard'
 import { UserThrottlerGuard } from './auth/user-throttler.guard'
 import { AllExceptionsFilter } from './common/http/all-exceptions.filter'
@@ -23,6 +24,7 @@ import { HealthController } from './health/health.controller'
       { name: 'ip', ttl: 60_000, limit: 600, getTracker: (request) => String(request.ip ?? 'unknown') },
     ]),
     CustomerModule,
+    SmsModule,
   ],
   controllers: [HealthController],
   providers: [

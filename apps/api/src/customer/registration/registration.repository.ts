@@ -1,7 +1,7 @@
 export interface NewCustomer {
   readonly userId: string
-  readonly emailEncrypted: Buffer
-  readonly emailHash: Buffer
+  readonly emailEncrypted: Buffer | null
+  readonly emailHash: Buffer | null
   readonly phoneEncrypted: Buffer
   readonly phoneHash: Buffer
   readonly referralCode: string

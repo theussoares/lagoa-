@@ -71,6 +71,13 @@
       "when": 1791074845128,
       "tag": "0009_programs_check_in_cooldown_check",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791085107049,
+      "tag": "0010_phone_login_optional_email",
+      "breakpoints": true
     }
   ]
 }

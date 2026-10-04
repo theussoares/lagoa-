@@ -1,3 +1,4 @@
+import type { AuthUser } from '../../auth/auth.types'
 import { randomUUID } from 'node:crypto'
 import { eq, inArray } from 'drizzle-orm'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
@@ -34,15 +35,15 @@ describe.skipIf(!TEST_DATABASE_URL)('registration against a real database', () =
     await data.close()
   })
 
-  const newUser = (): { id: string; email: string } => {
+  const newUser = (): AuthUser => {
     const id = randomUUID()
     created.push(id)
-    return { id, email: `${id}@test.lagoa` }
+    return { id, email: `${id}@test.lagoa`, phone: undefined }
   }
 
   it('creates the user and profile together and answers the session of a new customer', async () => {
     const user = newUser()
-    const result = await service.register(user.id, user.email, `(${uniquePhone().slice(0, 2)}) ${uniquePhone().slice(2)}`)
+    const result = await service.register(user, `(${uniquePhone().slice(0, 2)}) ${uniquePhone().slice(2)}`)
     expect(result).toEqual({ ok: true, value: { role: 'customer', customerId: user.id, isNewCustomer: true } })
     const [profile] = await data.db.select().from(customerProfiles).where(eq(customerProfiles.userId, user.id))
     expect(profile?.referralCode).toHaveLength(8)
@@ -51,29 +52,29 @@ describe.skipIf(!TEST_DATABASE_URL)('registration against a real database', () =
   it('is idempotent for the same account', async () => {
     const user = newUser()
     const phone = uniquePhone()
-    await service.register(user.id, user.email, phone)
-    expect(await service.register(user.id, user.email, phone)).toMatchObject({ ok: true, value: { customerId: user.id } })
+    await service.register(user, phone)
+    expect(await service.register(user, phone)).toMatchObject({ ok: true, value: { customerId: user.id } })
     expect(await data.db.select().from(customerProfiles).where(eq(customerProfiles.userId, user.id))).toHaveLength(1)
   }, SLOW)
 
   it('refuses a phone that belongs to another account, leaving nothing behind', async () => {
     const [first, second] = [newUser(), newUser()]
     const phone = uniquePhone()
-    await service.register(first.id, first.email, phone)
-    expect(await service.register(second.id, second.email, phone)).toEqual({ ok: false, error: { code: 'phoneAlreadyUsed' } })
+    await service.register(first, phone)
+    expect(await service.register(second, phone)).toEqual({ ok: false, error: { code: 'phoneAlreadyUsed' } })
     expect(await data.db.select().from(appUsers).where(eq(appUsers.id, second.id))).toHaveLength(0)
   }, SLOW)
 
   it('refuses an e-mail already tied to another account', async () => {
     const [first, second] = [newUser(), newUser()]
-    await service.register(first.id, first.email, uniquePhone())
-    expect(await service.register(second.id, first.email, uniquePhone())).toEqual({ ok: false, error: { code: 'emailAlreadyUsed' } })
+    await service.register(first, uniquePhone())
+    expect(await service.register({ ...second, email: first.email }, uniquePhone())).toEqual({ ok: false, error: { code: 'emailAlreadyUsed' } })
   }, SLOW)
 
   it('lets a merchant (who already has a user row) become a customer, keeping the stored phone', async () => {
     const merchant = await data.createCustomer({ withProfile: false })
     created.push(merchant)
-    const result = await service.register(merchant, `${merchant}@other.lagoa`, uniquePhone())
+    const result = await service.register({ id: merchant, email: `${merchant}@other.lagoa`, phone: undefined }, uniquePhone())
     expect(result).toMatchObject({ ok: true, value: { customerId: merchant } })
     expect(await data.db.select().from(customerProfiles).where(eq(customerProfiles.userId, merchant))).toHaveLength(1)
   }, SLOW)
@@ -81,7 +82,7 @@ describe.skipIf(!TEST_DATABASE_URL)('registration against a real database', () =
   it('registers only one of many simultaneous attempts for the same account', async () => {
     const user = newUser()
     const phone = uniquePhone()
-    const results = await Promise.all(Array.from({ length: 5 }, () => service.register(user.id, user.email, phone)))
+    const results = await Promise.all(Array.from({ length: 5 }, () => service.register(user, phone)))
     expect(results.every((r) => r.ok)).toBe(true)
     expect(await data.db.select().from(customerProfiles).where(eq(customerProfiles.userId, user.id))).toHaveLength(1)
   }, SLOW)

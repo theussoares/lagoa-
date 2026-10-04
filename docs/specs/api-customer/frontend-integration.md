@@ -5,26 +5,25 @@ já isola isso atrás de interfaces; ver `CLAUDE.md`). Base: `/v1`, JSON, todas 
 `Authorization: Bearer <access_token do Supabase>` (exceto `/health`). Contratos: `shared/schemas`.
 Detalhe das rotas e dos erros: [`apps/api/README.md`](../../../apps/api/README.md).
 
-## 1. A diferença que muda o login (decidir antes de codar)
+## 1. Login: SMS primeiro, e-mail como alternativa
 
-O `AuthService` do front modela **celular + código por SMS** (`requestLoginCode(phone)` →
-`signInCustomer(phone, code)`). O backend decidido em `docs/database-model.md` usa **Supabase Auth com código
-por e-mail** e o celular é só um dado do cadastro (declarado, sem SMS). Então o login do cliente vira:
+O `AuthService` do front já modela celular + código por SMS. O backend usa **Supabase Auth**; o código de SMS é gerado
+pelo Supabase e entregue pela API (Send SMS Hook → Comtele, `POST /v1/auth/hooks/send-sms`).
 
-1. `supabase.auth.signInWithOtp({ email })` → o cliente recebe o código por e-mail (Resend).
-2. `supabase.auth.verifyOtp({ email, token, type: 'email' })` → sessão com `access_token` (JWT ES256).
+1. `supabase.auth.signInWithOtp({ phone: '+55' + digits })` → o cliente recebe o SMS.
+2. `supabase.auth.verifyOtp({ phone, token, type: 'sms' })` → sessão com `access_token` (o JWT leva o claim `phone`, já confirmado).
 3. `GET /v1/customer/session`:
-   - `200` → `CustomerSession`; se `isNewCustomer`, mostrar a tela de termos e chamar `POST /v1/customer/profile/terms`
-     (a regra é uma só: vem do servidor, não do `created` do cadastro). `isNewCustomer` = ainda não aceitou a **versão atual**
-     dos termos: quando o texto mudar (`TERMS_VERSION`), o cliente volta para essa tela.
-   - `404 notFound` (`entity: customer`) → primeiro acesso: pedir o celular e `POST /v1/customer/registration { phone }`,
-     que devolve a mesma `CustomerSession`.
-4. Renovação de sessão e logout são do SDK do Supabase; `401 unauthorized` em qualquer rota = sessão acabou
-   (renovar uma vez; se persistir, voltar ao login).
+   - `200` → `CustomerSession`; se `isNewCustomer`, tela de termos e `POST /v1/customer/profile/terms`
+     (a regra vem do servidor; ao mudar `TERMS_VERSION` o cliente volta para essa tela).
+   - `404 notFound` (`entity: customer`) → primeiro acesso: `POST /v1/customer/registration` **sem corpo**. O celular vem do
+     token (confirmado por SMS), então ninguém cadastra o número de outra pessoa. Devolve a mesma `CustomerSession`.
+4. **Alternativa por e-mail** (quem não recebe SMS): `signInWithOtp({ email })` + `verifyOtp({ email, token, type: 'email' })`.
+   No primeiro acesso o cadastro pede o celular e manda `{ phone }` (declarado, sem verificação).
+5. Renovação de sessão e logout são do SDK do Supabase; `401 unauthorized` = sessão acabou.
 
-`AuthService` e `SessionProvider` precisam de uma implementação `Supabase*` (ou o front fala direto com o SDK
-num composable de `layers/core`); as telas Entrar/Código mudam de "celular" para "e-mail" e o celular passa para o
-cadastro. O lojista (`signInMerchant`) segue outro caminho e é do Caio.
+Configuração (Supabase): Auth > Providers > Phone ligado, Auth > Hooks > Send SMS Hook apontando para a API, com o
+segredo em `SEND_SMS_HOOK_SECRET`; `COMTELE_AUTH_KEY` e `COMTELE_SENDER` no env da API. Em dev use os *test OTPs* do Supabase.
+O lojista (`signInMerchant`) segue outro caminho e é do Caio.
 
 ## 2. Mapa serviço → rota
 

@@ -4,8 +4,9 @@ import { bytea, createdAt } from './columns'
 /** `id` é o mesmo `auth.users.id` do Supabase: não há tabela de OTP. */
 export const appUsers = pgTable('app_users', {
   id: uuid('id').primaryKey(),
-  emailEncrypted: bytea('email_encrypted').notNull(),
-  emailHash: bytea('email_hash').notNull().unique(),
+  /** Nulos em quem entra só por celular (o e-mail é o canal alternativo de login). */
+  emailEncrypted: bytea('email_encrypted'),
+  emailHash: bytea('email_hash').unique(),
   phoneEncrypted: bytea('phone_encrypted').notNull(),
   phoneHash: bytea('phone_hash').notNull().unique(),
   createdAt: createdAt(),
