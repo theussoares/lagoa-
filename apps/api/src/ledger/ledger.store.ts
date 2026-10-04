@@ -144,6 +144,9 @@ export class LedgerStore {
    * Quem chama garante o que o banco não sabe: que `recordedBy` é dono (ou equipe) de `shopId` e que a
    * transação foi aberta por ele. Aqui se confere a loja do código, a situação da loja, o vencimento e
    * que o cartão ainda tem a meta (ela pode ter subido depois do pedido do código).
+   *
+   * Recusas `redemptionExpired` e `rewardNotReady` marcam o código como `expired`: quem chama deve
+   * confirmar (commit) a transação nesses casos, não desfazê-la, senão a marcação se perde.
    */
   async settleRedemption(tx: Tx, command: SettleCommand): Promise<Result<SettledRedemption, SettleError>> {
     const [row] = await tx

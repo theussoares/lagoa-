@@ -17,7 +17,8 @@ export interface ActiveRedemption {
 /**
  * Como o Balcão acha o código: o lojista digita `(loja, código)`. Código inexistente, de outra loja
  * ou mal digitado dão a mesma resposta (`redemptionInvalid`); o vencido, `redemptionExpired`.
- * Só lê: quem entrega é `LedgerStore.settleRedemption`.
+ * Só lê: quem entrega é `LedgerStore.settleRedemption`. Devolve o `customerId` cru: quem monta o
+ * `RedemptionPreview` do Balcão precisa mascarar o celular (`maskPhone`) antes de responder.
  */
 @Injectable()
 export class RedemptionLookup {
