@@ -30,6 +30,10 @@ export const WALLET_ACTIVITY_DEFAULT_LIMIT = 20
 export const WALLET_ACTIVITY_MAX_LIMIT = 50
 /** Código do convite de indicação do cliente, no link `/convite?ref=`. */
 export const REFERRAL_CODE_LENGTH = 8
+/** Ranking da cidade: quantos aparecem na lista e o tamanho do apelido (nunca nome completo nem celular). */
+export const RANKING_TOP_SIZE = 10
+export const RANKING_NAME_MIN_LENGTH = 2
+export const RANKING_NAME_MAX_LENGTH = 20
 /** Teto de linhas por lista na exportação de dados do cliente. */
 export const DATA_EXPORT_LIST_LIMIT = 5000
 /** Indicações pagas por indicador em cada loja: quem fabrica contas para si não acumula carimbo sem fim. */

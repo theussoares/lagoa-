@@ -47,3 +47,16 @@ export function localDateParts(date: Date): { isoDate: string; monthDay: string 
   const isoDate = local.toISOString().slice(0, 10)
   return { isoDate, monthDay: isoDate.slice(5) }
 }
+
+/** Início do mês local do piloto (00:00 UTC−4) e do mês seguinte, em UTC; `month` no formato `AAAA-MM`. */
+export function localMonthBounds(now: Date): { month: string; start: Date; end: Date } {
+  const local = addHours(now, PILOT_UTC_OFFSET_HOURS)
+  const year = local.getUTCFullYear()
+  const monthIndex = local.getUTCMonth()
+  const at = (y: number, m: number): Date => new Date(Date.UTC(y, m, 1, -PILOT_UTC_OFFSET_HOURS))
+  return {
+    month: `${year}-${String(monthIndex + 1).padStart(2, '0')}`,
+    start: at(year, monthIndex),
+    end: at(year, monthIndex + 1),
+  }
+}

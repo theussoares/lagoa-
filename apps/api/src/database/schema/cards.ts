@@ -90,6 +90,8 @@ export const ledgerEntries = pgTable(
     index('ledger_card_occurred_idx').on(t.cardId, t.occurredAt.desc(), t.id.desc()),
     index('ledger_shop_occurred_idx').on(t.shopId, t.occurredAt.desc()),
     index('ledger_customer_occurred_idx').on(t.customerId, t.occurredAt.desc(), t.id.desc()),
+    // Ranking do mês: só as visitas, por data.
+    index('ledger_visits_occurred_idx').on(t.occurredAt).where(sql`${t.countsAsVisit}`),
   ],
 )
 
