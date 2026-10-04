@@ -559,7 +559,8 @@
       "cooldown": "O próximo check-in nesta loja libera {when}. Carimbo dado no balcão também conta para essa espera.",
       "invalidQrTitle": "QR não reconhecido",
       "disabledTitle": "Check-in desligado nesta loja",
-      "networkTitle": "Sem conexão"
+      "networkTitle": "Sem conexão",
+      "errorTitle": "Não deu certo"
     },
     "scanAgain": "Escanear de novo",
     "toWallet": "Ver carteira",

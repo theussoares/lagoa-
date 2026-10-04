@@ -3,7 +3,7 @@ import type { Redemption } from '#shared/schemas/redemption'
 import type { ErrorOf, TransportError } from '#shared/types/errors'
 import type { Result } from '#shared/types/result'
 
-export type RequestRedemptionCodeError = ErrorOf<'notFound' | 'rewardNotReady'> | TransportError
+export type RequestRedemptionCodeError = ErrorOf<'notFound' | 'rewardNotReady' | 'termsNotAccepted'> | TransportError
 
 export interface RewardRedemptionService {
   /** Gera (ou devolve o ainda válido) código de resgate do cartão. */

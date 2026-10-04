@@ -12,4 +12,6 @@ export interface AuthService {
   signInCustomer(phone: PhoneNumber, code: LoginCode): Promise<Result<CustomerSession, SignInError>>
   /** Celular sem loja não é erro: devolve um ticket para o Criar o clube. */
   signInMerchant(phone: PhoneNumber, code: LoginCode): Promise<Result<MerchantSignInResult, MerchantSignInError>>
+  /** Encerra a sessão no provedor de login (o app limpa a sessão local por conta própria). */
+  signOut(): Promise<void>
 }

@@ -22,4 +22,6 @@ export class MockAuthService implements AuthService {
   signInMerchant(phone: PhoneNumber, code: LoginCode): Promise<Result<MerchantSignInResult, MerchantSignInError>> {
     return this.backend.run((ctx) => signInMerchant(ctx, phone, code))
   }
+
+  async signOut(): Promise<void> {}
 }

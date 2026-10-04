@@ -13,8 +13,13 @@ export default defineNuxtConfig({
   modules: ['@vite-pwa/nuxt'],
   runtimeConfig: {
     public: {
-      /** 'mock' até o backend existir; 'http' quando o ADR do CTO sair. */
+      /** 'mock' (localStorage) ou 'http' (API real do cliente; o painel do lojista segue mock). */
       apiMode: 'mock',
+      /** Base da API (`/v1` incluso), só no modo http. Env: NUXT_PUBLIC_API_BASE_URL. */
+      apiBaseUrl: '',
+      /** Projeto Supabase do login do cliente e sua chave pública (anon/publishable), só no modo http. */
+      supabaseUrl: '',
+      supabaseAnonKey: '',
       /** Atraso artificial do mock para a UI exercitar carregamento. */
       mockLatencyMs: 250,
     },
