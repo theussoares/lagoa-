@@ -19,6 +19,14 @@ export class DrizzleReferralSettlement extends ReferralSettlement {
   }
 
   async settlePending(referredId: string, shopId: string, now: Date): Promise<SettlementOutcome> {
+    // Quase ninguém tem indicação pendente: uma leitura simples (índice único) evita abrir transação à toa.
+    const [pending] = await this.db
+      .select({ id: referrals.id })
+      .from(referrals)
+      .where(and(eq(referrals.shopId, shopId), eq(referrals.referredId, referredId), eq(referrals.status, 'pending')))
+      .limit(1)
+    if (!pending) return 'none'
+
     return this.db.transaction(async (tx) => {
       const [row] = await tx
         .select({
@@ -32,6 +40,7 @@ export class DrizzleReferralSettlement extends ReferralSettlement {
           expirationMonths: programs.expirationMonths,
           shopStatus: shops.status,
           referredCardCreatedAt: loyaltyCards.createdAt,
+          referredLastVisitAt: loyaltyCards.lastVisitAt,
         })
         .from(referrals)
         .innerJoin(shops, eq(shops.id, referrals.shopId))
@@ -39,8 +48,8 @@ export class DrizzleReferralSettlement extends ReferralSettlement {
         .leftJoin(loyaltyCards, and(eq(loyaltyCards.shopId, referrals.shopId), eq(loyaltyCards.customerId, referrals.referredId)))
         .where(and(eq(referrals.shopId, shopId), eq(referrals.referredId, referredId), eq(referrals.status, 'pending')))
         .for('update', { of: referrals })
-      // Sem pendência, ou o indicado ainda não fez a primeira visita: nada a pagar (a pendência continua).
-      if (!row || row.referredCardCreatedAt === null) return 'none'
+      // Sem pendência, ou o indicado ainda não visitou de verdade (cartão só com bônus não vale): a pendência continua.
+      if (!row || row.referredCardCreatedAt === null || row.referredLastVisitAt === null) return 'none'
 
       const bonusRules = BonusRulesSchema.safeParse(row.bonusRules)
       const eligible =

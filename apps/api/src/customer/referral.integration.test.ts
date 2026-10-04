@@ -73,17 +73,23 @@ describe.skipIf(!TEST_DATABASE_URL)('referral against a real database', () => {
     await data.db.transaction(async (tx) => {
       await ledger.lockOrCreateCard(tx, { shopId: shop.id, customerId: referred, programId: shop.programId }, { policy: { kind: 'never' }, target: 10, now: new Date() })
     })
+    // sem passar pelo check-in (que pagaria sozinho): marca a primeira visita à mão
+    await data.db.update(loyaltyCards).set({ lastVisitAt: new Date() }).where(eq(loyaltyCards.customerId, referred))
     const outcomes = await Promise.all(Array.from({ length: 5 }, () => settlement.settlePending(referred, shop.id, new Date())))
     expect(outcomes.filter((o) => o === 'rewarded')).toHaveLength(1)
     expect(outcomes.filter((o) => o === 'none')).toHaveLength(4)
     expect((await kindsOf(referrer)).filter((k) => k.startsWith('referralBonus'))).toHaveLength(1)
   }, SLOW)
 
-  it('waits for the first visit: nothing is paid while the invited person has no card', async () => {
+  it('waits for the first visit: nothing is paid while the invited person has no card, or a card with no visit', async () => {
     const shop = await data.createShop({ bonusRules: REFERRAL_ON })
     const [referrer, referred] = [await data.createCustomer(), await data.createCustomer()]
     await invite(shop, referrer, referred)
     expect(await settlement.settlePending(referred, shop.id, new Date())).toBe('none')
+    await data.db.transaction(async (tx) => {
+      await ledger.lockOrCreateCard(tx, { shopId: shop.id, customerId: referred, programId: shop.programId }, { policy: { kind: 'never' }, target: 10, now: new Date() })
+    })
+    expect(await settlement.settlePending(referred, shop.id, new Date())).toBe('none') // cartão sem visita não vale
     expect((await referralsOf(shop.id))[0]?.status).toBe('pending')
   }, SLOW)
 

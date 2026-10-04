@@ -1,5 +1,5 @@
 import { catalogShop } from '../../shops/catalog.fixtures'
-import type { CheckInShop } from './check-in.repository'
+import type { CheckInShop, CheckInState } from './check-in.repository'
 
 export function checkInShop(overrides: Partial<CheckInShop> = {}): CheckInShop {
   return {
@@ -10,8 +10,6 @@ export function checkInShop(overrides: Partial<CheckInShop> = {}): CheckInShop {
     ...overrides,
   }
 }
-
-import type { CheckInState } from './check-in.repository'
 
 /** Estado de quem nunca visitou a loja (cartão recém-criado ou só com bônus). */
 export const FIRST_VISIT: CheckInState = { card: { balance: 0, rewardExpiresAt: null, lastVisitAt: null }, birthday: null }
