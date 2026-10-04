@@ -4,6 +4,7 @@ import { HttpCheckInService } from './HttpCheckInService'
 import { HttpDataExportService } from './HttpDataExportService'
 import { HttpDiscoverService } from './HttpDiscoverService'
 import { HttpProfileService } from './HttpProfileService'
+import { HttpRankingService } from './HttpRankingService'
 import { HttpReferralService } from './HttpReferralService'
 import { HttpRewardRedemptionService } from './HttpRewardRedemptionService'
 import { HttpWalletService } from './HttpWalletService'
@@ -17,5 +18,6 @@ export function createHttpCustomerServices(api: ApiClient, newIdempotencyKey: ()
     profile: new HttpProfileService(api),
     referral: new HttpReferralService(api),
     dataExport: new HttpDataExportService(api),
+    ranking: new HttpRankingService(api),
   }
 }

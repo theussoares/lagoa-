@@ -672,5 +672,22 @@
   "invite": {
     "pageTitle": "Convite",
     "opening": "Abrindo o convite…"
+  },
+  "ranking": {
+    "title": "Ranking da cidade",
+    "lead": "Quem mais visitou as lojas em {month}.",
+    "listLabel": "Ranking do mês",
+    "visits": "{count} visita | {count} visitas",
+    "empty": "Ninguém entrou no ranking ainda. Seja o primeiro!",
+    "noVisitsYet": "Você está no ranking. Faça uma visita este mês para aparecer na lista.",
+    "myPosition": "Você está em {position}º lugar, com {visits} visitas.",
+    "nameLabel": "Seu apelido no ranking",
+    "nameHelp": "Só o apelido aparece, nunca seu celular nem seu nome. Você pode sair quando quiser.",
+    "join": "Entrar no ranking",
+    "leave": "Sair do ranking",
+    "joined": "Você entrou no ranking.",
+    "left": "Você saiu do ranking e seu apelido foi apagado.",
+    "privacy": "O ranking conta só visitas confirmadas no mês, nas lojas da rede. Não vale prêmio: é só pela graça.",
+    "link": "Ranking da cidade"
   }
 }

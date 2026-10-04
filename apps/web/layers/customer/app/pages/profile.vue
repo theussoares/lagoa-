@@ -136,6 +136,8 @@ async function saveBirthday(birthday: Birthday | null, action: BirthdayAction): 
       </div>
     </section>
 
+    <UButton to="/ranking" variant="outline" color="neutral" size="lg" block icon="i-ph-trophy" :label="t('ranking.link')" />
+
     <section aria-labelledby="data-title" class="flex flex-col gap-3">
       <h2 id="data-title" class="letreiro text-base text-toned">{{ t('profile.dataTitle') }}</h2>
       <div class="flex flex-col gap-3 rounded-(--radius-card) bg-default p-4 shadow-(--lagoa-shadow-card)">

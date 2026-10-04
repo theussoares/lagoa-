@@ -37,3 +37,9 @@
 1. Aceitar mais de um momento coreografado e atualizar o `MASTER.md`?
 2. Selos são só do app, ou o lojista pode criar o seu selo de loja no futuro?
 3. Sequência semanal entra ou fica só em medição?
+
+## Decisões registradas (2026-10)
+
+1. `MASTER.md` atualizado: mais de um momento coreografado é permitido, sempre em papel e tinta.
+2. **Ranking de pessoas entra**, com guardas: opt-in explícito e revogável, só **apelido** (nunca celular nem nome), conta só visitas já validadas no mês (fuso da cidade), sem prêmio. API: `GET /customer/ranking` e `PUT /customer/ranking/consent`; front: `/ranking` (link no Perfil).
+3. Feito: respingo de tinta no selo de prêmio e o ranking. Contagem animada do "falta" foi testada e desistida (quebra snapshots e acessibilidade sem ganho claro).
