@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { TERMS_VERSION } from '#shared/constants/domain'
 import type { CustomerProfile, ProfileUpdate } from '#shared/schemas/customer'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
@@ -36,7 +37,7 @@ export class ProfileService {
 
   async acceptTerms(userId: string): Promise<Result<CustomerProfile, ProfileNotFound>> {
     const now = this.clock.now()
-    return this.presentResult(await this.repository.update(userId, (current) => decideTerms(current, now)))
+    return this.presentResult(await this.repository.update(userId, (current) => decideTerms(current, now, TERMS_VERSION)))
   }
 
   private presentResult<E>(result: Result<ProfileRecord, E>): Result<CustomerProfile, E> {

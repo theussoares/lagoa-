@@ -1,0 +1,1 @@
+ALTER TABLE "programs" ADD CONSTRAINT "programs_check_in_cooldown_check" CHECK ("programs"."check_in_cooldown_hours" BETWEEN 1 AND 168);

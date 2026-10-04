@@ -8,7 +8,8 @@ import { PiiService } from '../../common/pii.service'
 import { FakeAuthGuard, TEST_USER } from '../../test-support/fake-auth.guard'
 import { createTestPii } from '../../test-support/pii'
 import { profileRecord } from '../profile/profile.fixtures'
-import { type ProfileRecord, ProfileRepository } from '../profile/profile.repository'
+import { ProfileRepository } from '../profile/profile.repository'
+import { FixedProfileRepository } from '../../test-support/fixed-profile.repository'
 import { SessionService } from '../session/session.service'
 import { type NewCustomer, type RegistrationOutcome, RegistrationRepository } from './registration.repository'
 import { RegistrationController } from './registration.controller'
@@ -20,15 +21,6 @@ class SwitchableRegistrationRepository extends RegistrationRepository {
   async register(_customer: NewCustomer): Promise<RegistrationOutcome> {
     if (this.failWith) throw this.failWith
     return this.outcome
-  }
-}
-
-class FixedProfileRepository extends ProfileRepository {
-  async findByUserId(): Promise<ProfileRecord> {
-    return profileRecord({ userId: TEST_USER.id })
-  }
-  async update(): Promise<never> {
-    throw new Error('not used')
   }
 }
 
@@ -44,7 +36,7 @@ describe('customer registration HTTP', () => {
         SessionService,
         { provide: PiiService, useValue: createTestPii() },
         { provide: RegistrationRepository, useValue: repository },
-        { provide: ProfileRepository, useClass: FixedProfileRepository },
+        { provide: ProfileRepository, useValue: new FixedProfileRepository(profileRecord({ userId: TEST_USER.id })) },
         { provide: APP_GUARD, useClass: FakeAuthGuard },
         { provide: APP_FILTER, useClass: AllExceptionsFilter },
       ],

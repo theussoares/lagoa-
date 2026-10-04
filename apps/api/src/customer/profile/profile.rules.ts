@@ -32,7 +32,12 @@ export function decideConsent(granted: boolean, now: Date): Result<ProfilePatch,
   return ok({ notificationsConsent: granted, consentUpdatedAt: now })
 }
 
-/** Idempotente: o primeiro aceite é o que vale. */
-export function decideTerms(current: ProfileRecord, now: Date): Result<ProfilePatch, never> {
-  return ok(current.termsAcceptedAt === null ? { termsAcceptedAt: now } : {})
+/** Idempotente para a versão atual; versão nova dos termos pede um novo aceite (e grava qual foi). */
+export function decideTerms(current: ProfileRecord, now: Date, version: string): Result<ProfilePatch, never> {
+  return ok(hasAcceptedTerms(current, version) ? {} : { termsAcceptedAt: now, termsVersion: version })
+}
+
+/** Aceitou **a versão atual** dos termos (um aceite antigo, de outra versão, não vale). */
+export function hasAcceptedTerms(record: Pick<ProfileRecord, 'termsAcceptedAt' | 'termsVersion'>, version: string): boolean {
+  return record.termsAcceptedAt !== null && record.termsVersion === version
 }

@@ -5,6 +5,9 @@ import request from 'supertest'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { AllExceptionsFilter } from '../../common/http/all-exceptions.filter'
 import { FakeAuthGuard } from '../../test-support/fake-auth.guard'
+import { FixedProfileRepository } from '../../test-support/fixed-profile.repository'
+import { acceptedProfile } from '../profile/profile.fixtures'
+import { ProfileRepository } from '../profile/profile.repository'
 import { ReferralController } from './referral.controller'
 import { type CaptureOutcome, ReferralRepository } from './referral.repository'
 import { ReferralService } from './referral.service'
@@ -21,6 +24,7 @@ class FakeReferralRepository extends ReferralRepository {
 
 describe('referral HTTP', () => {
   let app: INestApplication
+  const profiles = new FixedProfileRepository(acceptedProfile())
   const repository = new FakeReferralRepository()
 
   beforeAll(async () => {
@@ -29,6 +33,7 @@ describe('referral HTTP', () => {
       providers: [
         ReferralService,
         { provide: ReferralRepository, useValue: repository },
+        { provide: ProfileRepository, useValue: profiles },
         { provide: APP_GUARD, useClass: FakeAuthGuard },
         { provide: APP_FILTER, useClass: AllExceptionsFilter },
       ],
@@ -59,4 +64,18 @@ describe('referral HTTP', () => {
   it.each([{}, { referralCode: 'A' }, { referralCode: 1, shopCode: 2 }, { referralCode: 'x'.repeat(33), shopCode: 'NAV4K7' }])('rejects a malformed body %j', async (body) => {
     await request(app.getHttpServer()).post('/referrals').send(body).expect(400)
   })
+
+  it('answers 403 termsNotAccepted, and writes nothing, until the customer accepts the current terms', async () => {
+    const before = profiles.record
+    profiles.record = profileRecordFor('none')
+    const refused = await request(app.getHttpServer()).post('/referrals').send({ referralCode: 'ACDEFGHJ', shopCode: 'NAV4K7' }).expect(403)
+    expect(refused.body).toEqual({ code: 'termsNotAccepted' })
+    profiles.record = profileRecordFor('old')
+    await request(app.getHttpServer()).post('/referrals').send({ referralCode: 'ACDEFGHJ', shopCode: 'NAV4K7' }).expect(403)
+    profiles.record = before
+  })
 })
+
+function profileRecordFor(kind: 'none' | 'old') {
+  return kind === 'none' ? acceptedProfile({ termsAcceptedAt: null, termsVersion: null }) : acceptedProfile({ termsVersion: '2020-01' })
+}

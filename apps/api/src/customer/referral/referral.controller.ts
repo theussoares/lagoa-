@@ -6,6 +6,7 @@ import { CurrentUser } from '../../auth/current-user.decorator'
 import { unwrap } from '../../common/http/domain-exception'
 import { ZodValidationPipe } from '../../common/http/zod-validation.pipe'
 import { ReferralService } from './referral.service'
+import { RequiresTerms } from '../profile/terms.guard'
 
 @Controller('referrals')
 export class ReferralController {
@@ -19,6 +20,7 @@ export class ReferralController {
 
   /** 204 para qualquer convite, valendo ou não: a resposta não pode servir de oráculo de contas ou lojas. */
   @Post()
+  @RequiresTerms()
   @HttpCode(204)
   @Throttle({ default: { limit: 10, ttl: 60_000 }, ip: { limit: 60, ttl: 60_000 } })
   async capture(

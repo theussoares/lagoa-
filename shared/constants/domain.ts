@@ -22,6 +22,8 @@ export const CHECK_IN_CODE_INPUT_MAX_LENGTH = 32
 export const CHECK_IN_LINK_PARAM = 'loja'
 /** Teto da vitrine do Descobrir: o piloto é uma cidade; lista sempre limitada. */
 export const DISCOVER_SHOPS_LIMIT = 200
+/** Versão dos termos de uso/LGPD que o app mostra; vai para o aceite (auditoria). Muda quando o texto muda. */
+export const TERMS_VERSION = '2026-10'
 /** A carteira de uma pessoa cabe em dezenas de cartões; a lista é limitada de qualquer jeito. */
 export const WALLET_CARDS_LIMIT = 100
 export const WALLET_ACTIVITY_DEFAULT_LIMIT = 20

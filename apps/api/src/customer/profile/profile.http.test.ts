@@ -1,6 +1,7 @@
 import { type INestApplication } from '@nestjs/common'
 import { APP_FILTER, APP_GUARD } from '@nestjs/core'
 import { Test } from '@nestjs/testing'
+import { TERMS_VERSION } from '#shared/constants/domain'
 import request from 'supertest'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import type { Result } from '#shared/types/result'
@@ -29,6 +30,9 @@ class InMemoryProfileRepository extends ProfileRepository {
   record: ProfileRecord | null = null
   async findByUserId(userId: string): Promise<ProfileRecord | null> {
     return this.record?.userId === userId ? this.record : null
+  }
+  async findTerms(): Promise<Pick<ProfileRecord, 'termsAcceptedAt' | 'termsVersion'> | null> {
+    return this.record
   }
   async update<E>(
     userId: string,
@@ -127,6 +131,7 @@ describe('customer profile HTTP', () => {
   it('accepts terms once and keeps the first timestamp', async () => {
     await request(app.getHttpServer()).post('/customer/profile/terms').expect(200)
     expect(repository.record?.termsAcceptedAt).toEqual(NOW)
+    expect(repository.record?.termsVersion).toBe(TERMS_VERSION)
     now.current = new Date('2026-12-25T12:00:00Z')
     await request(app.getHttpServer()).post('/customer/profile/terms').expect(200)
     expect(repository.record?.termsAcceptedAt).toEqual(NOW)

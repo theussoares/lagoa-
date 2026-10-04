@@ -105,25 +105,51 @@ Tela: Resgate. Front: `RewardRedemptionService`. Entregue em três PRs.
 - Coluna `loyalty_cards.last_activity_at` (migration `0007`): a inatividade conta da última visita **ou bônus**;
   o antifraude do check-in continua só em `last_visit_at`. A chave do vencimento inclui a última linha do cartão.
 
-**5.4 Fechamento**
-- `Idempotency-Key` no check-in, README da API, revisão de segurança de ponta a ponta, `EXPLAIN` das queries
-  críticas, checklist de integração com o front (`Http*Service`).
+**5.4 Fechamento** (feito)
+- `Idempotency-Key` no check-in (reenvio devolve o carimbo já gravado; chave por cliente + loja + cartão).
+- `customer_profiles.terms_version` (migration `0008`) e `TERMS_VERSION` no `shared`: o aceite grava a versão.
+- Payload cifrado de PII com a versão da chave (rotação aditiva).
+- Testes de integração de perfil, cadastro, Descobrir e Carteira (mais os de check-in, resgate, vencimento e
+  indicação): 241 testes da API, todos contra Postgres no CI.
+- `EXPLAIN (ANALYZE)` em volume (300 lojas, 20 mil clientes, 60 mil cartões, 300 mil linhas de ledger): todas as
+  consultas críticas abaixo de 5 ms e com índice (transação desfeita, nada ficou no banco).
+- README da API, guia de integração com o front, revisão de segurança de ponta a ponta.
 
 ## Pendências registradas (revisões)
 
 | Item | Onde | Fase |
 |---|---|---|
-| Teto diário de respostas `phoneAlreadyUsed` por conta (sondagem de celular) | cadastro | 5 |
-| Requisição com token inválido não passa pelo limite (custo baixo: ES256 com JWKS em cache) | `app.module.ts` | 5 |
+| Teto diário de respostas `phoneAlreadyUsed` por conta (sondagem de celular; hoje só o limite de 5/min por conta e 15/min por IP) | cadastro | PO |
 | Lojista que vira cliente com celular diferente do já gravado: o gravado vence, sem aviso | `drizzle-registration.repository.ts` | 5 |
-| Versão dos termos aceitos (`termsVersion`) para auditoria LGPD; exige migration | `customer_profiles` | 5 |
 | Quem tira o aniversário e quer repor a mesma data fica travado até 365 dias: PO confirmar | `profile.rules.ts` | PO |
-| Testes de integração com Postgres: check-in já cobre lock, rollback e ordem (`check-in.integration.test.ts`); faltam Descobrir, Carteira, perfil e cadastro | `apps/api` | 5 |
 | Índice `(status, name, id)` para a ordem da vitrine, se passar de centenas de lojas | `shops` | 5 |
-| `Idempotency-Key` no check-in (devolver o carimbo já gravado ao reenviar) | `check-in` | 5 |
 | Regras do clube lidas fora do lock no check-in: ok hoje; reavaliar quando o lojista puder trocar o modo | `drizzle-check-in.repository.ts` | 5 |
 | Balcão: chamar `ReferralSettlement.settlePending` depois de toda primeira visita lançada + teste de integração "primeira visita pelo Balcão paga a indicação" | `merchant/*` (Caio) | 6 |
-| Rotação da chave de cifra de PII (prefixo de versão no payload) | `pii.service.ts` | 5 |
+
+## Revisão de segurança de ponta a ponta (fim da fase 5)
+
+Sem achado crítico, IDOR, vazamento de celular/e-mail nem SQL injetável. Corrigido na 5.4: janela de check-in
+validada (CHECK 1–168 h + recusa no código), termos exigidos **no servidor** (`403 termsNotAccepted`, versão
+atual; versão nova pede novo aceite), JWT com `exp`/`sub` obrigatórios, `sub` UUID, sem conta anônima e e-mail
+validado, erros 4xx do Express (corpo grande, JSON quebrado) sem log de erro, env endurecida (produção exige
+`TRUST_PROXY_HOPS` e `SUPABASE_URL` https; pepper ≥ 32), CORS com trim, teste de RLS em toda tabela pública.
+
+**Riscos que dependem de decisão de produto (sem mitigação no código):**
+
+| Risco | Mitigações possíveis | Quem decide |
+|---|---|---|
+| **Alto.** O `checkInCode` é fixo e impresso; o celular é declarado e o e-mail só é normalizado por caixa. Contas falsas fazem check-in de casa a cada janela e somam bônus de indicação | teto de bônus por indicador/loja/mês; QR assinado e rotativo exibido no Balcão; normalizar alias de e-mail (`+tag`, pontos do Gmail) no hash de unicidade; verificação de celular por SMS | PO + Caio (Balcão) |
+| **Médio.** Quem se cadastra primeiro com o celular de outra pessoa a "toma"; a vítima recebe `phoneAlreadyUsed` e não há disputa | fluxo de suporte/contestação antes do piloto; SMS no futuro | PO |
+| Direitos do titular (LGPD): sem rota de exclusão nem de exportação dos dados | `DELETE /customer/me` (anonimizar ledger) e `GET /customer/me/export` | PO + jurídico |
+
+**Termos:** quem aceitou antes da migration `0008` tem `terms_version` nulo e volta à tela de termos uma vez (não há
+cliente real ainda; com clientes, planejar o backfill). O novo aceite sobrescreve `terms_accepted_at`: para auditoria
+completa, uma tabela de eventos de aceite (junto com o histórico de consentimento).
+
+**Dívida técnica de segurança (baixa):** AAD do AES-GCM com id do usuário e coluna na próxima versão da chave (hoje
+só a versão); armazenamento do limite de requisições em memória (várias instâncias multiplicam o limite: usar
+Redis); `statement_timeout`/`lock_timeout` no papel do banco (o pooler do Supabase recusa parâmetros de conexão);
+limite por IP antes do auth (token inválido hoje não conta).
 
 ## Decisões registradas
 
@@ -158,6 +184,6 @@ Tela: Resgate. Front: `RewardRedemptionService`. Entregue em três PRs.
 | Item | Quando |
 |---|---|
 | Padrão de módulo (`CLAUDE.md`) e `shared/` como contrato | já vale |
-| Serviço de ledger (escrita) | desenhar no início da fase 4 |
-| Validação de resgate no Balcão | fase 5 |
+| Serviço de ledger (escrita) | pronto: `LedgerStore` (ver `apps/api/README.md`, "Para o painel do lojista") |
+| Validação e entrega de resgate no Balcão | pronto: `RedemptionLookup` + `LedgerStore.settleRedemption` |
 | Aprovação de loja (`Shop.status`) | em aberto no modelo |

@@ -18,6 +18,7 @@ const PROFILE_COLUMNS = {
   notificationsConsent: customerProfiles.notificationsConsent,
   consentUpdatedAt: customerProfiles.consentUpdatedAt,
   termsAcceptedAt: customerProfiles.termsAcceptedAt,
+  termsVersion: customerProfiles.termsVersion,
   phoneEncrypted: appUsers.phoneEncrypted,
 }
 
@@ -34,6 +35,15 @@ export class DrizzleProfileRepository extends ProfileRepository {
       .select(PROFILE_COLUMNS)
       .from(customerProfiles)
       .innerJoin(appUsers, eq(appUsers.id, customerProfiles.userId))
+      .where(eq(customerProfiles.userId, userId))
+      .limit(1)
+    return row ?? null
+  }
+
+  async findTerms(userId: string): Promise<Pick<ProfileRecord, 'termsAcceptedAt' | 'termsVersion'> | null> {
+    const [row] = await this.db
+      .select({ termsAcceptedAt: customerProfiles.termsAcceptedAt, termsVersion: customerProfiles.termsVersion })
+      .from(customerProfiles)
       .where(eq(customerProfiles.userId, userId))
       .limit(1)
     return row ?? null

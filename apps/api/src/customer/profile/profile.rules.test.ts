@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { decideConsent, decideProfileUpdate, decideTerms } from './profile.rules'
+import { decideConsent, decideProfileUpdate, decideTerms, hasAcceptedTerms } from './profile.rules'
 import { profileRecord } from './profile.fixtures'
 
 const now = new Date('2026-10-03T12:00:00Z')
@@ -43,12 +43,23 @@ describe('decideConsent', () => {
 })
 
 describe('decideTerms', () => {
-  it('stamps the first acceptance', () => {
-    expect(decideTerms(profileRecord(), now)).toEqual({ ok: true, value: { termsAcceptedAt: now } })
+  it('stamps the first acceptance with the version that was shown', () => {
+    expect(decideTerms(profileRecord(), now, '2026-10')).toEqual({ ok: true, value: { termsAcceptedAt: now, termsVersion: '2026-10' } })
   })
 
-  it('keeps the original acceptance on repeat calls', () => {
-    const current = profileRecord({ termsAcceptedAt: new Date('2026-01-01T00:00:00Z') })
-    expect(decideTerms(current, now)).toEqual({ ok: true, value: {} })
+  it('keeps the original acceptance on repeat calls for the same version', () => {
+    const current = profileRecord({ termsAcceptedAt: new Date('2026-01-01T00:00:00Z'), termsVersion: '2026-12' })
+    expect(decideTerms(current, now, '2026-12')).toEqual({ ok: true, value: {} })
+  })
+
+  it('asks for a new acceptance when the terms changed, recording the new version', () => {
+    const current = profileRecord({ termsAcceptedAt: new Date('2026-01-01T00:00:00Z'), termsVersion: '2026-01' })
+    expect(decideTerms(current, now, '2026-12')).toEqual({ ok: true, value: { termsAcceptedAt: now, termsVersion: '2026-12' } })
+  })
+
+  it('treats an acceptance with no recorded version as not accepted', () => {
+    expect(hasAcceptedTerms({ termsAcceptedAt: new Date(), termsVersion: null }, '2026-12')).toBe(false)
+    expect(hasAcceptedTerms({ termsAcceptedAt: null, termsVersion: '2026-12' }, '2026-12')).toBe(false)
+    expect(hasAcceptedTerms({ termsAcceptedAt: new Date(), termsVersion: '2026-12' }, '2026-12')).toBe(true)
   })
 })

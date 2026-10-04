@@ -10,6 +10,7 @@ export interface ProfileRecord {
   readonly notificationsConsent: boolean
   readonly consentUpdatedAt: Date | null
   readonly termsAcceptedAt: Date | null
+  readonly termsVersion: string | null
   readonly phoneEncrypted: Buffer
 }
 
@@ -17,7 +18,7 @@ export interface ProfileRecord {
 export type ProfilePatch = Partial<
   Pick<
     ProfileRecord,
-    'firstName' | 'birthday' | 'birthdayChangedAt' | 'notificationsConsent' | 'consentUpdatedAt' | 'termsAcceptedAt'
+    'firstName' | 'birthday' | 'birthdayChangedAt' | 'notificationsConsent' | 'consentUpdatedAt' | 'termsAcceptedAt' | 'termsVersion'
   >
 >
 
@@ -25,6 +26,9 @@ export type ProfileNotFound = ErrorOf<'notFound'>
 
 export abstract class ProfileRepository {
   abstract findByUserId(userId: string): Promise<ProfileRecord | null>
+
+  /** Só o aceite dos termos (consulta enxuta por chave primária, para o guard de cada escrita). */
+  abstract findTerms(userId: string): Promise<Pick<ProfileRecord, 'termsAcceptedAt' | 'termsVersion'> | null>
 
   /**
    * Lê o perfil com lock de linha, deixa `decide` escolher o que mudar e grava tudo numa

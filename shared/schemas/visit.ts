@@ -59,6 +59,10 @@ export type WalletActivity = z.infer<typeof WalletActivitySchema>
 export const CheckInRequestSchema = z.object({ code: z.string().max(CHECK_IN_CODE_INPUT_MAX_LENGTH) })
 export type CheckInRequest = z.infer<typeof CheckInRequestSchema>
 
+/** Opcional: o app gera um por toque e reenvia o mesmo se a resposta se perder; 16 a 64 caracteres seguros. */
+export const IdempotencyKeySchema = z.string().regex(/^[A-Za-z0-9_-]{16,64}$/)
+export type IdempotencyKey = z.infer<typeof IdempotencyKeySchema>
+
 export const CheckInResultSchema = z.object({
   activity: WalletActivitySchema,
   card: CardProgressSchema,

@@ -8,6 +8,9 @@ import { err, ok, type Result } from '#shared/types/result'
 import { Clock } from '../../common/clock'
 import { AllExceptionsFilter } from '../../common/http/all-exceptions.filter'
 import { FakeAuthGuard, TEST_USER } from '../../test-support/fake-auth.guard'
+import { FixedProfileRepository } from '../../test-support/fixed-profile.repository'
+import { acceptedProfile } from '../profile/profile.fixtures'
+import { ProfileRepository } from '../profile/profile.repository'
 import { redemptionRecord } from './redemption.fixtures'
 import { RedemptionController } from './redemption.controller'
 import {
@@ -44,6 +47,7 @@ class FakeRedemptionRepository extends RedemptionRepository {
 
 describe('redemption HTTP', () => {
   let app: INestApplication
+  const profiles = new FixedProfileRepository(acceptedProfile())
   const repository = new FakeRedemptionRepository()
 
   beforeAll(async () => {
@@ -53,6 +57,7 @@ describe('redemption HTTP', () => {
         RedemptionService,
         { provide: RedemptionRepository, useValue: repository },
         { provide: Clock, useValue: { now: () => NOW } },
+        { provide: ProfileRepository, useValue: profiles },
         { provide: APP_GUARD, useClass: FakeAuthGuard },
         { provide: APP_FILTER, useClass: AllExceptionsFilter },
       ],
@@ -105,4 +110,18 @@ describe('redemption HTTP', () => {
     await request(app.getHttpServer()).get('/redemptions/nope').expect(400)
     expect(repository.lookups).toHaveLength(0)
   })
+
+  it('answers 403 termsNotAccepted, and writes nothing, until the customer accepts the current terms', async () => {
+    const before = profiles.record
+    profiles.record = profileRecordFor('none')
+    const refused = await request(app.getHttpServer()).post('/redemptions').send({ cardId: CARD_ID }).expect(403)
+    expect(refused.body).toEqual({ code: 'termsNotAccepted' })
+    profiles.record = profileRecordFor('old')
+    await request(app.getHttpServer()).post('/redemptions').send({ cardId: CARD_ID }).expect(403)
+    profiles.record = before
+  })
 })
+
+function profileRecordFor(kind: 'none' | 'old') {
+  return kind === 'none' ? acceptedProfile({ termsAcceptedAt: null, termsVersion: null }) : acceptedProfile({ termsVersion: '2020-01' })
+}

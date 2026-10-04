@@ -15,12 +15,12 @@ let guard: SupabaseAuthGuard
 let privateKey: CryptoKey
 let strangerKey: CryptoKey
 
-async function token(overrides: { key?: CryptoKey; alg?: string; issuer?: string; audience?: string; subject?: string | null; expiresIn?: string; email?: string } = {}): Promise<string> {
-  const jwt = new SignJWT(overrides.email ? { email: overrides.email } : {})
+async function token(overrides: { key?: CryptoKey; alg?: string; issuer?: string; audience?: string; subject?: string | null; expiresIn?: string | null; email?: string; anonymous?: boolean } = {}): Promise<string> {
+  const jwt = new SignJWT({ ...(overrides.email !== undefined && { email: overrides.email }), ...(overrides.anonymous && { is_anonymous: true }) })
     .setProtectedHeader({ alg: overrides.alg ?? 'ES256', kid: 'test' })
     .setIssuer(overrides.issuer ?? ISSUER)
     .setAudience(overrides.audience ?? 'authenticated')
-    .setExpirationTime(overrides.expiresIn ?? '5m')
+  if (overrides.expiresIn !== null) jwt.setExpirationTime(overrides.expiresIn ?? '5m')
   if (overrides.subject !== null) jwt.setSubject(overrides.subject ?? USER_ID)
   return jwt.sign(overrides.key ?? privateKey)
 }
@@ -61,8 +61,19 @@ describe('SupabaseAuthGuard', () => {
     ['expired', async () => `Bearer ${await token({ expiresIn: '-1m' })}`],
     ['no subject', async () => `Bearer ${await token({ subject: null })}`],
     ['symmetric HS256 signed with the public key material', async () => `Bearer ${await new SignJWT({}).setProtectedHeader({ alg: 'HS256' }).setIssuer(ISSUER).setAudience('authenticated').setSubject(USER_ID).setExpirationTime('5m').sign(new TextEncoder().encode('any-shared-secret-of-sufficient-length-32'))}`],
+    ['no expiration claim', async () => `Bearer ${await token({ expiresIn: null })}`],
+    ['subject that is not a uuid', async () => `Bearer ${await token({ subject: 'admin' })}`],
+    ['anonymous user', async () => `Bearer ${await token({ anonymous: true })}`],
     ['garbage', async () => 'Bearer abc.def.ghi'],
   ])('rejects %s', async (_name, header) => {
     await expect(guard.canActivate(contextFor(await header()).context)).rejects.toBeInstanceOf(UnauthorizedException)
+  })
+
+  it('treats an empty or malformed e-mail claim as "no e-mail", so the customer cannot register without one', async () => {
+    for (const email of ['', 'not-an-email']) {
+      const { context, request } = contextFor(`Bearer ${await token({ email })}`)
+      await guard.canActivate(context)
+      expect(request.user).toEqual({ id: USER_ID, email: undefined })
+    }
   })
 })

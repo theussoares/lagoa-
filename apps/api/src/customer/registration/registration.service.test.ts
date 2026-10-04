@@ -4,7 +4,8 @@ import { PhoneNumberSchema } from '#shared/schemas/phone'
 import { createTestPii } from '../../test-support/pii'
 import { TEST_USER } from '../../test-support/fake-auth.guard'
 import { profileRecord } from '../profile/profile.fixtures'
-import { type ProfileRecord, ProfileRepository } from '../profile/profile.repository'
+import type { ProfileRecord } from '../profile/profile.repository'
+import { FixedProfileRepository } from '../../test-support/fixed-profile.repository'
 import { SessionService } from '../session/session.service'
 import { type NewCustomer, type RegistrationOutcome, RegistrationRepository } from './registration.repository'
 import { RegistrationService } from './registration.service'
@@ -19,18 +20,6 @@ class ScriptedRegistrationRepository extends RegistrationRepository {
   async register(customer: NewCustomer): Promise<RegistrationOutcome> {
     this.received.push(customer)
     return this.outcomes.shift() ?? 'created'
-  }
-}
-
-class FixedProfileRepository extends ProfileRepository {
-  constructor(private readonly record: ProfileRecord | null) {
-    super()
-  }
-  async findByUserId(): Promise<ProfileRecord | null> {
-    return this.record
-  }
-  async update(): Promise<never> {
-    throw new Error('not used')
   }
 }
 

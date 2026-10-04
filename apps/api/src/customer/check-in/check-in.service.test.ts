@@ -22,6 +22,8 @@ const CARD_ID = '0190a000-0000-7000-8000-0000000000c1'
 
 class FakeCheckInRepository extends CheckInRepository {
   lookedUp: string[] = []
+  attempts: CheckInAttempt[] = []
+  replay = false
   state: CheckInState = FIRST_VISIT
   constructor(private readonly shop: CheckInShop | null) {
     super()
@@ -31,11 +33,13 @@ class FakeCheckInRepository extends CheckInRepository {
     return this.shop
   }
   async record<E>(
-    _attempt: CheckInAttempt,
+    attempt: CheckInAttempt,
     decide: (state: CheckInState) => Result<EarningPlan, E>,
   ): Promise<Result<CheckInRecorded, E | ErrorOf<'unauthorized'>>> {
+    this.attempts.push(attempt)
+    if (this.replay) return ok({ cardId: CARD_ID, entryId: ENTRY_ID, units: 1, balanceAfter: 5, recordedAt: new Date('2026-10-03T11:00:00Z'), replayed: true })
     const decision = decide(this.state)
-    return decision.ok ? ok({ cardId: CARD_ID, entryId: ENTRY_ID, plan: decision.value }) : decision
+    return decision.ok ? ok({ cardId: CARD_ID, entryId: ENTRY_ID, units: decision.value.units, balanceAfter: decision.value.balanceAfter, recordedAt: attempt.now, replayed: false }) : decision
   }
 }
 
@@ -142,5 +146,23 @@ describe('CheckInService', () => {
     expect(logged[0]).toContain('Error')
     expect(logged[0]).not.toContain('secret')
     spy.mockRestore()
+  })
+
+  it('hands the client key to the repository', async () => {
+    const { repository, service } = serviceFor(checkInShop())
+    await service.checkIn(TEST_USER.id, 'NAV4K7', 'client-key-0123456789')
+    expect(repository.attempts[0]?.clientKey).toBe('client-key-0123456789')
+    await service.checkIn(TEST_USER.id, 'NAV4K7')
+    expect(repository.attempts[1]).not.toHaveProperty('clientKey')
+  })
+
+  it('answers a replayed check-in with the stamp that was already recorded, at its own time, and does not pay referrals again', async () => {
+    const { repository, referrals, service } = serviceFor(checkInShop({ cooldownHours: 4 }))
+    repository.replay = true
+    expect(await service.checkIn(TEST_USER.id, 'NAV4K7', 'client-key-0123456789')).toMatchObject({
+      ok: true,
+      value: { activity: { id: ENTRY_ID, units: 1, createdAt: '2026-10-03T11:00:00.000Z' }, card: { balance: 5 }, nextCheckInAt: '2026-10-03T15:00:00.000Z' },
+    })
+    expect(referrals.calls).toHaveLength(0)
   })
 })

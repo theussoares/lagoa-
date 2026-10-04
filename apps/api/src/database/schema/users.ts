@@ -20,6 +20,8 @@ export const customerProfiles = pgTable('customer_profiles', {
   birthdayChangedAt: timestamp('birthday_changed_at', { withTimezone: true }),
   referralCode: char('referral_code', { length: 8 }).notNull().unique(),
   termsAcceptedAt: timestamp('terms_accepted_at', { withTimezone: true }),
+  /** Versão dos termos aceita (`TERMS_VERSION`): prova do que a pessoa leu, para auditoria LGPD. */
+  termsVersion: text('terms_version'),
   notificationsConsent: boolean('notifications_consent').notNull().default(false),
   consentUpdatedAt: timestamp('consent_updated_at', { withTimezone: true }),
 })
