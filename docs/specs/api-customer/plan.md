@@ -142,6 +142,10 @@ validado, erros 4xx do Express (corpo grande, JSON quebrado) sem log de erro, en
 | **Médio.** Quem se cadastra primeiro com o celular de outra pessoa a "toma"; a vítima recebe `phoneAlreadyUsed` e não há disputa | fluxo de suporte/contestação antes do piloto; SMS no futuro | PO |
 | Direitos do titular (LGPD): sem rota de exclusão nem de exportação dos dados | `DELETE /customer/me` (anonimizar ledger) e `GET /customer/me/export` | PO + jurídico |
 
+**Termos:** quem aceitou antes da migration `0008` tem `terms_version` nulo e volta à tela de termos uma vez (não há
+cliente real ainda; com clientes, planejar o backfill). O novo aceite sobrescreve `terms_accepted_at`: para auditoria
+completa, uma tabela de eventos de aceite (junto com o histórico de consentimento).
+
 **Dívida técnica de segurança (baixa):** AAD do AES-GCM com id do usuário e coluna na próxima versão da chave (hoje
 só a versão); armazenamento do limite de requisições em memória (várias instâncias multiplicam o limite: usar
 Redis); `statement_timeout`/`lock_timeout` no papel do banco (o pooler do Supabase recusa parâmetros de conexão);
