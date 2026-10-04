@@ -42,6 +42,15 @@ export function createMockCustomerServices(backend: MockBackend, sessions: Custo
         asCustomer(backend, sessions, (ctx, customerId) => setNotificationConsent(ctx, customerId, granted)),
       acceptTerms: () => asCustomer(backend, sessions, acceptTerms),
     },
+    dataExport: {
+      exportMyData: () =>
+        asCustomer(backend, sessions, (ctx, customerId) => {
+          const profile = getProfile(ctx, customerId)
+          return profile.ok
+            ? ok({ exportedAt: new Date().toISOString(), profile: profile.value, cards: [], ledger: [], redemptions: [], referrals: { pending: 0, rewarded: 0, rejected: 0 } })
+            : profile
+        }),
+    },
     referral: {
       capture: () => asCustomer(backend, sessions, () => ok(undefined)),
       getInvite: () => asCustomer(backend, sessions, () => ok(ReferralInviteSchema.parse({ referralCode: 'MOCKREF2' }))),

@@ -1,4 +1,5 @@
 import type { CheckInService } from './CheckInService'
+import type { DataExportService } from './DataExportService'
 import type { DiscoverService } from './DiscoverService'
 import type { ProfileService } from './ProfileService'
 import type { ReferralService } from './ReferralService'
@@ -13,4 +14,5 @@ export interface CustomerServices {
   readonly discover: DiscoverService
   readonly profile: ProfileService
   readonly referral: ReferralService
+  readonly dataExport: DataExportService
 }

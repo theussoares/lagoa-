@@ -56,4 +56,11 @@ describe('http customer services', () => {
     expect(await referral.capture({ referralCode: 'K7M2P9QX', shopCode: 'NAV4K7' })).toEqual({ ok: true, value: undefined })
     expect(fetcher.mock.calls[0]?.[1]).toMatchObject({ method: 'POST', body: '{"referralCode":"K7M2P9QX","shopCode":"NAV4K7"}' })
   })
+
+  it('data export reads GET /customer/data-export and rejects a malformed body', async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => json(200, { nope: true }))
+    const { dataExport } = servicesWith(fetcher)
+    expect(await dataExport.exportMyData()).toEqual({ ok: false, error: { code: 'internal' } })
+    expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/customer/data-export')
+  })
 })

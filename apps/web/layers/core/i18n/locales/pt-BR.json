@@ -198,7 +198,11 @@
       "remove": "Tirar aniversário",
       "saved": "Aniversário salvo: {date}.",
       "removed": "Aniversário removido."
-    }
+    },
+    "dataTitle": "Seus dados",
+    "dataHelp": "Baixe tudo que guardamos sobre você: cartões, visitas e resgates. O celular aparece mascarado.",
+    "dataDownload": "Baixar meus dados",
+    "dataDownloaded": "Arquivo baixado."
   },
   "theme": {
     "legend": "Cores do app neste aparelho",
