@@ -31,7 +31,7 @@ describe('parseEnv', () => {
   it('requires the SMS provider and hook secret in production', () => {
     const production = { ...valid(), NODE_ENV: 'production', TRUST_PROXY_HOPS: '1' }
     expect(() => parseEnv(production)).toThrow('COMTELE_AUTH_KEY, SEND_SMS_HOOK_SECRET')
-    expect(parseEnv({ ...production, COMTELE_AUTH_KEY: 'key', SEND_SMS_HOOK_SECRET: 'v1,whsec_abc' })).toMatchObject({ COMTELE_SENDER: 'Lagoa' })
+    expect(parseEnv({ ...production, COMTELE_AUTH_KEY: 'key', SEND_SMS_HOOK_SECRET: 'v1,whsec_abc' })).toMatchObject({ COMTELE_ROUTE: 17 })
   })
 
   it('requires the proxy hop count and https in production', () => {
