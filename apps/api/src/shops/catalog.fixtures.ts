@@ -16,7 +16,7 @@ export function catalogShop(overrides: Partial<CatalogShop> = {}): CatalogShop {
     neighborhood: 'Centro',
     addressLine: 'Rua Antônio Trajano, 100',
     logoPath: null,
-    program: { rules: { mode: 'stamps', target: 10 }, rewardTitle: 'Corte grátis', bonusRules: NO_BONUS },
+    program: { rules: { mode: 'stamps', target: 10 }, rewardTitle: 'Corte grátis', bonusRules: NO_BONUS, expiration: { kind: 'never' } },
     ...overrides,
   }
 }

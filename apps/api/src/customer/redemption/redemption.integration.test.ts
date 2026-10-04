@@ -4,7 +4,7 @@ import { SystemClock } from '../../common/clock'
 import { ledgerEntries, loyaltyCards, programs, redemptions, shops } from '../../database/schema'
 import { LedgerStore } from '../../ledger/ledger.store'
 import { RedemptionLookup } from '../../ledger/redemption-lookup'
-import { NO_BONUS_RULES, TEST_DATABASE_URL, TestDatabase, type TestShop } from '../../test-support/test-database'
+import { neverExpires, NO_BONUS_RULES, TEST_DATABASE_URL, TestDatabase, type TestShop } from '../../test-support/test-database'
 import { DrizzleCheckInRepository } from '../check-in/drizzle-check-in.repository'
 import { CheckInService } from '../check-in/check-in.service'
 import { DrizzleWalletRepository } from '../wallet/drizzle-wallet.repository'
@@ -26,9 +26,9 @@ describe.skipIf(!TEST_DATABASE_URL)('redemption against a real database', () => 
 
   beforeAll(() => {
     data = new TestDatabase(TEST_DATABASE_URL ?? '')
-    service = new RedemptionService(new DrizzleRedemptionRepository(data.db), new SystemClock())
+    service = new RedemptionService(new DrizzleRedemptionRepository(data.db, ledger), new SystemClock())
     checkIn = new CheckInService(new DrizzleCheckInRepository(data.db, ledger), new SystemClock())
-    wallet = new WalletService(new DrizzleWalletRepository(data.db), { SUPABASE_URL: 'https://project.supabase.co' })
+    wallet = new WalletService(new DrizzleWalletRepository(data.db), { SUPABASE_URL: 'https://project.supabase.co' }, new SystemClock())
   })
 
   afterAll(async () => data.close())
@@ -40,7 +40,7 @@ describe.skipIf(!TEST_DATABASE_URL)('redemption against a real database', () => 
     if (options.restartWelcome === false) {
       // sem boas-vindas o cartão precisa de mais visitas: preenche direto, como o Balcão faria
       await data.db.transaction(async (tx) => {
-        const { card } = await ledger.lockOrCreateCard(tx, { shopId: shop.id, customerId: customer, programId: shop.programId })
+        const { card } = await ledger.lockOrCreateCard(tx, { shopId: shop.id, customerId: customer, programId: shop.programId }, neverExpires(3))
         await ledger.credit(tx, { card, shopId: shop.id, customerId: customer, kind: 'visit', now: NOW(), idempotencyKey: `fill-${customer}`, plan: { welcomeUnits: 0, units: 3, appliedBonuses: [], balanceAfter: 3, rewardExpiresAt: null } })
       })
     } else {
@@ -180,7 +180,7 @@ describe.skipIf(!TEST_DATABASE_URL)('redemption against a real database', () => 
     await checkIn.checkIn(a, shop.checkInCode)
     await checkIn.checkIn(b, shop.checkInCode)
     const [cardA, cardB] = await Promise.all([a, b].map(async (customerId) => (await data.db.select().from(loyaltyCards).where(eq(loyaltyCards.customerId, customerId)))[0]))
-    const repository = new DrizzleRedemptionRepository(data.db)
+    const repository = new DrizzleRedemptionRepository(data.db, ledger)
     const decide = () => ({ kind: 'create' as const, expireStaleId: null })
     const attempt = (customerId: string, cardId: string | undefined, codes: string[]) => ({ customerId, cardId: cardId ?? '', createdAt: new Date(), expiresAt: new Date(Date.now() + 600_000), newCode: () => codes.shift() ?? 'ACD299' })
 

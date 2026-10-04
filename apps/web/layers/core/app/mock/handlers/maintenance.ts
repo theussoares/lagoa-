@@ -1,10 +1,12 @@
-import { consumeReward, isExpiredByInactivity } from '#shared/domain/loyaltyCard'
+import { planExpiration } from '#shared/domain/expiration'
+import { consumeReward } from '#shared/domain/loyaltyCard'
+import { toIso } from '#shared/utils/time'
 import type { MockContext } from './context'
 import { findProgram } from './queries'
 
 /**
- * O que no backend real seriam jobs: códigos vencem, prêmio guardado expira,
- * carimbos vencem por inatividade, ticket de cadastro some. No mock roda antes de cada chamada.
+ * O que no backend real é aplicado na leitura e em cada lançamento: códigos vencem, prêmio
+ * guardado expira, carimbos vencem por inatividade, ticket de cadastro some. No mock roda antes de cada chamada.
  */
 export function runMaintenance(ctx: MockContext): void {
   expireRedemptions(ctx)
@@ -28,12 +30,20 @@ function expireRedemptions(ctx: MockContext): void {
 function expireCards(ctx: MockContext): void {
   ctx.state.cards = ctx.state.cards.map((card) => {
     const program = findProgram(ctx, card.shopId)
-    if (program !== undefined && isExpiredByInactivity(card, program.expirationPolicy, ctx.now)) {
-      return { ...card, balance: 0, stamps: [], rewardExpiresAt: null }
-    }
-    if (card.rewardExpiresAt !== null && new Date(card.rewardExpiresAt) <= ctx.now) {
-      return consumeReward(card)
-    }
-    return card
+    if (program === undefined) return card
+    // Mesma regra do servidor (`planExpiration`); o mock só acrescenta as casas do cartão de carimbos.
+    const plan = planExpiration(
+      {
+        balance: card.balance,
+        lastVisitAt: card.lastVisitAt === null ? null : new Date(card.lastVisitAt),
+        rewardExpiresAt: card.rewardExpiresAt === null ? null : new Date(card.rewardExpiresAt),
+      },
+      program.expirationPolicy,
+      card.target,
+      ctx.now,
+    )
+    if (plan === null) return card
+    if (plan.kind === 'inactivity') return { ...card, balance: 0, stamps: [], rewardExpiresAt: null }
+    return { ...consumeReward(card), rewardExpiresAt: plan.rewardExpiresAt === null ? null : toIso(plan.rewardExpiresAt) }
   })
 }

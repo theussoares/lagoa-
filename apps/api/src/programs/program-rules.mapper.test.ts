@@ -33,3 +33,22 @@ describe('toProgramRules', () => {
     expect(toProgramRules({ mode: 'stamps', earnUnits: 1, target: 500 })).toEqual({ ok: false, error: { code: 'invalidProgram' } })
   })
 })
+
+import { toExpirationPolicy } from './program-rules.mapper'
+
+describe('toExpirationPolicy', () => {
+  it('maps "never" ignoring the months', () => {
+    expect(toExpirationPolicy({ expirationKind: 'never', expirationMonths: null })).toEqual({ ok: true, value: { kind: 'never' } })
+  })
+
+  it('maps inactivity with its months', () => {
+    expect(toExpirationPolicy({ expirationKind: 'afterInactivity', expirationMonths: 6 })).toEqual({
+      ok: true,
+      value: { kind: 'afterInactivity', months: 6 },
+    })
+  })
+
+  it.each([null, 0, 25])('refuses inactivity with months=%s', (months) => {
+    expect(toExpirationPolicy({ expirationKind: 'afterInactivity', expirationMonths: months })).toEqual({ ok: false, error: { code: 'invalidProgram' } })
+  })
+})

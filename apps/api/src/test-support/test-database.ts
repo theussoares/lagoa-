@@ -4,10 +4,11 @@ import { inArray } from 'drizzle-orm'
 import postgres from 'postgres'
 import { earnRateOf, unitOf } from '#shared/domain/programStrategies'
 import type { Birthday } from '#shared/schemas/common'
-import type { BonusRules, ProgramRules } from '#shared/schemas/program'
+import type { BonusRules, ExpirationPolicy, ProgramRules } from '#shared/schemas/program'
 import type { ShopStatus } from '#shared/schemas/shop'
 import { generateReadableCode } from '../common/readable-code'
 import type { Database } from '../database/database.module'
+import type { ExpiryContext } from '../ledger/ledger.store'
 import * as schema from '../database/schema'
 
 /** Postgres de verdade, só quando `TEST_DATABASE_URL` existe (CI sobe um container; local, um banco de dev). */
@@ -19,6 +20,9 @@ export const NO_BONUS_RULES: BonusRules = {
   referralBonus: { enabled: false, units: 1 },
   surpriseDay: { enabled: false, multiplier: 2, date: null },
 }
+
+/** Contexto de vencimento para quem só quer travar um cartão sem se preocupar com prazo. */
+export const neverExpires = (target = 10): ExpiryContext => ({ policy: { kind: 'never' }, target, now: new Date() })
 
 export interface TestShop {
   readonly id: string
@@ -63,6 +67,7 @@ export class TestDatabase {
     bonusRules?: BonusRules
     checkInEnabled?: boolean
     cooldownHours?: number
+    expiration?: ExpirationPolicy
   } = {}): Promise<TestShop> {
     const ownerId = await this.createCustomer({ withProfile: false })
     const rules = options.rules ?? { mode: 'stamps', target: 10 }
@@ -88,6 +93,8 @@ export class TestDatabase {
       earnUnits: rules.mode === 'stamps' ? 1 : earnRateOf(rules).units,
       target: rules.target,
       bonusRules: options.bonusRules ?? NO_BONUS_RULES,
+      expirationKind: options.expiration?.kind ?? 'never',
+      expirationMonths: options.expiration?.kind === 'afterInactivity' ? options.expiration.months : null,
       checkInEnabled: options.checkInEnabled ?? true,
       checkInCooldownHours: options.cooldownHours ?? 24,
     })

@@ -2,16 +2,20 @@ import { Injectable, Logger } from '@nestjs/common'
 import { and, desc, eq, sql } from 'drizzle-orm'
 import { welcomeUnits } from '#shared/domain/bonusRules'
 import type { EarningPlan } from '#shared/domain/earning'
+import { planExpiration } from '#shared/domain/expiration'
 import { REWARD_HOLD_DAYS } from '#shared/constants/domain'
-import { BonusRulesSchema } from '#shared/schemas/program'
+import { BonusRulesSchema, type ExpirationPolicy } from '#shared/schemas/program'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
 import { addDays } from '#shared/utils/time'
 import type { Tx } from '../database/database.module'
 import { ledgerEntries, loyaltyCards, programs, redemptions, shops } from '../database/schema'
+import { toExpirationPolicy } from '../programs/program-rules.mapper'
 
 export interface LockedCard {
   readonly id: string
+  readonly shopId: string
+  readonly customerId: string
   readonly balance: number
   readonly lastVisitAt: Date | null
   readonly rewardExpiresAt: Date | null
@@ -21,6 +25,13 @@ export interface CardKey {
   readonly shopId: string
   readonly customerId: string
   readonly programId: string
+}
+
+/** O que a loja diz sobre vencimento: com isso o cartão sai da trava já em dia. */
+export interface ExpiryContext {
+  readonly policy: ExpirationPolicy
+  readonly target: number
+  readonly now: Date
 }
 
 export type VisitKind = 'visit' | 'amount' | 'checkIn'
@@ -74,8 +85,10 @@ export class LedgerStore {
   /**
    * Devolve o cartão da pessoa nesta loja travado (`FOR UPDATE`), criando-o se for a primeira
    * vez. Duas requisições simultâneas se enfileiram aqui: a segunda enxerga o que a primeira gravou.
+   * O vencimento já vem aplicado (`expireIfDue`): nenhum lançamento, de quem quer que seja, credita
+   * em cima de saldo que deveria ter vencido.
    */
-  async lockOrCreateCard(tx: Tx, key: CardKey): Promise<{ card: LockedCard; created: boolean }> {
+  async lockOrCreateCard(tx: Tx, key: CardKey, expiry: ExpiryContext): Promise<{ card: LockedCard; created: boolean }> {
     const inserted = await tx
       .insert(loyaltyCards)
       .values(key)
@@ -85,6 +98,8 @@ export class LedgerStore {
     const [card] = await tx
       .select({
         id: loyaltyCards.id,
+        shopId: loyaltyCards.shopId,
+        customerId: loyaltyCards.customerId,
         balance: loyaltyCards.balance,
         lastVisitAt: loyaltyCards.lastVisitAt,
         rewardExpiresAt: loyaltyCards.rewardExpiresAt,
@@ -93,7 +108,33 @@ export class LedgerStore {
       .where(and(eq(loyaltyCards.shopId, key.shopId), eq(loyaltyCards.customerId, key.customerId)))
       .for('update')
     if (!card) throw new Error('Card vanished after upsert')
-    return { card, created: inserted.length > 0 }
+    return { card: await this.expireIfDue(tx, card, expiry), created: inserted.length > 0 }
+  }
+
+  /**
+   * Grava o que venceu no cartão (linha `expiration` no ledger, saldo e prazo do prêmio) e devolve o cartão
+   * em dia. A chave `expiration:<cartão>:<tipo>:<quando venceu>` impede gravar o mesmo vencimento duas vezes.
+   * Cartão travado pelo chamador.
+   */
+  async expireIfDue(tx: Tx, card: LockedCard, expiry: ExpiryContext): Promise<LockedCard> {
+    const plan = planExpiration(card, expiry.policy, expiry.target, expiry.now)
+    if (plan === null) return card
+
+    await tx.insert(ledgerEntries).values({
+      cardId: card.id,
+      shopId: card.shopId,
+      customerId: card.customerId,
+      kind: 'expiration',
+      unitsDelta: -plan.unitsLost,
+      countsAsVisit: false,
+      occurredAt: await this.instantFor(tx, card.id, plan.dueAt),
+      idempotencyKey: `expiration:${card.id}:${plan.kind}:${plan.dueAt.toISOString()}`,
+    })
+    await tx
+      .update(loyaltyCards)
+      .set({ balance: plan.balanceAfter, rewardExpiresAt: plan.rewardExpiresAt })
+      .where(eq(loyaltyCards.id, card.id))
+    return { ...card, balance: plan.balanceAfter, rewardExpiresAt: plan.rewardExpiresAt }
   }
 
   /**
@@ -159,8 +200,12 @@ export class LedgerStore {
         cardId: loyaltyCards.id,
         customerId: loyaltyCards.customerId,
         balance: loyaltyCards.balance,
+        lastVisitAt: loyaltyCards.lastVisitAt,
+        rewardExpiresAt: loyaltyCards.rewardExpiresAt,
         target: programs.target,
         bonusRules: programs.bonusRules,
+        expirationKind: programs.expirationKind,
+        expirationMonths: programs.expirationMonths,
       })
       .from(redemptions)
       .innerJoin(loyaltyCards, eq(loyaltyCards.id, redemptions.cardId))
@@ -177,14 +222,19 @@ export class LedgerStore {
       await tx.update(redemptions).set({ status: 'expired' }).where(eq(redemptions.id, row.redemptionId))
       return err({ code: 'redemptionExpired' })
     }
-    if (row.balance < row.target) {
-      // A meta subiu depois do pedido: o código deixa de valer e o ledger não é tocado.
+    // O prêmio pode ter vencido enquanto o código estava no ar; o cartão entra em dia antes da conta.
+    const policy = toExpirationPolicy(row)
+    const locked: LockedCard = { id: row.cardId, shopId: command.shopId, customerId: row.customerId, balance: row.balance, lastVisitAt: row.lastVisitAt, rewardExpiresAt: row.rewardExpiresAt }
+    if (!policy.ok) this.logger.warn(`Card ${row.cardId}: invalid expiration policy, skipping expiry`)
+    const card = policy.ok ? await this.expireIfDue(tx, locked, { policy: policy.value, target: row.target, now: command.now }) : locked
+    if (card.balance < row.target) {
+      // A meta subiu ou o prêmio venceu depois do pedido: o código deixa de valer e a entrega não debita.
       await tx.update(redemptions).set({ status: 'expired' }).where(eq(redemptions.id, row.redemptionId))
-      return err({ code: 'rewardNotReady', remaining: row.target - row.balance })
+      return err({ code: 'rewardNotReady', remaining: row.target - card.balance })
     }
 
     const welcome = this.welcomeUnitsOf(row.bonusRules, command.shopId)
-    const balanceAfter = row.balance - row.target + welcome
+    const balanceAfter = card.balance - row.target + welcome
     const now = await this.instantFor(tx, row.cardId, command.now)
     const common = { cardId: row.cardId, shopId: command.shopId, customerId: row.customerId, occurredAt: now, countsAsVisit: false }
 

@@ -4,6 +4,7 @@ import { Test } from '@nestjs/testing'
 import request from 'supertest'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { WALLET_ACTIVITY_DEFAULT_LIMIT, WALLET_ACTIVITY_MAX_LIMIT } from '#shared/constants/domain'
+import { Clock } from '../../common/clock'
 import { AllExceptionsFilter } from '../../common/http/all-exceptions.filter'
 import { ENV } from '../../config/config.module'
 import { catalogShop } from '../../shops/catalog.fixtures'
@@ -48,6 +49,7 @@ describe('wallet HTTP', () => {
         WalletService,
         { provide: WalletRepository, useValue: repository },
         { provide: ENV, useValue: { SUPABASE_URL: 'https://project.supabase.co' } },
+        { provide: Clock, useValue: { now: () => new Date('2026-10-03T12:00:00Z') } },
         { provide: APP_GUARD, useClass: FakeAuthGuard },
         { provide: APP_FILTER, useClass: AllExceptionsFilter },
       ],

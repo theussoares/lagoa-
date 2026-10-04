@@ -4,7 +4,7 @@ import { localDateParts } from '#shared/utils/time'
 import { SystemClock } from '../../common/clock'
 import { ledgerEntries, loyaltyCards } from '../../database/schema'
 import { LedgerStore } from '../../ledger/ledger.store'
-import { NO_BONUS_RULES, TEST_DATABASE_URL, TestDatabase } from '../../test-support/test-database'
+import { neverExpires, NO_BONUS_RULES, TEST_DATABASE_URL, TestDatabase } from '../../test-support/test-database'
 import { DrizzleWalletRepository } from '../wallet/drizzle-wallet.repository'
 import { WalletService } from '../wallet/wallet.service'
 import { DrizzleCheckInRepository } from './drizzle-check-in.repository'
@@ -23,7 +23,7 @@ describe.skipIf(!TEST_DATABASE_URL)('check-in against a real database', () => {
   beforeAll(() => {
     data = new TestDatabase(TEST_DATABASE_URL ?? '')
     service = new CheckInService(new DrizzleCheckInRepository(data.db, ledger), new SystemClock())
-    wallet = new WalletService(new DrizzleWalletRepository(data.db), { SUPABASE_URL: 'https://project.supabase.co' })
+    wallet = new WalletService(new DrizzleWalletRepository(data.db), { SUPABASE_URL: 'https://project.supabase.co' }, new SystemClock())
   })
 
   afterAll(async () => data.close())
@@ -69,7 +69,7 @@ describe.skipIf(!TEST_DATABASE_URL)('check-in against a real database', () => {
     const [card] = await cardsOf(customer)
     if (!card) throw new Error('card expected')
     await data.db.transaction(async (tx) => {
-      const { card: locked } = await ledger.lockOrCreateCard(tx, { shopId: shop.id, customerId: customer, programId: shop.programId })
+      const { card: locked } = await ledger.lockOrCreateCard(tx, { shopId: shop.id, customerId: customer, programId: shop.programId }, neverExpires())
       await ledger.credit(tx, {
         card: locked, shopId: shop.id, customerId: customer, kind: 'visit', now: new Date(),
         idempotencyKey: `test-counter-${customer}`,

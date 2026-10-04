@@ -1,0 +1,2 @@
+ALTER TABLE "programs" DROP CONSTRAINT "programs_expiration_check";--> statement-breakpoint
+ALTER TABLE "programs" ADD CONSTRAINT "programs_expiration_check" CHECK ("programs"."expiration_kind" = 'never' OR ("programs"."expiration_months" IS NOT NULL AND "programs"."expiration_months" BETWEEN 1 AND 24));

@@ -1,4 +1,5 @@
-import { boolean, char, index, integer, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
+import { sql } from 'drizzle-orm'
+import { boolean, char, check, index, integer, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
 import type { BonusRules } from '#shared/schemas/program'
 import { createdAt, primaryId } from './columns'
 import { earnPer, expirationKind, programMode, programUnit, shopCategory, shopStatus } from './enums'
@@ -23,7 +24,9 @@ export const shops = pgTable(
   (t) => [index('shops_status_idx').on(t.status), index('shops_owner_idx').on(t.ownerUserId)],
 )
 
-export const programs = pgTable('programs', {
+export const programs = pgTable(
+  'programs',
+  {
   id: primaryId(),
   shopId: uuid('shop_id')
     .notNull()
@@ -41,4 +44,10 @@ export const programs = pgTable('programs', {
   checkInEnabled: boolean('check_in_enabled').notNull().default(true),
   checkInCooldownHours: integer('check_in_cooldown_hours').notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
-})
+  },
+  (t) => [
+    // Mesma regra do `ExpirationPolicySchema` (24 = EXPIRATION_MAX_MONTHS; o drizzle-kit não resolve `#shared`).
+    // `IS NOT NULL` é necessário: CHECK que resulta em NULL passa no Postgres.
+    check('programs_expiration_check', sql`${t.expirationKind} = 'never' OR (${t.expirationMonths} IS NOT NULL AND ${t.expirationMonths} BETWEEN 1 AND 24)`),
+  ],
+)

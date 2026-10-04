@@ -1,4 +1,10 @@
-import { ProgramRulesSchema, type ProgramMode, type ProgramRules } from '#shared/schemas/program'
+import {
+  type ExpirationPolicy,
+  ExpirationPolicySchema,
+  ProgramRulesSchema,
+  type ProgramMode,
+  type ProgramRules,
+} from '#shared/schemas/program'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
 
@@ -21,5 +27,18 @@ const rulesInput: { readonly [M in ProgramMode]: (columns: ProgramColumns) => un
  */
 export function toProgramRules(columns: ProgramColumns): Result<ProgramRules, ErrorOf<'invalidProgram'>> {
   const parsed = ProgramRulesSchema.safeParse(rulesInput[columns.mode](columns))
+  return parsed.success ? ok(parsed.data) : err({ code: 'invalidProgram' })
+}
+
+interface ExpirationColumns {
+  readonly expirationKind: 'never' | 'afterInactivity'
+  readonly expirationMonths: number | null
+}
+
+/** `expiration_kind` + `expiration_months` do banco como a política do domínio; combinação inválida não passa. */
+export function toExpirationPolicy({ expirationKind, expirationMonths }: ExpirationColumns): Result<ExpirationPolicy, ErrorOf<'invalidProgram'>> {
+  const parsed = ExpirationPolicySchema.safeParse(
+    expirationKind === 'never' ? { kind: 'never' } : { kind: 'afterInactivity', months: expirationMonths },
+  )
   return parsed.success ? ok(parsed.data) : err({ code: 'invalidProgram' })
 }

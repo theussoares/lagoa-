@@ -1,7 +1,7 @@
 import type { EarnSource, LoyaltyCard, Stamp } from '../schemas/loyaltyCard'
 import type { CardProgress } from '../schemas/visit'
 import type { ExpirationPolicy } from '../schemas/program'
-import { addMonths } from '../utils/time'
+import { inactivityDueAt } from './expiration'
 
 type CardBalance = Pick<LoyaltyCard, 'balance' | 'target'>
 
@@ -59,6 +59,6 @@ export function consumeReward(card: LoyaltyCard): LoyaltyCard {
 }
 
 export function isExpiredByInactivity(card: LoyaltyCard, policy: ExpirationPolicy, now: Date): boolean {
-  if (policy.kind === 'never' || card.lastVisitAt === null) return false
-  return addMonths(new Date(card.lastVisitAt), policy.months) <= now
+  const dueAt = inactivityDueAt(card.lastVisitAt === null ? null : new Date(card.lastVisitAt), policy)
+  return dueAt !== null && dueAt <= now
 }

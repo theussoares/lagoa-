@@ -1,9 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common'
+import { Inject, Injectable, Logger } from '@nestjs/common'
 import { and, eq, sql } from 'drizzle-orm'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
 import { DB, type Database } from '../../database/database.module'
 import { loyaltyCards, programs, redemptions, shops } from '../../database/schema'
+import { LedgerStore } from '../../ledger/ledger.store'
+import { toExpirationPolicy } from '../../programs/program-rules.mapper'
 import {
   type RedemptionRecord,
   RedemptionRepository,
@@ -27,7 +29,12 @@ const REDEMPTION_COLUMNS = {
 
 @Injectable()
 export class DrizzleRedemptionRepository extends RedemptionRepository {
-  constructor(@Inject(DB) private readonly db: Database) {
+  private readonly logger = new Logger(DrizzleRedemptionRepository.name)
+
+  constructor(
+    @Inject(DB) private readonly db: Database,
+    private readonly ledger: LedgerStore,
+  ) {
     super()
   }
 
@@ -41,8 +48,12 @@ export class DrizzleRedemptionRepository extends RedemptionRepository {
         .select({
           shopId: loyaltyCards.shopId,
           balance: loyaltyCards.balance,
+          lastVisitAt: loyaltyCards.lastVisitAt,
+          rewardExpiresAt: loyaltyCards.rewardExpiresAt,
           target: programs.target,
           rewardTitle: programs.rewardTitle,
+          expirationKind: programs.expirationKind,
+          expirationMonths: programs.expirationMonths,
           shopStatus: shops.status,
         })
         .from(loyaltyCards)
@@ -58,8 +69,22 @@ export class DrizzleRedemptionRepository extends RedemptionRepository {
         .where(and(eq(redemptions.cardId, cardId), eq(redemptions.status, 'active')))
         .limit(1)
 
-      const decision = decide({ balance: card.balance, target: card.target, active: active ?? null })
-      if (decision.kind === 'notReady') return err({ code: 'rewardNotReady', remaining: decision.remaining })
+      // O prêmio pode ter vencido desde a última vez que alguém mexeu no cartão: entra em dia antes de decidir.
+      const policy = toExpirationPolicy(card)
+      const current = policy.ok
+        ? await this.ledger.expireIfDue(
+            tx,
+            { id: cardId, shopId: card.shopId, customerId, balance: card.balance, lastVisitAt: card.lastVisitAt, rewardExpiresAt: card.rewardExpiresAt },
+            { policy: policy.value, target: card.target, now: createdAt },
+          )
+        : this.skipExpiry(cardId, card)
+
+      const decision = decide({ balance: current.balance, target: card.target, active: active ?? null })
+      if (decision.kind === 'notReady') {
+        // O prêmio deixou de estar pronto (venceu ou a meta subiu): um código no ar não pode continuar valendo.
+        if (active) await tx.update(redemptions).set({ status: 'expired' }).where(eq(redemptions.id, active.id))
+        return err({ code: 'rewardNotReady', remaining: decision.remaining })
+      }
       if (decision.kind === 'reuse' && active) return ok(active)
 
       if (decision.kind === 'create' && decision.expireStaleId !== null) {
@@ -101,5 +126,11 @@ export class DrizzleRedemptionRepository extends RedemptionRepository {
     // A entrega confirmou no meio do caminho: devolve o que ficou gravado, não um vencido falso.
     const [current] = await this.db.select(REDEMPTION_COLUMNS).from(redemptions).where(eq(redemptions.id, row.id)).limit(1)
     return current ?? null
+  }
+
+  /** Política de vencimento ilegível (o CHECK do banco já barra): segue sem vencer, mas deixa rastro (só o id). */
+  private skipExpiry<C>(cardId: string, card: C): C {
+    this.logger.warn(`Card ${cardId}: invalid expiration policy, skipping expiry`)
+    return card
   }
 }

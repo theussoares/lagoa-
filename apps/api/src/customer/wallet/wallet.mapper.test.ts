@@ -6,9 +6,10 @@ import { activityRecord, walletCardRecord } from './wallet.fixtures'
 import { toWalletActivity, toWalletCard } from './wallet.mapper'
 
 const URL = 'https://project.supabase.co'
+const NOW = new Date('2026-10-03T12:00:00Z')
 
 function cardOf(record = walletCardRecord()): WalletCard {
-  const result = toWalletCard(record, URL)
+  const result = toWalletCard(record, URL, NOW)
   if (!result.ok) throw new Error('expected a valid card')
   return result.value
 }
@@ -66,3 +67,33 @@ describe('toWalletActivity', () => {
     })
   })
 })
+
+describe('toWalletCard with expiry', () => {
+  const earned = [
+    { kind: 'visit' as const, units: 1, occurredAt: new Date('2026-03-02T12:00:00Z') },
+    { kind: 'visit' as const, units: 1, occurredAt: new Date('2026-03-01T12:00:00Z') },
+  ]
+  const sixMonths = (): ReturnType<typeof catalogShop> =>
+    catalogShop({ program: { ...catalogShop().program, expiration: { kind: 'afterInactivity', months: 6 } } })
+
+  it('shows an empty card once the inactivity window passed, before anyone writes the expiration', () => {
+    const card = cardOf(walletCardRecord({ balance: 2, lastVisitAt: new Date('2026-03-02T12:00:00Z'), earned, shop: sixMonths() }))
+    expect(card).toMatchObject({ balance: 0, stamps: [], rewardExpiresAt: null })
+  })
+
+  it('keeps the card while the window is open', () => {
+    const card = cardOf(walletCardRecord({ balance: 2, lastVisitAt: new Date('2026-08-01T12:00:00Z'), earned, shop: sixMonths() }))
+    expect(card.balance).toBe(2)
+    expect(card.stamps).toHaveLength(2)
+  })
+
+  it('takes one target away when the held reward lapsed and re-derives the stamps from what is left', () => {
+    const shop = catalogShop({ program: { ...catalogShop().program, rules: { mode: 'stamps', target: 3 } } })
+    const manyEarned = Array.from({ length: 4 }, (_, index) => ({ kind: 'visit' as const, units: 1, occurredAt: new Date(Date.UTC(2026, 8, 20 - index, 12)) }))
+    const card = cardOf(walletCardRecord({ balance: 4, rewardExpiresAt: new Date('2026-10-01T00:00:00Z'), earned: manyEarned, shop }))
+    expect(card.balance).toBe(1)
+    expect(card.stamps.map((stamp) => stamp.earnedAt)).toEqual(['2026-09-20T12:00:00.000Z'])
+    expect(card.rewardExpiresAt).toBeNull()
+  })
+})
+
