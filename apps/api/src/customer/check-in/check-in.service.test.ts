@@ -1,10 +1,12 @@
-import { describe, expect, it } from 'vitest'
+import { Logger } from '@nestjs/common'
+import { describe, expect, it, vi } from 'vitest'
 import type { EarningPlan } from '#shared/domain/earning'
 import type { ErrorOf } from '#shared/types/errors'
 import { ok, type Result } from '#shared/types/result'
 import { Clock } from '../../common/clock'
+import { ReferralSettlement, type SettlementOutcome } from '../../ledger/referral-settlement'
 import { TEST_USER } from '../../test-support/fake-auth.guard'
-import { checkInShop } from './check-in.fixtures'
+import { checkInShop, FIRST_VISIT, stateOf } from './check-in.fixtures'
 import {
   type CheckInAttempt,
   type CheckInRecorded,
@@ -20,7 +22,7 @@ const CARD_ID = '0190a000-0000-7000-8000-0000000000c1'
 
 class FakeCheckInRepository extends CheckInRepository {
   lookedUp: string[] = []
-  state: CheckInState = { card: null, lastVisitAt: null, birthday: null }
+  state: CheckInState = FIRST_VISIT
   constructor(private readonly shop: CheckInShop | null) {
     super()
   }
@@ -37,11 +39,22 @@ class FakeCheckInRepository extends CheckInRepository {
   }
 }
 
+class RecordingReferralSettlement extends ReferralSettlement {
+  calls: { referredId: string; shopId: string }[] = []
+  failWith: Error | null = null
+  async settlePending(referredId: string, shopId: string): Promise<SettlementOutcome> {
+    this.calls.push({ referredId, shopId })
+    if (this.failWith) throw this.failWith
+    return 'none'
+  }
+}
+
 const clock: Clock = { now: () => NOW }
 const serviceFor = (shop: CheckInShop | null, state?: CheckInState) => {
   const repository = new FakeCheckInRepository(shop)
   if (state) repository.state = state
-  return { repository, service: new CheckInService(repository, clock) }
+  const referrals = new RecordingReferralSettlement()
+  return { repository, referrals, service: new CheckInService(repository, clock, referrals) }
 }
 
 describe('CheckInService', () => {
@@ -67,7 +80,7 @@ describe('CheckInService', () => {
   })
 
   it('answers the contract of a successful check-in', async () => {
-    const { service } = serviceFor(checkInShop({ cooldownHours: 4 }), { card: { balance: 4, rewardExpiresAt: null }, lastVisitAt: null, birthday: null })
+    const { service } = serviceFor(checkInShop({ cooldownHours: 4 }), stateOf({ balance: 4, lastVisitAt: null }))
     const result = await service.checkIn(TEST_USER.id, 'NAV4K7')
     expect(result).toEqual({
       ok: true,
@@ -89,15 +102,45 @@ describe('CheckInService', () => {
   })
 
   it('marks the reward ready when the check-in completes the card', async () => {
-    const { service } = serviceFor(checkInShop(), { card: { balance: 9, rewardExpiresAt: null }, lastVisitAt: null, birthday: null })
+    const { service } = serviceFor(checkInShop(), stateOf({ balance: 9, lastVisitAt: null }))
     expect(await service.checkIn(TEST_USER.id, 'NAV4K7')).toMatchObject({ ok: true, value: { card: { balance: 10, rewardReady: true } } })
   })
 
   it('passes the cooldown refusal through with the time it opens', async () => {
-    const { service } = serviceFor(checkInShop(), { card: { balance: 1, rewardExpiresAt: null }, lastVisitAt: new Date('2026-10-03T08:00:00Z'), birthday: null })
+    const { service } = serviceFor(checkInShop(), stateOf({ balance: 1, lastVisitAt: new Date('2026-10-03T08:00:00Z') }))
     expect(await service.checkIn(TEST_USER.id, 'NAV4K7')).toEqual({
       ok: false,
       error: { code: 'checkInCooldown', availableAt: '2026-10-04T08:00:00.000Z' },
     })
+  })
+
+  it('tries to settle the referral after every recorded check-in, so a failed attempt is retried on the next visit', async () => {
+    const first = serviceFor(checkInShop())
+    await first.service.checkIn(TEST_USER.id, 'NAV4K7')
+    expect(first.referrals.calls).toEqual([{ referredId: TEST_USER.id, shopId: '0190a000-0000-7000-8000-0000000000a1' }])
+
+    const returning = serviceFor(checkInShop(), stateOf({ balance: 4, lastVisitAt: new Date('2026-09-01T00:00:00Z') }))
+    await returning.service.checkIn(TEST_USER.id, 'NAV4K7')
+    expect(returning.referrals.calls).toHaveLength(1)
+  })
+
+  it('does not try to settle when the check-in itself was refused', async () => {
+    const { service, referrals } = serviceFor(checkInShop(), stateOf({ balance: 1, lastVisitAt: new Date('2026-10-03T08:00:00Z') }))
+    expect(await service.checkIn(TEST_USER.id, 'NAV4K7')).toMatchObject({ ok: false })
+    expect(referrals.calls).toHaveLength(0)
+  })
+
+  it('still answers the check-in when paying the referral blows up, and logs only the error type', async () => {
+    const logged: string[] = []
+    const spy = vi.spyOn(Logger.prototype, 'error').mockImplementation((message: unknown) => {
+      logged.push(String(message))
+    })
+    const { service, referrals } = serviceFor(checkInShop())
+    referrals.failWith = new Error('db down: key (phone_hash)=(secret)')
+    expect(await service.checkIn(TEST_USER.id, 'NAV4K7')).toMatchObject({ ok: true })
+    expect(logged).toHaveLength(1)
+    expect(logged[0]).toContain('Error')
+    expect(logged[0]).not.toContain('secret')
+    spy.mockRestore()
   })
 })

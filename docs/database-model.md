@@ -155,9 +155,10 @@ Referral "1" --> "0..1" LedgerEntry : bônus pago
    (`CustomerProfile.referralCode`) e a **loja**: `/convite?ref=<referralCode>&loja=<checkInCode>`.
 2. O indicado abre o link, confirma o e-mail, informa o celular e faz a primeira visita
    nessa loja. O app guarda `ref` e `loja` até a validação.
-3. Na validação da primeira visita (check-in ou balcão), o Nest cria o `Referral` e, se
-   passar nas regras, lança um `LedgerEntry` `referralBonus` no cartão do indicador e
-   marca `status = rewarded`.
+3. O app envia o convite (`POST /v1/referrals`) e o Nest o guarda como `Referral` `pending`. Na primeira
+   visita (check-in ou balcão), depois de confirmada, o Nest paga: lança um `LedgerEntry` `referralBonus` no
+   cartão do indicador (em transação própria) e marca `status = rewarded` (ou `rejected`, se a regra foi
+   desligada). O bônus conta como atividade do cartão (`last_activity_at`), sem mexer em `last_visit_at`.
 
 Regras no servidor:
 - `Program.bonusRules.referralBonus.enabled` ligado.

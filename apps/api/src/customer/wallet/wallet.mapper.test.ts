@@ -77,12 +77,12 @@ describe('toWalletCard with expiry', () => {
     catalogShop({ program: { ...catalogShop().program, expiration: { kind: 'afterInactivity', months: 6 } } })
 
   it('shows an empty card once the inactivity window passed, before anyone writes the expiration', () => {
-    const card = cardOf(walletCardRecord({ balance: 2, lastVisitAt: new Date('2026-03-02T12:00:00Z'), earned, shop: sixMonths() }))
+    const card = cardOf(walletCardRecord({ balance: 2, lastVisitAt: new Date('2026-03-02T12:00:00Z'), lastActivityAt: new Date('2026-03-02T12:00:00Z'), earned, shop: sixMonths() }))
     expect(card).toMatchObject({ balance: 0, stamps: [], rewardExpiresAt: null })
   })
 
   it('keeps the card while the window is open', () => {
-    const card = cardOf(walletCardRecord({ balance: 2, lastVisitAt: new Date('2026-08-01T12:00:00Z'), earned, shop: sixMonths() }))
+    const card = cardOf(walletCardRecord({ balance: 2, lastVisitAt: new Date('2026-08-01T12:00:00Z'), lastActivityAt: new Date('2026-08-01T12:00:00Z'), earned, shop: sixMonths() }))
     expect(card.balance).toBe(2)
     expect(card.stamps).toHaveLength(2)
   })

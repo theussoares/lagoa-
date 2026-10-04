@@ -12,13 +12,15 @@ import type { EarnError, EarnInput } from './programStrategies'
 export interface EarningCard {
   readonly balance: number
   readonly rewardExpiresAt: Date | null
+  /** `null` = a pessoa nunca fez uma visita aqui (o cartão pode existir só com bônus de indicação). */
+  readonly lastVisitAt: Date | null
 }
 
 export interface EarningRequest {
   readonly rules: ProgramRules
   readonly bonusRules: BonusRules
   readonly customerBirthday: Birthday | null
-  /** `null` = o cliente ainda não tem cartão nesta loja (ganha as boas-vindas). */
+  /** `null` = ainda não tem cartão nesta loja. */
   readonly card: EarningCard | null
   readonly input: EarnInput
   readonly now: Date
@@ -35,7 +37,7 @@ export interface EarningPlan {
 }
 
 /**
- * Tudo que uma visita rende, decidido sem I/O: boas-vindas só no cartão novo, unidades do modo do
+ * Tudo que uma visita rende, decidido sem I/O: boas-vindas só na primeira visita, unidades do modo do
  * programa, bônus do dia (vale o maior, não soma) e o prazo do prêmio. Check-in e Balcão usam a mesma.
  */
 export function planEarning(request: EarningRequest): Result<EarningPlan, EarnError> {
@@ -47,7 +49,9 @@ export function planEarning(request: EarningRequest): Result<EarningPlan, EarnEr
     today: { isoDate: today.isoDate, monthDay: today.monthDay },
     customerBirthday: request.customerBirthday,
   })
-  const welcome = request.card === null ? welcomeUnits(request.bonusRules) : 0
+  // Boas-vindas na primeira visita, não no primeiro cartão: quem ganhou o cartão por indicação ainda não visitou.
+  const firstVisit = request.card === null || request.card.lastVisitAt === null
+  const welcome = firstVisit ? welcomeUnits(request.bonusRules) : 0
   const balanceAfter = (request.card?.balance ?? 0) + welcome + units
   const alreadyHeld = request.card?.rewardExpiresAt ?? null
   const rewardExpiresAt =

@@ -61,14 +61,13 @@ export class DrizzleCheckInRepository extends CheckInRepository {
           throw new RollbackSignal()
         }
 
-        const { card, created } = await this.ledger.lockOrCreateCard(
+        const { card } = await this.ledger.lockOrCreateCard(
           tx,
           { shopId: target.shop.id, customerId, programId: target.programId },
           { policy: target.shop.program.expiration, target: target.shop.program.rules.target, now },
         )
         const decision = decide({
-          card: created ? null : { balance: card.balance, rewardExpiresAt: card.rewardExpiresAt },
-          lastVisitAt: card.lastVisitAt,
+          card: { balance: card.balance, rewardExpiresAt: card.rewardExpiresAt, lastVisitAt: card.lastVisitAt },
           birthday: profile.birthday,
         })
         if (!decision.ok) {

@@ -19,6 +19,7 @@ const CARD_COLUMNS = {
   programId: loyaltyCards.programId,
   balance: loyaltyCards.balance,
   lastVisitAt: loyaltyCards.lastVisitAt,
+  lastActivityAt: loyaltyCards.lastActivityAt,
   rewardExpiresAt: loyaltyCards.rewardExpiresAt,
   ...CATALOG_COLUMNS,
 }
@@ -84,6 +85,7 @@ export class DrizzleWalletRepository extends WalletRepository {
       programId: row.programId,
       balance: row.balance,
       lastVisitAt: row.lastVisitAt,
+      lastActivityAt: row.lastActivityAt,
       rewardExpiresAt: row.rewardExpiresAt,
       shop,
       earned: earnedByCard.get(row.cardId) ?? [],

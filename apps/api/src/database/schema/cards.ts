@@ -21,6 +21,8 @@ export const loyaltyCards = pgTable(
     /** Cache do ledger, atualizado na mesma transação da inserção. */
     balance: integer('balance').notNull().default(0),
     lastVisitAt: timestamp('last_visit_at', { withTimezone: true }),
+    /** Última vez que o cartão ganhou unidades (visita ou bônus): a inatividade conta daqui; o antifraude, só de `lastVisitAt`. */
+    lastActivityAt: timestamp('last_activity_at', { withTimezone: true }),
     rewardExpiresAt: timestamp('reward_expires_at', { withTimezone: true }),
     createdAt: createdAt(),
   },

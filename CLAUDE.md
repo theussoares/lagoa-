@@ -39,7 +39,9 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
   **Ledger:** a única porta de escrita é o `LedgerStore` (`apps/api/src/ledger`):
   trava o cartão (`FOR UPDATE`) já com o vencimento aplicado, grava boas-vindas e
   visita e atualiza o saldo na mesma transação. Saldo lido sem passar por ele
-  (listas, painel) usa `planExpiration`/`applyExpiration` (`shared/domain/expiration.ts`). A conta do que uma visita rende é `planEarning`
+  (listas, painel) usa `planExpiration`/`applyExpiration` (`shared/domain/expiration.ts`). Indicação: depois
+  de confirmar a **primeira visita** de alguém, chame `ReferralSettlement.settlePending`
+  (o check-in já chama). A conta do que uma visita rende é `planEarning`
   (`shared/domain/earning.ts`) e a janela de check-in é `checkInAvailableAt`
   (`shared/domain/antifraud.ts`): check-in e Balcão usam as mesmas, nunca uma cópia.
 - **Backend (histórico):** ainda não definido. Até o ADR do CTO sair, o front consome

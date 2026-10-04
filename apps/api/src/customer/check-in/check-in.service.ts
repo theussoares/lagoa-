@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { baseUnitsFor, unitOf } from '#shared/domain/programStrategies'
 import { CheckInCodeSchema } from '#shared/schemas/shop'
 import { type CheckInResult, CheckInResultSchema } from '#shared/schemas/visit'
@@ -7,6 +7,7 @@ import { err, ok, type Result } from '#shared/types/result'
 import { normalizeReadableCode } from '#shared/utils/readableCode'
 import { addHours, toIso } from '#shared/utils/time'
 import { Clock } from '../../common/clock'
+import { ReferralSettlement } from '../../ledger/referral-settlement'
 import { CheckInRepository } from './check-in.repository'
 import { decideCheckIn } from './check-in.rules'
 
@@ -17,7 +18,10 @@ export class CheckInService {
   constructor(
     private readonly repository: CheckInRepository,
     private readonly clock: Clock,
+    private readonly referrals: ReferralSettlement,
   ) {}
+
+  private readonly logger = new Logger(CheckInService.name)
 
   async checkIn(customerId: string, rawCode: string): Promise<Result<CheckInResult, CheckInError>> {
     const code = CheckInCodeSchema.safeParse(normalizeReadableCode(rawCode))
@@ -33,6 +37,8 @@ export class CheckInService {
       decideCheckIn(target, state, now),
     )
     if (!recorded.ok) return recorded
+
+    await this.settleReferral(customerId, target.shop.id, now)
 
     const { shop } = target
     const { rules } = shop.program
@@ -54,5 +60,19 @@ export class CheckInService {
         nextCheckInAt: toIso(addHours(now, target.cooldownHours)),
       }),
     )
+  }
+
+  /**
+   * A visita já está confirmada. Pagar a indicação é à parte e não pode derrubar o check-in: se falhar,
+   * a pendência continua e o log leva só o tipo do erro. Roda a cada check-in (uma consulta pelo índice único
+   * `(loja, indicado)`), então uma falha passageira é tentada de novo na visita seguinte; o pagamento é
+   * idempotente e só acontece com cartão existente e criado depois do convite.
+   */
+  private async settleReferral(customerId: string, shopId: string, now: Date): Promise<void> {
+    try {
+      await this.referrals.settlePending(customerId, shopId, now)
+    } catch (error) {
+      this.logger.error(`Referral settlement failed (${error instanceof Error ? error.name : 'unknown'}) for shop ${shopId}`)
+    }
   }
 }

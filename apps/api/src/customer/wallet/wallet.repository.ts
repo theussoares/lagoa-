@@ -8,6 +8,7 @@ export interface WalletCardRecord {
   readonly programId: string
   readonly balance: number
   readonly lastVisitAt: Date | null
+  readonly lastActivityAt: Date | null
   readonly rewardExpiresAt: Date | null
   readonly shop: CatalogShop
   /** Só nos clubes de carimbos, da linha mais nova para a mais antiga (o bastante para cobrir o saldo). */

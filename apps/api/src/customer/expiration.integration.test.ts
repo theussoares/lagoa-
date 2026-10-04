@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { SystemClock } from '../common/clock'
 import { ledgerEntries, loyaltyCards, programs } from '../database/schema'
+import { DrizzleReferralSettlement } from '../ledger/drizzle-referral-settlement'
 import { LedgerStore } from '../ledger/ledger.store'
 import { NO_BONUS_RULES, TEST_DATABASE_URL, TestDatabase } from '../test-support/test-database'
 import { CheckInService } from './check-in/check-in.service'
@@ -27,7 +28,7 @@ describe.skipIf(!TEST_DATABASE_URL)('expiration against a real database', () => 
   beforeAll(() => {
     data = new TestDatabase(TEST_DATABASE_URL ?? '')
     const clock = new SystemClock()
-    checkIn = new CheckInService(new DrizzleCheckInRepository(data.db, ledger), clock)
+    checkIn = new CheckInService(new DrizzleCheckInRepository(data.db, ledger), clock, new DrizzleReferralSettlement(data.db, ledger))
     redemption = new RedemptionService(new DrizzleRedemptionRepository(data.db, ledger), clock)
     wallet = new WalletService(new DrizzleWalletRepository(data.db), { SUPABASE_URL: 'https://project.supabase.co' }, clock)
   })
@@ -42,7 +43,7 @@ describe.skipIf(!TEST_DATABASE_URL)('expiration against a real database', () => 
     const shop = await data.createShop({ bonusRules: WELCOME_BONUS, expiration: { kind: 'afterInactivity', months: 6 }, rules: { mode: 'stamps', target: 10 } })
     const customer = await data.createCustomer()
     await checkIn.checkIn(customer, shop.checkInCode) // 2 de boas-vindas + 1 = 3
-    await data.db.update(loyaltyCards).set({ lastVisitAt: MONTHS_AGO(7) }).where(eq(loyaltyCards.customerId, customer))
+    await data.db.update(loyaltyCards).set({ lastVisitAt: MONTHS_AGO(7), lastActivityAt: MONTHS_AGO(7) }).where(eq(loyaltyCards.customerId, customer))
     return { shop, customer }
   }
 
@@ -105,7 +106,7 @@ describe.skipIf(!TEST_DATABASE_URL)('expiration against a real database', () => 
       const { card } = await ledger.lockOrCreateCard(tx, { shopId: shop.id, customerId: customer, programId: shop.programId }, { policy: { kind: 'never' }, target: 3, now: new Date() })
       await ledger.credit(tx, { card, shopId: shop.id, customerId: customer, kind: 'visit', now: new Date(), idempotencyKey: `fill-${customer}`, plan: { welcomeUnits: 0, units: 7, appliedBonuses: [], balanceAfter: 7, rewardExpiresAt: new Date(Date.now() - DAY_MS) } })
     })
-    await data.db.update(loyaltyCards).set({ lastVisitAt: MONTHS_AGO(0) }).where(eq(loyaltyCards.customerId, customer))
+    await data.db.update(loyaltyCards).set({ lastVisitAt: MONTHS_AGO(0), lastActivityAt: MONTHS_AGO(0) }).where(eq(loyaltyCards.customerId, customer))
     const card = await cardOf(customer)
     expect(await redemption.requestCode(customer, card?.id ?? '')).toMatchObject({ ok: true })
     const after = await cardOf(customer)

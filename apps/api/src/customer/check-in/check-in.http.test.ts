@@ -7,16 +7,17 @@ import type { EarningPlan } from '#shared/domain/earning'
 import type { ErrorOf } from '#shared/types/errors'
 import { ok, type Result } from '#shared/types/result'
 import { Clock } from '../../common/clock'
+import { ReferralSettlement } from '../../ledger/referral-settlement'
 import { AllExceptionsFilter } from '../../common/http/all-exceptions.filter'
 import { FakeAuthGuard } from '../../test-support/fake-auth.guard'
-import { checkInShop } from './check-in.fixtures'
+import { checkInShop, FIRST_VISIT, stateOf } from './check-in.fixtures'
 import { CheckInController } from './check-in.controller'
 import { type CheckInAttempt, type CheckInRecorded, CheckInRepository, type CheckInShop, type CheckInState } from './check-in.repository'
 import { CheckInService } from './check-in.service'
 
 class FakeCheckInRepository extends CheckInRepository {
   shop: CheckInShop | null = checkInShop()
-  state: CheckInState = { card: null, lastVisitAt: null, birthday: null }
+  state: CheckInState = FIRST_VISIT
   async findShopByCode(): Promise<CheckInShop | null> {
     return this.shop
   }
@@ -39,6 +40,7 @@ describe('check-in HTTP', () => {
       providers: [
         CheckInService,
         { provide: CheckInRepository, useValue: repository },
+        { provide: ReferralSettlement, useValue: { settlePending: async () => 'none' } },
         { provide: Clock, useValue: { now: () => new Date('2026-10-03T12:00:00Z') } },
         { provide: APP_GUARD, useClass: FakeAuthGuard },
         { provide: APP_FILTER, useClass: AllExceptionsFilter },
@@ -53,7 +55,7 @@ describe('check-in HTTP', () => {
   const post = (body: unknown) => request(app.getHttpServer()).post('/check-in').send(body as object)
 
   it('answers 201 with the check-in result', async () => {
-    repository.state = { card: { balance: 4, rewardExpiresAt: null }, lastVisitAt: null, birthday: null }
+    repository.state = stateOf({ balance: 4, lastVisitAt: null })
     const response = await post({ code: 'NAV4K7' }).expect(201)
     expect(response.body).toMatchObject({ activity: { kind: 'checkIn', units: 1 }, card: { balance: 5, target: 10 } })
   })
@@ -66,7 +68,7 @@ describe('check-in HTTP', () => {
   })
 
   it('answers 429 checkInCooldown with the time it opens', async () => {
-    repository.state = { card: { balance: 1, rewardExpiresAt: null }, lastVisitAt: new Date('2026-10-03T08:00:00Z'), birthday: null }
+    repository.state = stateOf({ balance: 1, lastVisitAt: new Date('2026-10-03T08:00:00Z') })
     const response = await post({ code: 'NAV4K7' }).expect(429)
     expect(response.body).toEqual({ code: 'checkInCooldown', availableAt: '2026-10-04T08:00:00.000Z' })
   })
