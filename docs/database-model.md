@@ -110,6 +110,7 @@ class Redemption {
   +text rewardTitle  «snapshot»
   +char6 code  «unique entre ativos da loja»
   +enum status  «active | redeemed | expired»
+  +timestamptz createdAt
   +timestamptz expiresAt
   +timestamptz redeemedAt?
   +uuid redeemedBy?
@@ -220,7 +221,8 @@ em log nem URL.
   `(shopId, lastVisitAt)` para clientes sumidos.
 - `LedgerEntry(cardId, occurredAt DESC, id DESC)`, `(shopId, occurredAt DESC)`,
   `(customerId, occurredAt DESC, id DESC)` (caderneta do cliente; o `id` desempata o mesmo instante) e `(idempotencyKey)` único.
-- `Redemption(shopId, code) WHERE status='active'` único.
+- `Redemption(shopId, code) WHERE status='active'` único e `(cardId) WHERE status='active'` único
+  (um código ativo por cartão).
 - `Referral(shopId, referredId)` único; `(referrerId)`.
 - `Shop(checkInCode)` único; `Shop(status)`; `Shop(ownerUserId)`.
 
