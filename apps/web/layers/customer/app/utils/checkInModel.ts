@@ -53,6 +53,16 @@ export function toCheckInNotice(error: CheckInError, source: CheckInSource, now:
         message: t('errors.network'),
         recovery: 'retry',
       }
+    case 'rateLimited':
+    case 'internal':
+    case 'termsNotAccepted':
+      return {
+        tone: 'error',
+        icon: 'i-ph-warning-circle',
+        title: t('checkIn.notice.errorTitle'),
+        message: t(`errors.${error.code}`),
+        recovery: 'retry',
+      }
     case 'unauthorized':
       return null
   }

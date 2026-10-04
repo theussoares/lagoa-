@@ -9,6 +9,10 @@ export type DomainEntity = 'shop' | 'program' | 'customer' | 'merchant' | 'card'
 export type DomainError =
   | { readonly code: 'unauthorized' }
   | { readonly code: 'network' }
+  /** Limite de requisições (HTTP 429 sem regra de negócio): esperar e tentar de novo. */
+  | { readonly code: 'rateLimited' }
+  /** Falha do servidor sem detalhe (HTTP 5xx ou resposta fora do contrato). */
+  | { readonly code: 'internal' }
   | { readonly code: 'notFound'; readonly entity: DomainEntity }
   | { readonly code: 'invalidPhone' }
   /** Cadastro com celular de outra conta: o celular é único por cliente. */
@@ -51,4 +55,4 @@ export type DomainErrorCode = DomainError['code']
 export type ErrorOf<C extends DomainErrorCode> = Extract<DomainError, { readonly code: C }>
 
 /** Erros que qualquer chamada remota pode devolver. */
-export type TransportError = ErrorOf<'unauthorized' | 'network'>
+export type TransportError = ErrorOf<'unauthorized' | 'network' | 'rateLimited' | 'internal'>

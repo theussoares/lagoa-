@@ -6,8 +6,10 @@ export const HOME_PATH = '/carteira'
 
 export function useCustomerSession(): CustomerSessionControl {
   const sessions = useSessionStore()
+  const auth = useAuthService()
 
   async function signOut(): Promise<void> {
+    await auth.signOut()
     sessions.endCustomer()
     await navigateTo(SIGN_IN_PATH, { replace: true })
   }

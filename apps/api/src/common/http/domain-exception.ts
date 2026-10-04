@@ -5,6 +5,8 @@ import type { Result } from '#shared/types/result'
 const STATUS_BY_CODE: Record<DomainErrorCode, number> = {
   unauthorized: 401,
   network: 503,
+  rateLimited: 429,
+  internal: 500,
   notFound: 404,
   invalidPhone: 400,
   phoneAlreadyUsed: 409,

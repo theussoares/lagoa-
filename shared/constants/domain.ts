@@ -46,7 +46,7 @@ export const EXPIRATION_MAX_MONTHS = 24
 export const REWARD_TITLE_MAX_LENGTH = 60
 export const AMOUNT_MAX_CENTS = 10_000_00
 /** Espera antes de liberar "Reenviar código" no login. */
-export const LOGIN_CODE_RESEND_SECONDS = 30
+export const LOGIN_CODE_RESEND_SECONDS = 60
 /** Ticket médio de referência para estimar quanto uma visita rende em pontos por real. */
 export const REFERENCE_TICKET_REAIS = 20
 export const REMINDER_MESSAGE_MAX_LENGTH = 140
