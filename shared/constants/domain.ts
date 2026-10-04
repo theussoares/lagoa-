@@ -30,6 +30,8 @@ export const WALLET_ACTIVITY_DEFAULT_LIMIT = 20
 export const WALLET_ACTIVITY_MAX_LIMIT = 50
 /** Código do convite de indicação do cliente, no link `/convite?ref=`. */
 export const REFERRAL_CODE_LENGTH = 8
+/** Teto de linhas por lista na exportação de dados do cliente. */
+export const DATA_EXPORT_LIST_LIMIT = 5000
 /** Indicações pagas por indicador em cada loja: quem fabrica contas para si não acumula carimbo sem fim. */
 export const REFERRAL_REWARDS_MAX_PER_SHOP = 10
 export const PHONE_INPUT_MAX_LENGTH = 32
