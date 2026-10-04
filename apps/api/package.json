@@ -12,7 +12,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "node --env-file-if-exists=.env --require @swc-node/register src/database/seed.ts",
-    "build:vercel": "rm -rf dist && cd ../.. && apps/api/node_modules/.bin/swc apps/api/src shared --config-file apps/api/.swcrc.vercel -d apps/api/dist --ignore \"**/*.test.ts\" && echo '{\"type\":\"module\"}' > apps/api/dist/package.json"
+    "build:vercel": "node scripts/build-vercel.mjs"
   },
   "dependencies": {
     "@nestjs/common": "^12.1.2",
