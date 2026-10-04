@@ -247,9 +247,11 @@ composables  → stores (Pinia, estado)
 - **Aniversário:** o cliente informa dia e mês no Perfil. A primeira data é
   livre; depois a troca fica travada por 365 dias (senão viraria dobro todo
   dia). Tirar a data vale a qualquer hora, mas não destrava a próxima troca.
-- **Mudança de programa:** mudar a meta vale também para os cartões em
-  andamento; trocar o modo (carimbos ↔ pontos) fica bloqueado enquanto houver
-  cartões.
+- **Mudança de programa:** a loja define meta, modo e prêmio (texto livre) e pode
+  trocar quando quiser. A troca cria uma nova versão do programa (`programs.active`):
+  cartões com saldo terminam na versão em que começaram; cartão novo, zerado ou
+  recém-resgatado já pega a versão ativa. Sobra de pontos só atravessa a troca se a
+  unidade for a mesma.
 - **Expiração:** carimbos vencem após X meses sem visita (ou nunca).
 - **Resgate:** cliente gera um código de uso único (6 caracteres, ~10 min de
   validade); o lojista valida no Balcão e confirma a entrega. Prêmio não

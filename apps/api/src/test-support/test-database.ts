@@ -111,6 +111,27 @@ export class TestDatabase {
     return shop
   }
 
+  /** Troca o programa da loja como o painel fará: desativa a versão atual e cria outra ativa. Devolve o id da nova. */
+  async changeProgram(shop: TestShop, rules: ProgramRules, options: { rewardTitle?: string; bonusRules?: BonusRules } = {}): Promise<string> {
+    const programId = randomUUID()
+    await this.db.transaction(async (tx) => {
+      await tx.update(schema.programs).set({ active: false }).where(eq(schema.programs.shopId, shop.id))
+      await tx.insert(schema.programs).values({
+        id: programId,
+        shopId: shop.id,
+        rewardTitle: options.rewardTitle ?? 'Prêmio novo',
+        mode: rules.mode,
+        unit: unitOf(rules),
+        earnPer: earnRateOf(rules).per,
+        earnUnits: rules.mode === 'stamps' ? 1 : earnRateOf(rules).units,
+        target: rules.target,
+        bonusRules: options.bonusRules ?? NO_BONUS_RULES,
+        checkInCooldownHours: 24,
+      })
+    })
+    return programId
+  }
+
   async cleanup(): Promise<void> {
     if (this.shopIds.length > 0) {
       await this.db.update(schema.referrals).set({ rewardEntryId: null }).where(inArray(schema.referrals.shopId, this.shopIds))

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { baseUnitsFor, unitOf } from '#shared/domain/programStrategies'
-import { CheckInCodeSchema } from '#shared/schemas/shop'
+import { type CheckInCode, CheckInCodeSchema } from '#shared/schemas/shop'
 import { type CheckInResult, CheckInResultSchema } from '#shared/schemas/visit'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
@@ -8,7 +8,7 @@ import { normalizeReadableCode } from '#shared/utils/readableCode'
 import { addHours, toIso } from '#shared/utils/time'
 import { Clock } from '../../common/clock'
 import { ReferralSettlement } from '../../ledger/referral-settlement'
-import { CheckInRepository } from './check-in.repository'
+import { type CheckInRecorded, CheckInRepository, type CheckInShop, ProgramVersionChanged } from './check-in.repository'
 import { decideCheckIn } from './check-in.rules'
 
 export type CheckInError = ErrorOf<'invalidShopQr' | 'checkInDisabled' | 'checkInCooldown' | 'unauthorized'>
@@ -26,23 +26,14 @@ export class CheckInService {
   async checkIn(customerId: string, rawCode: string, clientKey?: string): Promise<Result<CheckInResult, CheckInError>> {
     const code = CheckInCodeSchema.safeParse(normalizeReadableCode(rawCode))
     if (!code.success) return err({ code: 'invalidShopQr' })
-    const target = await this.repository.findShopByCode(code.data)
-    if (target === null) return err({ code: 'invalidShopQr' })
-    // Recusar antes da transação: sem lock, sem cartão criado só para ser desfeito.
-    const earnsByVisit = baseUnitsFor(target.shop.program.rules, { kind: 'visit' }).ok
-    if (!target.checkInEnabled || !earnsByVisit) return err({ code: 'checkInDisabled' })
-
-    const now = this.clock.now()
-    const recorded = await this.repository.record({ customerId, shop: target, now, ...(clientKey !== undefined && { clientKey }) }, (state) =>
-      decideCheckIn(target, state, now),
-    )
-    if (!recorded.ok) return recorded
-
-    if (!recorded.value.replayed) await this.settleReferral(customerId, target.shop.id, now)
+    const attempt = await this.record(customerId, code.data, clientKey)
+    if (!attempt.ok) return attempt
+    const { target, recorded, now } = attempt.value
+    if (!recorded.replayed) await this.settleReferral(customerId, target.shop.id, now)
 
     const { shop } = target
     const { rules } = shop.program
-    const { cardId, entryId, units, balanceAfter, recordedAt } = recorded.value
+    const { cardId, entryId, units, balanceAfter, recordedAt } = recorded
     const unit = unitOf(rules)
     return ok(
       CheckInResultSchema.parse({
@@ -60,6 +51,26 @@ export class CheckInService {
         nextCheckInAt: toIso(addHours(recordedAt, target.cooldownHours)),
       }),
     )
+  }
+
+  /** Lê a versão do programa que vale e grava; se o programa mudou entre a leitura e o lock, lê de novo uma vez. */
+  private async record(customerId: string, code: CheckInCode, clientKey: string | undefined, retry = true): Promise<Result<{ target: CheckInShop; recorded: CheckInRecorded; now: Date }, CheckInError>> {
+    const target = await this.repository.findShopByCode(code, customerId)
+    if (target === null) return err({ code: 'invalidShopQr' })
+    // Recusar antes da transação: sem lock, sem cartão criado só para ser desfeito.
+    const earnsByVisit = baseUnitsFor(target.shop.program.rules, { kind: 'visit' }).ok
+    if (!target.checkInEnabled || !earnsByVisit) return err({ code: 'checkInDisabled' })
+
+    const now = this.clock.now()
+    try {
+      const recorded = await this.repository.record({ customerId, shop: target, now, ...(clientKey !== undefined && { clientKey }) }, (state) =>
+        decideCheckIn(target, state, now),
+      )
+      return recorded.ok ? ok({ target, recorded: recorded.value, now }) : recorded
+    } catch (error) {
+      if (error instanceof ProgramVersionChanged && retry) return this.record(customerId, code, clientKey, false)
+      throw error
+    }
   }
 
   /**
