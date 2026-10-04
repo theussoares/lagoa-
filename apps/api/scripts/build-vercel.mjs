@@ -3,6 +3,7 @@
 import { execFileSync } from 'node:child_process'
 import { readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { build } from 'esbuild'
 
 const apiDir = resolve(import.meta.dirname, '..')
 const root = resolve(apiDir, '../..')
@@ -34,3 +35,28 @@ for (const file of files(dist)) {
     renameSync(file, file.replace(/\.js\.map$/, '.mjs.map'))
   }
 }
+
+// O Nest 12 é só ESM e o @nestjs/throttler é só CJS: o runtime da Vercel não deixa um `require()` carregar ESM.
+// Juntar tudo num arquivo só troca esses `require()` por código embutido.
+const OPTIONAL_NEST_PACKAGES = [
+  '@nestjs/microservices',
+  '@nestjs/websockets',
+  '@nestjs/platform-socket.io',
+  '@nestjs/platform-fastify',
+  '@nestjs/mapped-types',
+  'class-transformer',
+  'class-validator',
+  'cache-manager',
+]
+
+await build({
+  entryPoints: [join(dist, 'apps/api/src/serverless.mjs')],
+  outfile: join(dist, 'server.mjs'),
+  bundle: true,
+  platform: 'node',
+  format: 'esm',
+  target: 'node24',
+  external: OPTIONAL_NEST_PACKAGES,
+  banner: { js: "import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);" },
+  logLevel: 'warning',
+})
