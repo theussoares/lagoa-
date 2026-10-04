@@ -11,6 +11,7 @@ import { CurrentUser } from '../../auth/current-user.decorator'
 import { unwrap } from '../../common/http/domain-exception'
 import { ZodValidationPipe } from '../../common/http/zod-validation.pipe'
 import { RedemptionService } from './redemption.service'
+import { RequiresTerms } from '../profile/terms.guard'
 
 const RedemptionIdParam = new ZodValidationPipe(RedemptionIdParamSchema)
 
@@ -20,6 +21,7 @@ export class RedemptionController {
 
   /** "Gera ou devolve": repetir o pedido com o código ainda válido devolve o mesmo, então é 200. */
   @Post()
+  @RequiresTerms()
   @HttpCode(200)
   @Throttle({ default: { limit: 20, ttl: 60_000 }, ip: { limit: 100, ttl: 60_000 } })
   async request(

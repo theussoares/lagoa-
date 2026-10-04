@@ -65,15 +65,20 @@ describe.skipIf(!TEST_DATABASE_URL)('profile against a real database', () => {
     expect(revoked.ok && revoked.value.consent.updatedAt).not.toBeNull()
   }, SLOW)
 
-  it('stamps the first terms acceptance with the version shown and keeps it on repeat', async () => {
+  it('stamps the terms acceptance with the version shown, keeps it on repeat, and asks again when the terms change', async () => {
     const id = await customerWithPhone('67991230374')
+    const repository = new DrizzleProfileRepository(data.db)
+    expect(await repository.findTerms(id)).toEqual({ termsAcceptedAt: null, termsVersion: null })
     await service.acceptTerms(id)
     const [first] = await data.db.select().from(customerProfiles).where(eq(customerProfiles.userId, id))
     expect(first?.termsVersion).toBe(TERMS_VERSION)
+    await service.acceptTerms(id)
+    const [again] = await data.db.select().from(customerProfiles).where(eq(customerProfiles.userId, id))
+    expect(again?.termsAcceptedAt).toEqual(first?.termsAcceptedAt)
+
     await data.db.update(customerProfiles).set({ termsVersion: 'older' }).where(eq(customerProfiles.userId, id))
     await service.acceptTerms(id)
-    const [second] = await data.db.select().from(customerProfiles).where(eq(customerProfiles.userId, id))
-    expect(second?.termsVersion).toBe('older')
-    expect(second?.termsAcceptedAt).toEqual(first?.termsAcceptedAt)
+    const [renewed] = await data.db.select().from(customerProfiles).where(eq(customerProfiles.userId, id))
+    expect(renewed?.termsVersion).toBe(TERMS_VERSION)
   }, SLOW)
 })

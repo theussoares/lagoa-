@@ -31,6 +31,9 @@ class InMemoryProfileRepository extends ProfileRepository {
   async findByUserId(userId: string): Promise<ProfileRecord | null> {
     return this.record?.userId === userId ? this.record : null
   }
+  async findTerms(): Promise<Pick<ProfileRecord, 'termsAcceptedAt' | 'termsVersion'> | null> {
+    return this.record
+  }
   async update<E>(
     userId: string,
     decide: (current: ProfileRecord) => Result<ProfilePatch, E>,

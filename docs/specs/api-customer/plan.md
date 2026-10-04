@@ -120,12 +120,32 @@ Tela: Resgate. Front: `RewardRedemptionService`. Entregue em três PRs.
 | Item | Onde | Fase |
 |---|---|---|
 | Teto diário de respostas `phoneAlreadyUsed` por conta (sondagem de celular; hoje só o limite de 5/min por conta e 15/min por IP) | cadastro | PO |
-| Requisição com token inválido não passa pelo limite (custo baixo: ES256 com JWKS em cache) | `app.module.ts` | 5 |
 | Lojista que vira cliente com celular diferente do já gravado: o gravado vence, sem aviso | `drizzle-registration.repository.ts` | 5 |
 | Quem tira o aniversário e quer repor a mesma data fica travado até 365 dias: PO confirmar | `profile.rules.ts` | PO |
 | Índice `(status, name, id)` para a ordem da vitrine, se passar de centenas de lojas | `shops` | 5 |
 | Regras do clube lidas fora do lock no check-in: ok hoje; reavaliar quando o lojista puder trocar o modo | `drizzle-check-in.repository.ts` | 5 |
 | Balcão: chamar `ReferralSettlement.settlePending` depois de toda primeira visita lançada + teste de integração "primeira visita pelo Balcão paga a indicação" | `merchant/*` (Caio) | 6 |
+
+## Revisão de segurança de ponta a ponta (fim da fase 5)
+
+Sem achado crítico, IDOR, vazamento de celular/e-mail nem SQL injetável. Corrigido na 5.4: janela de check-in
+validada (CHECK 1–168 h + recusa no código), termos exigidos **no servidor** (`403 termsNotAccepted`, versão
+atual; versão nova pede novo aceite), JWT com `exp`/`sub` obrigatórios, `sub` UUID, sem conta anônima e e-mail
+validado, erros 4xx do Express (corpo grande, JSON quebrado) sem log de erro, env endurecida (produção exige
+`TRUST_PROXY_HOPS` e `SUPABASE_URL` https; pepper ≥ 32), CORS com trim, teste de RLS em toda tabela pública.
+
+**Riscos que dependem de decisão de produto (sem mitigação no código):**
+
+| Risco | Mitigações possíveis | Quem decide |
+|---|---|---|
+| **Alto.** O `checkInCode` é fixo e impresso; o celular é declarado e o e-mail só é normalizado por caixa. Contas falsas fazem check-in de casa a cada janela e somam bônus de indicação | teto de bônus por indicador/loja/mês; QR assinado e rotativo exibido no Balcão; normalizar alias de e-mail (`+tag`, pontos do Gmail) no hash de unicidade; verificação de celular por SMS | PO + Caio (Balcão) |
+| **Médio.** Quem se cadastra primeiro com o celular de outra pessoa a "toma"; a vítima recebe `phoneAlreadyUsed` e não há disputa | fluxo de suporte/contestação antes do piloto; SMS no futuro | PO |
+| Direitos do titular (LGPD): sem rota de exclusão nem de exportação dos dados | `DELETE /customer/me` (anonimizar ledger) e `GET /customer/me/export` | PO + jurídico |
+
+**Dívida técnica de segurança (baixa):** AAD do AES-GCM com id do usuário e coluna na próxima versão da chave (hoje
+só a versão); armazenamento do limite de requisições em memória (várias instâncias multiplicam o limite: usar
+Redis); `statement_timeout`/`lock_timeout` no papel do banco (o pooler do Supabase recusa parâmetros de conexão);
+limite por IP antes do auth (token inválido hoje não conta).
 
 ## Decisões registradas
 

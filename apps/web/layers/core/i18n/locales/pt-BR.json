@@ -111,6 +111,7 @@
     "notFound": "Não encontramos o que você procurou.",
     "invalidPhone": "Esse celular não parece certo. Use DDD + 9 dígitos, ex.: (67) 99123-4567.",
     "phoneAlreadyUsed": "Esse celular já está em uso em outra conta. Confira o número ou fale com a loja.",
+    "termsNotAccepted": "Aceite os termos de uso para continuar.",
     "rateLimited": "Muitas tentativas seguidas. Espere um instante e tente de novo.",
     "internal": "Algo deu errado do nosso lado. Tente de novo em instantes.",
     "validation": "Confira os dados e tente de novo.",

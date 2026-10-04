@@ -15,7 +15,8 @@ por e-mail** e o celular é só um dado do cadastro (declarado, sem SMS). Então
 2. `supabase.auth.verifyOtp({ email, token, type: 'email' })` → sessão com `access_token` (JWT ES256).
 3. `GET /v1/customer/session`:
    - `200` → `CustomerSession`; se `isNewCustomer`, mostrar a tela de termos e chamar `POST /v1/customer/profile/terms`
-     (a regra é uma só: vem do servidor, não do `created` do cadastro).
+     (a regra é uma só: vem do servidor, não do `created` do cadastro). `isNewCustomer` = ainda não aceitou a **versão atual**
+     dos termos: quando o texto mudar (`TERMS_VERSION`), o cliente volta para essa tela.
    - `404 notFound` (`entity: customer`) → primeiro acesso: pedir o celular e `POST /v1/customer/registration { phone }`,
      que devolve a mesma `CustomerSession`.
 4. Renovação de sessão e logout são do SDK do Supabase; `401 unauthorized` em qualquer rota = sessão acabou
@@ -61,6 +62,8 @@ cadastro. O lojista (`signInMerchant`) segue outro caminho e é do Caio.
 - **Erros de validação** vêm como `400 { code: 'validation', issues: [{ path, code }] }` (sem o valor digitado).
   Códigos que o `pt-BR.json` ainda precisa ter: `phoneAlreadyUsed`, `emailAlreadyUsed` (já adicionados) e, para
   respostas HTTP genéricas, `rateLimited` e `internal`.
+- **Termos são exigidos pelo servidor.** `POST /check-in`, `POST /redemptions` e `POST /referrals` devolvem
+  `403 { code: 'termsNotAccepted' }` enquanto a versão atual não foi aceita: trate como "levar à tela de termos", não como erro genérico.
 - **Celular** só aparece mascarado; o cadastro recebe o número digitado (`phoneDigits` aceita máscara e `+55`).
 - **Ids** são UUID; a rota recusa o que não for (`400`).
 

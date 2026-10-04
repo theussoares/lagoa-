@@ -48,6 +48,8 @@ export const programs = pgTable(
   (t) => [
     // Mesma regra do `ExpirationPolicySchema` (24 = EXPIRATION_MAX_MONTHS; o drizzle-kit não resolve `#shared`).
     // `IS NOT NULL` é necessário: CHECK que resulta em NULL passa no Postgres.
+    // Janela de check-in de 1 a 168 h (CHECK_IN_COOLDOWN_MAX_HOURS): 0 ou negativo liberaria check-in ilimitado.
+    check('programs_check_in_cooldown_check', sql`${t.checkInCooldownHours} BETWEEN 1 AND 168`),
     check('programs_expiration_check', sql`${t.expirationKind} = 'never' OR (${t.expirationMonths} IS NOT NULL AND ${t.expirationMonths} BETWEEN 1 AND 24)`),
   ],
 )

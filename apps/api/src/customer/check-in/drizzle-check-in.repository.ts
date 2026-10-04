@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common'
 import { and, eq } from 'drizzle-orm'
 import type { EarningPlan } from '#shared/domain/earning'
 import type { ErrorOf } from '#shared/types/errors'
+import { CHECK_IN_COOLDOWN_MAX_HOURS } from '#shared/constants/domain'
 import { err, ok, type Result } from '#shared/types/result'
 import { DB, type Database } from '../../database/database.module'
 import { customerProfiles, ledgerEntries, programs, shops } from '../../database/schema'
@@ -40,6 +41,8 @@ export class DrizzleCheckInRepository extends CheckInRepository {
       .where(and(eq(shops.checkInCode, code), eq(shops.status, 'approved')))
       .limit(1)
     if (!row) return null
+    // Janela fora de 1..168 h (o CHECK do banco já barra): a loja fica de fora, nunca com check-in ilimitado.
+    if (row.cooldownHours < 1 || row.cooldownHours > CHECK_IN_COOLDOWN_MAX_HOURS) return null
     const shop = toCatalogShop(row)
     return shop === null ? null : { shop, programId: row.programId, checkInEnabled: row.checkInEnabled, cooldownHours: row.cooldownHours }
   }

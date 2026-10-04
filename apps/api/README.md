@@ -81,7 +81,12 @@ valor), `rateLimited` (429), `routeNotFound` (404), `internal` (500, sem detalhe
   só saem mascarados; nunca em log, URL ou erro. RLS ligado em todas as tabelas, sem policy pública.
 - `helmet`, CORS por origem, limite de requisições por usuário e por IP (rotas sensíveis mais curtas).
 - Antifraude e códigos decididos no servidor, em transação com lock de linha. Escrita só pelo `LedgerStore`.
-- **Operação:** requisição com token inválido é barrada antes do limite (custo baixo, JWKS em cache); proteja a borda
+- **Termos:** `POST /check-in`, `POST /redemptions` e `POST /referrals` respondem `403 termsNotAccepted` até o cliente
+  aceitar a versão atual (`TERMS_VERSION` em `shared/constants/domain.ts`); subir a versão pede novo aceite.
+- **Operação:** em `NODE_ENV=production` a API não sobe sem `TRUST_PROXY_HOPS` e com `SUPABASE_URL` sem https. Com mais de uma
+  instância o limite de requisições (em memória) se multiplica: use armazenamento compartilhado. Configure
+  `statement_timeout`/`lock_timeout` no papel do banco (o pooler do Supabase recusa parâmetros de conexão).
+  Requisição com token inválido é barrada antes do limite (custo baixo, JWKS em cache); proteja a borda
   (WAF/CDN) contra flood. Rotação da chave de PII: o payload cifrado leva a versão da chave (`KEY_VERSION`), então a
   rotação é aditiva (acrescentar a versão 2 ao `PiiService` e recifrar), sem quebrar o que já está gravado.
 

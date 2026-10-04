@@ -27,6 +27,9 @@ export type ProfileNotFound = ErrorOf<'notFound'>
 export abstract class ProfileRepository {
   abstract findByUserId(userId: string): Promise<ProfileRecord | null>
 
+  /** Só o aceite dos termos (consulta enxuta por chave primária, para o guard de cada escrita). */
+  abstract findTerms(userId: string): Promise<Pick<ProfileRecord, 'termsAcceptedAt' | 'termsVersion'> | null>
+
   /**
    * Lê o perfil com lock de linha, deixa `decide` escolher o que mudar e grava tudo numa
    * transação: duas requisições simultâneas não furam a regra de quem decide.

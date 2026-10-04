@@ -6,6 +6,7 @@ import { CurrentUser } from '../../auth/current-user.decorator'
 import { unwrap } from '../../common/http/domain-exception'
 import { ZodValidationPipe } from '../../common/http/zod-validation.pipe'
 import { CheckInService } from './check-in.service'
+import { RequiresTerms } from '../profile/terms.guard'
 
 const idempotencyKey = new ZodValidationPipe(IdempotencyKeySchema.optional())
 
@@ -15,6 +16,7 @@ export class CheckInController {
 
   /** Limite curto: o código da loja são 6 caracteres e não pode ser adivinhado por tentativa e erro. */
   @Post()
+  @RequiresTerms()
   @Throttle({ default: { limit: 10, ttl: 60_000 }, ip: { limit: 60, ttl: 60_000 } })
   async checkIn(
     @CurrentUser() user: AuthUser,

@@ -1,6 +1,7 @@
 import { type CanActivate, type ExecutionContext, Inject, Injectable, UnauthorizedException } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { jwtVerify } from 'jose'
+import { z } from 'zod'
 import { ENV } from '../config/config.module'
 import type { Env } from '../config/env'
 import type { AuthenticatedRequest } from './auth.types'
@@ -8,6 +9,13 @@ import { JWKS, type Jwks, SUPABASE_AUDIENCE, supabaseIssuer } from './jwks'
 import { IS_PUBLIC } from './public.decorator'
 
 const ACCEPTED_ALGORITHMS = ['ES256', 'RS256']
+const UserIdSchema = z.uuid()
+
+/** E-mail do token só vale se for um endereço de verdade (vazio ou lixo vira "sem e-mail"). */
+function verifiedEmail(claim: unknown): string | undefined {
+  const parsed = z.email().safeParse(claim)
+  return parsed.success ? parsed.data : undefined
+}
 
 /** Valida o JWT do Supabase Auth (chaves assimétricas, via JWKS público); `sub` é o `app_users.id`. */
 @Injectable()
@@ -32,9 +40,12 @@ export class SupabaseAuthGuard implements CanActivate {
         issuer: this.issuer,
         audience: SUPABASE_AUDIENCE,
         algorithms: ACCEPTED_ALGORITHMS,
+        // O jose só confere a expiração se ela existir: token sem `exp` ou `sub` não entra.
+        requiredClaims: ['exp', 'sub'],
       })
-      if (!payload.sub) throw new UnauthorizedException()
-      request.user = { id: payload.sub, email: typeof payload.email === 'string' ? payload.email : undefined }
+      // Id do Supabase é UUID; conta anônima (sem e-mail verificado) não vira cliente.
+      if (!UserIdSchema.safeParse(payload.sub).success || payload.is_anonymous === true) throw new UnauthorizedException()
+      request.user = { id: String(payload.sub), email: verifiedEmail(payload.email) }
       return true
     } catch {
       throw new UnauthorizedException()

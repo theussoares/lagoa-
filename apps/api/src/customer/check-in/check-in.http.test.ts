@@ -10,6 +10,9 @@ import { Clock } from '../../common/clock'
 import { ReferralSettlement } from '../../ledger/referral-settlement'
 import { AllExceptionsFilter } from '../../common/http/all-exceptions.filter'
 import { FakeAuthGuard } from '../../test-support/fake-auth.guard'
+import { FixedProfileRepository } from '../../test-support/fixed-profile.repository'
+import { acceptedProfile } from '../profile/profile.fixtures'
+import { ProfileRepository } from '../profile/profile.repository'
 import { checkInShop, FIRST_VISIT, stateOf } from './check-in.fixtures'
 import { CheckInController } from './check-in.controller'
 import { type CheckInAttempt, type CheckInRecorded, CheckInRepository, type CheckInShop, type CheckInState } from './check-in.repository'
@@ -34,6 +37,7 @@ class FakeCheckInRepository extends CheckInRepository {
 
 describe('check-in HTTP', () => {
   let app: INestApplication
+  const profiles = new FixedProfileRepository(acceptedProfile())
   const repository = new FakeCheckInRepository()
 
   beforeAll(async () => {
@@ -44,6 +48,7 @@ describe('check-in HTTP', () => {
         { provide: CheckInRepository, useValue: repository },
         { provide: ReferralSettlement, useValue: { settlePending: async () => 'none' } },
         { provide: Clock, useValue: { now: () => new Date('2026-10-03T12:00:00Z') } },
+        { provide: ProfileRepository, useValue: profiles },
         { provide: APP_GUARD, useClass: FakeAuthGuard },
         { provide: APP_FILTER, useClass: AllExceptionsFilter },
       ],
@@ -87,4 +92,18 @@ describe('check-in HTTP', () => {
     await request(app.getHttpServer()).post('/check-in').set('Idempotency-Key', 'short').send({ code: 'NAV4K7' }).expect(400)
     await request(app.getHttpServer()).post('/check-in').set('Idempotency-Key', 'has spaces and !! symbols 123').send({ code: 'NAV4K7' }).expect(400)
   })
+
+  it('answers 403 termsNotAccepted, and writes nothing, until the customer accepts the current terms', async () => {
+    const before = profiles.record
+    profiles.record = profileRecordFor('none')
+    const refused = await request(app.getHttpServer()).post('/check-in').send({ code: 'NAV4K7' }).expect(403)
+    expect(refused.body).toEqual({ code: 'termsNotAccepted' })
+    profiles.record = profileRecordFor('old')
+    await request(app.getHttpServer()).post('/check-in').send({ code: 'NAV4K7' }).expect(403)
+    profiles.record = before
+  })
 })
+
+function profileRecordFor(kind: 'none' | 'old') {
+  return kind === 'none' ? acceptedProfile({ termsAcceptedAt: null, termsVersion: null }) : acceptedProfile({ termsVersion: '2020-01' })
+}

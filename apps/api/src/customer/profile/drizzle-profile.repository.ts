@@ -40,6 +40,15 @@ export class DrizzleProfileRepository extends ProfileRepository {
     return row ?? null
   }
 
+  async findTerms(userId: string): Promise<Pick<ProfileRecord, 'termsAcceptedAt' | 'termsVersion'> | null> {
+    const [row] = await this.db
+      .select({ termsAcceptedAt: customerProfiles.termsAcceptedAt, termsVersion: customerProfiles.termsVersion })
+      .from(customerProfiles)
+      .where(eq(customerProfiles.userId, userId))
+      .limit(1)
+    return row ?? null
+  }
+
   async update<E>(
     userId: string,
     decide: (current: ProfileRecord) => Result<ProfilePatch, E>,
