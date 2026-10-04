@@ -1,6 +1,7 @@
 import type { CheckInService } from './CheckInService'
 import type { DiscoverService } from './DiscoverService'
 import type { ProfileService } from './ProfileService'
+import type { ReferralService } from './ReferralService'
 import type { RewardRedemptionService } from './RewardRedemptionService'
 import type { WalletService } from './WalletService'
 
@@ -11,4 +12,5 @@ export interface CustomerServices {
   readonly redemption: RewardRedemptionService
   readonly discover: DiscoverService
   readonly profile: ProfileService
+  readonly referral: ReferralService
 }
