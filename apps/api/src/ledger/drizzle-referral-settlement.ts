@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common'
-import { and, eq } from 'drizzle-orm'
+import { and, count, eq } from 'drizzle-orm'
+import { REFERRAL_REWARDS_MAX_PER_SHOP } from '#shared/constants/domain'
 import { BonusRulesSchema, type ExpirationPolicy } from '#shared/schemas/program'
 import { DB, type Database } from '../database/database.module'
 import { loyaltyCards, programs, referrals, shops } from '../database/schema'
@@ -52,7 +53,12 @@ export class DrizzleReferralSettlement extends ReferralSettlement {
       if (!row || row.referredCardCreatedAt === null || row.referredLastVisitAt === null) return 'none'
 
       const bonusRules = BonusRulesSchema.safeParse(row.bonusRules)
+      const [rewarded] = await tx
+        .select({ total: count() })
+        .from(referrals)
+        .where(and(eq(referrals.shopId, shopId), eq(referrals.referrerId, row.referrerId), eq(referrals.status, 'rewarded')))
       const eligible =
+        (rewarded?.total ?? 0) < REFERRAL_REWARDS_MAX_PER_SHOP &&
         bonusRules.success &&
         bonusRules.data.referralBonus.enabled &&
         row.shopStatus === 'approved' &&

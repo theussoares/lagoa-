@@ -1,5 +1,6 @@
 import { and, eq } from 'drizzle-orm'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { REFERRAL_REWARDS_MAX_PER_SHOP } from '#shared/constants/domain'
 import { SystemClock } from '../common/clock'
 import { ledgerEntries, loyaltyCards, programs, referrals } from '../database/schema'
 import { DrizzleReferralSettlement } from '../ledger/drizzle-referral-settlement'
@@ -205,5 +206,18 @@ describe.skipIf(!TEST_DATABASE_URL)('referral against a real database', () => {
     expect((await cardOf(a, shop.id))?.balance).toBe(2)
     expect(await checkIn.checkIn(a, shop.checkInCode)).toMatchObject({ ok: true, value: { card: { balance: 5 } } }) // 2 do bônus + 2 de boas-vindas + 1
     expect(await kindsOf(a)).toEqual(['referralBonus:2', 'welcomeBonus:2', 'checkIn:1'])
+  }, SLOW)
+
+  it('stops paying a referrer after the per-shop cap and rejects the extra invites', async () => {
+    const shop = await data.createShop({ bonusRules: REFERRAL_ON })
+    const referrer = await data.createCustomer()
+    for (let i = 0; i < REFERRAL_REWARDS_MAX_PER_SHOP + 1; i += 1) {
+      const friend = await data.createCustomer()
+      await invite(shop, referrer, friend)
+      await checkIn.checkIn(friend, shop.checkInCode)
+    }
+    const statuses = (await referralsOf(shop.id)).map((r) => r.status)
+    expect(statuses.filter((s) => s === 'rewarded')).toHaveLength(REFERRAL_REWARDS_MAX_PER_SHOP)
+    expect(statuses.filter((s) => s === 'rejected')).toHaveLength(1)
   }, SLOW)
 })
