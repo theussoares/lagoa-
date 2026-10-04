@@ -9,6 +9,7 @@ export function profileRecord(overrides: Partial<ProfileRecord> = {}): ProfileRe
     notificationsConsent: false,
     consentUpdatedAt: null,
     termsAcceptedAt: null,
+    termsVersion: null,
     phoneEncrypted: Buffer.alloc(0),
     ...overrides,
   }

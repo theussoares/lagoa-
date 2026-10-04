@@ -32,4 +32,25 @@ describe('PiiService', () => {
   it('keeps phone and e-mail hashes apart even for the same text', () => {
     expect(pii.hashEmail('67991230374').equals(pii.hashPhone(PhoneNumberSchema.parse('67991230374')))).toBe(false)
   })
+
+  it('starts every payload with the key version, so a rotation can tell old from new', () => {
+    expect(pii.encrypt('x')[0]).toBe(1)
+  })
+
+  it('refuses a payload from an unknown key version', () => {
+    const payload = pii.encrypt('67991230374')
+    payload[0] = 2
+    expect(() => pii.decrypt(payload)).toThrow('Unknown PII key version')
+  })
+
+  it('refuses a payload that was tampered with, header included', () => {
+    const payload = pii.encrypt('67991230374')
+    payload[payload.length - 1] = (payload[payload.length - 1] ?? 0) ^ 1
+    expect(() => pii.decrypt(payload)).toThrow()
+  })
+
+  it('does not decrypt with another key', () => {
+    const other = new PiiService({ PII_ENCRYPTION_KEY: randomBytes(32).toString('base64'), PII_HASH_PEPPER: 'a-long-enough-test-pepper' })
+    expect(() => other.decrypt(pii.encrypt('67991230374'))).toThrow()
+  })
 })

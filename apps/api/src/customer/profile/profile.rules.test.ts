@@ -43,12 +43,12 @@ describe('decideConsent', () => {
 })
 
 describe('decideTerms', () => {
-  it('stamps the first acceptance', () => {
-    expect(decideTerms(profileRecord(), now)).toEqual({ ok: true, value: { termsAcceptedAt: now } })
+  it('stamps the first acceptance with the version that was shown', () => {
+    expect(decideTerms(profileRecord(), now, '2026-10')).toEqual({ ok: true, value: { termsAcceptedAt: now, termsVersion: '2026-10' } })
   })
 
   it('keeps the original acceptance on repeat calls', () => {
     const current = profileRecord({ termsAcceptedAt: new Date('2026-01-01T00:00:00Z') })
-    expect(decideTerms(current, now)).toEqual({ ok: true, value: {} })
+    expect(decideTerms(current, now, '2026-12')).toEqual({ ok: true, value: {} })
   })
 })

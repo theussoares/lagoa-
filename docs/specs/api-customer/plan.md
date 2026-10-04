@@ -105,25 +105,27 @@ Tela: Resgate. Front: `RewardRedemptionService`. Entregue em três PRs.
 - Coluna `loyalty_cards.last_activity_at` (migration `0007`): a inatividade conta da última visita **ou bônus**;
   o antifraude do check-in continua só em `last_visit_at`. A chave do vencimento inclui a última linha do cartão.
 
-**5.4 Fechamento**
-- `Idempotency-Key` no check-in, README da API, revisão de segurança de ponta a ponta, `EXPLAIN` das queries
-  críticas, checklist de integração com o front (`Http*Service`).
+**5.4 Fechamento** (feito)
+- `Idempotency-Key` no check-in (reenvio devolve o carimbo já gravado; chave por cliente + loja + cartão).
+- `customer_profiles.terms_version` (migration `0008`) e `TERMS_VERSION` no `shared`: o aceite grava a versão.
+- Payload cifrado de PII com a versão da chave (rotação aditiva).
+- Testes de integração de perfil, cadastro, Descobrir e Carteira (mais os de check-in, resgate, vencimento e
+  indicação): 241 testes da API, todos contra Postgres no CI.
+- `EXPLAIN (ANALYZE)` em volume (300 lojas, 20 mil clientes, 60 mil cartões, 300 mil linhas de ledger): todas as
+  consultas críticas abaixo de 5 ms e com índice (transação desfeita, nada ficou no banco).
+- README da API, guia de integração com o front, revisão de segurança de ponta a ponta.
 
 ## Pendências registradas (revisões)
 
 | Item | Onde | Fase |
 |---|---|---|
-| Teto diário de respostas `phoneAlreadyUsed` por conta (sondagem de celular) | cadastro | 5 |
+| Teto diário de respostas `phoneAlreadyUsed` por conta (sondagem de celular; hoje só o limite de 5/min por conta e 15/min por IP) | cadastro | PO |
 | Requisição com token inválido não passa pelo limite (custo baixo: ES256 com JWKS em cache) | `app.module.ts` | 5 |
 | Lojista que vira cliente com celular diferente do já gravado: o gravado vence, sem aviso | `drizzle-registration.repository.ts` | 5 |
-| Versão dos termos aceitos (`termsVersion`) para auditoria LGPD; exige migration | `customer_profiles` | 5 |
 | Quem tira o aniversário e quer repor a mesma data fica travado até 365 dias: PO confirmar | `profile.rules.ts` | PO |
-| Testes de integração com Postgres: check-in já cobre lock, rollback e ordem (`check-in.integration.test.ts`); faltam Descobrir, Carteira, perfil e cadastro | `apps/api` | 5 |
 | Índice `(status, name, id)` para a ordem da vitrine, se passar de centenas de lojas | `shops` | 5 |
-| `Idempotency-Key` no check-in (devolver o carimbo já gravado ao reenviar) | `check-in` | 5 |
 | Regras do clube lidas fora do lock no check-in: ok hoje; reavaliar quando o lojista puder trocar o modo | `drizzle-check-in.repository.ts` | 5 |
 | Balcão: chamar `ReferralSettlement.settlePending` depois de toda primeira visita lançada + teste de integração "primeira visita pelo Balcão paga a indicação" | `merchant/*` (Caio) | 6 |
-| Rotação da chave de cifra de PII (prefixo de versão no payload) | `pii.service.ts` | 5 |
 
 ## Decisões registradas
 
@@ -158,6 +160,6 @@ Tela: Resgate. Front: `RewardRedemptionService`. Entregue em três PRs.
 | Item | Quando |
 |---|---|
 | Padrão de módulo (`CLAUDE.md`) e `shared/` como contrato | já vale |
-| Serviço de ledger (escrita) | desenhar no início da fase 4 |
-| Validação de resgate no Balcão | fase 5 |
+| Serviço de ledger (escrita) | pronto: `LedgerStore` (ver `apps/api/README.md`, "Para o painel do lojista") |
+| Validação e entrega de resgate no Balcão | pronto: `RedemptionLookup` + `LedgerStore.settleRedemption` |
 | Aprovação de loja (`Shop.status`) | em aberto no modelo |

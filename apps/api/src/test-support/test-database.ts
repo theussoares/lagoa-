@@ -60,6 +60,11 @@ export class TestDatabase {
     return id
   }
 
+  /** Troca o celular cifrado do cliente (para testar o que depende de um número conhecido). */
+  async setPhone(customerId: string, phoneEncrypted: Buffer): Promise<void> {
+    await this.db.update(schema.appUsers).set({ phoneEncrypted }).where(eq(schema.appUsers.id, customerId))
+  }
+
   async referralCodeOf(customerId: string): Promise<string> {
     const [row] = await this.db.select({ code: schema.customerProfiles.referralCode }).from(schema.customerProfiles).where(eq(schema.customerProfiles.userId, customerId))
     if (!row) throw new Error('profile expected')

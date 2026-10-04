@@ -23,7 +23,7 @@ export class CheckInService {
 
   private readonly logger = new Logger(CheckInService.name)
 
-  async checkIn(customerId: string, rawCode: string): Promise<Result<CheckInResult, CheckInError>> {
+  async checkIn(customerId: string, rawCode: string, clientKey?: string): Promise<Result<CheckInResult, CheckInError>> {
     const code = CheckInCodeSchema.safeParse(normalizeReadableCode(rawCode))
     if (!code.success) return err({ code: 'invalidShopQr' })
     const target = await this.repository.findShopByCode(code.data)
@@ -33,16 +33,16 @@ export class CheckInService {
     if (!target.checkInEnabled || !earnsByVisit) return err({ code: 'checkInDisabled' })
 
     const now = this.clock.now()
-    const recorded = await this.repository.record({ customerId, shop: target, now }, (state) =>
+    const recorded = await this.repository.record({ customerId, shop: target, now, ...(clientKey !== undefined && { clientKey }) }, (state) =>
       decideCheckIn(target, state, now),
     )
     if (!recorded.ok) return recorded
 
-    await this.settleReferral(customerId, target.shop.id, now)
+    if (!recorded.value.replayed) await this.settleReferral(customerId, target.shop.id, now)
 
     const { shop } = target
     const { rules } = shop.program
-    const { cardId, entryId, plan } = recorded.value
+    const { cardId, entryId, units, balanceAfter, recordedAt } = recorded.value
     const unit = unitOf(rules)
     return ok(
       CheckInResultSchema.parse({
@@ -52,12 +52,12 @@ export class CheckInService {
           shopName: shop.name,
           kind: 'checkIn',
           unit,
-          units: plan.units,
+          units,
           rewardTitle: null,
-          createdAt: toIso(now),
+          createdAt: toIso(recordedAt),
         },
-        card: { cardId, unit, balance: plan.balanceAfter, target: rules.target, rewardReady: plan.balanceAfter >= rules.target },
-        nextCheckInAt: toIso(addHours(now, target.cooldownHours)),
+        card: { cardId, unit, balance: balanceAfter, target: rules.target, rewardReady: balanceAfter >= rules.target },
+        nextCheckInAt: toIso(addHours(recordedAt, target.cooldownHours)),
       }),
     )
   }

@@ -18,15 +18,17 @@ import { CheckInService } from './check-in.service'
 class FakeCheckInRepository extends CheckInRepository {
   shop: CheckInShop | null = checkInShop()
   state: CheckInState = FIRST_VISIT
+  attempts: CheckInAttempt[] = []
   async findShopByCode(): Promise<CheckInShop | null> {
     return this.shop
   }
   async record<E>(
-    _attempt: CheckInAttempt,
+    attempt: CheckInAttempt,
     decide: (state: CheckInState) => Result<EarningPlan, E>,
   ): Promise<Result<CheckInRecorded, E | ErrorOf<'unauthorized'>>> {
+    this.attempts.push(attempt)
     const decision = decide(this.state)
-    return decision.ok ? ok({ cardId: 'card-1', entryId: '0190a000-0000-7000-8000-0000000000e1', plan: decision.value }) : decision
+    return decision.ok ? ok({ cardId: 'card-1', entryId: '0190a000-0000-7000-8000-0000000000e1', units: decision.value.units, balanceAfter: decision.value.balanceAfter, recordedAt: attempt.now, replayed: false }) : decision
   }
 }
 
@@ -75,5 +77,14 @@ describe('check-in HTTP', () => {
 
   it.each([{}, { code: 123 }, { code: 'x'.repeat(33) }])('answers 400 for a malformed body %j', async (body) => {
     await post(body).expect(400)
+  })
+
+  it('passes a valid Idempotency-Key header on and rejects a malformed one', async () => {
+    repository.attempts = []
+    repository.state = FIRST_VISIT
+    await request(app.getHttpServer()).post('/check-in').set('Idempotency-Key', 'abcdefghij0123456789').send({ code: 'NAV4K7' }).expect(201)
+    expect(repository.attempts[0]?.clientKey).toBe('abcdefghij0123456789')
+    await request(app.getHttpServer()).post('/check-in').set('Idempotency-Key', 'short').send({ code: 'NAV4K7' }).expect(400)
+    await request(app.getHttpServer()).post('/check-in').set('Idempotency-Key', 'has spaces and !! symbols 123').send({ code: 'NAV4K7' }).expect(400)
   })
 })

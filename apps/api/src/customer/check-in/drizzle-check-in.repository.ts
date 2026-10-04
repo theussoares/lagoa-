@@ -4,7 +4,7 @@ import type { EarningPlan } from '#shared/domain/earning'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
 import { DB, type Database } from '../../database/database.module'
-import { customerProfiles, programs, shops } from '../../database/schema'
+import { customerProfiles, ledgerEntries, programs, shops } from '../../database/schema'
 import { LedgerStore } from '../../ledger/ledger.store'
 import { CATALOG_COLUMNS, toCatalogShop } from '../../shops/catalog-row'
 import {
@@ -45,7 +45,7 @@ export class DrizzleCheckInRepository extends CheckInRepository {
   }
 
   async record<E>(
-    { customerId, shop: target, now }: CheckInAttempt,
+    { customerId, shop: target, now, clientKey }: CheckInAttempt,
     decide: (state: CheckInState) => Result<EarningPlan, E>,
   ): Promise<Result<CheckInRecorded, E | ErrorOf<'unauthorized'>>> {
     const refusal: { error: E | ErrorOf<'unauthorized'> | null } = { error: null }
@@ -66,6 +66,19 @@ export class DrizzleCheckInRepository extends CheckInRepository {
           { shopId: target.shop.id, customerId, programId: target.programId },
           { policy: target.shop.program.expiration, target: target.shop.program.rules.target, now },
         )
+        // O mesmo toque reenviado (resposta perdida): devolve o carimbo que já está no ledger, sem decidir de novo.
+        const key = clientKey === undefined ? null : `checkIn:${customerId}:${target.shop.id}:${clientKey}`
+        if (key !== null) {
+          const [previous] = await tx
+            .select({ id: ledgerEntries.id, units: ledgerEntries.unitsDelta, occurredAt: ledgerEntries.occurredAt })
+            .from(ledgerEntries)
+            .where(and(eq(ledgerEntries.idempotencyKey, key), eq(ledgerEntries.cardId, card.id)))
+            .limit(1)
+          if (previous) {
+            return ok({ cardId: card.id, entryId: previous.id, units: previous.units, balanceAfter: card.balance, recordedAt: previous.occurredAt, replayed: true })
+          }
+        }
+
         const decision = decide({
           card: { balance: card.balance, rewardExpiresAt: card.rewardExpiresAt, lastVisitAt: card.lastVisitAt },
           birthday: profile.birthday,
@@ -83,9 +96,9 @@ export class DrizzleCheckInRepository extends CheckInRepository {
           plan: decision.value,
           kind: 'checkIn',
           now,
-          idempotencyKey: `checkIn:${card.id}:${card.lastVisitAt?.toISOString() ?? 'first'}`,
+          idempotencyKey: key ?? `checkIn:${card.id}:${card.lastVisitAt?.toISOString() ?? 'first'}`,
         })
-        return ok({ cardId: card.id, entryId, plan: decision.value })
+        return ok({ cardId: card.id, entryId, units: decision.value.units, balanceAfter: decision.value.balanceAfter, recordedAt: now, replayed: false })
       })
     } catch (error) {
       if (error instanceof RollbackSignal && refusal.error !== null) return err(refusal.error)

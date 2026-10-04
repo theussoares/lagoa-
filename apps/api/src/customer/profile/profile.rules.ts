@@ -33,6 +33,6 @@ export function decideConsent(granted: boolean, now: Date): Result<ProfilePatch,
 }
 
 /** Idempotente: o primeiro aceite é o que vale. */
-export function decideTerms(current: ProfileRecord, now: Date): Result<ProfilePatch, never> {
-  return ok(current.termsAcceptedAt === null ? { termsAcceptedAt: now } : {})
+export function decideTerms(current: ProfileRecord, now: Date, version: string): Result<ProfilePatch, never> {
+  return ok(current.termsAcceptedAt === null ? { termsAcceptedAt: now, termsVersion: version } : {})
 }

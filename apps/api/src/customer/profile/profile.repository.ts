@@ -10,6 +10,7 @@ export interface ProfileRecord {
   readonly notificationsConsent: boolean
   readonly consentUpdatedAt: Date | null
   readonly termsAcceptedAt: Date | null
+  readonly termsVersion: string | null
   readonly phoneEncrypted: Buffer
 }
 
@@ -17,7 +18,7 @@ export interface ProfileRecord {
 export type ProfilePatch = Partial<
   Pick<
     ProfileRecord,
-    'firstName' | 'birthday' | 'birthdayChangedAt' | 'notificationsConsent' | 'consentUpdatedAt' | 'termsAcceptedAt'
+    'firstName' | 'birthday' | 'birthdayChangedAt' | 'notificationsConsent' | 'consentUpdatedAt' | 'termsAcceptedAt' | 'termsVersion'
   >
 >
 

@@ -18,6 +18,7 @@ const PROFILE_COLUMNS = {
   notificationsConsent: customerProfiles.notificationsConsent,
   consentUpdatedAt: customerProfiles.consentUpdatedAt,
   termsAcceptedAt: customerProfiles.termsAcceptedAt,
+  termsVersion: customerProfiles.termsVersion,
   phoneEncrypted: appUsers.phoneEncrypted,
 }
 

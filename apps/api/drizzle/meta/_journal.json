@@ -57,6 +57,13 @@
       "when": 1791072955015,
       "tag": "0007_card_last_activity",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791073992095,
+      "tag": "0008_terms_version",
+      "breakpoints": true
     }
   ]
 }

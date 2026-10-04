@@ -21,13 +21,20 @@ export interface CheckInState {
 export interface CheckInRecorded {
   readonly cardId: string
   readonly entryId: string
-  readonly plan: EarningPlan
+  /** Unidades da visita (sem as boas-vindas) e saldo do cartão. */
+  readonly units: number
+  readonly balanceAfter: number
+  readonly recordedAt: Date
+  /** `true`: o mesmo `Idempotency-Key` já tinha sido gravado e nada novo foi escrito. */
+  readonly replayed: boolean
 }
 
 export interface CheckInAttempt {
   readonly customerId: string
   readonly shop: CheckInShop
   readonly now: Date
+  /** Do cabeçalho `Idempotency-Key`; reenviar o mesmo devolve o carimbo já gravado em vez de `checkInCooldown`. */
+  readonly clientKey?: string
 }
 
 export abstract class CheckInRepository {
@@ -36,7 +43,8 @@ export abstract class CheckInRepository {
 
   /**
    * Trava (ou cria) o cartão, deixa `decide` escolher o plano e grava ledger + saldo na mesma
-   * transação. Se `decide` recusar, nada é gravado, nem o cartão novo.
+   * transação. Se `decide` recusar, nada é gravado, nem o cartão novo. Com `clientKey` já gravado, devolve
+   * o lançamento anterior sem decidir nem escrever nada.
    */
   abstract record<E>(
     attempt: CheckInAttempt,

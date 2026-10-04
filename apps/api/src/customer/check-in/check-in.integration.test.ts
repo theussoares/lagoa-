@@ -114,4 +114,35 @@ describe.skipIf(!TEST_DATABASE_URL)('check-in against a real database', () => {
     expect(await service.checkIn(ghost, shop.checkInCode)).toEqual({ ok: false, error: { code: 'unauthorized' } })
     expect(await cardsOf(ghost)).toHaveLength(0)
   }, SLOW)
+
+  it('answers a resent request with the recorded stamp instead of a cooldown, writing nothing new', async () => {
+    const shop = await data.createShop({ bonusRules: WELCOME_BONUS })
+    const customer = await data.createCustomer()
+    const key = 'tap-0001-abcdefghijklmnop'
+    const first = await service.checkIn(customer, shop.checkInCode, key)
+    const again = await service.checkIn(customer, shop.checkInCode, key)
+    expect(first).toMatchObject({ ok: true })
+    expect(again).toEqual(first)
+    expect(await entriesOf(customer)).toHaveLength(2) // boas-vindas + 1 visita, só
+  }, SLOW)
+
+  it('keeps the same key from replaying across shops or customers, and a new key still hits the cooldown', async () => {
+    const [a, b] = [await data.createShop(), await data.createShop()]
+    const customer = await data.createCustomer()
+    const other = await data.createCustomer()
+    const key = 'tap-0002-abcdefghijklmnop'
+    expect(await service.checkIn(customer, a.checkInCode, key)).toMatchObject({ ok: true })
+    expect(await service.checkIn(customer, b.checkInCode, key)).toMatchObject({ ok: true, value: { activity: { shopId: b.id } } })
+    expect(await service.checkIn(other, a.checkInCode, key)).toMatchObject({ ok: true, value: { activity: { shopId: a.id } } })
+    expect(await service.checkIn(customer, a.checkInCode, 'tap-0003-abcdefghijklmnop')).toMatchObject({ ok: false, error: { code: 'checkInCooldown' } })
+  }, SLOW)
+
+  it('does not double-write when the same key arrives many times at once', async () => {
+    const shop = await data.createShop()
+    const customer = await data.createCustomer()
+    const results = await Promise.all(Array.from({ length: 6 }, () => service.checkIn(customer, shop.checkInCode, 'tap-0004-abcdefghijklmnop')))
+    expect(results.every((r) => r.ok)).toBe(true)
+    expect(new Set(results.map((r) => (r.ok ? r.value.activity.id : ''))).size).toBe(1)
+    expect(await entriesOf(customer)).toHaveLength(1)
+  }, SLOW)
 })
