@@ -46,7 +46,8 @@ export const programs = pgTable(
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    // Mesma regra do `ExpirationPolicySchema`: inatividade exige um prazo de 1 a 24 meses.
-    check('programs_expiration_check', sql`${t.expirationKind} = 'never' OR ${t.expirationMonths} BETWEEN 1 AND 24`),
+    // Mesma regra do `ExpirationPolicySchema` (24 = EXPIRATION_MAX_MONTHS; o drizzle-kit não resolve `#shared`).
+    // `IS NOT NULL` é necessário: CHECK que resulta em NULL passa no Postgres.
+    check('programs_expiration_check', sql`${t.expirationKind} = 'never' OR (${t.expirationMonths} IS NOT NULL AND ${t.expirationMonths} BETWEEN 1 AND 24)`),
   ],
 )

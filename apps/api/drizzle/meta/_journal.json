@@ -43,6 +43,13 @@
       "when": 1791072596394,
       "tag": "0005_programs_expiration_check",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791072734463,
+      "tag": "0006_programs_expiration_check_not_null",
+      "breakpoints": true
     }
   ]
 }

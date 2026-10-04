@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { SystemClock } from '../common/clock'
-import { ledgerEntries, loyaltyCards } from '../database/schema'
+import { ledgerEntries, loyaltyCards, programs } from '../database/schema'
 import { LedgerStore } from '../ledger/ledger.store'
 import { NO_BONUS_RULES, TEST_DATABASE_URL, TestDatabase } from '../test-support/test-database'
 import { CheckInService } from './check-in/check-in.service'
@@ -124,5 +124,15 @@ describe.skipIf(!TEST_DATABASE_URL)('expiration against a real database', () => 
     await data.db.update(loyaltyCards).set({ rewardExpiresAt: new Date(Date.now() - 1000) }).where(eq(loyaltyCards.customerId, customer))
     expect(await redemption.requestCode(customer, card?.id ?? '')).toMatchObject({ ok: false, error: { code: 'rewardNotReady' } })
     expect(await redemption.get(customer, created.value.id)).toMatchObject({ ok: true, value: { status: 'expired' } })
+  }, SLOW)
+
+  it('keeps a broken expiration policy out of the database (the CHECK rejects missing and out-of-range months)', async () => {
+    const shop = await data.createShop()
+    const setPolicy = (months: number | null) =>
+      data.db.update(programs).set({ expirationKind: 'afterInactivity', expirationMonths: months }).where(eq(programs.shopId, shop.id))
+    await expect(setPolicy(null)).rejects.toThrow()
+    await expect(setPolicy(0)).rejects.toThrow()
+    await expect(setPolicy(25)).rejects.toThrow()
+    await expect(setPolicy(6)).resolves.toBeDefined()
   }, SLOW)
 })
