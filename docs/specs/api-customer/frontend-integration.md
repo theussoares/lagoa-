@@ -22,7 +22,7 @@ pelo Supabase e entregue pela API (Send SMS Hook → Comtele, `POST /v1/auth/hoo
 5. Renovação de sessão e logout são do SDK do Supabase; `401 unauthorized` = sessão acabou.
 
 Configuração (Supabase): Auth > Providers > Phone ligado, Auth > Hooks > Send SMS Hook apontando para a API, com o
-segredo em `SEND_SMS_HOOK_SECRET`; `COMTELE_AUTH_KEY` e `COMTELE_SENDER` no env da API. Em dev use os *test OTPs* do Supabase.
+segredo em `SEND_SMS_HOOK_SECRET`; `COMTELE_AUTH_KEY` e `COMTELE_ROUTE` no env da API. Em dev use os *test OTPs* do Supabase.
 O lojista (`signInMerchant`) segue outro caminho e é do Caio.
 
 ## 2. Mapa serviço → rota

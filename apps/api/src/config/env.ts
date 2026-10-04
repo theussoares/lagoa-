@@ -11,9 +11,9 @@ const EnvSchema = z
     PII_HASH_PEPPER: z.string().min(32),
     /** Quantos proxies (load balancer) existem na frente da API; define de onde vem o IP real. Obrigatório em produção. */
     TRUST_PROXY_HOPS: z.coerce.number().int().min(0).optional(),
-    /** Chave da Comtele (header `auth-key`) e remetente do SMS de login. */
+    /** Chave de API da Comtele (header `x-api-key`) e a rota de envio da conta (padrão 17, a do exemplo da documentação). */
     COMTELE_AUTH_KEY: z.string().min(1).optional(),
-    COMTELE_SENDER: z.string().min(1).max(11).default('Lagoa'),
+    COMTELE_ROUTE: z.coerce.number().int().positive().default(17),
     /** Segredo do Send SMS Hook do Supabase (`v1,whsec_...`): só quem o tem pode mandar a API disparar SMS. */
     SEND_SMS_HOOK_SECRET: z.string().regex(/^v1,whsec_\S+$/).optional(),
     CORS_ORIGIN: z.string().default('http://localhost:3000'),
