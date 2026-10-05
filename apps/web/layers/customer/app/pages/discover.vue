@@ -38,7 +38,7 @@ const challengeModels = computed(() => {
 const heroChallenge = computed(() => challengeModels.value.find((challenge) => !challenge.done) ?? null)
 const otherChallenges = computed(() => challengeModels.value.filter((challenge) => challenge.id !== heroChallenge.value?.id))
 
-const CITY_HEADER_IMAGE = '/example/city.svg'
+const CITY_HEADER_IMAGE = cityHeaderImageUrl(useRuntimeConfig().public.supabaseUrl)
 const mapUrl = shopsMapUrl()
 
 const unauthorized = computed(() =>
