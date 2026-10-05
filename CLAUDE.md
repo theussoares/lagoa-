@@ -46,16 +46,21 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
   (`shared/domain/antifraud.ts`): check-in e Balcão usam as mesmas, nunca uma cópia.
 - **BFF (`apps/web/server`, modo `http`):** o navegador só fala com o próprio domínio. `/api/auth/*`
   faz o login por SMS no Supabase e guarda o token em cookie httpOnly (`lagoa_at`/`lagoa_rt`, SameSite=Lax,
-  path `/api`); `/api/v1/**` troca o cookie por `Bearer` e repassa à API (`NUXT_API_BASE_URL`, só no
-  servidor). Escrita em `/api/**` exige `Origin` do próprio host ou de `NUXT_ALLOWED_ORIGINS`. Peças puras
+  path `/api`); cada rota de `server/api/**` é um handler explícito (método + caminho fixo da API, entrada validada com
+  o schema do `shared`) que troca o cookie por `Bearer` via `callApi` (`NUXT_API_BASE_URL`, só no servidor); não há
+  proxy genérico: rota que não existe lá devolve 404 e os caminhos reais da API nunca aparecem no navegador. Escrita em `/api/**` exige `Origin` do próprio host ou de `NUXT_ALLOWED_ORIGINS`. Peças puras
   em `server/utils/*` com testes em `server/test`; as rotas só compõem.
-- **Backend (histórico):** ainda não definido. Até o ADR do CTO sair, o front consome
-  services com interface e implementação mock em `layers/core` — nenhum
-  componente chama `fetch`/`$fetch` direto. O mock é um servidor falso único
-  (`layers/core/app/mock`), escolhido por `runtimeConfig.public.apiMode`, e
-  guarda o estado no `localStorage` (cliente e Balcão em abas diferentes veem os
-  mesmos dados). Dados de exemplo em `seed.example.ts`; código de login do mock:
-  `246810`. Por isso o app roda como SPA (`ssr: false`) por enquanto.
+- **SSR e sessão do cliente:** `ssr: true`. O cliente não tem mock nem `localStorage`: o plugin `lagoa:backend`
+  monta o `ApiClient` sobre `/api` (BFF). No servidor o fetcher chama o próprio `/api` em memória com o cookie do
+  pedido (`createServerFetcher`) e repassa o `Set-Cookie` do refresh; no navegador é o `fetch`. A sessão
+  (`useSessionStore`, só `customer` + `checked`) não persiste: o middleware `customer-auth`/`customer-guest` chama
+  `GET /api/session` uma vez (`useCustomerSession().restore()`) e o estado vai no payload. Dados de tela do cliente
+  usam `useAsyncQuery(key, load)` (SSR); `useAsyncResult` (só no cliente) segue no lojista. `watch` com `immediate`
+  não roda no SSR: estado derivado de dado assíncrono é `computed`.
+- **Lojista (transitório):** ainda não há API `merchant/*`. O painel (`/painel`, `/balcao/**`, `/programa`, `/clientes`,
+  `/campanhas`, `/configuracoes`) é SPA (`routeRules` `ssr: false`) com o mock do navegador (`layers/core/app/mock`,
+  plugin `mockBackend.client.ts`, `localStorage`, código de login `246810`). Sessão do lojista em `useMerchantSessionStore`.
+  Quando a API do lojista existir, o mock e as exceções de browser somem. Dados de exemplo em `seed.example.ts`.
 - **Monorepo (pnpm workspace):** o front vive em `apps/web` (Nuxt + `layers/`);
   `shared/` fica na raiz (alias `#shared`) para o futuro `apps/api` reusar
   os contratos. Caminhos `layers/...` neste documento são relativos a `apps/web/`.

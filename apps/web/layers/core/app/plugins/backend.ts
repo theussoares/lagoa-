@@ -1,42 +1,36 @@
-import { useSessionStore } from '../stores/session'
-import { buildExampleSeed, MOCK_LOGIN_CODE, MockBackend, webStorageMockStore } from '../mock'
-import type { AuthService } from '../services/AuthService'
-import { HttpAuthService } from '../services/HttpAuthService'
-import { MockAuthService } from '../services/MockAuthService'
+import { appendResponseHeader } from 'h3'
 import { BffPhoneAuthGateway } from '../services/BffPhoneAuthGateway'
+import { HttpAuthService } from '../services/HttpAuthService'
 import { ApiClient } from '../services/http/ApiClient'
 import { BFF_API_BASE } from '../services/http/bffPaths'
-import type { BackendWiring } from '../types/backend'
+import { useSessionStore } from '../stores/session'
+import { createServerFetcher } from '../utils/serverFetcher'
 
 /**
- * Único ponto que escolhe a implementação dos services. `mock`: tudo no navegador. `http`: o cliente fala com a
- * API real pelo BFF do Nuxt (`server/`): login por SMS no Supabase e token em cookie httpOnly; o painel do lojista continua no mock até a API dele existir.
+ * Único ponto que liga o app à API: tudo passa pelo BFF do Nuxt (`server/api`), que guarda o token em cookie httpOnly.
+ * No servidor (SSR) o fetcher chama o BFF em memória com o cookie do pedido; no navegador, o `fetch` normal.
  */
 export default defineNuxtPlugin({
   name: 'lagoa:backend',
   setup() {
-    const config = useRuntimeConfig()
-    const mockBackend = new MockBackend({
-      store: webStorageMockStore(window.localStorage),
-      seed: buildExampleSeed,
-      loginCode: MOCK_LOGIN_CODE,
-      latencyMs: Number(config.public.mockLatencyMs),
-    })
-    const mockAuth = new MockAuthService(mockBackend)
-    const wiring: BackendWiring = config.public.apiMode === 'http' ? wireHttp(mockAuth) : wireMock(mockAuth)
-    return { provide: { mockBackend, auth: wiring.auth, api: wiring.api } }
+    const fetcher = import.meta.server ? serverFetcher() : browserFetcher()
+    const sessions = useSessionStore()
+    const api = new ApiClient({ baseUrl: BFF_API_BASE, fetcher, onUnauthorized: () => sessions.endCustomer() })
+    const auth = new HttpAuthService(new BffPhoneAuthGateway(fetcher), api, () => new Date())
+    return { provide: { auth, api } }
   },
 })
 
-function wireMock(mockAuth: MockAuthService): BackendWiring {
-  const auth: AuthService = mockAuth
-  return { auth, api: null }
+function browserFetcher(): typeof fetch {
+  return (input, init) => fetch(input, init)
 }
 
-function wireHttp(mockAuth: MockAuthService): BackendWiring {
-  const fetcher: typeof fetch = (input, init) => fetch(input, init)
-  const sessions = useSessionStore()
-  const api = new ApiClient({ baseUrl: BFF_API_BASE, fetcher, onUnauthorized: () => sessions.endCustomer() })
-  const auth: AuthService = new HttpAuthService(new BffPhoneAuthGateway(fetcher), api, mockAuth, () => new Date())
-  return { auth, api }
+function serverFetcher(): typeof fetch {
+  const event = useRequestEvent()
+  if (event === undefined) return browserFetcher()
+  return createServerFetcher({
+    localFetch: (input, init) => event.fetch(input, init),
+    forwarded: useRequestHeaders(['cookie', 'x-forwarded-for']),
+    onSetCookie: (cookie) => appendResponseHeader(event, 'set-cookie', cookie),
+  })
 }

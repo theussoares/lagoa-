@@ -5,6 +5,7 @@ import type { VueWrapper } from '@vue/test-utils'
 import { useNuxtApp } from '#imports'
 import { EXAMPLE_IDS } from '#layers/core/app/mock'
 import { useSessionStore } from '#layers/core/app/stores/session'
+import { useMerchantSessionStore } from '#layers/merchant/app/stores/merchantSession'
 import { anaSession, barbershopSession, cafeSession } from '#layers/core/test/fixtures'
 import { resetWorld, restoreClock, typeCode, typeInto, visibleText } from '#layers/core/test/pageHarness.nuxt'
 import type { MerchantSession } from '#shared/schemas/session'
@@ -239,11 +240,11 @@ describe('counter page: redemption', () => {
 describe('counter page: session and shop status', () => {
   it('ends the merchant session when the server answers unauthorized', async () => {
     const page = await mountCounter()
-    useSessionStore().endMerchant()
+    useMerchantSessionStore().endMerchant()
     await typeInto(phoneInput(page), phones.joao)
     await submitForm(page)
     await vi.waitFor(() => expect(navigateToMock).toHaveBeenCalledWith('/balcao/entrar', { replace: true }))
-    expect(useSessionStore().merchant).toBeNull()
+    expect(useMerchantSessionStore().merchant).toBeNull()
   })
 
   it('refreshes the shop status when the shop is still pending approval', async () => {
@@ -253,7 +254,7 @@ describe('counter page: session and shop status', () => {
     await submitForm(page)
     await vi.waitFor(() => expect(refreshShopStatusMock).toHaveBeenCalled())
     expect(navigateToMock).not.toHaveBeenCalled()
-    expect(useSessionStore().merchant).not.toBeNull()
+    expect(useMerchantSessionStore().merchant).not.toBeNull()
   })
 
   it('refreshes the shop status when the network suspended the shop', async () => {

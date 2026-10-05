@@ -565,7 +565,6 @@
     "invalidCode": "Esse código não é de nenhuma loja da rede. Confira as letras no cartaz do balcão.",
     "cameraDenied": "Sem permissão para usar a câmera. Libere nas configurações do navegador ou digite o código da loja.",
     "cameraUnavailable": "Não deu para abrir a câmera neste aparelho. Digite o código da loja.",
-    "mockHint": "Ambiente de teste: não há cartaz impresso. Use o código {code}, da Barbearia de exemplo.",
     "notice": {
       "cooldownTitle": "Você já fez check-in aqui",
       "cooldown": "O próximo check-in nesta loja libera {when}. Carimbo dado no balcão também conta para essa espera.",

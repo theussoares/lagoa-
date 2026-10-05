@@ -4,7 +4,7 @@ import { err, ok, type Result } from '#shared/types/result'
 import type { ApiClientDeps, ApiRequestOptions, ApiResult } from '../../types/http'
 import { hasCode, isTransportError, parseDomainError } from '../../utils/domainError'
 
-/** Fala com `/v1` da API (pelo BFF, que põe o token): devolve `Result` e valida toda resposta pelo schema do `shared`. */
+/** Fala com o BFF do Nuxt (`/api`, que põe o token e chama a API): devolve `Result` e valida toda resposta pelo schema do `shared`. */
 export class ApiClient {
   constructor(private readonly deps: ApiClientDeps) {}
 

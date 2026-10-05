@@ -79,7 +79,6 @@ export interface CheckInScreen {
   code: string[]
   readonly codeInvalid: boolean
   readonly typing: boolean
-  readonly mockCode: string | null
   readonly focusRequest: FocusRequest<CheckInFocusTarget> | null
   readonly setVideo: (video: HTMLVideoElement | null) => void
   readonly submitTyped: () => void

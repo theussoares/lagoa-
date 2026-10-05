@@ -103,7 +103,6 @@ export function useCheckInScreen(): CheckInScreen {
     code,
     codeInvalid,
     typing,
-    mockCode: useMockCheckInCode(),
     focusRequest,
     setVideo: (element: HTMLVideoElement | null): void => {
       video.value = element

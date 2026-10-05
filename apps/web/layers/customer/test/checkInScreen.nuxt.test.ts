@@ -77,11 +77,6 @@ describe('useCheckInScreen: scanning', () => {
     expect(result.focusRequest).toBeNull()
   })
 
-  it('offers the mock check-in code only in mock mode', async () => {
-    const { result } = await mountComposable(useCheckInScreen)
-    expect(result.mockCode).toBe(code)
-  })
-
   it('starts the scanner once the video element arrives, and stops it when leaving the camera view', async () => {
     const { result } = await mountComposable(useCheckInScreen)
     const element = video()

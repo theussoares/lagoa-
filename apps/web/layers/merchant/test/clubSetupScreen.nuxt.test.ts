@@ -33,10 +33,10 @@ function t(key: string, named?: Record<string, unknown>, plural?: number): strin
 
 /** Celular confirmado sem loja: o login do mock devolve o ticket do cadastro. */
 async function beginSignUp(): Promise<void> {
-  const { $auth, $mockBackend } = useNuxtApp()
+  const { $merchantAuth, $mockBackend } = useNuxtApp()
   const phone = EXAMPLE_IDS.phones.lucas
-  await $auth.requestLoginCode(phone)
-  const result = await $auth.signInMerchant(phone, $mockBackend.loginCode)
+  await $merchantAuth.requestLoginCode(phone)
+  const result = await $merchantAuth.signInMerchant(phone, $mockBackend.loginCode)
   if (!result.ok || result.value.kind !== 'signUp') throw new Error('expected a sign-up ticket')
   useClubSetupStore().begin(result.value.ticket, result.value.expiresAt)
 }

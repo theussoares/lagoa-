@@ -1,5 +1,5 @@
-import { createPhoneLogin, readBffConfig } from '../../../utils/serverConfig'
-import { endSession, storedTokens } from '../../../utils/sessionAccess'
+import { createPhoneLogin, readBffConfig } from '../../utils/serverConfig'
+import { endSession, storedTokens } from '../../utils/sessionAccess'
 
 export default defineEventHandler(async (event) => {
   const { accessToken, refreshToken } = storedTokens(event)

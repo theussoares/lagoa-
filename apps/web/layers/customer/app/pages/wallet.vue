@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { StampCardModel } from '#layers/ui/app/types/wallet'
+import type { SeenBalances } from '#layers/customer/app/types/wallet'
 import { formatShortDate } from '#shared/utils/dateFormat'
 
 definePageMeta({ path: '/carteira', layout: 'customer', middleware: 'customer-auth' })
@@ -14,18 +15,31 @@ const { state: activityState } = useWalletActivity()
 const { state: profileState } = useCustomerProfile()
 const seenStamps = useSeenStamps()
 
-const cards = shallowRef<StampCardModel[]>([])
-const activeId = ref('')
+const activeChoice = ref('')
 
-// O "visto" é lido uma vez por carga: a batida acontece nesta tela e depois o saldo vira visto.
-watch(cardsState, (state) => {
-  if (state.status !== 'success') return
-  const seen = seenStamps.snapshot()
-  cards.value = state.value.map((card) =>
-    toStampCardModel(card, { t: translate, seenBalance: seen[card.id] ?? 0, formatDate: formatShortDate }),
+// O "visto" mora no aparelho: no servidor e na hidratação nada é "novo" (HTML igual nos dois lados); depois de montar,
+// a batida acontece nesta tela e o saldo vira visto.
+const seen = shallowRef<SeenBalances | null>(null)
+onMounted(() => {
+  seen.value = seenStamps.snapshot()
+})
+
+const cards = computed<StampCardModel[]>(() => {
+  if (cardsState.value.status !== 'success') return []
+  const seenNow = seen.value
+  return cardsState.value.value.map((card) =>
+    toStampCardModel(card, { t: translate, seenBalance: seenNow === null ? card.balance : (seenNow[card.id] ?? 0), formatDate: formatShortDate }),
   )
-  activeId.value = cards.value[0]?.id ?? ''
-  seenStamps.remember(Object.fromEntries(state.value.map((card) => [card.id, card.balance])))
+})
+const activeId = computed({
+  get: () => activeChoice.value || cards.value[0]?.id || '',
+  set: (id: string) => {
+    activeChoice.value = id
+  },
+})
+
+watch([cardsState, seen], ([state, seenNow]) => {
+  if (state.status === 'success' && seenNow !== null) seenStamps.remember(Object.fromEntries(state.value.map((card) => [card.id, card.balance])))
 })
 
 const anyUnauthorized = computed(() =>

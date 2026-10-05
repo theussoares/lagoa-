@@ -6,6 +6,6 @@ export class HttpDataExportService implements DataExportService {
   constructor(private readonly api: ApiClient) {}
 
   async exportMyData() {
-    return transportOnly(await this.api.get('/customer/data-export', DataExportSchema))
+    return transportOnly(await this.api.get('/data-export', DataExportSchema))
   }
 }
