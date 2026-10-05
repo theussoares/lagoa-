@@ -20,7 +20,7 @@ export default defineConfig({
         test: {
           name: 'unit',
           environment: 'node',
-          include: ['../../shared/**/*.test.ts', 'layers/*/test/**/*.test.ts'],
+          include: ['../../shared/**/*.test.ts', 'layers/*/test/**/*.test.ts', 'server/test/**/*.test.ts'],
           exclude: ['**/node_modules/**', '**/*.nuxt.test.ts'],
         },
       },

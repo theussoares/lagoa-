@@ -18,7 +18,6 @@ function setup(verify: Result<true, SignInError>, routes: Record<string, () => R
   const gateway: PhoneAuthGateway = {
     sendCode: vi.fn(async () => ({ ok: true as const, value: true as const })),
     verifyCode: vi.fn(async () => verify),
-    accessToken: async () => 'jwt',
     signOut: vi.fn(async () => {}),
   }
   const calls: string[] = []
@@ -28,7 +27,7 @@ function setup(verify: Result<true, SignInError>, routes: Record<string, () => R
     const route = routes[key]
     return route === undefined ? json(500, { code: 'internal' }) : route()
   }
-  const api = new ApiClient({ baseUrl: 'https://api.test/v1', fetcher, accessToken: () => gateway.accessToken(), onUnauthorized: () => {} })
+  const api = new ApiClient({ baseUrl: 'https://api.test/v1', fetcher, onUnauthorized: () => {} })
   const merchant = { signInMerchant: vi.fn() }
   return { gateway, calls, auth: new HttpAuthService(gateway, api, merchant, () => NOW) }
 }

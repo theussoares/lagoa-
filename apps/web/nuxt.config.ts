@@ -12,14 +12,18 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@vite-pwa/nuxt'],
   runtimeConfig: {
+    /** Só no servidor (BFF em `server/`): nada daqui chega ao navegador. Env sem o prefixo PUBLIC. */
+    /** Base da API (`/v1` incluso). Env: NUXT_API_BASE_URL. */
+    apiBaseUrl: '',
+    /** Chave pública (anon/publishable) do Supabase usada pelo login no servidor. Env: NUXT_SUPABASE_ANON_KEY. */
+    supabaseAnonKey: '',
+    /** Origens extras (separadas por vírgula) que podem escrever em `/api/**`; o próprio host sempre pode. Env: NUXT_ALLOWED_ORIGINS. */
+    allowedOrigins: '',
     public: {
-      /** 'mock' (localStorage) ou 'http' (API real do cliente; o painel do lojista segue mock). */
+      /** 'mock' (localStorage) ou 'http' (API real do cliente, via BFF `/api`; o painel do lojista segue mock). */
       apiMode: 'mock',
-      /** Base da API (`/v1` incluso), só no modo http. Env: NUXT_PUBLIC_API_BASE_URL. */
-      apiBaseUrl: '',
-      /** Projeto Supabase do login do cliente e sua chave pública (anon/publishable), só no modo http. */
+      /** URL do projeto Supabase (não é segredo): login no servidor e fotos do bucket público. */
       supabaseUrl: '',
-      supabaseAnonKey: '',
       /** Atraso artificial do mock para a UI exercitar carregamento. */
       mockLatencyMs: 250,
     },

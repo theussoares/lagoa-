@@ -25,7 +25,7 @@ pnpm typecheck:api && pnpm build:api
 | `PII_ENCRYPTION_KEY` | 32 bytes em base64 (`openssl rand -base64 32`). Cifra celular e e-mail. **Perdeu = perdeu os dados cifrados.** |
 | `PII_HASH_PEPPER` | Segredo do HMAC de busca por celular/e-mail. Trocar muda todos os hashes. |
 | `TRUST_PROXY_HOPS` | Quantos proxies estão na frente (0 local, 1 atrás de um load balancer). Errado = limite pelo IP errado. |
-| `CORS_ORIGIN` | Origens do app, separadas por vírgula. |
+| `CORS_ORIGIN` | Origens do app, separadas por vírgula. Com o BFF do Nuxt o navegador não chama a API: em produção deixe **vazio** (nenhuma origem liberada). |
 | `ALLOW_SEED` | Só em `.env` de banco de dev: libera `pnpm --filter @lagoa/api db:seed`. |
 
 ## Estrutura
