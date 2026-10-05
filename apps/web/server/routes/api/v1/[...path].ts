@@ -7,5 +7,5 @@ export default defineEventHandler(async (event) => {
   const config = readBffConfig()
   const token = await resolveAccessToken(event, { secure: config.secureCookies })
   if (!token.ok) return failWith(event, token.code)
-  return forwardToApi(event, config.apiBaseUrl, token.value)
+  return forwardToApi(event, { baseUrl: config.apiBaseUrl, bffSecret: config.bffSharedSecret }, token.value)
 })

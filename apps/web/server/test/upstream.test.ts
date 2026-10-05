@@ -24,6 +24,17 @@ describe('headers', () => {
     expect(requestHeadersFor(incoming, 'jwt')).toEqual({ 'content-type': 'application/json', authorization: 'Bearer jwt' })
   })
 
+  it('identifies the BFF and the real client to the API', () => {
+    const headers = requestHeadersFor(new Headers(), 'jwt', { secret: 's3cret', clientIp: '203.0.113.9' })
+    expect(headers).toMatchObject({ 'x-bff-secret': 's3cret', 'x-client-ip': '203.0.113.9' })
+  })
+
+  it('sends no identity when no secret is configured, so the API never trusts a bare IP', () => {
+    const headers = requestHeadersFor(new Headers(), 'jwt', { secret: '', clientIp: '203.0.113.9' })
+    expect(headers).not.toHaveProperty('x-client-ip')
+    expect(headers).not.toHaveProperty('x-bff-secret')
+  })
+
   it('does not bring set-cookie or CORS headers back from the API', () => {
     const upstream = new Headers({ 'set-cookie': 'x=1', 'access-control-allow-origin': '*', 'retry-after': '30', 'content-type': 'application/json' })
     expect(responseHeadersFor(upstream)).toEqual({ 'retry-after': '30', 'content-type': 'application/json' })

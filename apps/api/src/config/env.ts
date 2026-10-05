@@ -16,6 +16,8 @@ const EnvSchema = z
     COMTELE_ROUTE: z.coerce.number().int().positive().default(17),
     /** Segredo do Send SMS Hook do Supabase (`v1,whsec_...`): só quem o tem pode mandar a API disparar SMS. */
     SEND_SMS_HOOK_SECRET: z.string().regex(/^v1,whsec_\S+$/).optional(),
+    /** Segredo que o BFF do Nuxt manda em `x-bff-secret`: com ele a API aceita o IP do cliente em `x-client-ip`. Sem ele o limite por IP vê só o IP do BFF. */
+    BFF_SHARED_SECRET: z.string().min(32).optional(),
     CORS_ORIGIN: z.string().default('http://localhost:3000'),
   })
   .superRefine((env, context) => {

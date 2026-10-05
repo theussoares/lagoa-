@@ -17,6 +17,8 @@ export default defineNuxtConfig({
     apiBaseUrl: '',
     /** Chave pública (anon/publishable) do Supabase usada pelo login no servidor. Env: NUXT_SUPABASE_ANON_KEY. */
     supabaseAnonKey: '',
+    /** Segredo que prova à API que a chamada vem deste BFF e libera o IP real do cliente (limite por IP). Mesmo valor de BFF_SHARED_SECRET na API. Env: NUXT_BFF_SHARED_SECRET. */
+    bffSharedSecret: '',
     /** Origens extras (separadas por vírgula) que podem escrever em `/api/**`; o próprio host sempre pode. Env: NUXT_ALLOWED_ORIGINS. */
     allowedOrigins: '',
     public: {

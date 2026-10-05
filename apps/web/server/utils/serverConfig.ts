@@ -4,6 +4,7 @@ import { PhoneLogin } from './phoneLogin'
 
 export interface BffConfig {
   readonly apiBaseUrl: string
+  readonly bffSharedSecret: string
   readonly allowedOrigins: string[]
   readonly secureCookies: boolean
 }
@@ -13,6 +14,7 @@ export function readBffConfig(): BffConfig {
   const config = useRuntimeConfig()
   return {
     apiBaseUrl: config.apiBaseUrl,
+    bffSharedSecret: config.bffSharedSecret,
     allowedOrigins: parseAllowedOrigins(config.allowedOrigins),
     secureCookies: process.env.NODE_ENV === 'production',
   }
