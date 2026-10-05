@@ -6,7 +6,7 @@ import { CheckInCodeSchema } from '#shared/schemas/shop'
 const json = (status: number, body: unknown): Response => new Response(JSON.stringify(body), { status })
 
 function servicesWith(fetcher: typeof fetch) {
-  const api = new ApiClient({ baseUrl: 'https://api.test/v1', fetcher, accessToken: async () => 'jwt', onUnauthorized: () => {} })
+  const api = new ApiClient({ baseUrl: 'https://api.test/v1', fetcher, onUnauthorized: () => {} })
   let keyCount = 0
   return createHttpCustomerServices(api, () => `key${String(++keyCount).padStart(16, '0')}`)
 }

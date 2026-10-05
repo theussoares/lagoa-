@@ -1,16 +1,16 @@
-import { createClient } from '@supabase/supabase-js'
 import { useSessionStore } from '../stores/session'
 import { buildExampleSeed, MOCK_LOGIN_CODE, MockBackend, webStorageMockStore } from '../mock'
 import type { AuthService } from '../services/AuthService'
 import { HttpAuthService } from '../services/HttpAuthService'
 import { MockAuthService } from '../services/MockAuthService'
-import { SupabasePhoneAuthGateway } from '../services/SupabasePhoneAuthGateway'
+import { BffPhoneAuthGateway } from '../services/BffPhoneAuthGateway'
 import { ApiClient } from '../services/http/ApiClient'
+import { BFF_API_BASE } from '../services/http/bffPaths'
 import type { BackendWiring } from '../types/backend'
 
 /**
  * Único ponto que escolhe a implementação dos services. `mock`: tudo no navegador. `http`: o cliente fala com a
- * API real (login por SMS no Supabase); o painel do lojista continua no mock até a API dele existir.
+ * API real pelo BFF do Nuxt (`server/`): login por SMS no Supabase e token em cookie httpOnly; o painel do lojista continua no mock até a API dele existir.
  */
 export default defineNuxtPlugin({
   name: 'lagoa:backend',
@@ -34,19 +34,9 @@ function wireMock(mockAuth: MockAuthService): BackendWiring {
 }
 
 function wireHttp(mockAuth: MockAuthService): BackendWiring {
-  const config = useRuntimeConfig()
-  const gateway = new SupabasePhoneAuthGateway(
-    createClient(config.public.supabaseUrl, config.public.supabaseAnonKey, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
-    }),
-  )
+  const fetcher: typeof fetch = (input, init) => fetch(input, init)
   const sessions = useSessionStore()
-  const api = new ApiClient({
-    baseUrl: config.public.apiBaseUrl,
-    fetcher: (input, init) => fetch(input, init),
-    accessToken: () => gateway.accessToken(),
-    onUnauthorized: () => sessions.endCustomer(),
-  })
-  const auth: AuthService = new HttpAuthService(gateway, api, mockAuth, () => new Date())
+  const api = new ApiClient({ baseUrl: BFF_API_BASE, fetcher, onUnauthorized: () => sessions.endCustomer() })
+  const auth: AuthService = new HttpAuthService(new BffPhoneAuthGateway(fetcher), api, mockAuth, () => new Date())
   return { auth, api }
 }

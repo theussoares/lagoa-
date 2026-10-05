@@ -4,7 +4,7 @@ import { err, ok, type Result } from '#shared/types/result'
 import type { ApiClientDeps, ApiRequestOptions, ApiResult } from '../../types/http'
 import { hasCode, isTransportError, parseDomainError } from '../../utils/domainError'
 
-/** Fala com `/v1` da API: injeta o token, devolve `Result` e valida toda resposta pelo schema do `shared`. */
+/** Fala com `/v1` da API (pelo BFF, que põe o token): devolve `Result` e valida toda resposta pelo schema do `shared`. */
 export class ApiClient {
   constructor(private readonly deps: ApiClientDeps) {}
 
@@ -25,12 +25,7 @@ export class ApiClient {
   }
 
   private async send<S extends z.ZodType>(method: string, path: string, schema: S, options: ApiRequestOptions = {}): Promise<ApiResult<z.infer<S>>> {
-    const token = await this.deps.accessToken()
-    if (token === null) {
-      this.deps.onUnauthorized()
-      return err({ code: 'unauthorized' })
-    }
-    const response = await this.request(method, path, token, options)
+    const response = await this.request(method, path, options)
     if (!response.ok) return response
     if (!response.value.ok) {
       const error = parseDomainError(await response.value.json().catch(() => null))
@@ -42,12 +37,11 @@ export class ApiClient {
     return parsed.success ? ok(parsed.data) : err({ code: 'internal' })
   }
 
-  private async request(method: string, path: string, token: string, options: ApiRequestOptions): Promise<Result<Response, DomainError>> {
+  private async request(method: string, path: string, options: ApiRequestOptions): Promise<Result<Response, DomainError>> {
     try {
       const response = await this.deps.fetcher(`${this.deps.baseUrl}${path}`, {
         method,
         headers: {
-          authorization: `Bearer ${token}`,
           ...(options.body === undefined ? {} : { 'content-type': 'application/json' }),
           ...options.headers,
         },

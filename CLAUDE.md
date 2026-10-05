@@ -44,6 +44,11 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
   (o check-in já chama). A conta do que uma visita rende é `planEarning`
   (`shared/domain/earning.ts`) e a janela de check-in é `checkInAvailableAt`
   (`shared/domain/antifraud.ts`): check-in e Balcão usam as mesmas, nunca uma cópia.
+- **BFF (`apps/web/server`, modo `http`):** o navegador só fala com o próprio domínio. `/api/auth/*`
+  faz o login por SMS no Supabase e guarda o token em cookie httpOnly (`lagoa_at`/`lagoa_rt`, SameSite=Lax,
+  path `/api`); `/api/v1/**` troca o cookie por `Bearer` e repassa à API (`NUXT_API_BASE_URL`, só no
+  servidor). Escrita em `/api/**` exige `Origin` do próprio host ou de `NUXT_ALLOWED_ORIGINS`. Peças puras
+  em `server/utils/*` com testes em `server/test`; as rotas só compõem.
 - **Backend (histórico):** ainda não definido. Até o ADR do CTO sair, o front consome
   services com interface e implementação mock em `layers/core` — nenhum
   componente chama `fetch`/`$fetch` direto. O mock é um servidor falso único

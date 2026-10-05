@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module'
 import { SmsModule } from './auth/sms/sms.module'
 import { SupabaseAuthGuard } from './auth/supabase-auth.guard'
 import { UserThrottlerGuard } from './auth/user-throttler.guard'
+import { clientIpOf } from './common/http/client-ip'
 import { AllExceptionsFilter } from './common/http/all-exceptions.filter'
 import { CommonModule } from './common/common.module'
 import { ConfigModule } from './config/config.module'
@@ -20,8 +21,8 @@ import { HealthController } from './health/health.controller'
     AuthModule,
     ThrottlerModule.forRoot([
       { name: 'default', ttl: 60_000, limit: 120 },
-      // Teto por IP (confiável com TRUST_PROXY_HOPS): contas diferentes no mesmo IP somam aqui.
-      { name: 'ip', ttl: 60_000, limit: 600, getTracker: (request) => String(request.ip ?? 'unknown') },
+      // Teto por IP (confiável com TRUST_PROXY_HOPS; atrás do BFF vale o IP que ele repassa com o segredo): contas diferentes no mesmo IP somam aqui.
+      { name: 'ip', ttl: 60_000, limit: 600, getTracker: (request) => clientIpOf(request) },
     ]),
     CustomerModule,
     SmsModule,

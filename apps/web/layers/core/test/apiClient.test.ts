@@ -5,20 +5,20 @@ import { parseDomainError } from '#layers/core/app/utils/domainError'
 
 const json = (status: number, body: unknown): Response => new Response(status === 204 ? null : JSON.stringify(body), { status })
 
-function clientWith(fetcher: typeof fetch, token: string | null = 'jwt') {
+function clientWith(fetcher: typeof fetch) {
   const onUnauthorized = vi.fn()
-  const api = new ApiClient({ baseUrl: 'https://api.test/v1', fetcher, accessToken: async () => token, onUnauthorized })
+  const api = new ApiClient({ baseUrl: 'https://api.test/v1', fetcher, onUnauthorized })
   return { api, onUnauthorized }
 }
 
 describe('ApiClient', () => {
-  it('sends the bearer token and validates the response with the schema', async () => {
+  it('validates the response with the schema and never sends a token itself (the BFF adds it)', async () => {
     const fetcher = vi.fn<typeof fetch>(async () => json(200, { n: 1 }))
     const { api } = clientWith(fetcher)
     expect(await api.get('/x', z.object({ n: z.number() }))).toEqual({ ok: true, value: { n: 1 } })
     const init = fetcher.mock.calls[0]?.[1]
     expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/x')
-    expect(init?.headers).toMatchObject({ authorization: 'Bearer jwt' })
+    expect(init?.headers).not.toHaveProperty('authorization')
   })
 
   it('treats a response outside the contract as internal', async () => {
@@ -29,14 +29,6 @@ describe('ApiClient', () => {
   it('turns an offline fetch into network', async () => {
     const { api } = clientWith(async () => Promise.reject(new TypeError('failed')))
     expect(await api.get('/x', z.unknown())).toEqual({ ok: false, error: { code: 'network' } })
-  })
-
-  it('without a session it does not call the API and reports unauthorized', async () => {
-    const fetcher = vi.fn<typeof fetch>()
-    const { api, onUnauthorized } = clientWith(fetcher, null)
-    expect(await api.get('/x', z.unknown())).toEqual({ ok: false, error: { code: 'unauthorized' } })
-    expect(fetcher).not.toHaveBeenCalled()
-    expect(onUnauthorized).toHaveBeenCalledOnce()
   })
 
   it('a 401 from the API ends the local session', async () => {

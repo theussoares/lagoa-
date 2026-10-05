@@ -35,6 +35,12 @@
     "layers/ui/app/types/**/*.ts",
     "layers/customer/test/**/*.ts",
     "layers/ui/test/**/*.ts",
+    "server/types/**/*.ts",
+    "server/test/**/*.ts",
+    "server/utils/authErrors.ts",
+    "server/utils/originGuard.ts",
+    "server/utils/sessionCookies.ts",
+    "server/utils/upstream.ts",
     "layers/merchant/app/services/**/*.ts",
     "layers/merchant/test/**/*.ts"
   ],
