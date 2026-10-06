@@ -12,6 +12,7 @@ import { ConfigModule } from './config/config.module'
 import { CustomerModule } from './customer/customer.module'
 import { DatabaseModule } from './database/database.module'
 import { HealthController } from './health/health.controller'
+import { MerchantModule } from './merchant/merchant.module'
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { HealthController } from './health/health.controller'
       { name: 'ip', ttl: 60_000, limit: 600, getTracker: (request) => clientIpOf(request) },
     ]),
     CustomerModule,
+    MerchantModule,
     SmsModule,
   ],
   controllers: [HealthController],
