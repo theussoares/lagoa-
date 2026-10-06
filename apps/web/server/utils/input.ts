@@ -14,6 +14,11 @@ export function parsedQuery<S extends z.ZodType>(event: H3Event, schema: S): z.i
   return parsed.success ? parsed.data : null
 }
 
+/** Corpo cru do pedido (JSON malformado vira `undefined`, que nenhum schema aceita). */
+export function requestBody(event: H3Event): Promise<unknown> {
+  return readBody(event).catch(() => undefined)
+}
+
 export async function parsedBody<S extends z.ZodType>(event: H3Event, schema: S): Promise<z.infer<S> | null> {
   const parsed = schema.safeParse(await readBody(event).catch(() => undefined))
   return parsed.success ? parsed.data : null

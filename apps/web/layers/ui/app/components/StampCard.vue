@@ -68,6 +68,8 @@ const slotGrid = computed(() => (props.card.body.kind === 'slots' ? slotGridStyl
         <span v-if="card.status.note" class="text-base text-muted">{{ card.status.note }}</span>
       </div>
 
+      <p v-if="card.note" class="border-t border-dashed border-default pt-4 text-base text-toned">{{ card.note }}</p>
+
       <slot name="actions" />
     </footer>
   </article>

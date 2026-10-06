@@ -38,7 +38,7 @@ const emit = defineEmits<Emits>()
           :label="notice.recovery === 'retry' ? $t('common.retry') : $t('checkIn.scanAgain')"
           @click="emit('recover')"
         />
-        <UButton variant="outline" color="neutral" size="xl" block icon="i-ph-keyboard" :label="$t('checkIn.typeCode')" @click="emit('typeCode')" />
+        <UButton variant="outline" color="neutral" size="xl" block icon="i-ph-keyboard" :label="$t('checkIn.typeVisitCode')" @click="emit('typeCode')" />
       </template>
     </div>
   </div>

@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import type { ComponentPublicInstance } from 'vue'
-import { CHECK_IN_CODE_LENGTH } from '#shared/constants/domain'
 import { focusFirstInput, useFocusTarget } from '#layers/ui/app/composables/useFocus'
 import type { FocusRequest } from '#layers/ui/app/types/focus'
-import type { CameraIssue, CheckInFocusTarget } from '../../types/checkIn'
+import type { CameraIssue, CheckInCodeKind, CheckInFocusTarget } from '../../types/checkIn'
 
 interface Props {
+  kind: CheckInCodeKind
+  length: number
   cameraIssue: CameraIssue | null
   invalid: boolean
   typing: boolean
@@ -15,6 +16,12 @@ interface Props {
 interface Emits {
   submit: []
   switchToCamera: []
+  switchKind: []
+}
+
+const KIND_TEXT: Record<CheckInCodeKind, { label: string; invalid: string; submit: string; switchTo: string }> = {
+  visit: { label: 'checkIn.visitCodeLabel', invalid: 'checkIn.invalidVisitCode', submit: 'checkIn.submitClaim', switchTo: 'checkIn.typeShopCode' },
+  shop: { label: 'checkIn.shopCodeLabel', invalid: 'checkIn.invalidShopCode', submit: 'checkIn.submitJoin', switchTo: 'checkIn.typeVisitCode' },
 }
 
 const props = defineProps<Props>()
@@ -34,13 +41,19 @@ useFocusTarget(() => props.focusRequest, 'code', () => focusFirstInput(field.val
       :description="cameraIssue === 'denied' ? $t('checkIn.cameraDenied') : $t('checkIn.cameraUnavailable')"
     />
 
-    <UFormField ref="field" :label="$t('checkIn.codeLabel')" :error="invalid ? $t('checkIn.invalidCode') : undefined" name="code">
+    <UFormField
+      ref="field"
+      :label="$t(KIND_TEXT[kind].label)"
+      :error="invalid ? $t(KIND_TEXT[kind].invalid) : undefined"
+      name="code"
+    >
       <template #error="{ error: message }">
         <FieldErrorMessage :message="typeof message === 'string' ? message : undefined" />
       </template>
       <UPinInput
+        :key="kind"
         v-model="code"
-        :length="CHECK_IN_CODE_LENGTH"
+        :length="length"
         size="xl"
         autofocus
         :disabled="typing"
@@ -52,7 +65,15 @@ useFocusTarget(() => props.focusRequest, 'code', () => focusFirstInput(field.val
     </UFormField>
 
     <div class="flex flex-col gap-3">
-      <UButton type="submit" size="xl" block :loading="typing" :label="$t('checkIn.submit')" />
+      <UButton type="submit" size="xl" block :loading="typing" :label="$t(KIND_TEXT[kind].submit)" />
+      <UButton
+        variant="outline"
+        color="neutral"
+        block
+        icon="i-ph-keyboard"
+        :label="$t(KIND_TEXT[kind].switchTo)"
+        @click="emit('switchKind')"
+      />
       <UButton
         v-if="cameraIssue !== 'unavailable'"
         variant="ghost"

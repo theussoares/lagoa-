@@ -67,6 +67,7 @@ export function toProgramPreview(draft: ProgramDraft, shopName: string, t: Trans
       peek: t('wallet.card.peekRemaining', { units }, remaining),
       summary: t('wallet.card.summary', { shop: shopName, balance, target, units, reward }, remaining),
       rewardReady: false,
+      note: null,
     },
     earnLine: t(`program.preview.earn.${rate.per}`, { units: t(`units.${unit}`, {}, rate.units) }),
   }

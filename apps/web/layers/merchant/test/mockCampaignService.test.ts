@@ -4,11 +4,12 @@ import { addDays, toIso } from '#shared/utils/time'
 import { EXAMPLE_IDS } from '#layers/core/app/mock'
 import { anaSession, barbershopSession, cafeSession, makeBackend, staticSession, TEST_NOW } from '#layers/core/test/fixtures'
 import { customerView } from './customerView'
+import { earnVisit } from './earnVisit'
 import type { MerchantServices } from '../app/services/MerchantServices'
 import { createMockMerchantServices } from '../app/services/mock/createMockMerchantServices'
 
 const HOURS_PER_DAY = 24
-const { shops, customers, phones } = EXAMPLE_IDS
+const { shops, customers } = EXAMPLE_IDS
 
 function setup() {
   const { backend, clock } = makeBackend()
@@ -18,7 +19,7 @@ function setup() {
   const ana = customerView(backend, staticSession(anaSession))
   // O seed nasce na primeira chamada: carregue o backend antes de avançar o relógio.
   const advanceDays = (days: number): void => clock.advanceHours(days * HOURS_PER_DAY)
-  return { barbershop, cafe, joao, ana, advanceDays }
+  return { backend, barbershop, cafe, joao, ana, advanceDays }
 }
 
 type CustomerServices = ReturnType<typeof setup>['joao']
@@ -73,7 +74,7 @@ describe('mock CampaignService', () => {
   })
 
   it('reminds once per lapse: again only after the customer comes back and lapses again', async () => {
-    const { barbershop, advanceDays } = setup()
+    const { backend, barbershop, advanceDays } = setup()
     await barbershop.campaigns.sendReminder(draft, 1)
     expect(await barbershop.campaigns.sendReminder(draft, 1)).toEqual({ ok: false, error: { code: 'noReachableCustomers' } })
 
@@ -82,7 +83,7 @@ describe('mock CampaignService', () => {
     expect(later.reach).toMatchObject({ alreadyReminded: 1 })
     expect(later.history).toHaveLength(1)
 
-    await barbershop.counter.registerVisit(phones.joao)
+    await earnVisit(backend, barbershop, customers.joao)
     advanceDays(LAPSED_AFTER_DAYS + 1)
     const sent = await barbershop.campaigns.sendReminder(draft, (await overviewOf(barbershop)).reach.reachable)
     expect(sent.ok && sent.value.recipientsCount).toBeGreaterThanOrEqual(1)

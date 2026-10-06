@@ -4,6 +4,7 @@ import type { StampCardBody, StampCardModel, StampCardStatus, StampSlotModel } f
 import type { Translate } from '#layers/core/app/types/i18n'
 import { stampTilt } from '#layers/ui/app/utils/stampTilt'
 import { categoryIcon } from './categoryIcon'
+import { pendingWelcomeUnits } from './pendingWelcome'
 import type { WalletCardModelOptions } from '../types/wallet'
 
 /** Acima disso a grade de casas deixa de caber em 390px e o cartão vira régua. */
@@ -61,6 +62,13 @@ function statusFor(card: WalletCard, seenBalance: number, t: Translate, formatDa
   }
 }
 
+function noteFor(card: WalletCard, t: Translate): string | null {
+  if (card.lastVisitAt !== null) return null
+  const welcomeUnits = pendingWelcomeUnits(card)
+  if (welcomeUnits === 0) return t('wallet.card.firstVisitHint')
+  return t('wallet.card.firstVisitHintWelcome', { units: t(`units.${card.unit}`, {}, welcomeUnits) })
+}
+
 export function toStampCardModel(card: WalletCard, options: WalletCardModelOptions): StampCardModel {
   const { t, seenBalance, formatDate } = options
   const ready = isRewardReady(card)
@@ -80,5 +88,6 @@ export function toStampCardModel(card: WalletCard, options: WalletCardModelOptio
       ? t('wallet.card.summaryReady', { shop: card.shop.name, reward: card.rewardTitle })
       : t('wallet.card.summary', { shop: card.shop.name, balance: card.balance, target: card.target, units, reward: card.rewardTitle }, remaining),
     rewardReady: ready,
+    note: noteFor(card, t),
   }
 }

@@ -35,14 +35,20 @@ async function mountCounter(): Promise<VueWrapper> {
   return wrapper
 }
 
-function phoneInput(page: VueWrapper): HTMLInputElement {
-  const input = page.find('input[type="tel"]').element
-  if (!(input instanceof HTMLInputElement)) throw new Error('phone input missing')
+function issueButton(page: VueWrapper): ReturnType<VueWrapper['get']> {
+  return page.get('form button[type="submit"]')
+}
+
+function amountInput(page: VueWrapper): HTMLInputElement {
+  const input = page.find('form input').element
+  if (!(input instanceof HTMLInputElement)) throw new Error('amount input missing')
   return input
 }
 
-function submitForm(page: VueWrapper): Promise<void> {
-  return page.find('form').trigger('submit')
+function buttonByLabel(page: VueWrapper, label: string): ReturnType<VueWrapper['get']> {
+  const found = page.findAll('button').find((item) => item.text() === label)
+  if (!found) throw new Error(`button "${label}" missing`)
+  return found
 }
 
 function t(key: string, named?: Record<string, unknown>, plural?: number): string {
@@ -82,73 +88,54 @@ async function requestPizzeriaCode(): Promise<string> {
   return redemption.value.code
 }
 
-describe('counter page: launching a visit', () => {
-  it('shows the empty counter on mount', async () => {
+describe('counter page: the visit QR', () => {
+  it('shows the empty counter on mount, with no phone field and the issue button focused (CA-24)', async () => {
     const page = await mountCounter()
     expect(visibleText(page)).toMatchSnapshot()
-    expect(phoneInput(page)).toBe(document.activeElement)
+    expect(page.find('input[type="tel"]').exists()).toBe(false)
+    expect(visibleText(page)).not.toContain('Celular do cliente')
+    expect(issueButton(page).element).toBe(document.activeElement)
   })
 
-  it('launches a visit for an existing customer typed in the phone field', async () => {
+  it('issues a QR on Enter: the QR, the code to type and the countdown take the place of the form (CA-09)', async () => {
     const page = await mountCounter()
-    await typeInto(phoneInput(page), phones.joao)
-    await submitForm(page)
+    await page.get('form').trigger('submit')
+    await vi.waitFor(() => expect(page.find('svg[role="img"]').exists()).toBe(true))
+    const text = visibleText(page)
+    expect(text).toContain(t('counter.visitQr.codeLabel'))
+    expect(text).toContain(t('counter.visitQr.status.active'))
+    expect(text).toContain(t('counter.visitQr.expiresIn', { time: '5:00' }))
+    expect(page.find('form').exists()).toBe(false)
+    expect(page.get('svg[role="img"]').attributes('aria-label')).toMatch(/^QR da visita, vale até \d{2}:\d{2}$/)
+    expect(page.get('[role="status"]').text()).toBe(t('counter.visitQr.status.active'))
+  })
+
+  it('cancels the QR, then offers another QR with the focus on it', async () => {
+    const page = await mountCounter()
+    await page.get('form').trigger('submit')
+    await vi.waitFor(() => expect(page.find('svg[role="img"]').exists()).toBe(true))
+    await buttonByLabel(page, t('counter.visitQr.cancel')).trigger('click')
+    await vi.waitFor(() => expect(visibleText(page)).toContain(t('counter.visitQr.status.cancelled')))
+    expect(page.find('svg[role="img"]').exists()).toBe(false)
+    const another = buttonByLabel(page, t('counter.visitQr.issueAnother'))
+    await vi.waitFor(() => expect(another.element).toBe(document.activeElement))
+    await another.trigger('click')
+    await vi.waitFor(() => expect(page.find('form').exists()).toBe(true))
+    await vi.waitFor(() => expect(issueButton(page).element).toBe(document.activeElement))
+  })
+
+  it('CA-22: the QR turns into "used" and the ledger gets the masked row (simulated customer)', async () => {
+    const page = await mountCounter()
+    await page.get('form').trigger('submit')
+    await vi.waitFor(() => expect(page.find('svg[role="img"]').exists()).toBe(true))
+    await buttonByLabel(page, t('counter.visitQr.simulateClaim')).trigger('click')
     await vi.waitFor(() => expect(visibleText(page)).toContain(t('counter.todayCount', { count: 4 }, 4)))
     const text = visibleText(page)
-    expect(text).toContain('(67) 9••••-0002')
-    expect(text).not.toContain(phones.joao)
-    expect(phoneInput(page).value).toBe('')
-    expect(phoneInput(page)).toBe(document.activeElement)
-    expect(text).toMatchSnapshot()
-  })
-
-  it('launches a visit using the on-screen keypad', async () => {
-    const page = await mountCounter()
-    for (const digit of phones.joao) {
-      const key = page.findAll('button[type="button"]').find((button) => button.text() === digit)
-      if (!key) throw new Error(`keypad key ${digit} missing`)
-      await key.trigger('click')
-    }
-    expect(phoneInput(page).value).toBe('(67) 90000-0002')
-    await page.find('button[type="submit"]').trigger('click')
-    await vi.waitFor(() => expect(visibleText(page)).toContain(t('counter.todayCount', { count: 4 }, 4)))
-    expect(visibleText(page)).toContain('(67) 9••••-0002')
-  })
-
-  it('removes the last digit with the keypad backspace', async () => {
-    const page = await mountCounter()
-    await typeInto(phoneInput(page), '6790')
-    await page.find(`button[aria-label="${t('counter.launch.keypadBackspace')}"]`).trigger('click')
-    expect(phoneInput(page).value).toBe('(67) 9')
-  })
-
-  it('registers a new customer on the spot', async () => {
-    const page = await mountCounter()
-    await typeInto(phoneInput(page), phones.cafeMerchant)
-    await submitForm(page)
-    await vi.waitFor(() => expect(visibleText(page)).toContain('(67) 9••••-0011'))
-    expect(visibleText(page)).toContain(t('counter.ledger.newCustomer'))
-  })
-
-  it('rejects an invalid phone with a message and puts the focus back on the phone field', async () => {
-    const page = await mountCounter()
-    const other = document.createElement('button')
-    document.body.append(other)
-    other.focus()
-    await typeInto(phoneInput(page), '679')
-    await submitForm(page)
-    await vi.waitFor(() => expect(visibleText(page)).toContain(t('errors.invalidPhone')))
-    expect(phoneInput(page)).toBe(document.activeElement)
-    expect(phoneInput(page).getAttribute('aria-invalid')).toBe('true')
-  })
-
-  it('clears the phone with Esc and keeps the focus on it', async () => {
-    const page = await mountCounter()
-    await typeInto(phoneInput(page), '6790')
-    await phoneInput(page).dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
-    await flushPromises()
-    expect(phoneInput(page).value).toBe('')
-    expect(phoneInput(page)).toBe(document.activeElement)
+    expect(text).toContain(t('counter.visitQr.status.claimed'))
+    expect(text).toMatch(/\(67\) 9••••-\d{4}/)
+    expect(text).not.toMatch(/\d{10,}/)
+    expect(page.find('svg[role="img"]').exists()).toBe(false)
+    await vi.waitFor(() => expect(buttonByLabel(page, t('counter.visitQr.issueAnother')).element).toBe(document.activeElement))
   })
 })
 
@@ -157,39 +144,34 @@ describe('counter page: amount mode', () => {
     resetWorld({ merchant: cafeSession })
   })
 
-  it('moves the focus to the amount when Enter is pressed with the amount still empty', async () => {
+  it('focuses the amount field and previews the points of the typed amount', async () => {
     const page = await mountCounter()
-    await typeInto(phoneInput(page), phones.joao)
-    await submitForm(page)
-    await flushPromises()
-    const amount = page.find('input[inputmode="none"]:not([type="tel"])').element
-    expect(amount).toBe(document.activeElement)
-    expect(visibleText(page)).not.toContain(t('errors.invalidAmount'))
+    expect(amountInput(page)).toBe(document.activeElement)
+    expect(visibleText(page)).toContain('Vale 1 ponto por real gasto.')
+    await typeInto(amountInput(page), '2500')
+    expect(amountInput(page).value).toContain('25,00')
+    expect(visibleText(page)).toContain('vale 25 pontos (antes de bônus).')
+    expect(issueButton(page).text()).toContain('25,00')
   })
 
-  it('launches the amount and clears both fields', async () => {
+  it('CA-09: Enter with the amount issues a QR pinned to it and clears the field', async () => {
     const page = await mountCounter()
-    await typeInto(phoneInput(page), phones.joao)
-    await submitForm(page)
-    await flushPromises()
-    const amount = page.find('input[inputmode="none"]:not([type="tel"])').element
-    if (!(amount instanceof HTMLInputElement)) throw new Error('amount input missing')
-    await typeInto(amount, '2500')
-    expect(amount.value).toContain('25,00')
-    await submitForm(page)
-    await vi.waitFor(() => expect(visibleText(page)).toContain('(67) 9••••-0002'))
-    expect(phoneInput(page).value).toBe('')
-    expect(amount.value).toBe('')
-    expect(phoneInput(page)).toBe(document.activeElement)
+    await typeInto(amountInput(page), '2500')
+    await page.get('form').trigger('submit')
+    await vi.waitFor(() => expect(page.find('svg[role="img"]').exists()).toBe(true))
+    await buttonByLabel(page, t('counter.visitQr.cancel')).trigger('click')
+    await buttonByLabel(page, t('counter.visitQr.issueAnother')).trigger('click')
+    await vi.waitFor(() => expect(page.find('form').exists()).toBe(true))
+    expect(amountInput(page).value).toBe('')
+    await vi.waitFor(() => expect(amountInput(page)).toBe(document.activeElement))
   })
 
-  it('asks for an amount when it is missing and the amount field already has the focus', async () => {
+  it('asks for an amount when it is missing and keeps the focus on the field', async () => {
     const page = await mountCounter()
-    await typeInto(phoneInput(page), phones.joao)
-    await submitForm(page)
-    await flushPromises()
-    await submitForm(page)
+    await page.get('form').trigger('submit')
     await vi.waitFor(() => expect(visibleText(page)).toContain(t('errors.invalidAmount')))
+    expect(amountInput(page).getAttribute('aria-invalid')).toBe('true')
+    expect(amountInput(page)).toBe(document.activeElement)
   })
 })
 
@@ -241,8 +223,7 @@ describe('counter page: session and shop status', () => {
   it('ends the merchant session when the server answers unauthorized', async () => {
     const page = await mountCounter()
     useMerchantSessionStore().endMerchant()
-    await typeInto(phoneInput(page), phones.joao)
-    await submitForm(page)
+    await page.get('form').trigger('submit')
     await vi.waitFor(() => expect(navigateToMock).toHaveBeenCalledWith('/balcao/entrar', { replace: true }))
     expect(useMerchantSessionStore().merchant).toBeNull()
   })
@@ -250,8 +231,7 @@ describe('counter page: session and shop status', () => {
   it('refreshes the shop status when the shop is still pending approval', async () => {
     resetWorld({ merchant: gymSession })
     const page = await mountCounter()
-    await typeInto(phoneInput(page), phones.joao)
-    await submitForm(page)
+    await page.get('form').trigger('submit')
     await vi.waitFor(() => expect(refreshShopStatusMock).toHaveBeenCalled())
     expect(navigateToMock).not.toHaveBeenCalled()
     expect(useMerchantSessionStore().merchant).not.toBeNull()
@@ -263,8 +243,7 @@ describe('counter page: session and shop status', () => {
       const shop = ctx.state.shops.find((item) => item.id === EXAMPLE_IDS.shops.barbershop)
       if (shop) shop.status = 'suspended'
     })
-    await typeInto(phoneInput(page), phones.joao)
-    await submitForm(page)
+    await page.get('form').trigger('submit')
     await vi.waitFor(() => expect(refreshShopStatusMock).toHaveBeenCalled())
     expect(navigateToMock).not.toHaveBeenCalled()
   })

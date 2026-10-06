@@ -4,7 +4,7 @@ import type { CounterEntry, VisitRegistered } from '#shared/schemas/visit'
 import type { Translate } from '#layers/core/app/types/i18n'
 import { amountDigits, counterActionFor } from '../app/utils/counterAction'
 import { RedemptionPreviewSchema } from '#shared/schemas/redemption'
-import { toCounterLedgerModel, toLaunchFormText, toLaunchReceipt, toRedemptionPreviewModel } from '../app/utils/counterModels'
+import { toCounterLedgerModel, toLaunchReceipt, toRedemptionPreviewModel } from '../app/utils/counterModels'
 
 const t: Translate = (key, named = {}, plural) =>
   [key, ...Object.entries(named).map(([name, value]) => `${name}=${String(value)}`), plural === undefined ? '' : `#${plural}`]
@@ -101,27 +101,6 @@ describe('toLaunchReceipt', () => {
   it('uses the ruler for points', () => {
     const receipt = toLaunchReceipt(registered({ balance: 40, target: 150, unit: 'point' }, { unitsEarned: 24 }), 'Café', t)
     expect(receipt.body.kind).toBe('ruler')
-  })
-})
-
-describe('toLaunchFormText', () => {
-  it('gives one stamp while the program is not loaded', () => {
-    expect(toLaunchFormText(null, t)).toEqual({
-      submitLabel: 'counter.launch.give units=units.stamp count=1 #1',
-      amountHint: undefined,
-    })
-  })
-
-  it('names the units of a visit action', () => {
-    const text = toLaunchFormText({ kind: 'visit', unit: 'point', units: 5 }, t)
-    expect(text.submitLabel).toBe('counter.launch.give units=units.point count=5 #5')
-    expect(text.amountHint).toBeUndefined()
-  })
-
-  it('asks for the amount and explains the exchange rate in amount mode', () => {
-    const text = toLaunchFormText({ kind: 'amount', pointsPerReal: 2 }, t)
-    expect(text.submitLabel).toBe('counter.launch.giveAmount')
-    expect(text.amountHint).toBe('counter.launch.amountHint points=units.point count=2 #2')
   })
 })
 

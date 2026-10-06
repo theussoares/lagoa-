@@ -31,6 +31,11 @@ function elementOf(instance: unknown): HTMLElement | null {
   return instance.$el instanceof HTMLElement ? instance.$el : null
 }
 
+/** Foca o próprio elemento de um componente ou elemento (um botão, por exemplo). */
+export function focusElement(instance: unknown): void {
+  elementOf(instance)?.focus()
+}
+
 /** Foca o primeiro `<input>` dentro de um componente ou elemento. */
 export function focusFirstInput(instance: unknown): void {
   elementOf(instance)?.querySelector('input')?.focus()

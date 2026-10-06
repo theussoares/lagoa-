@@ -5,10 +5,8 @@ import type { Translate } from '#layers/core/app/types/i18n'
 import { unitsText } from '#layers/core/app/utils/units'
 import type { RedemptionPreview } from '#shared/schemas/redemption'
 import type {
-  CounterAction,
   CounterLedgerEntryModel,
   CounterRedemptionPreviewModel,
-  LaunchFormText,
   LaunchReceiptModel,
 } from '../types/counter'
 import type { StampCardBody } from '#layers/ui/app/types/wallet'
@@ -84,7 +82,7 @@ function receiptBody(result: VisitRegistered, t: Translate): StampCardBody {
   }
 }
 
-/** O recibo do lançamento: quem ganhou, quanto, e como ficou o cartão. */
+/** O recibo do uso do QR da visita: quem ganhou, quanto, e como ficou o cartão. */
 export function toLaunchReceipt(result: VisitRegistered, rewardTitle: string, t: Translate): LaunchReceiptModel {
   const { card, entry, unitsEarned, welcomeUnits } = result
   const phone = entry.maskedPhone
@@ -113,18 +111,6 @@ export function toLaunchReceipt(result: VisitRegistered, rewardTitle: string, t:
     detail: parts.filter((part) => part !== null).join(' '),
     body: receiptBody(result, t),
   }
-}
-
-/** Botão principal e dica do valor do formulário de lançamento. */
-export function toLaunchFormText(action: CounterAction | null, t: Translate): LaunchFormText {
-  if (action === null) return { submitLabel: t('counter.launch.give', { units: unitsText(t, 'stamp', 1) }), amountHint: undefined }
-  if (action.kind === 'amount') {
-    return {
-      submitLabel: t('counter.launch.giveAmount'),
-      amountHint: t('counter.launch.amountHint', { points: unitsText(t, 'point', action.pointsPerReal) }),
-    }
-  }
-  return { submitLabel: t('counter.launch.give', { units: unitsText(t, action.unit, action.units) }), amountHint: undefined }
 }
 
 /** O canhoto conferido: prêmio e a linha do cliente, só com o celular mascarado que o servidor devolveu. */

@@ -1,8 +1,9 @@
 import { z } from 'zod'
-import { ShopIdSchema } from './ids'
+import { LoyaltyCardIdSchema, ShopIdSchema } from './ids'
 import { EarnRateSchema, ProgramUnitSchema } from './program'
 import { readableCodeSchema } from './common'
 import {
+  CHECK_IN_CODE_INPUT_MAX_LENGTH,
   CHECK_IN_CODE_LENGTH,
   REWARD_TITLE_MAX_LENGTH,
   SHOP_ADDRESS_MAX_LENGTH,
@@ -26,7 +27,7 @@ export type ShopCategory = z.infer<typeof ShopCategorySchema>
 export const ShopStatusSchema = z.enum(['pending', 'approved', 'suspended'])
 export type ShopStatus = z.infer<typeof ShopStatusSchema>
 
-/** Identifica a loja no check-in: vai no QR do balcão e impresso embaixo dele. */
+/** Identifica a loja para entrar no clube: vai no QR do cartaz e impresso embaixo dele (nome legado, P-01). */
 export const CheckInCodeSchema = readableCodeSchema(CHECK_IN_CODE_LENGTH).brand<'CheckInCode'>()
 export type CheckInCode = z.infer<typeof CheckInCodeSchema>
 
@@ -79,7 +80,7 @@ export const ShopProfileDraftSchema = z.object({
 })
 export type ShopProfileDraft = z.infer<typeof ShopProfileDraftSchema>
 
-/** Cartaz do balcão: o QR leva ao check-in desta loja. */
+/** Cartaz do balcão: o QR coloca o cliente no clube desta loja (não rende). */
 export const ShopPosterSchema = z.object({
   shopName: z.string().min(1),
   status: ShopStatusSchema,
@@ -89,3 +90,15 @@ export const ShopPosterSchema = z.object({
   target: z.number().int().positive(),
 })
 export type ShopPoster = z.infer<typeof ShopPosterSchema>
+
+/** Corpo de `POST /shop-join`: o código do cartaz (QR ou digitado); o servidor normaliza e decide. */
+export const ShopJoinRequestSchema = z.strictObject({ code: z.string().max(CHECK_IN_CODE_INPUT_MAX_LENGTH) })
+export type ShopJoinRequest = z.infer<typeof ShopJoinRequestSchema>
+
+/** Entrou no clube (ou já era): o app busca o cartão por `GET /wallet/cards/:shopId`. */
+export const ShopJoinResultSchema = z.object({
+  shopId: ShopIdSchema,
+  cardId: LoyaltyCardIdSchema,
+  alreadyMember: z.boolean(),
+})
+export type ShopJoinResult = z.infer<typeof ShopJoinResultSchema>

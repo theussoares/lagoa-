@@ -1,42 +1,53 @@
-import type { CheckInCode } from '#shared/schemas/shop'
-import type { Result } from '#shared/types/result'
-import type { ErrorOf } from '#shared/types/errors'
-import { parseCheckInCode, readCheckInQr } from '#shared/utils/checkInCode'
-import type { CheckInSource, CheckInState, CheckIn } from '../types/checkIn'
+import type { ShopId } from '#shared/schemas/ids'
+import type { WalletCard } from '#shared/schemas/loyaltyCard'
+import type { CheckInInputError, CheckInIntent, CheckInSource, CheckInState, CheckIn, CheckInInput } from '../types/checkIn'
 
-function parse(raw: string, source: CheckInSource): Result<CheckInCode, ErrorOf<'invalidShopQr'>> {
-  return source === 'camera' ? readCheckInQr(raw) : parseCheckInCode(raw)
+type Attempt = { readonly intent: CheckInIntent; readonly source: CheckInSource }
+type Settled = Extract<CheckInState, { status: 'earned' | 'joined' | 'error' }>
+
+/** Código malformado conta como a intenção que o formato indica (visita ou cartaz). */
+function intentOfInputError(error: CheckInInputError): CheckInIntent['kind'] {
+  return error.code === 'invalidVisitQr' ? 'claim' : 'join'
 }
 
 export function useCheckIn(): CheckIn {
   const { checkIn: service, wallet } = useCustomerServices()
   const state = shallowRef<CheckInState>({ status: 'idle' })
-  let last: { code: CheckInCode; source: CheckInSource } | undefined
+  let last: Attempt | undefined
 
-  async function send(code: CheckInCode, source: CheckInSource): Promise<void> {
-    last = { code, source }
-    state.value = { status: 'submitting', source }
-    const result = await service.checkIn(code)
-    if (!result.ok) {
-      state.value = { status: 'error', error: result.error, source }
-      return
-    }
-    const card = await wallet.getCard(result.value.activity.shopId)
-    state.value = { status: 'earned', result: result.value, card: card.ok ? card.value : null }
+  async function cardOf(shopId: ShopId): Promise<WalletCard | null> {
+    const card = await wallet.getCard(shopId)
+    return card.ok ? card.value : null
   }
 
-  async function submit(raw: string, source: CheckInSource): Promise<void> {
+  async function settle(intent: CheckInIntent, source: CheckInSource): Promise<Settled> {
+    if (intent.kind === 'join') {
+      const joined = await service.joinShop(intent.code)
+      if (!joined.ok) return { status: 'error', error: joined.error, source, intent: intent.kind }
+      return { status: 'joined', result: joined.value, card: await cardOf(joined.value.shopId) }
+    }
+    const earned = await service.claimVisitQr(intent.credential)
+    if (!earned.ok) return { status: 'error', error: earned.error, source, intent: intent.kind }
+    return { status: 'earned', result: earned.value, card: await cardOf(earned.value.activity.shopId) }
+  }
+
+  async function send(attempt: Attempt): Promise<void> {
+    last = attempt
+    state.value = { status: 'submitting', source: attempt.source, intent: attempt.intent.kind }
+    state.value = await settle(attempt.intent, attempt.source)
+  }
+
+  async function submit(input: CheckInInput, source: CheckInSource): Promise<void> {
     if (state.value.status === 'submitting') return
-    const code = parse(raw, source)
-    if (!code.ok) {
-      state.value = { status: 'error', error: code.error, source }
+    if (!input.ok) {
+      state.value = { status: 'error', error: input.error, source, intent: intentOfInputError(input.error) }
       return
     }
-    await send(code.value, source)
+    await send({ intent: input.value, source })
   }
 
   async function retry(): Promise<void> {
-    if (last !== undefined) await send(last.code, last.source)
+    if (last !== undefined) await send(last)
   }
 
   function reset(): void {

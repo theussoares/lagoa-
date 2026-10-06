@@ -4,7 +4,7 @@ import { isVisitKind } from '#shared/domain/ledger'
 import type { Challenge } from '#shared/schemas/discover'
 import type { CustomerId, ShopId } from '#shared/schemas/ids'
 import type { LoyaltyCard, WalletCard } from '#shared/schemas/loyaltyCard'
-import type { CheckInCode, ShopSummary } from '#shared/schemas/shop'
+import type { CheckInCode, ShopJoinResult, ShopSummary } from '#shared/schemas/shop'
 import type { CheckInResult, WalletActivity } from '#shared/schemas/visit'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok } from '#shared/types/result'
@@ -12,8 +12,8 @@ import type { Result } from '#shared/types/result'
 import { addHours, toIso } from '#shared/utils/time'
 import type { MockContext } from './context'
 import type { LedgerRecord } from '../state'
-import { appendLedger, creditCard, toWalletActivity, visitUnits } from './earning'
-import { findCustomer, findProgram, findShop, toShopSummary } from './queries'
+import { toWalletActivity } from './earning'
+import { findCard, findCustomer, findProgram, findShop, newCard, replaceCard, toShopSummary } from './queries'
 
 function toWalletCard(ctx: MockContext, card: LoyaltyCard): WalletCard | undefined {
   const shop = findShop(ctx, card.shopId)
@@ -65,43 +65,20 @@ function customerLedger(
     .map((record) => toWalletActivity(ctx, record))
 }
 
-type CheckInError = ErrorOf<'invalidShopQr' | 'checkInDisabled' | 'checkInCooldown' | 'unauthorized'>
+type JoinError = ErrorOf<'invalidShopQr' | 'checkInDisabled' | 'unauthorized'>
 
-export function checkIn(ctx: MockContext, customerId: CustomerId, code: CheckInCode): Result<CheckInResult, CheckInError> {
-  const customer = findCustomer(ctx, customerId)
-  if (customer === undefined) return err({ code: 'unauthorized' })
+/** Entrar no clube pelo cartaz: cartão zerado, sem ledger e sem janela antifraude; repetir devolve o mesmo cartão. */
+export function joinShop(ctx: MockContext, customerId: CustomerId, code: CheckInCode): Result<ShopJoinResult, JoinError> {
+  if (findCustomer(ctx, customerId) === undefined) return err({ code: 'unauthorized' })
   const shop = ctx.state.shops.find((item) => item.checkInCode === code && item.status === 'approved')
   const program = shop === undefined ? undefined : findProgram(ctx, shop.id)
   if (shop === undefined || program === undefined) return err({ code: 'invalidShopQr' })
+  const existing = findCard(ctx, customerId, shop.id)
+  if (existing !== undefined) return ok({ shopId: shop.id, cardId: existing.id, alreadyMember: true })
   if (!program.checkIn.enabled) return err({ code: 'checkInDisabled' })
-
-  // Antifraude: qualquer visita recente nesta loja (balcão ou check-in) segura o check-in.
-  const lastVisit = ctx.state.ledger
-    .filter((record) => record.customerId === customerId && record.shopId === shop.id && isVisitKind(record.kind))
-    .reduce<string | null>((latest, record) => (latest === null || record.createdAt > latest ? record.createdAt : latest), null)
-  if (lastVisit !== null) {
-    const availableAt = checkInAvailableAt(new Date(lastVisit), program.checkIn.cooldownHours, ctx.now)
-    if (availableAt !== null) return err({ code: 'checkInCooldown', availableAt: toIso(availableAt) })
-  }
-
-  const units = visitUnits(ctx, customer, program, { kind: 'visit' })
-  if (!units.ok) return err({ code: 'checkInDisabled' })
-  const credited = creditCard(ctx, customer, program, units.value, 'checkIn')
-  const record = appendLedger(ctx, {
-    shopId: shop.id,
-    customerId,
-    kind: 'checkIn',
-    unit: credited.card.unit,
-    units: units.value,
-    amountCents: null,
-    rewardTitle: null,
-    isNewCustomer: false,
-  })
-  return ok({
-    activity: toWalletActivity(ctx, record),
-    card: toCardProgress(credited.card),
-    nextCheckInAt: toIso(addHours(ctx.now, program.checkIn.cooldownHours)),
-  })
+  const card = newCard(ctx, customerId, program)
+  replaceCard(ctx, card)
+  return ok({ shopId: shop.id, cardId: card.id, alreadyMember: false })
 }
 
 export function discoverShops(ctx: MockContext): ShopSummary[] {

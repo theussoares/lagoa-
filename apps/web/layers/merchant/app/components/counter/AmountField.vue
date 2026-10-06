@@ -13,8 +13,6 @@ interface Props {
 
 interface Emits {
   input: [value: string | number]
-  fieldFocus: []
-  clear: []
 }
 
 const props = withDefaults(defineProps<Props>(), { hint: undefined })
@@ -26,7 +24,7 @@ useFocusTarget(() => props.focusRequest, 'amount', () => focusFirstInput(field.v
 
 <template>
   <UFormField
-    :label="$t('counter.launch.amountLabel')"
+    :label="$t('counter.visitQr.amountLabel')"
     :hint="hint"
     :error="errorCode ? $t('errors.invalidAmount') : undefined"
     name="amount"
@@ -38,15 +36,13 @@ useFocusTarget(() => props.focusRequest, 'amount', () => focusFirstInput(field.v
     <UInput
       ref="field"
       :model-value="amountText"
-      inputmode="none"
+      inputmode="numeric"
       autocomplete="off"
       placeholder="R$ 0,00"
       size="xl"
       class="w-full"
       :ui="{ base: 'tabular text-2xl font-bold' }"
       @update:model-value="emit('input', $event)"
-      @focus="emit('fieldFocus')"
-      @keydown.esc.prevent="emit('clear')"
     />
   </UFormField>
 </template>

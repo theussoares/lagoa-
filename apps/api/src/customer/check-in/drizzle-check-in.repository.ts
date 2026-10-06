@@ -1,24 +1,25 @@
 import { Inject, Injectable } from '@nestjs/common'
-import { and, eq } from 'drizzle-orm'
-import type { EarningPlan } from '#shared/domain/earning'
-import type { ErrorOf } from '#shared/types/errors'
+import { and, eq, lt, lte, or, sql } from 'drizzle-orm'
 import { CHECK_IN_COOLDOWN_MAX_HOURS } from '#shared/constants/domain'
+import { VisitQrEarnSchema } from '#shared/schemas/visitQr'
+import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
 import { DB, type Database } from '../../database/database.module'
 import type { Tx } from '../../database/database.module'
-import { customerProfiles, ledgerEntries, loyaltyCards, programs, shops } from '../../database/schema'
+import { customerProfiles, ledgerEntries, loyaltyCards, programs, shops, visitQrs } from '../../database/schema'
 import { type LockedCard, LedgerStore } from '../../ledger/ledger.store'
 import { CATALOG_COLUMNS, toCatalogShop } from '../../shops/catalog-row'
 import {
-  type CheckInAttempt,
-  type CheckInRecorded,
   CheckInRepository,
+  type LockedVisitQr,
   ProgramVersionChanged,
-  type CheckInShop,
-  type CheckInState,
+  type VisitClaimDeciders,
+  type VisitClaimRecorded,
+  type VisitQrLookup,
+  type VisitQrTarget,
 } from './check-in.repository'
 
-/** Desfaz a transação quando a regra recusa; o erro de domínio sai pelo `refusal`, não pela exceção. */
+/** Desfaz a transação quando uma regra recusa; o erro de domínio sai pelo `refusal`, não pela exceção. */
 class RollbackSignal extends Error {}
 
 @Injectable()
@@ -30,50 +31,83 @@ export class DrizzleCheckInRepository extends CheckInRepository {
     super()
   }
 
-  async findShopByCode(code: string, customerId: string): Promise<CheckInShop | null> {
-    const [shopRow] = await this.db.select({ id: shops.id }).from(shops).where(and(eq(shops.checkInCode, code), eq(shops.status, 'approved'))).limit(1)
-    if (!shopRow) return null
+  /**
+   * A busca do QR (loja aprovada e programa ativo na mesma consulta). Pública para o teste de `EXPLAIN` provar o
+   * índice com a mesma consulta que roda de verdade. Pelo código curto: a linha mais nova, com `nulls last` para o
+   * planner usar o índice `(visit_code, created_at DESC)`.
+   */
+  lookupQuery(lookup: VisitQrLookup) {
+    const query = this.db
+      .select({
+        visitQrId: visitQrs.id,
+        shopId: visitQrs.shopId,
+        issuedBy: visitQrs.issuedBy,
+        earnKind: visitQrs.earnKind,
+        amountCents: visitQrs.amountCents,
+        activeProgramId: programs.id,
+        cooldownHours: programs.checkInCooldownHours,
+      })
+      .from(visitQrs)
+      .innerJoin(shops, and(eq(shops.id, visitQrs.shopId), eq(shops.status, 'approved')))
+      .innerJoin(programs, and(eq(programs.shopId, shops.id), eq(programs.active, true)))
+      .$dynamic()
+    // O token é único; só o código curto pode repetir entre linhas antigas, e vale a mais nova. O reenvio por código
+    // também não tem janela de validade: só quem já usou o QR recebe de volta o ganho dele (`decideQrUse`), e isso
+    // vale tanto pelo token quanto pelo código, para o app que perdeu a resposta poder tentar outra vez.
+    return lookup.kind === 'tokenHash'
+      ? query.where(eq(visitQrs.tokenHash, lookup.tokenHash)).limit(1)
+      : query.where(eq(visitQrs.visitCode, lookup.code)).orderBy(sql`${visitQrs.createdAt} desc nulls last`).limit(1)
+  }
+
+  async findVisitQr(lookup: VisitQrLookup, customerId: string): Promise<VisitQrTarget | null> {
+    const [row] = await this.lookupQuery(lookup)
+    if (!row) return null
+    // Janela fora de 1..168 h (o CHECK do banco já barra): a loja fica de fora, nunca com ganho ilimitado.
+    if (row.cooldownHours < 1 || row.cooldownHours > CHECK_IN_COOLDOWN_MAX_HOURS) return null
+    const earn = VisitQrEarnSchema.safeParse(row.earnKind === 'amount' ? { kind: 'amount', amountCents: row.amountCents } : { kind: 'visit' })
+    if (!earn.success) return null
+
     // Cartão com saldo segue na versão do programa em que nasceu; sem cartão (ou zerado) vale a versão ativa.
     const [card] = await this.db
       .select({ programId: loyaltyCards.programId, balance: loyaltyCards.balance })
       .from(loyaltyCards)
-      .where(and(eq(loyaltyCards.shopId, shopRow.id), eq(loyaltyCards.customerId, customerId)))
+      .where(and(eq(loyaltyCards.shopId, row.shopId), eq(loyaltyCards.customerId, customerId)))
       .limit(1)
-    const version = card && card.balance > 0 ? eq(programs.id, card.programId) : and(eq(programs.shopId, shopRow.id), eq(programs.active, true))
-    const [row] = await this.db
-      .select({
-        ...CATALOG_COLUMNS,
-        programId: programs.id,
-        checkInEnabled: programs.checkInEnabled,
-        cooldownHours: programs.checkInCooldownHours,
-      })
+    const programId = card && card.balance > 0 ? card.programId : row.activeProgramId
+    const [catalog] = await this.db
+      .select(CATALOG_COLUMNS)
       .from(shops)
-      .innerJoin(programs, and(eq(programs.shopId, shops.id), version))
-      .where(eq(shops.id, shopRow.id))
+      .innerJoin(programs, and(eq(programs.shopId, shops.id), eq(programs.id, programId)))
+      .where(eq(shops.id, row.shopId))
       .limit(1)
-    if (!row) return null
-    // Janela fora de 1..168 h (o CHECK do banco já barra): a loja fica de fora, nunca com check-in ilimitado.
-    if (row.cooldownHours < 1 || row.cooldownHours > CHECK_IN_COOLDOWN_MAX_HOURS) return null
-    const shop = toCatalogShop(row)
-    return shop === null ? null : { shop, programId: row.programId, checkInEnabled: row.checkInEnabled, cooldownHours: row.cooldownHours }
+    const shop = catalog ? toCatalogShop(catalog) : null
+    if (shop === null) return null
+    return { visitQrId: row.visitQrId, shop, programId, cooldownHours: row.cooldownHours, issuedBy: row.issuedBy, earn: earn.data }
   }
 
-  async record<E>(
-    { customerId, shop: target, now, clientKey }: CheckInAttempt,
-    decide: (state: CheckInState) => Result<EarningPlan, E>,
-  ): Promise<Result<CheckInRecorded, E | ErrorOf<'unauthorized'>>> {
+  async claim<E>(
+    { customerId, target, now }: { readonly customerId: string; readonly target: VisitQrTarget; readonly now: Date },
+    decide: VisitClaimDeciders<E>,
+  ): Promise<Result<VisitClaimRecorded, E | ErrorOf<'unauthorized'>>> {
     const refusal: { error: E | ErrorOf<'unauthorized'> | null } = { error: null }
+    const refuse = (error: E | ErrorOf<'unauthorized'>): never => {
+      refusal.error = error
+      throw new RollbackSignal()
+    }
     try {
       return await this.db.transaction(async (tx) => {
+        // Ordem de locks: o QR primeiro, o cartão depois (nunca o contrário).
+        const qr = await this.lockVisitQr(tx, target.visitQrId)
+        const use = decide.qr(qr)
+        if (!use.ok) return refuse(use.error)
+        if (use.value === 'replay') return ok(await this.recorded(tx, qr))
+
         const [profile] = await tx
           .select({ birthday: customerProfiles.birthday })
           .from(customerProfiles)
           .where(eq(customerProfiles.userId, customerId))
           .limit(1)
-        if (!profile) {
-          refusal.error = { code: 'unauthorized' }
-          throw new RollbackSignal()
-        }
+        if (!profile) return refuse({ code: 'unauthorized' })
 
         const { card } = await this.ledger.lockOrCreateCard(
           tx,
@@ -81,39 +115,37 @@ export class DrizzleCheckInRepository extends CheckInRepository {
           { policy: target.shop.program.expiration, target: target.shop.program.rules.target, now },
         )
         await this.alignProgramVersion(tx, card, target.programId)
-        // O mesmo toque reenviado (resposta perdida): devolve o carimbo que já está no ledger, sem decidir de novo.
-        const key = clientKey === undefined ? null : `checkIn:${customerId}:${target.shop.id}:${clientKey}`
-        if (key !== null) {
-          const [previous] = await tx
-            .select({ id: ledgerEntries.id, units: ledgerEntries.unitsDelta, occurredAt: ledgerEntries.occurredAt })
-            .from(ledgerEntries)
-            .where(and(eq(ledgerEntries.idempotencyKey, key), eq(ledgerEntries.cardId, card.id)))
-            .limit(1)
-          if (previous) {
-            return ok({ cardId: card.id, entryId: previous.id, units: previous.units, balanceAfter: card.balance, recordedAt: previous.occurredAt, replayed: true })
-          }
-        }
 
-        const decision = decide({
+        const decision = decide.earning({
           card: { balance: card.balance, rewardExpiresAt: card.rewardExpiresAt, lastVisitAt: card.lastVisitAt },
           birthday: profile.birthday,
         })
-        if (!decision.ok) {
-          refusal.error = decision.error
-          throw new RollbackSignal()
-        }
+        if (!decision.ok) return refuse(decision.error)
 
-        // Rede de segurança: sob o lock a janela já barra o repetido; a chave garante no banco.
-        const { entryId } = await this.ledger.credit(tx, {
+        // Segundo cadeado do uso único: a chave é única no ledger, mesmo que o lock do QR falhasse.
+        const { entryId, recordedAt } = await this.ledger.credit(tx, {
           card,
           shopId: target.shop.id,
           customerId,
           plan: decision.value,
-          kind: 'checkIn',
+          kind: target.earn.kind,
           now,
-          idempotencyKey: key ?? `checkIn:${card.id}:${card.lastVisitAt?.toISOString() ?? 'first'}`,
+          idempotencyKey: `visit-qr:${target.visitQrId}`,
+          recordedBy: target.issuedBy,
+          amountCents: target.earn.kind === 'amount' ? target.earn.amountCents : null,
         })
-        return ok({ cardId: card.id, entryId, units: decision.value.units, balanceAfter: decision.value.balanceAfter, recordedAt: now, replayed: false })
+        await tx
+          .update(visitQrs)
+          .set({ status: 'claimed', claimedBy: customerId, claimedAt: now, ledgerEntryId: entryId })
+          .where(eq(visitQrs.id, target.visitQrId))
+        return ok({
+          cardId: card.id,
+          entryId,
+          units: decision.value.units,
+          balanceAfter: decision.value.balanceAfter,
+          recordedAt,
+          replayed: false,
+        })
       })
     } catch (error) {
       if (error instanceof RollbackSignal && refusal.error !== null) return err(refusal.error)
@@ -121,8 +153,75 @@ export class DrizzleCheckInRepository extends CheckInRepository {
     }
   }
 
+  async noteRefusal(visitQrId: string, refusal: { readonly availableAt: Date; readonly refusedAt: Date }): Promise<void> {
+    await this.db
+      .update(visitQrs)
+      .set({ refusedAt: refusal.refusedAt, refusalAvailableAt: refusal.availableAt })
+      .where(and(eq(visitQrs.id, visitQrId), eq(visitQrs.status, 'active')))
+  }
+
+  /** O lock do QR (só a linha dele) com o que a decisão precisa da loja agora. Pública para o `EXPLAIN`. */
+  lockQuery(executor: Pick<Tx, 'select'>, visitQrId: string) {
+    return executor
+      .select({
+        status: visitQrs.status,
+        cancelReason: visitQrs.cancelReason,
+        expiresAt: visitQrs.expiresAt,
+        claimedBy: visitQrs.claimedBy,
+        claimedAt: visitQrs.claimedAt,
+        ledgerEntryId: visitQrs.ledgerEntryId,
+        programId: visitQrs.programId,
+        shopStatus: shops.status,
+        activeProgramId: programs.id,
+      })
+      .from(visitQrs)
+      .innerJoin(shops, eq(shops.id, visitQrs.shopId))
+      .leftJoin(programs, and(eq(programs.shopId, visitQrs.shopId), eq(programs.active, true)))
+      .where(eq(visitQrs.id, visitQrId))
+      .for('update', { of: [visitQrs] })
+  }
+
+  private async lockVisitQr(tx: Tx, visitQrId: string): Promise<LockedVisitQr> {
+    const [row] = await this.lockQuery(tx, visitQrId)
+    if (!row) throw new Error('Visit QR vanished after lookup')
+    const { shopStatus, ...qr } = row
+    return { ...qr, shopApproved: shopStatus === 'approved' }
+  }
+
   /**
-   * `findShopByCode` leu a versão do programa antes do lock. Cartão zerado pode mudar para a versão ativa;
+   * Replay: o ganho que já está no ledger, sem escrever nada. Saldo e instante são os daquele lançamento (soma do
+   * ledger do cartão até ele, boas-vindas do mesmo instante inclusas), não os de agora: a resposta repetida é igual
+   * à primeira mesmo que o cartão tenha andado depois.
+   */
+  private async recorded(tx: Tx, qr: LockedVisitQr): Promise<VisitClaimRecorded> {
+    if (qr.ledgerEntryId === null) throw new Error('Claimed visit QR without a ledger entry')
+    const [entry] = await tx
+      .select({ id: ledgerEntries.id, cardId: ledgerEntries.cardId, units: ledgerEntries.unitsDelta, occurredAt: ledgerEntries.occurredAt })
+      .from(ledgerEntries)
+      .where(eq(ledgerEntries.id, qr.ledgerEntryId))
+      .limit(1)
+    if (!entry) throw new Error('Ledger entry of a claimed visit QR not found')
+    const [upTo] = await tx
+      .select({ balance: sql<number>`coalesce(sum(${ledgerEntries.unitsDelta}), 0)::int` })
+      .from(ledgerEntries)
+      .where(
+        and(
+          eq(ledgerEntries.cardId, entry.cardId),
+          or(lt(ledgerEntries.occurredAt, entry.occurredAt), and(eq(ledgerEntries.occurredAt, entry.occurredAt), lte(ledgerEntries.id, entry.id))),
+        ),
+      )
+    return {
+      cardId: entry.cardId,
+      entryId: entry.id,
+      units: entry.units,
+      balanceAfter: upTo?.balance ?? 0,
+      recordedAt: entry.occurredAt,
+      replayed: true,
+    }
+  }
+
+  /**
+   * `findVisitQr` leu a versão do programa antes do lock. Cartão zerado pode mudar para a versão ativa;
    * com saldo, uma versão diferente da lida significa que o programa mudou no meio do caminho.
    */
   private async alignProgramVersion(tx: Tx, card: LockedCard, expectedProgramId: string): Promise<void> {

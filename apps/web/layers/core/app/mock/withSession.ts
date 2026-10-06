@@ -1,4 +1,4 @@
-import type { CustomerId, ShopId } from '#shared/schemas/ids'
+import type { CustomerId, MerchantId, ShopId } from '#shared/schemas/ids'
 import type { ErrorOf } from '#shared/types/errors'
 import { err } from '#shared/types/result'
 import type { Result } from '#shared/types/result'
@@ -21,9 +21,9 @@ export function asCustomer<T, E>(
 export function asMerchant<T, E>(
   backend: MockBackend,
   sessions: MerchantSessionProvider,
-  handler: (ctx: MockContext, shopId: ShopId) => Result<T, E>,
+  handler: (ctx: MockContext, shopId: ShopId, merchantId: MerchantId) => Result<T, E>,
 ): Promise<Result<T, E | Unauthorized>> {
   const session = sessions.current()
   if (session === null) return Promise.resolve(err({ code: 'unauthorized' }))
-  return backend.run((ctx) => handler(ctx, session.shopId))
+  return backend.run((ctx) => handler(ctx, session.shopId, session.merchantId))
 }

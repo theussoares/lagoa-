@@ -5,6 +5,7 @@ import { ledgerEntries, loyaltyCards, programs } from '../database/schema'
 import { DrizzleReferralSettlement } from '../ledger/drizzle-referral-settlement'
 import { LedgerStore } from '../ledger/ledger.store'
 import { NO_BONUS_RULES, TEST_DATABASE_URL, TestDatabase } from '../test-support/test-database'
+import { claimVisit } from '../test-support/claim-visit'
 import { CheckInService } from './check-in/check-in.service'
 import { DrizzleCheckInRepository } from './check-in/drizzle-check-in.repository'
 import { DrizzleRedemptionRepository } from './redemption/drizzle-redemption.repository'
@@ -42,7 +43,7 @@ describe.skipIf(!TEST_DATABASE_URL)('expiration against a real database', () => 
   async function idleCard() {
     const shop = await data.createShop({ bonusRules: WELCOME_BONUS, expiration: { kind: 'afterInactivity', months: 6 }, rules: { mode: 'stamps', target: 10 } })
     const customer = await data.createCustomer()
-    await checkIn.checkIn(customer, shop.checkInCode) // 2 de boas-vindas + 1 = 3
+    await claimVisit(data, checkIn, customer, shop) // 2 de boas-vindas + 1 = 3
     await data.db.update(loyaltyCards).set({ lastVisitAt: MONTHS_AGO(7), lastActivityAt: MONTHS_AGO(7) }).where(eq(loyaltyCards.customerId, customer))
     return { shop, customer }
   }
@@ -52,12 +53,12 @@ describe.skipIf(!TEST_DATABASE_URL)('expiration against a real database', () => 
     const cards = await wallet.listCards(customer)
     expect(cards).toMatchObject({ ok: true, value: [{ balance: 0, stamps: [] }] })
     expect((await cardOf(customer))?.balance).toBe(3)
-    expect(await kindsOf(customer)).toEqual(['welcomeBonus:2', 'checkIn:1'])
+    expect(await kindsOf(customer)).toEqual(['welcomeBonus:2', 'visit:1'])
   }, SLOW)
 
   it('writes the expiration once, before crediting the new visit, even with simultaneous check-ins', async () => {
     const { shop, customer } = await idleCard()
-    const results = await Promise.all(Array.from({ length: 5 }, () => checkIn.checkIn(customer, shop.checkInCode)))
+    const results = await Promise.all(Array.from({ length: 5 }, () => claimVisit(data, checkIn, customer, shop)))
     expect(results.filter((r) => r.ok)).toHaveLength(1)
     expect(results.find((r) => r.ok)).toMatchObject({ ok: true, value: { card: { balance: 1 } } })
     const kinds = await kindsOf(customer)
@@ -67,14 +68,14 @@ describe.skipIf(!TEST_DATABASE_URL)('expiration against a real database', () => 
 
   it('does not welcome an expired card again: it is the same card, just empty', async () => {
     const { shop, customer } = await idleCard()
-    await checkIn.checkIn(customer, shop.checkInCode)
+    await claimVisit(data, checkIn, customer, shop)
     expect((await kindsOf(customer)).filter((k) => k.startsWith('welcomeBonus'))).toHaveLength(1)
   }, SLOW)
 
   it('retires a lapsed reward when the customer asks for the code, instead of handing it out', async () => {
     const shop = await data.createShop({ rules: { mode: 'stamps', target: 3 }, bonusRules: WELCOME_BONUS })
     const customer = await data.createCustomer()
-    await checkIn.checkIn(customer, shop.checkInCode) // 3 de 3: pronto, guardado por 30 dias
+    await claimVisit(data, checkIn, customer, shop) // 3 de 3: pronto, guardado por 30 dias
     const card = await cardOf(customer)
     expect(card?.rewardExpiresAt).not.toBeNull()
     await data.db.update(loyaltyCards).set({ rewardExpiresAt: new Date(Date.now() - DAY_MS) }).where(eq(loyaltyCards.customerId, customer))
@@ -88,7 +89,7 @@ describe.skipIf(!TEST_DATABASE_URL)('expiration against a real database', () => 
   it('refuses to deliver a prize that lapsed while its code was on the screen', async () => {
     const shop = await data.createShop({ rules: { mode: 'stamps', target: 3 }, bonusRules: WELCOME_BONUS })
     const customer = await data.createCustomer()
-    await checkIn.checkIn(customer, shop.checkInCode)
+    await claimVisit(data, checkIn, customer, shop)
     const card = await cardOf(customer)
     const created = await redemption.requestCode(customer, card?.id ?? '')
     if (!created.ok) throw new Error('expected a code')
@@ -118,7 +119,7 @@ describe.skipIf(!TEST_DATABASE_URL)('expiration against a real database', () => 
   it('retires the code that is on the screen when the prize lapses and the customer asks again', async () => {
     const shop = await data.createShop({ rules: { mode: 'stamps', target: 3 }, bonusRules: WELCOME_BONUS })
     const customer = await data.createCustomer()
-    await checkIn.checkIn(customer, shop.checkInCode)
+    await claimVisit(data, checkIn, customer, shop)
     const card = await cardOf(customer)
     const created = await redemption.requestCode(customer, card?.id ?? '')
     if (!created.ok) throw new Error('expected a code')

@@ -115,6 +115,25 @@ class Redemption {
   +timestamptz redeemedAt?
   +uuid redeemedBy?
 }
+class VisitQr {
+  +uuid id
+  +uuid shopId
+  +uuid programId  «versão ativa na emissão»
+  +uuid issuedBy  «vira recordedBy do ledger»
+  +bytea tokenHash  «unique, SHA-256; token nunca em claro»
+  +char5 visitCode  «unique entre ativos»
+  +enum earnKind  «visit | amount»
+  +int amountCents?
+  +enum status  «active | claimed | expired | cancelled»
+  +enum cancelReason?  «merchant | programChanged»
+  +timestamptz createdAt
+  +timestamptz expiresAt  «createdAt + 5 min»
+  +uuid claimedBy?  «zerado ao apagar a conta»
+  +timestamptz claimedAt?
+  +uuid ledgerEntryId?  «unique»
+  +timestamptz refusedAt?  «última recusa por janela»
+  +timestamptz refusalAvailableAt?
+}
 class Referral {
   +uuid id
   +uuid shopId
@@ -138,6 +157,8 @@ Shop "1" --> "0..*" Referral : indicações
 CustomerProfile "1" --> "0..*" Referral : indicador
 CustomerProfile "1" --> "0..1" Referral : indicado
 Referral "1" --> "0..1" LedgerEntry : bônus pago
+Shop "1" --> "0..*" VisitQr : QRs da visita
+VisitQr "1" --> "0..1" LedgerEntry : ganho
 ```
 
 ## Storage (bucket)
@@ -171,13 +192,15 @@ Regras no servidor:
 O link usa o código opaco `referralCode`, não o `id` do cliente: id em URL vira dado
 rastreável em log e histórico do navegador.
 
-## Balcão e celular
+## Balcão e QR da visita
 
-O Balcão digita o celular do cliente e o Nest busca por `phoneHash` (hash com pepper,
-só os 11 dígitos, sem máscara nem +55 (`67991230374`); use sempre `PiiService.hashPhone`). Como o celular é obrigatório no cadastro,
-todo cliente é encontrável. Como não há SMS, o celular é **declarado, não verificado**:
-um cliente pode errar ou usar o número de outra pessoa. O risco é tolerado no MVP; a
-indicação compensa com a checagem de mesmo celular/e-mail.
+O Balcão **não recebe mais celular**. O ganho vem do QR da visita
+([spec](./specs/dynamic-visit-qr/spec.md)): o lojista gera na venda (`visit_qrs`, uso único, 5 min, valor
+preso no modo por real) e o cliente logado escaneia ou digita o código curto. O banco guarda só o
+SHA-256 do token; o uso trava a linha do QR (`FOR UPDATE`) e o cartão (`LedgerStore`) e grava o ledger com
+`kind = visit | amount`, `recordedBy = issuedBy` e chave `visit-qr:<id>` (segundo cadeado de uso único). O
+QR da loja (`checkInCode`, cartaz) só cria o cartão zerado (entrar no clube), sem ledger. Busca por
+`phoneHash` (`PiiService.hashPhone`, só os 11 dígitos) continua no login e na indicação.
 
 Celular e e-mail são dados pessoais: cifrados em repouso, mascarados em listas, nunca
 em log nem URL.
@@ -226,6 +249,8 @@ em log nem URL.
   (um código ativo por cartão).
 - `Referral(shopId, referredId)` único; `(referrerId)`.
 - `Shop(checkInCode)` único; `Shop(status)`; `Shop(ownerUserId)`.
+- `VisitQr(tokenHash)` único; `VisitQr(visitCode) WHERE status='active'` único (na rede toda);
+  `(visitCode, createdAt DESC)`; `(shopId) WHERE status='active'`; `(ledgerEntryId)` único quando não nulo.
 
 ## Escala
 

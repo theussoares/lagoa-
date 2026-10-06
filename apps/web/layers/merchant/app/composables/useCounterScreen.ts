@@ -6,20 +6,18 @@ export function useCounterScreen(): CounterScreen {
   const { program: programService } = useMerchantServices()
   const program = useAsyncResult(() => programService.getProgram())
   const ledger = useCounterLedger()
-  const launch = useCounterLaunch()
+  const visitQr = useVisitQr()
   const redemption = useRedemptionCheck()
   const { request, focus } = useFocusRequest<CounterFocusTarget>()
 
-  useMerchantSessionGuard(() => [program.state.value, ledger.state.value, launch.state.value, redemption.state.value], {
+  useMerchantSessionGuard(() => [program.state.value, ledger.state.value, visitQr.state.value, redemption.state.value], {
     refreshShopStatus: true,
   })
-
-  onMounted(() => focus('phone'))
 
   return reactive({
     today: formatLongWeekdayDate(new Date()),
     focusRequest: request,
-    launch: useCounterLaunchForm(program, launch, ledger, focus),
+    visitQr: useVisitQrPanel(program, visitQr, ledger, focus),
     redemption: useCounterRedemptionView(redemption, ledger, focus),
     ledger: useCounterLedgerView(ledger),
   })
