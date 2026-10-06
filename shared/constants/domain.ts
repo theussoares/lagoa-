@@ -39,6 +39,9 @@ export const DATA_EXPORT_LIST_LIMIT = 5000
 /** Indicações pagas por indicador em cada loja: quem fabrica contas para si não acumula carimbo sem fim. */
 export const REFERRAL_REWARDS_MAX_PER_SHOP = 10
 export const PHONE_INPUT_MAX_LENGTH = 32
+export const CUSTOMER_FIRST_NAME_MAX_LENGTH = 40
+/** Limite do endereço de e-mail (RFC 5321). */
+export const EMAIL_MAX_LENGTH = 254
 export const LOGIN_CODE_LENGTH = 6
 export const LOGIN_CODE_TTL_MINUTES = 5
 export const FOUNDER_PLAN_PRICE_CENTS = 7900

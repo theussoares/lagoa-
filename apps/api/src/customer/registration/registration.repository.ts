@@ -4,6 +4,7 @@ export interface NewCustomer {
   readonly emailHash: Buffer | null
   readonly phoneEncrypted: Buffer
   readonly phoneHash: Buffer
+  readonly firstName: string | null
   readonly referralCode: string
 }
 

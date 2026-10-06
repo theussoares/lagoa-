@@ -19,6 +19,6 @@ export class RegistrationController {
     @CurrentUser() user: AuthUser,
     @Body(new ZodValidationPipe(CustomerRegistrationSchema)) body: CustomerRegistration,
   ): Promise<CustomerSession> {
-    return unwrap(await this.registrations.register(user, body.phone))
+    return unwrap(await this.registrations.register(user, body.phone, { firstName: body.firstName, email: body.email }))
   }
 }

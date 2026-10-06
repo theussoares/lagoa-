@@ -9,11 +9,12 @@ const { t } = useI18n()
 const route = useRoute()
 useHead({ title: () => `${t('signIn.pageTitle')} · ${t('app.name')}` })
 
-const { step, pending, error, resendIn, requestCode, resendCode, verify, changePhone } = useCustomerSignIn()
+const { step, pending, error, fieldError, greeting, resendIn, requestCode, resendCode, verify, signUp, changePhone } = useCustomerSignIn()
+const toast = useToast()
 
 const phoneDraft = ref('')
 const code = ref<number[]>([])
-const consent = ref(false)
+const draft = reactive({ firstName: '', email: '', notificationConsent: false })
 const codeField = useTemplateRef<ComponentPublicInstance>('codeField')
 
 function codeFieldElement(): HTMLElement | null {
@@ -30,12 +31,26 @@ function onPhoneInput(value: string | number): void {
   phoneDraft.value = formatPhoneInput(String(value))
 }
 
+const welcomeTitle = computed(() => {
+  if (greeting.value === null) return ''
+  const { kind, name } = greeting.value
+  if (kind === 'new') return t('signIn.welcomeNew', { name })
+  return name === null ? t('signIn.welcomeBackAnonymous') : t('signIn.welcomeBack', { name })
+})
+
+async function enter(): Promise<void> {
+  toast.add({ title: welcomeTitle.value, icon: 'i-ph-hand-waving', color: 'success' })
+  await navigateTo(safeReturnPath(route.query.para), { replace: true })
+}
+
+async function submitProfile(): Promise<void> {
+  if (await signUp(draft)) await enter()
+}
+
 async function submitCode(): Promise<void> {
-  const signedIn = await verify(code.value.join(''), consent.value)
-  if (signedIn) {
-    await navigateTo(safeReturnPath(route.query.para), { replace: true })
-    return
-  }
+  const outcome = await verify(code.value.join(''))
+  if (outcome === 'signedIn') return enter()
+  if (outcome === 'signUp') return
   code.value = []
   // Depois do erro o foco volta para a primeira casa: dá para redigitar sem tocar.
   await nextTick()
@@ -76,6 +91,17 @@ function backToPhone(): void {
       <UButton type="submit" size="xl" block :loading="pending" :label="t('signIn.sendCode')" class="mt-auto" />
     </form>
 
+    <SignInProfileStep
+      v-else-if="step.name === 'profile'"
+      v-model:first-name="draft.firstName"
+      v-model:email="draft.email"
+      v-model:consent="draft.notificationConsent"
+      :pending="pending"
+      :field-error="fieldError"
+      :error-code="error"
+      @submit="submitProfile"
+    />
+
     <form v-else class="flex flex-1 flex-col gap-6" novalidate @submit.prevent="submitCode">
       <PageTitle :title="t('signIn.codeTitle')">
         <p class="type-lead">
@@ -106,14 +132,6 @@ function backToPhone(): void {
           @complete="submitCode"
         />
       </UFormField>
-
-      <USwitch
-        v-model="consent"
-        size="lg"
-        :label="t('signIn.consentLabel')"
-        :description="t('signIn.consentHint')"
-        :ui="{ root: 'items-start gap-3', label: 'text-base font-medium text-highlighted', description: 'text-base text-muted' }"
-      />
 
       <div class="mt-auto flex flex-col gap-3">
         <p class="text-base text-muted">{{ t('signIn.terms') }}</p>

@@ -4,15 +4,16 @@ import { CustomerSessionSchema, type CustomerSession, type LoginChallenge, type 
 import { LOGIN_CODE_TTL_MINUTES } from '#shared/constants/domain'
 import type { TransportError } from '#shared/types/errors'
 import { ok, type Result } from '#shared/types/result'
-import type { AuthService, SignInError } from './AuthService'
+import type { CustomerSignInResult, CustomerSignUp } from '../types/signIn'
+import type { AuthService, RegisterError, SignInError } from './AuthService'
 import type { PhoneAuthGateway } from './PhoneAuthGateway'
 import { allowing, type ApiClient } from './http/ApiClient'
 
 const MS_PER_MINUTE = 60_000
 
 /**
- * Cliente: celular + SMS (Supabase, no servidor do Nuxt) e depois a sessão da API; primeiro acesso cadastra na hora,
- * sem corpo: o celular vem do token.
+ * Cliente: celular + SMS (Supabase, no servidor do Nuxt) e depois a sessão da API. Número sem cadastro não é criado
+ * sozinho: o app pede o nome antes (`registerCustomer`); o celular vem do token.
  */
 export class HttpAuthService implements AuthService {
   constructor(
@@ -27,13 +28,17 @@ export class HttpAuthService implements AuthService {
     return ok({ expiresAt: IsoDateTimeSchema.parse(new Date(this.now().getTime() + LOGIN_CODE_TTL_MINUTES * MS_PER_MINUTE).toISOString()) })
   }
 
-  async signInCustomer(phone: PhoneNumber, code: LoginCode): Promise<Result<CustomerSession, SignInError>> {
+  async signInCustomer(phone: PhoneNumber, code: LoginCode): Promise<Result<CustomerSignInResult, SignInError>> {
     const verified = await this.gateway.verifyCode(phone, code)
     if (!verified.ok) return verified
     const session = await this.api.get('/session', CustomerSessionSchema)
-    if (session.ok) return session
-    if (session.error.code !== 'notFound') return allowing('invalidLoginCode', 'loginCodeExpired')(session)
-    return allowing('invalidLoginCode', 'loginCodeExpired')(await this.api.post('/registration', CustomerSessionSchema, { body: {} }))
+    if (session.ok) return ok({ kind: 'signedIn', session: session.value })
+    if (session.error.code === 'notFound') return ok({ kind: 'signUp' })
+    return allowing('invalidLoginCode', 'loginCodeExpired')(session)
+  }
+
+  async registerCustomer(details: CustomerSignUp): Promise<Result<CustomerSession, RegisterError>> {
+    return allowing('emailAlreadyUsed')(await this.api.post('/registration', CustomerSessionSchema, { body: details }))
   }
 
   signOut(): Promise<void> {
