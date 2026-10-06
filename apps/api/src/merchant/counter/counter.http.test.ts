@@ -110,6 +110,14 @@ class TestCounterRepository extends CounterRepository {
       },
     ]
   }
+
+  async findActiveRedemption(): Promise<any> {
+    throw new Error('Not implemented')
+  }
+
+  async settleRedemption(): Promise<any> {
+    throw new Error('Not implemented')
+  }
 }
 
 describe('merchant counter HTTP', () => {

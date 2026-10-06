@@ -14,9 +14,14 @@ import { DB, type Database } from '../../database/database.module'
 import { appUsers, customerProfiles, ledgerEntries, programs, redemptions, shops } from '../../database/schema'
 import { type ExpiryContext, LedgerStore } from '../../ledger/ledger.store'
 import { toExpirationPolicy, toProgramRules } from '../../programs/program-rules.mapper'
+import { RedemptionLookup } from '../../ledger/redemption-lookup'
+import { err, ok, type Result } from '#shared/types/result'
+import type { ErrorOf } from '#shared/types/errors'
 import {
   CounterRepository,
+  type ActiveRedemptionPreview,
   type ResolvedCustomer,
+  type SettleRedemptionError,
   type ShopWithProgram,
 } from './counter.repository'
 
@@ -26,6 +31,7 @@ export class DrizzleCounterRepository extends CounterRepository {
     @Inject(DB) private readonly db: Database,
     private readonly ledger: LedgerStore,
     private readonly pii: PiiService,
+    private readonly redemptionLookup: RedemptionLookup,
   ) {
     super()
   }
@@ -239,4 +245,84 @@ export class DrizzleCounterRepository extends CounterRepository {
       })
     })
   }
+
+  async findActiveRedemption(
+    shopId: string,
+    rawCode: string,
+    now: Date,
+  ): Promise<Result<ActiveRedemptionPreview, ErrorOf<'redemptionInvalid' | 'redemptionExpired'>>> {
+    const active = await this.redemptionLookup.findActive(shopId, rawCode, now)
+    if (!active.ok) return active
+
+    const [user] = await this.db
+      .select({ phoneEncrypted: appUsers.phoneEncrypted })
+      .from(appUsers)
+      .where(eq(appUsers.id, active.value.customerId))
+      .limit(1)
+
+    if (!user) return err({ code: 'redemptionInvalid' })
+
+    const phone = this.pii.decrypt(user.phoneEncrypted)
+    const maskedPhone = maskPhone(phone as PhoneNumber)
+
+    return ok({
+      redemptionId: active.value.redemptionId,
+      rewardTitle: active.value.rewardTitle,
+      maskedPhone,
+      expiresAt: active.value.expiresAt,
+    })
+  }
+
+  async settleRedemption(
+    shop: ShopWithProgram,
+    redemptionId: string,
+    merchantUserId: string,
+    now: Date,
+  ): Promise<Result<CounterEntry, SettleRedemptionError>> {
+    return await this.db.transaction(async (tx) => {
+      const settled = await this.ledger.settleRedemption(tx, {
+        redemptionId,
+        shopId: shop.shopId,
+        recordedBy: merchantUserId,
+        now,
+      })
+      if (!settled.ok) return settled
+
+      const [entry] = await tx
+        .select({
+          id: ledgerEntries.id,
+          occurredAt: ledgerEntries.occurredAt,
+          rewardTitle: redemptions.rewardTitle,
+          phoneEncrypted: appUsers.phoneEncrypted,
+        })
+        .from(ledgerEntries)
+        .innerJoin(redemptions, eq(redemptions.id, ledgerEntries.redemptionId))
+        .innerJoin(appUsers, eq(appUsers.id, ledgerEntries.customerId))
+        .where(and(eq(ledgerEntries.redemptionId, redemptionId), eq(ledgerEntries.kind, 'redemption')))
+        .limit(1)
+
+      if (!entry) {
+        throw new Error(`Redemption ledger entry not found for redemption ${redemptionId}`)
+      }
+
+      const phone = this.pii.decrypt(entry.phoneEncrypted)
+      const maskedPhone = maskPhone(phone as PhoneNumber)
+
+      return ok(
+        CounterEntrySchema.parse({
+          id: entry.id,
+          shopId: shop.shopId,
+          maskedPhone,
+          kind: 'redemption',
+          unit: shop.unit,
+          units: 0,
+          amountCents: null,
+          rewardTitle: entry.rewardTitle,
+          isNewCustomer: false,
+          createdAt: toIso(entry.occurredAt ?? now),
+        }),
+      )
+    })
+  }
 }
+

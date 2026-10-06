@@ -2,6 +2,8 @@ import type { BonusRules, ProgramMode, ProgramUnit } from '#shared/schemas/progr
 import type { ShopStatus } from '#shared/schemas/shop'
 import type { CounterEntry, VisitRegistered } from '#shared/schemas/visit'
 import type { EarnInput } from '#shared/domain/programStrategies'
+import type { ErrorOf } from '#shared/types/errors'
+import type { Result } from '#shared/types/result'
 
 export interface ShopWithProgram {
   readonly shopId: string
@@ -27,6 +29,22 @@ export interface ResolvedCustomer {
   readonly phone: string
 }
 
+export interface ActiveRedemptionPreview {
+  readonly redemptionId: string
+  readonly rewardTitle: string
+  readonly maskedPhone: string
+  readonly expiresAt: Date
+}
+
+export type SettleRedemptionError = ErrorOf<
+  | 'redemptionInvalid'
+  | 'redemptionAlreadyUsed'
+  | 'redemptionExpired'
+  | 'shopPendingApproval'
+  | 'shopSuspended'
+  | 'rewardNotReady'
+>
+
 export abstract class CounterRepository {
   abstract findShopAndProgramByOwner(ownerUserId: string): Promise<ShopWithProgram | null>
   abstract resolveOrCreateCustomer(
@@ -43,4 +61,15 @@ export abstract class CounterRepository {
     now: Date,
   ): Promise<{ visit: VisitRegistered; isFirstVisit: boolean }>
   abstract listTodayEntries(shopId: string, startOfDay: Date): Promise<CounterEntry[]>
+  abstract findActiveRedemption(
+    shopId: string,
+    rawCode: string,
+    now: Date,
+  ): Promise<Result<ActiveRedemptionPreview, ErrorOf<'redemptionInvalid' | 'redemptionExpired'>>>
+  abstract settleRedemption(
+    shop: ShopWithProgram,
+    redemptionId: string,
+    merchantUserId: string,
+    now: Date,
+  ): Promise<Result<CounterEntry, SettleRedemptionError>>
 }

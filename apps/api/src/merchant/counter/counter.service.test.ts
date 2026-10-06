@@ -75,6 +75,14 @@ class FakeCounterRepository extends CounterRepository {
   async listTodayEntries(): Promise<CounterEntry[]> {
     return this.entries
   }
+
+  async findActiveRedemption(): Promise<any> {
+    throw new Error('Not implemented')
+  }
+
+  async settleRedemption(): Promise<any> {
+    throw new Error('Not implemented')
+  }
 }
 
 const operationalStampsShop: ShopWithProgram = {
