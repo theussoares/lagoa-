@@ -24,9 +24,13 @@ import {
  * Banco do backend falso. Só existe no mock: é o "servidor" que guarda o
  * celular completo. Nada daqui sai para a UI sem passar pelos handlers.
  */
-export const MOCK_STATE_VERSION = 8
+export const MOCK_STATE_VERSION = 9
 
-export const ShopRecordSchema = ShopSchema.extend({ checkInCode: CheckInCodeSchema })
+export const ShopRecordSchema = ShopSchema.extend({
+  checkInCode: CheckInCodeSchema,
+  /** O lojista já imprimiu o cartaz novo (só entra no clube). Futuro: coluna em `shops`. */
+  posterReprinted: z.boolean(),
+})
 export type ShopRecord = z.infer<typeof ShopRecordSchema>
 
 export const CustomerRecordSchema = z.object({

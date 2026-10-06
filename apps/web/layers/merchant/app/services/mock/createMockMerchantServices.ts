@@ -11,7 +11,7 @@ import { asMerchant } from '#layers/core/app/mock/withSession'
 import type { MerchantServices } from '../MerchantServices'
 import type { MockBackend } from '#layers/core/app/mock/MockBackend'
 import { campaignOverview, sendReminder } from '#layers/core/app/mock/handlers/campaigns'
-import { approveShop, createClub, shopPoster, shopStatus } from '#layers/core/app/mock/handlers/onboarding'
+import { approveShop, createClub, markPosterReprinted, posterReprintPending, shopPoster, shopStatus } from '#layers/core/app/mock/handlers/onboarding'
 import { confirmRedemption, todayEntries, validateRedemption } from '#layers/core/app/mock/handlers/counter'
 import { cancelVisitQr, getVisitQr, issueVisitQr } from '#layers/core/app/mock/handlers/visitQr'
 import { simulateVisitQrClaim } from '#layers/core/app/mock/handlers/visitQrClaim'
@@ -56,6 +56,10 @@ export function createMockMerchantServices(backend: MockBackend, sessions: Merch
     },
     poster: {
       getPoster: () => asMerchant(backend, sessions, shopPoster),
+    },
+    posterReprint: {
+      isPending: () => asMerchant(backend, sessions, posterReprintPending),
+      markPrinted: () => asMerchant(backend, sessions, markPosterReprinted),
     },
     shopStatus: {
       getStatus: () => asMerchant(backend, sessions, shopStatus),

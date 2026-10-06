@@ -92,7 +92,7 @@ const EXAMPLE_SHOWCASE: Record<ShopRecord['category'], NonNullable<ShopRecord['s
 }
 
 function shop(id: ShopId, name: string, category: ShopRecord['category'], neighborhood: string, checkInCode: CheckInCode, status: ShopRecord['status'] = 'approved'): ShopRecord {
-  return { id, name, category, neighborhood, addressLine: `Endereço de exemplo, ${neighborhood}`, status, checkInCode, showcase: EXAMPLE_SHOWCASE[category] }
+  return { id, name, category, neighborhood, addressLine: `Endereço de exemplo, ${neighborhood}`, status, checkInCode, posterReprinted: false, showcase: EXAMPLE_SHOWCASE[category] }
 }
 
 function program(shopId: ShopId, rewardTitle: string, rules: ProgramRules, cooldownHours: number, bonusRules: BonusRules = defaultBonus): Program {
