@@ -52,6 +52,11 @@ describe('customer registration HTTP', () => {
     repository.failWith = null
   })
 
+  it('rejects a malformed e-mail or an empty name before reaching the service', async () => {
+    await request(app.getHttpServer()).post('/customer/registration').send({ email: 'not-an-email' }).expect(400)
+    await request(app.getHttpServer()).post('/customer/registration').send({ firstName: '   ' }).expect(400)
+  })
+
   it('registers and answers with the customer session', async () => {
     const response = await request(app.getHttpServer()).post('/customer/registration').send({ phone: PHONE }).expect(201)
     expect(response.body).toEqual({ role: 'customer', customerId: TEST_USER.id, isNewCustomer: true })

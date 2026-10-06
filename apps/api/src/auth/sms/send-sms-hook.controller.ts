@@ -7,6 +7,7 @@ import { parsePhoneNumber } from '#shared/utils/phone'
 import { ENV } from '../../config/config.module'
 import type { Env } from '../../config/env'
 import { Public } from '../public.decorator'
+import { SmsSendGate } from './sms-send-gate'
 import { SmsSender } from './sms-sender'
 import { isValidWebhook } from './standard-webhook'
 
@@ -20,6 +21,7 @@ export class SendSmsHookController {
   constructor(
     @Inject(ENV) private readonly env: Pick<Env, 'SEND_SMS_HOOK_SECRET'>,
     private readonly sms: SmsSender,
+    private readonly gate: SmsSendGate,
   ) {}
 
   @Public()
@@ -41,6 +43,8 @@ export class SendSmsHookController {
     const payload = HookPayloadSchema.safeParse(request.body)
     const phone = payload.success ? parsePhoneNumber(payload.data.user.phone) : null
     if (!payload.success || phone === null || !phone.ok) return hookError(400, 'invalid payload')
+
+    if (!(await this.gate.allow(phone.value))) return hookError(429, 'too many sms requests')
 
     const sent = await this.sms.send(phone.value, `Lagoa+: seu código é ${payload.data.sms.otp}. Não compartilhe com ninguém.`)
     return sent ? {} : hookError(502, 'sms provider failed')

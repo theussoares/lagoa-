@@ -54,6 +54,23 @@ describe('RegistrationService', () => {
     expect(saved?.emailHash).toBeNull()
   })
 
+  it('saves the first name and the declared e-mail (encrypted) for someone who signed in by SMS', async () => {
+    const { repository, service } = serviceWith(['created'])
+    const verified = PhoneNumberSchema.parse('67991230374')
+    await service.register({ ...TEST_USER, email: undefined, phone: verified }, undefined, { firstName: 'Ana', email: ' Ana@Example.com ' })
+    const saved = repository.received[0]
+    expect(saved?.firstName).toBe('Ana')
+    expect(saved?.emailEncrypted && pii.decrypt(saved.emailEncrypted)).toBe('ana@example.com')
+  })
+
+  it('keeps the login e-mail over the declared one and leaves the name empty when none is given', async () => {
+    const { repository, service } = serviceWith(['created'])
+    await service.register({ ...TEST_USER, email: 'login@example.com' }, PHONE, { email: 'other@example.com' })
+    const saved = repository.received[0]
+    expect(saved?.firstName).toBeNull()
+    expect(saved?.emailEncrypted && pii.decrypt(saved.emailEncrypted)).toBe('login@example.com')
+  })
+
   it('repeating the registration cannot skip the terms: isNewCustomer still follows the profile', async () => {
     const { service } = serviceWith(['alreadyRegistered'], profileRecord({ userId: TEST_USER.id, termsAcceptedAt: null }))
     expect(await service.register(TEST_USER, PHONE)).toMatchObject({ ok: true, value: { isNewCustomer: true } })

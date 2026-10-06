@@ -39,6 +39,9 @@ export const DATA_EXPORT_LIST_LIMIT = 5000
 /** Indicações pagas por indicador em cada loja: quem fabrica contas para si não acumula carimbo sem fim. */
 export const REFERRAL_REWARDS_MAX_PER_SHOP = 10
 export const PHONE_INPUT_MAX_LENGTH = 32
+export const CUSTOMER_FIRST_NAME_MAX_LENGTH = 40
+/** Limite do endereço de e-mail (RFC 5321). */
+export const EMAIL_MAX_LENGTH = 254
 export const LOGIN_CODE_LENGTH = 6
 export const LOGIN_CODE_TTL_MINUTES = 5
 export const FOUNDER_PLAN_PRICE_CENTS = 7900
@@ -55,6 +58,9 @@ export const REWARD_TITLE_MAX_LENGTH = 60
 export const AMOUNT_MAX_CENTS = 10_000_00
 /** Espera antes de liberar "Reenviar código" no login. */
 export const LOGIN_CODE_RESEND_SECONDS = 60
+/** Teto de SMS de login por celular na janela: cada envio custa, e número sem entrega vira fila de códigos. */
+export const SMS_SENDS_MAX_PER_WINDOW = 3
+export const SMS_SEND_WINDOW_MINUTES = 60
 /** Ticket médio de referência para estimar quanto uma visita rende em pontos por real. */
 export const REFERENCE_TICKET_REAIS = 20
 export const REMINDER_MESSAGE_MAX_LENGTH = 140

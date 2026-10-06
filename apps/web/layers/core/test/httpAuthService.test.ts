@@ -42,21 +42,32 @@ describe('HttpAuthService', () => {
   it('signs in an existing customer with the session of the API', async () => {
     const session = { role: 'customer', customerId: CUSTOMER_ID, isNewCustomer: false }
     const { auth, calls } = setup({ ok: true, value: true }, { 'GET /session': () => json(200, session) })
-    expect(await auth.signInCustomer(PHONE, CODE)).toEqual({ ok: true, value: session })
+    expect(await auth.signInCustomer(PHONE, CODE)).toEqual({ ok: true, value: { kind: 'signedIn', session } })
     expect(calls).toEqual(['GET /session'])
   })
 
-  it('registers a first-time customer (no phone in the body: it comes from the token)', async () => {
-    const session = { role: 'customer', customerId: CUSTOMER_ID, isNewCustomer: true }
+  it('does not register a first-time customer on its own: it asks for the sign-up details', async () => {
     const { auth, calls } = setup(
       { ok: true, value: true },
-      {
-        'GET /session': () => json(404, { code: 'notFound', entity: 'customer' }),
-        'POST /registration': () => json(200, session),
-      },
+      { 'GET /session': () => json(404, { code: 'notFound', entity: 'customer' }) },
     )
-    expect(await auth.signInCustomer(PHONE, CODE)).toEqual({ ok: true, value: session })
-    expect(calls).toEqual(['GET /session', 'POST /registration'])
+    expect(await auth.signInCustomer(PHONE, CODE)).toEqual({ ok: true, value: { kind: 'signUp' } })
+    expect(calls).toEqual(['GET /session'])
+  })
+
+  it('registers with the name and the optional e-mail (the phone comes from the token)', async () => {
+    const session = { role: 'customer', customerId: CUSTOMER_ID, isNewCustomer: true }
+    const { auth, calls } = setup({ ok: true, value: true }, { 'POST /registration': () => json(200, session) })
+    expect(await auth.registerCustomer({ firstName: 'Ana' })).toEqual({ ok: true, value: session })
+    expect(calls).toEqual(['POST /registration'])
+  })
+
+  it('reports an e-mail that belongs to another account', async () => {
+    const { auth } = setup({ ok: true, value: true }, { 'POST /registration': () => json(409, { code: 'emailAlreadyUsed' }) })
+    expect(await auth.registerCustomer({ firstName: 'Ana', email: 'ana@example.com' })).toEqual({
+      ok: false,
+      error: { code: 'emailAlreadyUsed' },
+    })
   })
 
   it('does not call the API when the code is wrong', async () => {
