@@ -3,7 +3,7 @@ import { LAPSED_AFTER_DAYS, REWARD_HOLD_DAYS } from '#shared/constants/domain'
 import { addDays, toIso } from '#shared/utils/time'
 import { EXAMPLE_IDS } from '#layers/core/app/mock'
 import { anaSession, barbershopSession, cafeSession, makeBackend, staticSession, TEST_NOW } from '#layers/core/test/fixtures'
-import { createMockCustomerServices } from '#layers/customer/app/services/mock/createMockCustomerServices'
+import { customerView } from './customerView'
 import type { MerchantServices } from '../app/services/MerchantServices'
 import { createMockMerchantServices } from '../app/services/mock/createMockMerchantServices'
 
@@ -14,8 +14,8 @@ function setup() {
   const { backend, clock } = makeBackend()
   const barbershop = createMockMerchantServices(backend, staticSession(barbershopSession))
   const cafe = createMockMerchantServices(backend, staticSession(cafeSession))
-  const joao = createMockCustomerServices(backend, staticSession({ ...anaSession, customerId: customers.joao }))
-  const ana = createMockCustomerServices(backend, staticSession(anaSession))
+  const joao = customerView(backend, staticSession({ ...anaSession, customerId: customers.joao }))
+  const ana = customerView(backend, staticSession(anaSession))
   // O seed nasce na primeira chamada: carregue o backend antes de avançar o relógio.
   const advanceDays = (days: number): void => clock.advanceHours(days * HOURS_PER_DAY)
   return { barbershop, cafe, joao, ana, advanceDays }

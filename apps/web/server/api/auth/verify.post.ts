@@ -2,9 +2,9 @@ import { readBody } from 'h3'
 import { z } from 'zod'
 import { PhoneNumberSchema } from '#shared/schemas/phone'
 import { LoginCodeSchema } from '#shared/schemas/session'
-import { failWith } from '../../../utils/authResponse'
-import { createPhoneLogin, readBffConfig } from '../../../utils/serverConfig'
-import { startSession } from '../../../utils/sessionAccess'
+import { failWith } from '../../utils/authResponse'
+import { createPhoneLogin, readBffConfig } from '../../utils/serverConfig'
+import { startSession } from '../../utils/sessionAccess'
 
 const VerifyBodySchema = z.object({ phone: PhoneNumberSchema, code: LoginCodeSchema })
 

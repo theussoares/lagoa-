@@ -1,20 +1,8 @@
 import type { UpstreamTarget } from '../types/auth'
 
-const API_PREFIX = '/api/v1'
-
-/** O navegador só escolhe o caminho e a query; o host da API vem da configuração do servidor. */
+/** O caminho vem de um handler fixo em `server/api`; o host da API vem da configuração do servidor. */
 export function buildUpstreamUrl({ baseUrl, path, search }: UpstreamTarget): string {
   return `${baseUrl.replace(/\/+$/, '')}${path}${search}`
-}
-
-/** `/api/v1/customer/cards?x=1` -> `{ path: '/customer/cards', search: '?x=1' }`; `null` se não for do proxy. */
-export function splitProxyPath(url: string): { path: string; search: string } | null {
-  const queryStart = url.indexOf('?')
-  const pathname = queryStart === -1 ? url : url.slice(0, queryStart)
-  const search = queryStart === -1 ? '' : url.slice(queryStart)
-  if (!pathname.startsWith(`${API_PREFIX}/`)) return null
-  const path = pathname.slice(API_PREFIX.length)
-  return path.split('/').some((segment) => segment === '..' || segment === '.') ? null : { path, search }
 }
 
 const FORWARDED_REQUEST_HEADERS = ['content-type', 'accept', 'accept-language', 'idempotency-key'] as const

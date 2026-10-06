@@ -8,7 +8,7 @@ import type { MerchantSignInStep, MerchantSignInOutcome, MerchantSignIn } from '
 
 /** Entrar no painel com o celular da loja + código. O celular fica só em memória. */
 export function useMerchantSignIn(): MerchantSignIn {
-  const auth = useAuthService()
+  const auth = useMerchantAuthService()
   const { start } = useMerchantSession()
   const clubSetup = useClubSetupStore()
 

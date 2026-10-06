@@ -6,7 +6,7 @@ import App from '~/app.vue'
 import { useNuxtApp, useRouter } from '#imports'
 import { EXAMPLE_IDS } from '#layers/core/app/mock'
 import { resetWorld, restoreClock, typeInto, visibleText } from '#layers/core/test/pageHarness.nuxt'
-import { useSessionStore } from '#layers/core/app/stores/session'
+import { useMerchantSessionStore } from '#layers/merchant/app/stores/merchantSession'
 import { useClubSetupStore } from '../app/stores/clubSetup'
 
 const CLUB_SETUP_ROUTE = '/balcao/criar-clube'
@@ -21,10 +21,10 @@ function t(key: string, named?: Record<string, unknown>): string {
 
 /** Celular confirmado sem loja: o login do mock devolve o ticket do cadastro. */
 async function beginSignUp(): Promise<void> {
-  const { $auth, $mockBackend } = useNuxtApp()
+  const { $merchantAuth, $mockBackend } = useNuxtApp()
   const phone = EXAMPLE_IDS.phones.lucas
-  await $auth.requestLoginCode(phone)
-  const result = await $auth.signInMerchant(phone, $mockBackend.loginCode)
+  await $merchantAuth.requestLoginCode(phone)
+  const result = await $merchantAuth.signInMerchant(phone, $mockBackend.loginCode)
   if (!result.ok || result.value.kind !== 'signUp') throw new Error('expected a sign-up ticket')
   useClubSetupStore().begin(result.value.ticket, result.value.expiresAt)
 }
@@ -151,7 +151,7 @@ describe('club setup page: creating the club', () => {
     expect(page.find('form').exists()).toBe(false)
     expect(visibleText(page)).toContain(t('merchantNav.pending.title'))
     expect(visibleText(page)).toContain(t('clubSetup.poster.print'))
-    expect(useSessionStore().merchant).toMatchObject({ shopName: 'Lava-jato Brilho', shopStatus: 'pending' })
+    expect(useMerchantSessionStore().merchant).toMatchObject({ shopName: 'Lava-jato Brilho', shopStatus: 'pending' })
   })
 
   it('shows the sign-up expired error when the ticket is gone', async () => {

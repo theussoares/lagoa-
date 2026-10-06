@@ -10,7 +10,6 @@ const route = useRoute()
 useHead({ title: () => `${t('signIn.pageTitle')} · ${t('app.name')}` })
 
 const { step, pending, error, resendIn, requestCode, resendCode, verify, changePhone } = useCustomerSignIn()
-const mockCode = useMockLoginHint()
 
 const phoneDraft = ref('')
 const code = ref<number[]>([])
@@ -89,12 +88,6 @@ function backToPhone(): void {
           <UButton variant="link" class="relative min-h-0 p-0 align-baseline text-base after:absolute after:-inset-x-1 after:-inset-y-2.5 after:content-['']" :label="t('signIn.changePhone')" @click="backToPhone" />
         </p>
       </PageTitle>
-
-      <InkNote
-        v-if="mockCode"
-        tone="pencil"
-        :description="t('signIn.mockHint', { code: mockCode })"
-      />
 
       <UFormField ref="codeField" :label="t('signIn.codeLabel')" :error="codeError" name="code">
         <template #error="{ error: message }">

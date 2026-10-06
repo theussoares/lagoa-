@@ -9,7 +9,7 @@ import { findShop } from '#layers/core/app/mock/handlers/queries'
 import { anaSession, barbershopSession, makeBackend, staticSession } from '#layers/core/test/fixtures'
 import { MerchantIdSchema } from '#shared/schemas/ids'
 import { RedemptionCodeSchema } from '#shared/schemas/redemption'
-import { createMockCustomerServices } from '#layers/customer/app/services/mock/createMockCustomerServices'
+import { customerView } from './customerView'
 import { createMockMerchantServices } from '../app/services/mock/createMockMerchantServices'
 import { emptyClubSetupForm, toClubSetupDraft } from '../app/utils/clubSetupForm'
 
@@ -33,7 +33,7 @@ async function setup() {
   if (!signedIn.ok || signedIn.value.kind !== 'signUp') throw new Error('expected a sign-up ticket')
   let session: MerchantSession | null = null
   const merchant = createMockMerchantServices(backend, { current: () => session })
-  const customer = createMockCustomerServices(backend, staticSession(anaSession))
+  const customer = customerView(backend, staticSession(anaSession))
   return {
     backend,
     clock,

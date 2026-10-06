@@ -5,13 +5,14 @@ import type { Ranking, RankingConsentUpdate } from '#shared/schemas/ranking'
 import { ReferralInviteSchema } from '#shared/schemas/referral'
 import { ok } from '#shared/types/result'
 import { asCustomer } from '#layers/core/app/mock/withSession'
-import type { CustomerServices } from '../CustomerServices'
+import type { CustomerServices } from '#layers/customer/app/services/CustomerServices'
 import type { MockBackend } from '#layers/core/app/mock/MockBackend'
 import { checkIn, discoverChallenges, discoverShops, rewardHistory, walletActivity, walletCard, walletCards } from '#layers/core/app/mock/handlers/wallet'
 import { getRedemption, requestRedemption } from '#layers/core/app/mock/handlers/redemption'
 import { acceptTerms, getProfile, setNotificationConsent, updateProfile } from '#layers/core/app/mock/handlers/profile'
 import type { CustomerSessionProvider } from '#layers/core/app/services/SessionProvider'
 
+/** Só para testes: o app do cliente já não usa o mock; os testes de página trocam os services HTTP por estes. */
 export function createMockCustomerServices(backend: MockBackend, sessions: CustomerSessionProvider): CustomerServices {
   // O mock não guarda ranking no servidor falso: a pessoa só vê a si mesma, enquanto a aba estiver aberta.
   let mockName: string | null = null
@@ -69,6 +70,7 @@ export function createMockCustomerServices(backend: MockBackend, sessions: Custo
           return ok(mockRanking())
         }),
     },
+    session: { restore: () => Promise.resolve(ok(sessions.current())) },
     referral: {
       capture: () => asCustomer(backend, sessions, () => ok(undefined)),
       getInvite: () => asCustomer(backend, sessions, () => ok(ReferralInviteSchema.parse({ referralCode: 'MOCKREF2' }))),

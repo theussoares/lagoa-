@@ -7,3 +7,9 @@ export function failWith(event: H3Event, code: AuthErrorCode): { code: AuthError
   setResponseStatus(event, authErrorStatus(code))
   return { code }
 }
+
+/** Entrada do navegador fora do contrato: nem chega à API. É bug do front, então o código é genérico. */
+export function rejectInput(event: H3Event): { code: 'internal' } {
+  setResponseStatus(event, 400)
+  return { code: 'internal' }
+}

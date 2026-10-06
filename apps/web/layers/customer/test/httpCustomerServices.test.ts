@@ -61,7 +61,7 @@ describe('http customer services', () => {
     const fetcher = vi.fn<typeof fetch>(async () => json(200, { nope: true }))
     const { dataExport } = servicesWith(fetcher)
     expect(await dataExport.exportMyData()).toEqual({ ok: false, error: { code: 'internal' } })
-    expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/customer/data-export')
+    expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/data-export')
   })
 
   it('ranking sends the nickname to join and nothing but the flag to leave', async () => {
@@ -71,7 +71,7 @@ describe('http customer services', () => {
     await ranking.setConsent({ granted: false })
     expect(fetcher.mock.calls[0]?.[1]).toMatchObject({ method: 'PUT', body: '{"granted":true,"name":"Ana"}' })
     expect(fetcher.mock.calls[1]?.[1]).toMatchObject({ body: '{"granted":false}' })
-    expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/customer/ranking/consent')
+    expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/ranking/consent')
   })
 
   it('account erasure is a DELETE that accepts the empty 204', async () => {
@@ -79,6 +79,6 @@ describe('http customer services', () => {
     const { account } = servicesWith(fetcher)
     expect(await account.eraseAccount()).toEqual({ ok: true, value: undefined })
     expect(fetcher.mock.calls[0]?.[1]).toMatchObject({ method: 'DELETE' })
-    expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/customer/account')
+    expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/account')
   })
 })

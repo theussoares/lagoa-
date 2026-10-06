@@ -28,8 +28,7 @@ function setup(verify: Result<true, SignInError>, routes: Record<string, () => R
     return route === undefined ? json(500, { code: 'internal' }) : route()
   }
   const api = new ApiClient({ baseUrl: 'https://api.test/v1', fetcher, onUnauthorized: () => {} })
-  const merchant = { signInMerchant: vi.fn() }
-  return { gateway, calls, auth: new HttpAuthService(gateway, api, merchant, () => NOW) }
+  return { gateway, calls, auth: new HttpAuthService(gateway, api, () => NOW) }
 }
 
 describe('HttpAuthService', () => {
@@ -42,9 +41,9 @@ describe('HttpAuthService', () => {
 
   it('signs in an existing customer with the session of the API', async () => {
     const session = { role: 'customer', customerId: CUSTOMER_ID, isNewCustomer: false }
-    const { auth, calls } = setup({ ok: true, value: true }, { 'GET /customer/session': () => json(200, session) })
+    const { auth, calls } = setup({ ok: true, value: true }, { 'GET /session': () => json(200, session) })
     expect(await auth.signInCustomer(PHONE, CODE)).toEqual({ ok: true, value: session })
-    expect(calls).toEqual(['GET /customer/session'])
+    expect(calls).toEqual(['GET /session'])
   })
 
   it('registers a first-time customer (no phone in the body: it comes from the token)', async () => {
@@ -52,12 +51,12 @@ describe('HttpAuthService', () => {
     const { auth, calls } = setup(
       { ok: true, value: true },
       {
-        'GET /customer/session': () => json(404, { code: 'notFound', entity: 'customer' }),
-        'POST /customer/registration': () => json(200, session),
+        'GET /session': () => json(404, { code: 'notFound', entity: 'customer' }),
+        'POST /registration': () => json(200, session),
       },
     )
     expect(await auth.signInCustomer(PHONE, CODE)).toEqual({ ok: true, value: session })
-    expect(calls).toEqual(['GET /customer/session', 'POST /customer/registration'])
+    expect(calls).toEqual(['GET /session', 'POST /registration'])
   })
 
   it('does not call the API when the code is wrong', async () => {

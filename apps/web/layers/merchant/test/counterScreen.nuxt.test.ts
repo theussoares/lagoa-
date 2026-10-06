@@ -6,6 +6,7 @@ import type { Ref } from 'vue'
 import { useNuxtApp } from '#imports'
 import { EXAMPLE_IDS } from '#layers/core/app/mock'
 import { useSessionStore } from '#layers/core/app/stores/session'
+import { useMerchantSessionStore } from '#layers/merchant/app/stores/merchantSession'
 import { anaSession, barbershopSession } from '#layers/core/test/fixtures'
 import { mountComposable } from '#layers/core/test/composableHarness.nuxt'
 import { resetWorld, restoreClock } from '#layers/core/test/pageHarness.nuxt'
@@ -128,14 +129,14 @@ describe('useCounterScreen', () => {
 
   it('signs the merchant out when a service answers unauthorized (session guard on)', async () => {
     const { result } = await mountComposable(useCounterScreen)
-    useSessionStore().endMerchant()
+    useMerchantSessionStore().endMerchant()
     result.launch.phone = phones.joao
     await result.launch.submit()
     await vi.waitFor(() => expect(navigateToMock).toHaveBeenCalledWith('/balcao/entrar', { replace: true }))
   })
 
   it('flags a program and a ledger that failed to load', async () => {
-    useSessionStore().endMerchant()
+    useMerchantSessionStore().endMerchant()
     const { result } = await mountComposable(useCounterScreen)
     expect(result.launch.programFailed).toBe(true)
     expect(result.launch.action).toBeNull()

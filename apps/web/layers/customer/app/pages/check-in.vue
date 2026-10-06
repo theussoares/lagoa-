@@ -34,8 +34,6 @@ const screen = useCheckInScreen()
         @submit="screen.submitTyped"
         @switch-to-camera="screen.switchToCamera"
       />
-
-      <InkNote v-if="screen.mockCode && !screen.notice" tone="pencil" :description="$t('checkIn.mockHint', { code: screen.mockCode })" />
     </template>
   </div>
 </template>
