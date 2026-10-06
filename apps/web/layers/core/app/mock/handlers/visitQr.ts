@@ -18,7 +18,7 @@ import { requireOperationalShop } from './shopAccess'
 import type { ShopAccessError } from './shopAccess'
 
 export type IssueError = ErrorOf<'invalidAmount' | 'amountNotAccepted'> | ShopAccessError
-/** `VisitQr` de outra loja responde como inexistente (o contrato ainda não tem uma entidade própria para o `notFound`). */
+/** `VisitQr` de outra loja responde como inexistente (`notFound` com `entity: 'visitQr'`). */
 export type LookupError = ErrorOf<'notFound'> | ShopAccessError
 
 const CODE_ATTEMPTS = 50

@@ -12,7 +12,7 @@ const translate = useTranslate()
 const { signOut } = useMerchantSession()
 useHead({ title: () => `${t('home.title')} · ${t('app.name')}` })
 
-const { state, reload } = useMerchantHome()
+const { state, reload, posterReprint } = useMerchantHome()
 
 watch(state, (current) => {
   if (current.status === 'error' && current.error.code === 'unauthorized') void signOut()
@@ -35,6 +35,9 @@ const lapsedLabels = computed<LapsedPreviewLabels>(() => ({ caption: t('home.lap
 
 <template>
   <div class="mx-auto flex max-w-[1200px] flex-col gap-5">
+    <!-- Só existe durante a impressão: o cartaz novo ocupa a folha e o resto da tela some. -->
+    <ClubSetupPoster v-if="posterReprint.poster" :poster="posterReprint.poster" class="hidden print:flex" />
+    <div class="flex flex-col gap-5 print:hidden">
     <PageTitle :title="t('home.title')" :lead="t('home.lead', { days: WEEK_SUMMARY_DAYS })">
       <template #actions>
         <div class="flex items-center gap-2 pb-1">
@@ -52,6 +55,11 @@ const lapsedLabels = computed<LapsedPreviewLabels>(() => ({ caption: t('home.lap
         </div>
       </template>
     </PageTitle>
+
+    <HomePosterReprintNotice
+      v-if="snapshot?.posterReprintPending"
+      @print="posterReprint.print"
+    />
 
     <div v-if="state.status === 'loading'" class="grid gap-5 lg:grid-cols-12" role="status" :aria-label="t('common.loading')">
       <USkeleton class="h-96 rounded-(--radius-card) lg:col-span-7" />
@@ -100,6 +108,7 @@ const lapsedLabels = computed<LapsedPreviewLabels>(() => ({ caption: t('home.lap
           </div>
         </div>
       </PanelModule>
+    </div>
     </div>
   </div>
 </template>
