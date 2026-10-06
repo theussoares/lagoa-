@@ -58,6 +58,9 @@ export const REWARD_TITLE_MAX_LENGTH = 60
 export const AMOUNT_MAX_CENTS = 10_000_00
 /** Espera antes de liberar "Reenviar código" no login. */
 export const LOGIN_CODE_RESEND_SECONDS = 60
+/** Teto de SMS de login por celular na janela: cada envio custa, e número sem entrega vira fila de códigos. */
+export const SMS_SENDS_MAX_PER_WINDOW = 3
+export const SMS_SEND_WINDOW_MINUTES = 60
 /** Ticket médio de referência para estimar quanto uma visita rende em pontos por real. */
 export const REFERENCE_TICKET_REAIS = 20
 export const REMINDER_MESSAGE_MAX_LENGTH = 140

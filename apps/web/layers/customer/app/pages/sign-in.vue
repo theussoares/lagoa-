@@ -134,6 +134,7 @@ function backToPhone(): void {
       </UFormField>
 
       <div class="mt-auto flex flex-col gap-3">
+        <p class="text-base text-muted">{{ t('signIn.smsDelayHint') }}</p>
         <p class="text-base text-muted">{{ t('signIn.terms') }}</p>
         <UButton type="submit" size="xl" block :loading="pending" :label="t('signIn.submit')" />
         <UButton

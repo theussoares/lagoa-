@@ -182,6 +182,7 @@
     "welcomeBackAnonymous": "Bem-vindo de volta!",
     "welcomeNew": "Tudo pronto, {name}! Seu cartão da cidade começa aqui.",
     "resend": "Reenviar código",
+    "smsDelayHint": "O SMS pode demorar alguns minutos. Se não chegar, espere antes de pedir outro: cada pedido gera um código novo.",
     "resendIn": "Reenviar código em {seconds}s",
     "mockHint": "Ambiente de teste: o SMS não sai. Use o código {code}."
   },
