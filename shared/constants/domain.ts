@@ -14,12 +14,32 @@ export const BIRTHDAY_CHANGE_COOLDOWN_DAYS = 365
 /** Cidade do piloto: completa o endereço da loja na busca do mapa. */
 export const PILOT_CITY = 'Três Lagoas, MS'
 export const LAPSED_AFTER_DAYS = 30
-/** Código impresso embaixo do QR da loja, para quem prefere digitar. */
+/** Código impresso embaixo do QR da loja (entrar no clube), para quem prefere digitar. */
 export const CHECK_IN_CODE_LENGTH = 6
 /** Folga para espaços e hífens de quem digita o código impresso embaixo do QR. */
 export const CHECK_IN_CODE_INPUT_MAX_LENGTH = 32
-/** O QR da loja é um link `/check-in?loja=<código>`: a câmera do celular já abre o app no check-in. */
+/** O QR da loja é um link `/check-in?loja=<código>`: a câmera do celular já abre o app para entrar no clube. */
 export const CHECK_IN_LINK_PARAM = 'loja'
+/** QR da visita: uso único, gerado na hora da venda. */
+export const VISIT_QR_TTL_MINUTES = 5
+/** O Balcão consulta o QR da visita nesse intervalo enquanto ele está ativo (aguardando o cliente). */
+export const VISIT_QR_STATUS_POLL_MS = 3000
+/**
+ * O QR da visita é um link `/check-in#visita=<token>`: a câmera do celular já abre o app no ganho. Fragmento, nunca
+ * query: o token não chega ao servidor no GET da página nem entra em log de acesso (P-19).
+ */
+export const VISIT_QR_LINK_PARAM = 'visita'
+/** 32 bytes (256 bits) em base64url, sem padding: 43 caracteres. */
+export const VISIT_TOKEN_BYTES = 32
+export const VISIT_TOKEN_LENGTH = 43
+/** Folga antes do parse (o servidor responde `invalidVisitQr` ao que não tiver o formato). */
+export const VISIT_TOKEN_INPUT_MAX_LENGTH = 64
+/** Código curto da visita, digitado. Diferente de CHECK_IN_CODE_LENGTH para o app saber qual dos dois é. P-03. */
+export const VISIT_CODE_LENGTH = 5
+/** Tentativas de código curto por conta (rota própria): 28⁵ combinações só ficam fora de alcance com teto baixo. */
+export const VISIT_CODE_ATTEMPTS_LIMIT = 5
+export const VISIT_CODE_ATTEMPTS_WINDOW_MINUTES = 10
+export const VISIT_CODE_INPUT_MAX_LENGTH = 32
 /** Teto da vitrine do Descobrir: o piloto é uma cidade; lista sempre limitada. */
 export const DISCOVER_SHOPS_LIMIT = 200
 /** Versão dos termos de uso/LGPD que o app mostra; vai para o aceite (auditoria). Muda quando o texto muda. */

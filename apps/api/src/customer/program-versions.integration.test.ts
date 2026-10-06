@@ -5,6 +5,7 @@ import { loyaltyCards, programs, redemptions } from '../database/schema'
 import { DrizzleReferralSettlement } from '../ledger/drizzle-referral-settlement'
 import { LedgerStore } from '../ledger/ledger.store'
 import { neverExpires, NO_BONUS_RULES, TEST_DATABASE_URL, TestDatabase } from '../test-support/test-database'
+import { claimVisit } from '../test-support/claim-visit'
 import { DrizzleCheckInRepository } from './check-in/drizzle-check-in.repository'
 import { CheckInService } from './check-in/check-in.service'
 
@@ -28,11 +29,11 @@ describe.skipIf(!TEST_DATABASE_URL)('program versions against a real database', 
   it('keeps a card with progress on the old version and gives a new customer the active one', async () => {
     const shop = await data.createShop({ rules: { mode: 'stamps', target: 5 } })
     const veteran = await data.createCustomer()
-    await checkIn.checkIn(veteran, shop.checkInCode)
+    await claimVisit(data, checkIn, veteran, shop)
     const newProgramId = await data.changeProgram(shop, { mode: 'stamps', target: 3 })
 
     const newcomer = await data.createCustomer()
-    const fresh = await checkIn.checkIn(newcomer, shop.checkInCode)
+    const fresh = await claimVisit(data, checkIn, newcomer, shop)
     expect(fresh).toMatchObject({ ok: true, value: { card: { target: 3 } } })
     expect(await programOf(newcomer)).toBe(newProgramId)
     // O veterano continua na versão antiga do programa.
@@ -44,7 +45,7 @@ describe.skipIf(!TEST_DATABASE_URL)('program versions against a real database', 
     const customer = await data.createCustomer()
     await data.db.transaction((tx) => ledger.lockOrCreateCard(tx, { shopId: shop.id, customerId: customer, programId: shop.programId }, neverExpires(5)))
     const newProgramId = await data.changeProgram(shop, { mode: 'stamps', target: 3 })
-    expect(await checkIn.checkIn(customer, shop.checkInCode)).toMatchObject({ ok: true, value: { card: { target: 3 } } })
+    expect(await claimVisit(data, checkIn, customer, shop)).toMatchObject({ ok: true, value: { card: { target: 3 } } })
     expect(await programOf(customer)).toBe(newProgramId)
   }, SLOW)
 
@@ -52,7 +53,7 @@ describe.skipIf(!TEST_DATABASE_URL)('program versions against a real database', 
     const shop = await data.createShop({ rules: { mode: 'stamps', target: 3 }, bonusRules: { ...NO_BONUS_RULES, welcomeBonus: { enabled: true, units: 2 } } })
     const customer = await data.createCustomer()
     const owner = await data.createCustomer({ withProfile: false })
-    await checkIn.checkIn(customer, shop.checkInCode)
+    await claimVisit(data, checkIn, customer, shop)
     const [card] = await data.db.select().from(loyaltyCards).where(eq(loyaltyCards.customerId, customer))
     if (!card) throw new Error('card expected')
     const [redemption] = await data.db

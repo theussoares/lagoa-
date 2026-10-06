@@ -1,11 +1,22 @@
-import type { CheckInCode } from '#shared/schemas/shop'
+import type { CheckInCode, ShopJoinResult } from '#shared/schemas/shop'
 import type { CheckInResult } from '#shared/schemas/visit'
+import type { VisitQrCredential } from '#shared/schemas/visitQr'
 import type { ErrorOf, TransportError } from '#shared/types/errors'
 import type { Result } from '#shared/types/result'
 
-export type CheckInError = ErrorOf<'invalidShopQr' | 'checkInDisabled' | 'checkInCooldown' | 'termsNotAccepted'> | TransportError
+export type ShopJoinError = ErrorOf<'invalidShopQr' | 'checkInDisabled' | 'termsNotAccepted'> | TransportError
+export type ClaimVisitQrError =
+  | ErrorOf<'invalidVisitQr' | 'visitQrExpired' | 'visitQrAlreadyUsed' | 'visitQrStale' | 'checkInCooldown' | 'termsNotAccepted'>
+  | TransportError
+/** União que a tela de check-in mostra: os erros de entrar e de ganhar, mais os dois que a leitura do QR já pode dar. */
+export type CheckInError =
+  | ShopJoinError
+  | ClaimVisitQrError
+  | ErrorOf<'invalidShopQr' | 'invalidVisitQr' | 'checkInCooldown'>
 
 export interface CheckInService {
-  /** O código vem do QR da loja ou é digitado; existência e antifraude são decididas no servidor. */
-  checkIn(code: CheckInCode): Promise<Result<CheckInResult, CheckInError>>
+  /** QR do cartaz (ou código de 6 digitado): entra no clube; não rende. */
+  joinShop(code: CheckInCode): Promise<Result<ShopJoinResult, ShopJoinError>>
+  /** QR da visita (ou código curto): ganha. Validade, uso único e antifraude são do servidor. */
+  claimVisitQr(credential: VisitQrCredential): Promise<Result<CheckInResult, ClaimVisitQrError>>
 }

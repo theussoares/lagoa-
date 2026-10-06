@@ -53,6 +53,8 @@ export interface StampCardModel {
   /** A frase inteira para leitor de tela. */
   readonly summary: string
   readonly rewardReady: boolean
+  /** Dica do cartão ainda sem visita ("Peça o QR da visita no caixa..."); null quando já há visita. */
+  readonly note: string | null
 }
 
 export interface LedgerEntryModel {

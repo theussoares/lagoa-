@@ -6,6 +6,7 @@ import { ledgerEntries, loyaltyCards, programs, referrals } from '../database/sc
 import { DrizzleReferralSettlement } from '../ledger/drizzle-referral-settlement'
 import { LedgerStore } from '../ledger/ledger.store'
 import { NO_BONUS_RULES, TEST_DATABASE_URL, TestDatabase } from '../test-support/test-database'
+import { claimVisit } from '../test-support/claim-visit'
 import { CheckInService } from './check-in/check-in.service'
 import { DrizzleCheckInRepository } from './check-in/drizzle-check-in.repository'
 import { DrizzleReferralRepository } from './referral/drizzle-referral.repository'
@@ -48,7 +49,7 @@ describe.skipIf(!TEST_DATABASE_URL)('referral against a real database', () => {
     expect(await invite(shop, referrer, referred)).toEqual({ ok: true, value: undefined })
     expect((await referralsOf(shop.id))[0]).toMatchObject({ status: 'pending', referrerId: referrer, referredId: referred })
 
-    expect(await checkIn.checkIn(referred, shop.checkInCode)).toMatchObject({ ok: true })
+    expect(await claimVisit(data, checkIn, referred, shop)).toMatchObject({ ok: true })
     const [referral] = await referralsOf(shop.id)
     expect(referral).toMatchObject({ status: 'rewarded' })
     expect(referral?.rewardEntryId).not.toBeNull()
@@ -59,11 +60,11 @@ describe.skipIf(!TEST_DATABASE_URL)('referral against a real database', () => {
   it('adds the bonus to a referrer card that already exists, without holding their next check-in', async () => {
     const shop = await data.createShop({ bonusRules: REFERRAL_ON })
     const [referrer, referred] = [await data.createCustomer(), await data.createCustomer()]
-    await checkIn.checkIn(referrer, shop.checkInCode)
+    await claimVisit(data, checkIn, referrer, shop)
     await invite(shop, referrer, referred)
-    await checkIn.checkIn(referred, shop.checkInCode)
+    await claimVisit(data, checkIn, referred, shop)
     expect((await cardOf(referrer, shop.id))?.balance).toBe(3)
-    expect(await checkIn.checkIn(referrer, shop.checkInCode)).toMatchObject({ ok: false, error: { code: 'checkInCooldown' } })
+    expect(await claimVisit(data, checkIn, referrer, shop)).toMatchObject({ ok: false, error: { code: 'checkInCooldown' } })
     expect((await kindsOf(referrer)).filter((k) => k.startsWith('referralBonus'))).toEqual(['referralBonus:2'])
   }, SLOW)
 
@@ -109,7 +110,7 @@ describe.skipIf(!TEST_DATABASE_URL)('referral against a real database', () => {
     const [referrer, customer] = [await data.createCustomer(), await data.createCustomer()]
     await invite(shop, customer, customer)
     expect(await referralService.capture(customer, 'ACDEFGHJ', shop.checkInCode)).toEqual({ ok: true, value: undefined })
-    await checkIn.checkIn(customer, shop.checkInCode)
+    await claimVisit(data, checkIn, customer, shop)
     await invite(shop, referrer, customer)
     expect(await referralsOf(shop.id)).toHaveLength(0)
   }, SLOW)
@@ -129,7 +130,7 @@ describe.skipIf(!TEST_DATABASE_URL)('referral against a real database', () => {
     const [referrer, referred] = [await data.createCustomer(), await data.createCustomer()]
     await invite(shop, referrer, referred)
     await data.db.update(programs).set({ bonusRules: NO_BONUS_RULES }).where(eq(programs.shopId, shop.id))
-    await checkIn.checkIn(referred, shop.checkInCode)
+    await claimVisit(data, checkIn, referred, shop)
     expect((await referralsOf(shop.id))[0]?.status).toBe('rejected')
     expect(await kindsOf(referrer)).toEqual([])
   }, SLOW)
@@ -145,26 +146,26 @@ describe.skipIf(!TEST_DATABASE_URL)('referral against a real database', () => {
   it('keeps the bonus on a referrer card that had expired by inactivity (bonus counts as activity)', async () => {
     const shop = await data.createShop({ bonusRules: REFERRAL_ON, expiration: { kind: 'afterInactivity', months: 6 } })
     const [referrer, referred] = [await data.createCustomer(), await data.createCustomer()]
-    await checkIn.checkIn(referrer, shop.checkInCode) // 1
+    await claimVisit(data, checkIn, referrer, shop) // 1
     const long = new Date(Date.now() - 7 * 31 * DAY_MS)
     await data.db.update(loyaltyCards).set({ lastVisitAt: long, lastActivityAt: long }).where(eq(loyaltyCards.customerId, referrer))
 
     await invite(shop, referrer, referred)
-    await checkIn.checkIn(referred, shop.checkInCode)
-    expect(await kindsOf(referrer)).toEqual(['checkIn:1', 'expiration:-1', 'referralBonus:2'])
+    await claimVisit(data, checkIn, referred, shop)
+    expect(await kindsOf(referrer)).toEqual(['visit:1', 'expiration:-1', 'referralBonus:2'])
     expect((await cardOf(referrer, shop.id))?.balance).toBe(2)
 
     // O bônus conta como atividade: o próximo toque no cartão não o apaga nem estoura a chave do vencimento.
-    expect(await checkIn.checkIn(referrer, shop.checkInCode)).toMatchObject({ ok: true, value: { card: { balance: 3 } } })
+    expect(await claimVisit(data, checkIn, referrer, shop)).toMatchObject({ ok: true, value: { card: { balance: 3 } } })
     expect((await kindsOf(referrer)).filter((k) => k.startsWith('expiration'))).toHaveLength(1)
   }, SLOW)
 
   it('holds the reward when the bonus completes the referrer card', async () => {
     const shop = await data.createShop({ bonusRules: REFERRAL_ON, rules: { mode: 'stamps', target: 3 } })
     const [referrer, referred] = [await data.createCustomer(), await data.createCustomer()]
-    await checkIn.checkIn(referrer, shop.checkInCode)
+    await claimVisit(data, checkIn, referrer, shop)
     await invite(shop, referrer, referred)
-    await checkIn.checkIn(referred, shop.checkInCode)
+    await claimVisit(data, checkIn, referred, shop)
     expect(await cardOf(referrer, shop.id)).toMatchObject({ balance: 3 })
     expect((await cardOf(referrer, shop.id))?.rewardExpiresAt).not.toBeNull()
   }, SLOW)
@@ -174,11 +175,11 @@ describe.skipIf(!TEST_DATABASE_URL)('referral against a real database', () => {
     const [c, a, b] = [await data.createCustomer(), await data.createCustomer(), await data.createCustomer()]
     await invite(shop, c, a) // C convida A: pendente
     await invite(shop, a, b) // A convida B
-    await checkIn.checkIn(b, shop.checkInCode) // B visita: A ganha um cartão só com o bônus
+    await claimVisit(data, checkIn, b, shop) // B visita: A ganha um cartão só com o bônus
     expect(await kindsOf(a)).toEqual(['referralBonus:2'])
     expect((await referralsOf(shop.id)).find((r) => r.referredId === a)?.status).toBe('pending')
 
-    await checkIn.checkIn(a, shop.checkInCode) // 1ª visita de A: C finalmente recebe
+    await claimVisit(data, checkIn, a, shop) // 1ª visita de A: C finalmente recebe
     expect((await referralsOf(shop.id)).find((r) => r.referredId === a)?.status).toBe('rewarded')
     expect(await kindsOf(c)).toEqual(['referralBonus:2'])
   }, SLOW)
@@ -190,11 +191,11 @@ describe.skipIf(!TEST_DATABASE_URL)('referral against a real database', () => {
     let failures = 1
     const flaky = { settlePending: async (...args: Parameters<typeof settlement.settlePending>) => { if (failures-- > 0) throw new Error('boom'); return settlement.settlePending(...args) } }
     const service = new CheckInService(new DrizzleCheckInRepository(data.db, ledger), new SystemClock(), Object.assign(Object.create(settlement), flaky))
-    expect(await service.checkIn(referred, shop.checkInCode)).toMatchObject({ ok: true })
+    expect(await claimVisit(data, service, referred, shop)).toMatchObject({ ok: true })
     expect((await referralsOf(shop.id))[0]?.status).toBe('pending')
 
     await data.db.update(loyaltyCards).set({ lastVisitAt: new Date(Date.now() - 2 * 3_600_000) }).where(eq(loyaltyCards.customerId, referred))
-    expect(await service.checkIn(referred, shop.checkInCode)).toMatchObject({ ok: true })
+    expect(await claimVisit(data, service, referred, shop)).toMatchObject({ ok: true })
     expect((await referralsOf(shop.id))[0]?.status).toBe('rewarded')
   }, SLOW)
 
@@ -202,10 +203,10 @@ describe.skipIf(!TEST_DATABASE_URL)('referral against a real database', () => {
     const shop = await data.createShop({ bonusRules: { ...REFERRAL_ON, welcomeBonus: { enabled: true, units: 2 } } })
     const [a, b] = [await data.createCustomer(), await data.createCustomer()]
     await invite(shop, a, b)
-    await checkIn.checkIn(b, shop.checkInCode) // A recebe o bônus (2) e fica sem visita
+    await claimVisit(data, checkIn, b, shop) // A recebe o bônus (2) e fica sem visita
     expect((await cardOf(a, shop.id))?.balance).toBe(2)
-    expect(await checkIn.checkIn(a, shop.checkInCode)).toMatchObject({ ok: true, value: { card: { balance: 5 } } }) // 2 do bônus + 2 de boas-vindas + 1
-    expect(await kindsOf(a)).toEqual(['referralBonus:2', 'welcomeBonus:2', 'checkIn:1'])
+    expect(await claimVisit(data, checkIn, a, shop)).toMatchObject({ ok: true, value: { card: { balance: 5 } } }) // 2 do bônus + 2 de boas-vindas + 1
+    expect(await kindsOf(a)).toEqual(['referralBonus:2', 'welcomeBonus:2', 'visit:1'])
   }, SLOW)
 
   it('stops paying a referrer after the per-shop cap and rejects the extra invites', async () => {
@@ -214,7 +215,7 @@ describe.skipIf(!TEST_DATABASE_URL)('referral against a real database', () => {
     for (let i = 0; i < REFERRAL_REWARDS_MAX_PER_SHOP + 1; i += 1) {
       const friend = await data.createCustomer()
       await invite(shop, referrer, friend)
-      await checkIn.checkIn(friend, shop.checkInCode)
+      await claimVisit(data, checkIn, friend, shop)
     }
     const statuses = (await referralsOf(shop.id)).map((r) => r.status)
     expect(statuses.filter((s) => s === 'rewarded')).toHaveLength(REFERRAL_REWARDS_MAX_PER_SHOP)

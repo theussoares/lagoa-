@@ -6,9 +6,10 @@ import { mountComponent, unmountAll } from '#layers/core/test/componentHarness.n
 import { typeCode } from '#layers/core/test/pageHarness.nuxt'
 import CodeForm from '../app/components/check-in/CodeForm.vue'
 import EarnedStep from '../app/components/check-in/EarnedStep.vue'
+import JoinedStep from '../app/components/check-in/JoinedStep.vue'
 import Notice from '../app/components/check-in/Notice.vue'
 import ScanStep from '../app/components/check-in/ScanStep.vue'
-import type { CheckInEarnedView, CheckInNoticeModel } from '../app/types/checkIn'
+import type { CheckInEarnedView, CheckInJoinedView, CheckInNoticeModel } from '../app/types/checkIn'
 
 function t(key: string, named?: Record<string, unknown>): string {
   return useNuxtApp().$i18n.t(key, named ?? {})
@@ -48,7 +49,7 @@ describe('check-in components: Notice', () => {
   it('offers scan again and type the code, emitting recover and typeCode', async () => {
     const page = await mountIt(Notice, { notice: notice({}) })
     await button(page, t('checkIn.scanAgain')).trigger('click')
-    await button(page, t('checkIn.typeCode')).trigger('click')
+    await button(page, t('checkIn.typeVisitCode')).trigger('click')
     expect(page.emitted('recover')).toHaveLength(1)
     expect(page.emitted('typeCode')).toHaveLength(1)
   })
@@ -64,7 +65,7 @@ describe('check-in components: Notice', () => {
     const page = await mountIt(Notice, { notice: notice({ tone: 'warning', recovery: 'wallet' }) })
     const link = button(page, t('checkIn.toWallet'))
     expect(link.attributes('href')).toBe('/carteira')
-    expect(page.text()).not.toContain(t('checkIn.typeCode'))
+    expect(page.text()).not.toContain(t('checkIn.typeVisitCode'))
     expect(page.text()).not.toContain(t('checkIn.scanAgain'))
   })
 
@@ -97,24 +98,50 @@ describe('check-in components: ScanStep', () => {
 
   it('emits typeCode from the type-instead button', async () => {
     const page = await mountIt(ScanStep, { status: 'starting' })
-    await button(page, t('checkIn.typeCode')).trigger('click')
+    await button(page, t('checkIn.typeVisitCode')).trigger('click')
     expect(page.emitted('typeCode')).toHaveLength(1)
   })
 })
 
-describe('check-in components: CodeForm', () => {
-  const formProps = { cameraIssue: null, invalid: false, typing: false, focusRequest: null, code: [] }
+describe('check-in components: ScanStep joining', () => {
+  it('shows the joining text while entering the club', async () => {
+    const page = await mountIt(ScanStep, { status: 'joining' })
+    expect(page.text()).toContain(t('checkIn.submittingJoin'))
+  })
+})
 
-  it('has a labelled group of six cells and a submit button', async () => {
+describe('check-in components: CodeForm', () => {
+  const formProps = { kind: 'visit', length: 5, cameraIssue: null, invalid: false, typing: false, focusRequest: null, code: [] } as const
+
+  it('has a labelled group of cells as long as the visit code and a claim button', async () => {
     const page = await mountIt(CodeForm, formProps)
-    expect(page.text()).toContain(t('checkIn.codeLabel'))
-    expect(cells(page)).toHaveLength(6)
-    expect(page.get('button[type="submit"]').text()).toBe(t('checkIn.submit'))
+    expect(page.text()).toContain(t('checkIn.visitCodeLabel'))
+    expect(cells(page)).toHaveLength(5)
+    expect(page.get('button[type="submit"]').text()).toBe(t('checkIn.submitClaim'))
   })
 
-  it('shows the invalid code message and flags the field', async () => {
-    const page = await mountIt(CodeForm, { ...formProps, invalid: true })
-    expect(page.text()).toContain(t('checkIn.invalidCode'))
+  it('asks for the shop code, with six cells and a join button, in the shop mode', async () => {
+    const page = await mountIt(CodeForm, { ...formProps, kind: 'shop', length: 6 })
+    expect(page.text()).toContain(t('checkIn.shopCodeLabel'))
+    expect(cells(page)).toHaveLength(6)
+    expect(page.get('button[type="submit"]').text()).toBe(t('checkIn.submitJoin'))
+  })
+
+  it('offers the other code kind and emits switchKind', async () => {
+    const visit = await mountIt(CodeForm, formProps)
+    await button(visit, t('checkIn.typeShopCode')).trigger('click')
+    expect(visit.emitted('switchKind')).toHaveLength(1)
+    const shop = await mountIt(CodeForm, { ...formProps, kind: 'shop', length: 6 })
+    await button(shop, t('checkIn.typeVisitCode')).trigger('click')
+    expect(shop.emitted('switchKind')).toHaveLength(1)
+  })
+
+  it.each([
+    ['visit', 5, 'checkIn.invalidVisitCode'],
+    ['shop', 6, 'checkIn.invalidShopCode'],
+  ] as const)('shows the invalid %s code message and flags the field', async (kind, length, key) => {
+    const page = await mountIt(CodeForm, { ...formProps, kind, length, invalid: true })
+    expect(page.text()).toContain(t(key))
   })
 
   it('disables the cells and shows loading on submit while typing is being checked', async () => {
@@ -149,8 +176,8 @@ describe('check-in components: CodeForm', () => {
       'onUpdate:code': (value: string[]) => void current?.setProps({ code: value }),
     })
     current = page
-    await typeCode(page.element, 'nav4k7')
-    expect(page.emitted('update:code')?.at(-1)?.[0]).toEqual([...'nav4k7'])
+    await typeCode(page.element, 'k7m3p')
+    expect(page.emitted('update:code')?.at(-1)?.[0]).toEqual([...'k7m3p'])
     expect(page.emitted('submit')?.length).toBeGreaterThanOrEqual(1)
   })
 
@@ -162,6 +189,50 @@ describe('check-in components: CodeForm', () => {
     await page.setProps({ focusRequest: { target: 'code', id: 1 } })
     await flushPromises()
     expect(document.activeElement).toBe(cells(page)[0]?.element)
+  })
+})
+
+describe('check-in components: JoinedStep', () => {
+  const joined = (overrides: Partial<CheckInJoinedView['text']> = {}): CheckInJoinedView => ({
+    text: {
+      title: 'Você entrou no clube',
+      lead: 'Barbearia Navalha já está na sua carteira.',
+      welcome: 'Seus 2 de boas-vindas entram na primeira compra.',
+      next: 'Na hora de pagar, peça o QR da visita no caixa.',
+      announcement: 'Você entrou no clube.',
+      ...overrides,
+    },
+    card: null,
+  })
+
+  it('is a section named by its heading, with the lead, the welcome and the next step', async () => {
+    const page = await mountIt(JoinedStep, { joined: joined(), focusRequest: null })
+    expect(page.get('section').attributes('aria-labelledby')).toBe('joined-title')
+    expect(page.get('#joined-title').text()).toBe('Você entrou no clube')
+    expect(page.text()).toContain('Barbearia Navalha já está na sua carteira.')
+    expect(page.text()).toContain('Seus 2 de boas-vindas entram na primeira compra.')
+    expect(page.text()).toContain('Na hora de pagar, peça o QR da visita no caixa.')
+  })
+
+  it('leaves the welcome line out when there is none', async () => {
+    const page = await mountIt(JoinedStep, { joined: joined({ welcome: null }), focusRequest: null })
+    expect(page.text()).not.toContain('boas-vindas')
+  })
+
+  it('links the only button to the wallet', async () => {
+    const page = await mountIt(JoinedStep, { joined: joined(), focusRequest: null })
+    expect(page.findAll('a')).toHaveLength(1)
+    expect(button(page, t('checkIn.joined.toWallet')).attributes('href')).toBe('/carteira')
+  })
+
+  it('moves the focus to the heading only for a joined heading request', async () => {
+    const page = await mountIt(JoinedStep, { joined: joined(), focusRequest: null })
+    await page.setProps({ focusRequest: { target: 'earnedHeading', id: 1 } })
+    await flushPromises()
+    expect(document.activeElement).not.toBe(page.get('#joined-title').element)
+    await page.setProps({ focusRequest: { target: 'joinedHeading', id: 2 } })
+    await flushPromises()
+    expect(document.activeElement).toBe(page.get('#joined-title').element)
   })
 })
 

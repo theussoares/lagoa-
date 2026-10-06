@@ -1,6 +1,6 @@
 import type { IsoDateTime } from '../schemas/common'
 
-export type DomainEntity = 'shop' | 'program' | 'customer' | 'merchant' | 'card' | 'redemption'
+export type DomainEntity = 'shop' | 'program' | 'customer' | 'merchant' | 'card' | 'redemption' | 'visitQr'
 
 /**
  * Erros esperados de regra de negócio. A UI traduz `code` para a chave
@@ -24,7 +24,16 @@ export type DomainError =
   | { readonly code: 'invalidAmount' }
   | { readonly code: 'amountNotAccepted' }
   | { readonly code: 'invalidShopQr' }
+  /** A loja não aceita entrar no clube pelo cartaz (`programs.check_in_enabled`, P-09); nunca barra o ganho. */
   | { readonly code: 'checkInDisabled' }
+  /** QR da visita inexistente, cancelado pelo lojista, de outra loja ou de loja não aprovada. */
+  | { readonly code: 'invalidVisitQr' }
+  | { readonly code: 'visitQrExpired' }
+  | { readonly code: 'visitQrAlreadyUsed' }
+  /** Programa da loja mudou desde a emissão (ou o cartão é de uma versão que não aceita esse QR, P-04). */
+  | { readonly code: 'visitQrStale' }
+  /** QR do cartaz enviado à rota de ganho: ele só coloca no clube. */
+  | { readonly code: 'shopQrJoinOnly' }
   | { readonly code: 'checkInCooldown'; readonly availableAt: IsoDateTime }
   | { readonly code: 'rewardNotReady'; readonly remaining: number }
   | { readonly code: 'redemptionInvalid' }

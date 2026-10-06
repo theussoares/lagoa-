@@ -36,14 +36,21 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
   senão o planner ignora o índice e ordena a tabela inteira (medido: 9 ms → 0,15 ms
   em 20 mil linhas). Lista que cresce sempre sai com `limit` e sem N+1 (use
   `LATERAL ... LIMIT` para "as N mais novas de cada").
+  **Limite de uso** ([ADR-0002](./docs/adr/0002-contador-de-limite-no-postgres.md)): o contador do `ThrottlerModule` é o `PostgresThrottlerStorage` (tabela `rate_limits`, compartilhada entre instâncias serverless); rota cujo limite sustenta segurança leva `@FailClosedThrottle()` (recusa se o contador cair), as demais deixam passar.
   **Ledger:** a única porta de escrita é o `LedgerStore` (`apps/api/src/ledger`):
   trava o cartão (`FOR UPDATE`) já com o vencimento aplicado, grava boas-vindas e
   visita e atualiza o saldo na mesma transação. Saldo lido sem passar por ele
   (listas, painel) usa `planExpiration`/`applyExpiration` (`shared/domain/expiration.ts`). Indicação: depois
   de confirmar a **primeira visita** de alguém, chame `ReferralSettlement.settlePending`
-  (o check-in já chama). A conta do que uma visita rende é `planEarning`
+  (o uso do QR da visita já chama). A conta do que uma visita rende é `planEarning`
   (`shared/domain/earning.ts`) e a janela de check-in é `checkInAvailableAt`
-  (`shared/domain/antifraud.ts`): check-in e Balcão usam as mesmas, nunca uma cópia.
+  (`shared/domain/antifraud.ts`): API e mock usam as mesmas, nunca uma cópia.
+  **QR da visita** ([spec](./docs/specs/dynamic-visit-qr/spec.md)): o QR da loja (`?loja=`) só **entra no
+  clube** (`POST /v1/shop-join`, cartão zerado); ganhar é só pelo QR da visita que o lojista gera na venda
+  (`POST /v1/check-in` com o token, `POST /v1/check-in/code` com o código curto), uso único e 5 min.
+  Validade e uso único moram em `shared/domain/visitQr.ts`. O token vai no **fragmento**
+  (`/check-in#visita=<token>`), nunca em query: não chega ao servidor, ao `Referer` nem ao `?para=` do login.
+  O Balcão não recebe mais celular.
 - **BFF (`apps/web/server`, modo `http`):** o navegador só fala com o próprio domínio. `/api/auth/*`
   faz o login por SMS no Supabase e guarda o token em cookie httpOnly (`lagoa_at`/`lagoa_rt`, SameSite=Lax,
   path `/api`); cada rota de `server/api/**` é um handler explícito (método + caminho fixo da API, entrada validada com
@@ -99,9 +106,18 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
 | Carteira                  | `wallet`                       |
 | Unidade (carimbo ou ponto)| `unit` (`stamp` \| `point`)     |
 | Caderneta (histórico)     | `ledger` (`counterEntry` no Balcão, `walletActivity` no app) |
-| Visita / lançar visita    | `visit` / `registerVisit`      |
-| Check-in                  | `checkIn`                      |
-| Código da loja (check-in) | `checkInCode`                  |
+| Visita (tipo de ganho)    | `visit` (`EarnInput.kind = 'visit'`; "lançar visita por celular" saiu do Balcão) |
+| Check-in (cliente escaneia o QR da visita e ganha) | `checkIn` (ledger `checkIn` = linhas antigas) |
+| Código da loja (entrar no clube) | `checkInCode` (nome legado, vai no QR da loja `?loja=`) |
+| QR da loja (cartaz fixo; só entra no clube) | `shopQr`                |
+| Entrar no clube (pelo QR da loja) | `joinShop` / `shopJoin` (cartão zerado; não é visita) |
+| QR da visita (gerado na venda, uso único) | `visitQr`         |
+| Token do QR da visita     | `visitToken` (opaco, 256 bits; banco guarda só o hash) |
+| Código curto da visita (digitado) | `visitCode` (`VISIT_CODE_LENGTH`) |
+| Gerar / usar / cancelar QR da visita | `issueVisitQr` / `claimVisitQr` / `cancelVisitQr` |
+| Situação do QR da visita  | `visitQrStatus` (`active` \| `claimed` \| `expired` \| `cancelled`) |
+| Validade do QR da visita  | `VISIT_QR_TTL_MINUTES`         |
+| Link do QR da visita      | `VISIT_QR_LINK_PARAM` (fragmento `/check-in#visita=<token>`, nunca query) |
 | Antifraude (janela)       | `checkInCooldown`              |
 | Regras bônus              | `bonusRules` (`welcomeBonus`, `birthdayMultiplier`, `referralBonus`, `surpriseDay`) |
 | Expiração                 | `expirationPolicy`             |
@@ -244,12 +260,14 @@ composables  → stores (Pinia, estado)
 - **Clube / programa:** a regra de fidelidade de uma loja. Modos: *cartão de
   carimbos* (N carimbos = prêmio), *pontos por real* e *pontos por visita*.
 - **Carimbo / ponto:** unidade ganha a cada visita válida.
-- **Lançar visita:** lojista digita o celular do cliente no Balcão e dá 1
-  carimbo (ou lança por valor). Cliente novo ganha cartão na hora.
-- **Check-in:** cliente escaneia o QR da loja e ganha o carimbo sozinho.
-- **Antifraude:** no máximo 1 check-in por cliente/loja a cada janela
-  configurável (ex.: 4 h, 1 dia). Qualquer visita conta para a janela, inclusive
-  a lançada no balcão.
+- **Entrar no clube:** cliente escaneia o QR da loja (cartaz) e ganha o cartão
+  zerado; não é visita e não rende.
+- **QR da visita / check-in:** na venda, o lojista gera no Balcão um QR de uso
+  único (5 min; no modo por real com o valor preso) e o cliente escaneia (ou
+  digita o código curto) para ganhar. Sem cartão, o QR da visita já cria. Não há
+  mais lançamento por celular no Balcão.
+- **Antifraude:** no máximo 1 visita que rende por cliente/loja a cada janela
+  configurável (ex.: 4 h, 1 dia). A recusa não consome o QR da visita.
 - **Regras bônus:** boas-vindas (cartão começa com 2 carimbos), aniversário em
   dobro, traga um amigo (+1 quando o amigo faz a 1ª visita), dia surpresa em dobro.
   Multiplicadores não se somam: vale o maior (aniversário no dia surpresa = 2×,

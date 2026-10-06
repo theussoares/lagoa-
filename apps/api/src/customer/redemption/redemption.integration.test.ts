@@ -6,6 +6,7 @@ import { DrizzleReferralSettlement } from '../../ledger/drizzle-referral-settlem
 import { LedgerStore } from '../../ledger/ledger.store'
 import { RedemptionLookup } from '../../ledger/redemption-lookup'
 import { neverExpires, NO_BONUS_RULES, TEST_DATABASE_URL, TestDatabase, type TestShop } from '../../test-support/test-database'
+import { claimVisit } from '../../test-support/claim-visit'
 import { DrizzleCheckInRepository } from '../check-in/drizzle-check-in.repository'
 import { CheckInService } from '../check-in/check-in.service'
 import { DrizzleWalletRepository } from '../wallet/drizzle-wallet.repository'
@@ -45,7 +46,7 @@ describe.skipIf(!TEST_DATABASE_URL)('redemption against a real database', () => 
         await ledger.credit(tx, { card, shopId: shop.id, customerId: customer, kind: 'visit', now: NOW(), idempotencyKey: `fill-${customer}`, plan: { welcomeUnits: 0, units: 3, appliedBonuses: [], balanceAfter: 3, rewardExpiresAt: null } })
       })
     } else {
-      await checkIn.checkIn(customer, shop.checkInCode)
+      await claimVisit(data, checkIn, customer, shop)
     }
     const [card] = await data.db.select().from(loyaltyCards).where(eq(loyaltyCards.customerId, customer))
     if (!card) throw new Error('card expected')
@@ -71,7 +72,7 @@ describe.skipIf(!TEST_DATABASE_URL)('redemption against a real database', () => 
   it('refuses a card that is not ready and a card that is not the customer’s', async () => {
     const shop = await data.createShop({ rules: { mode: 'stamps', target: 10 }, bonusRules: WELCOME_BONUS })
     const customer = await data.createCustomer()
-    await checkIn.checkIn(customer, shop.checkInCode) // 3 de 10
+    await claimVisit(data, checkIn, customer, shop) // 3 de 10
     const [card] = await data.db.select().from(loyaltyCards).where(eq(loyaltyCards.customerId, customer))
     expect(await service.requestCode(customer, card?.id ?? '')).toEqual({ ok: false, error: { code: 'rewardNotReady', remaining: 7 } })
     const stranger = await data.createCustomer()
@@ -114,7 +115,7 @@ describe.skipIf(!TEST_DATABASE_URL)('redemption against a real database', () => 
     const history = await wallet.listRewardHistory(customer, 10)
     expect(history).toMatchObject({ ok: true, value: [{ kind: 'redemption', units: 0, rewardTitle: 'Prêmio de teste' }] })
     const rows = await data.db.select({ kind: ledgerEntries.kind, units: ledgerEntries.unitsDelta }).from(ledgerEntries).where(eq(ledgerEntries.customerId, customer)).orderBy(ledgerEntries.id)
-    expect(rows).toEqual([{ kind: 'welcomeBonus', units: 2 }, { kind: 'checkIn', units: 1 }, { kind: 'redemption', units: -3 }, { kind: 'welcomeBonus', units: 2 }])
+    expect(rows).toEqual([{ kind: 'welcomeBonus', units: 2 }, { kind: 'visit', units: 1 }, { kind: 'redemption', units: -3 }, { kind: 'welcomeBonus', units: 2 }])
   }, SLOW)
 
   it('never settles the same code twice, nor a code from another shop, nor an expired one', async () => {
@@ -178,8 +179,8 @@ describe.skipIf(!TEST_DATABASE_URL)('redemption against a real database', () => 
   it('retries with another code when a code collides with an active one in the same shop', async () => {
     const shop = await data.createShop({ rules: { mode: 'stamps', target: 3 }, bonusRules: WELCOME_BONUS })
     const [a, b] = [await data.createCustomer(), await data.createCustomer()]
-    await checkIn.checkIn(a, shop.checkInCode)
-    await checkIn.checkIn(b, shop.checkInCode)
+    await claimVisit(data, checkIn, a, shop)
+    await claimVisit(data, checkIn, b, shop)
     const [cardA, cardB] = await Promise.all([a, b].map(async (customerId) => (await data.db.select().from(loyaltyCards).where(eq(loyaltyCards.customerId, customerId)))[0]))
     const repository = new DrizzleRedemptionRepository(data.db, ledger)
     const decide = () => ({ kind: 'create' as const, expireStaleId: null })

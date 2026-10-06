@@ -23,6 +23,12 @@ describe('toCheckInPosterModel', () => {
     expect(model.qr.d.length).toBeGreaterThan(0)
   })
 
+  it('invites to join the club instead of promising a stamp', () => {
+    const model = toCheckInPosterModel(poster, 'https://app.lagoa.test', t)
+    expect(model.headline).toBe('poster.headline units=units.stamp count=10 reward=Lavagem grátis')
+    expect(model.instruction).toBe('poster.instruction')
+  })
+
   it('describes the QR without spelling out the link', () => {
     const model = toCheckInPosterModel(poster, 'https://app.lagoa.test', t)
     expect(model.qrLabel).toBe('poster.qrLabel shop=Lava-jato Brilho')

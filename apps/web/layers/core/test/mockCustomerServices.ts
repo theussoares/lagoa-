@@ -1,13 +1,15 @@
 import type { LoyaltyCardId, RedemptionId, ShopId } from '#shared/schemas/ids'
 import type { ProfileUpdate } from '#shared/schemas/customer'
 import type { CheckInCode } from '#shared/schemas/shop'
+import type { VisitQrCredential } from '#shared/schemas/visitQr'
 import type { Ranking, RankingConsentUpdate } from '#shared/schemas/ranking'
 import { ReferralInviteSchema } from '#shared/schemas/referral'
 import { ok } from '#shared/types/result'
 import { asCustomer } from '#layers/core/app/mock/withSession'
 import type { CustomerServices } from '#layers/customer/app/services/CustomerServices'
 import type { MockBackend } from '#layers/core/app/mock/MockBackend'
-import { checkIn, discoverChallenges, discoverShops, rewardHistory, walletActivity, walletCard, walletCards } from '#layers/core/app/mock/handlers/wallet'
+import { discoverChallenges, joinShop, discoverShops, rewardHistory, walletActivity, walletCard, walletCards } from '#layers/core/app/mock/handlers/wallet'
+import { claimVisitQr } from '#layers/core/app/mock/handlers/visitQrClaim'
 import { getRedemption, requestRedemption } from '#layers/core/app/mock/handlers/redemption'
 import { acceptTerms, getProfile, setNotificationConsent, updateProfile } from '#layers/core/app/mock/handlers/profile'
 import type { CustomerSessionProvider } from '#layers/core/app/services/SessionProvider'
@@ -31,7 +33,9 @@ export function createMockCustomerServices(backend: MockBackend, sessions: Custo
         asCustomer(backend, sessions, (ctx, customerId) => ok(rewardHistory(ctx, customerId, limit))),
     },
     checkIn: {
-      checkIn: (code: CheckInCode) => asCustomer(backend, sessions, (ctx, customerId) => checkIn(ctx, customerId, code)),
+      joinShop: (code: CheckInCode) => asCustomer(backend, sessions, (ctx, customerId) => joinShop(ctx, customerId, code)),
+      claimVisitQr: (credential: VisitQrCredential) =>
+        asCustomer(backend, sessions, (ctx, customerId) => claimVisitQr(ctx, customerId, credential)),
     },
     redemption: {
       requestCode: (cardId: LoyaltyCardId) =>

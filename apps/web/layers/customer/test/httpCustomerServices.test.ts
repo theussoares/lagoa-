@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { ApiClient } from '#layers/core/app/services/http/ApiClient'
 import { createHttpCustomerServices } from '#layers/customer/app/services/http/createHttpCustomerServices'
 import { CheckInCodeSchema } from '#shared/schemas/shop'
+import { VisitCodeSchema, VisitTokenSchema } from '#shared/schemas/visitQr'
 
 const json = (status: number, body: unknown): Response => new Response(JSON.stringify(body), { status })
 
@@ -11,24 +12,86 @@ function servicesWith(fetcher: typeof fetch) {
   return createHttpCustomerServices(api, () => `key${String(++keyCount).padStart(16, '0')}`)
 }
 
+const TOKEN = VisitTokenSchema.parse('A'.repeat(43))
+const CODE = VisitCodeSchema.parse('K7M2P')
+const checkInResult = {
+  activity: { id: 'visit_1', shopId: 'shop_1', shopName: 'Barbearia', kind: 'visit', unit: 'stamp', units: 1, rewardTitle: null, createdAt: '2026-10-01T16:00:00.000Z' },
+  card: { cardId: 'card_1', unit: 'stamp', balance: 4, target: 10, rewardReady: false },
+  nextCheckInAt: '2026-10-01T20:00:00.000Z',
+}
+
 describe('http customer services', () => {
-  it('check-in sends the code with a fresh idempotency key per tap', async () => {
-    const fetcher = vi.fn<typeof fetch>(async () => json(404, { code: 'invalidShopQr' }))
+  it('join shop posts the poster code to /shop-join and validates the answer', async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => json(200, { shopId: 'shop_1', cardId: 'card_1', alreadyMember: false }))
     const { checkIn } = servicesWith(fetcher)
-    const code = CheckInCodeSchema.parse('NAV4K7')
-    await checkIn.checkIn(code)
-    await checkIn.checkIn(code)
-    const keys = fetcher.mock.calls.map((call) => new Headers(call[1]?.headers).get('idempotency-key'))
-    expect(keys[0]).not.toBe(keys[1])
-    expect(fetcher.mock.calls[0]?.[1]?.body).toBe('{"code":"NAV4K7"}')
+    expect(await checkIn.joinShop(CheckInCodeSchema.parse('NAV4K7'))).toMatchObject({ ok: true, value: { alreadyMember: false } })
+    expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/shop-join')
+    expect(fetcher.mock.calls[0]?.[1]).toMatchObject({ method: 'POST', body: '{"code":"NAV4K7"}' })
   })
 
-  it('check-in keeps the cooldown details and the terms error', async () => {
+  it('join shop keeps its declared errors and hides the rest', async () => {
+    const disabled = servicesWith(async () => json(403, { code: 'checkInDisabled' }))
+    expect(await disabled.checkIn.joinShop(CheckInCodeSchema.parse('NAV4K7'))).toEqual({ ok: false, error: { code: 'checkInDisabled' } })
+    const stale = servicesWith(async () => json(409, { code: 'visitQrStale' }))
+    expect(await stale.checkIn.joinShop(CheckInCodeSchema.parse('NAV4K7'))).toEqual({ ok: false, error: { code: 'internal' } })
+    const malformed = servicesWith(async () => json(200, { shopId: 'shop_1' }))
+    expect(await malformed.checkIn.joinShop(CheckInCodeSchema.parse('NAV4K7'))).toEqual({ ok: false, error: { code: 'internal' } })
+  })
+
+  it('claims a scanned token on POST /check-in with the token only in the body and a fresh idempotency key', async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => json(200, checkInResult))
+    const { checkIn } = servicesWith(fetcher)
+    expect((await checkIn.claimVisitQr({ kind: 'token', token: TOKEN })).ok).toBe(true)
+    await checkIn.claimVisitQr({ kind: 'token', token: TOKEN })
+    const [url, init] = fetcher.mock.calls[0] ?? []
+    expect(url).toBe('https://api.test/v1/check-in')
+    expect(String(url)).not.toContain(TOKEN)
+    expect(init).toMatchObject({ method: 'POST', body: `{"token":"${TOKEN}"}` })
+    const keys = fetcher.mock.calls.map((call) => new Headers(call[1]?.headers).get('idempotency-key'))
+    expect(keys[0]).not.toBe(keys[1])
+  })
+
+  it('claims a typed short code on POST /check-in/code', async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => json(200, checkInResult))
+    const { checkIn } = servicesWith(fetcher)
+    await checkIn.claimVisitQr({ kind: 'visitCode', code: CODE })
+    const [url, init] = fetcher.mock.calls[0] ?? []
+    expect(url).toBe('https://api.test/v1/check-in/code')
+    expect(init).toMatchObject({ method: 'POST', body: '{"visitCode":"K7M2P"}' })
+    expect(new Headers(init?.headers).get('idempotency-key')).toMatch(/^key/)
+  })
+
+  it('claim keeps the visit QR errors, the cooldown details and the rate limit', async () => {
+    for (const code of ['invalidVisitQr', 'visitQrExpired', 'visitQrAlreadyUsed', 'visitQrStale', 'termsNotAccepted'] as const) {
+      const { checkIn } = servicesWith(async () => json(409, { code }))
+      expect(await checkIn.claimVisitQr({ kind: 'token', token: TOKEN })).toEqual({ ok: false, error: { code } })
+    }
     const at = '2026-10-01T20:00:00.000Z'
-    const { checkIn } = servicesWith(async () => json(429, { code: 'checkInCooldown', availableAt: at }))
-    expect(await checkIn.checkIn(CheckInCodeSchema.parse('NAV4K7'))).toEqual({ ok: false, error: { code: 'checkInCooldown', availableAt: at } })
+    const cooldown = servicesWith(async () => json(429, { code: 'checkInCooldown', availableAt: at }))
+    expect(await cooldown.checkIn.claimVisitQr({ kind: 'token', token: TOKEN })).toEqual({ ok: false, error: { code: 'checkInCooldown', availableAt: at } })
+    const limited = servicesWith(async () => json(429, { code: 'rateLimited' }))
+    expect(await limited.checkIn.claimVisitQr({ kind: 'visitCode', code: CODE })).toEqual({ ok: false, error: { code: 'rateLimited' } })
+  })
+
+  it('claim hides a code it does not declare', async () => {
+    const { checkIn } = servicesWith(async () => json(422, { code: 'shopQrJoinOnly' }))
+    expect(await checkIn.claimVisitQr({ kind: 'token', token: TOKEN })).toEqual({ ok: false, error: { code: 'internal' } })
+  })
+
+  it('claim sends the token in the body with a fresh idempotency key per tap, never in the URL', async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => json(404, { code: 'invalidVisitQr' }))
+    const { checkIn } = servicesWith(fetcher)
+    await checkIn.claimVisitQr({ kind: 'token', token: TOKEN })
+    await checkIn.claimVisitQr({ kind: 'token', token: TOKEN })
+    const keys = fetcher.mock.calls.map((call) => new Headers(call[1]?.headers).get('idempotency-key'))
+    expect(keys[0]).not.toBe(keys[1])
+    expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/check-in')
+    expect(fetcher.mock.calls[0]?.[1]?.body).toBe(`{"token":"${TOKEN}"}`)
+  })
+
+  it('claim keeps the terms error', async () => {
     const terms = servicesWith(async () => json(403, { code: 'termsNotAccepted' }))
-    expect(await terms.checkIn.checkIn(CheckInCodeSchema.parse('NAV4K7'))).toEqual({ ok: false, error: { code: 'termsNotAccepted' } })
+    expect(await terms.checkIn.claimVisitQr({ kind: 'token', token: TOKEN })).toEqual({ ok: false, error: { code: 'termsNotAccepted' } })
   })
 
   it('hides codes a service does not declare', async () => {

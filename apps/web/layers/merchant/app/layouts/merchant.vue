@@ -24,9 +24,9 @@ const footerItems = computed<SpineNavItem[]>(() => [{ label: t('merchantNav.sett
 </script>
 
 <template>
-  <div class="grid min-h-dvh grid-cols-[var(--merchant-sidebar-width)_minmax(0,1fr)] text-base [--merchant-sidebar-width:220px]">
+  <div class="grid min-h-dvh grid-cols-[var(--merchant-sidebar-width)_minmax(0,1fr)] text-base [--merchant-sidebar-width:220px] print:block">
     <!-- A barra é sempre "caderneta à noite", no claro e no escuro: os tokens escuros valem aqui dentro. -->
-    <aside class="dark sticky top-0 flex h-dvh flex-col bg-(--lagoa-desk) px-3 py-5 text-default">
+    <aside class="dark print:hidden sticky top-0 flex h-dvh flex-col bg-(--lagoa-desk) px-3 py-5 text-default">
       <div class="flex flex-col items-start gap-2 px-2.5 pb-7">
         <!-- Marca batida como carimbo de borracha na capa da caderneta. -->
         <p class="letreiro -rotate-3 rounded-[6px] px-2.5 py-1 text-xl text-primary ring-2 ring-current outline-1 outline-offset-2 outline-current/50">

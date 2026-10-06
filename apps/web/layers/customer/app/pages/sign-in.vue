@@ -40,7 +40,7 @@ const welcomeTitle = computed(() => {
 
 async function enter(): Promise<void> {
   toast.add({ title: welcomeTitle.value, icon: 'i-ph-hand-waving', color: 'success' })
-  await navigateTo(safeReturnPath(route.query.para), { replace: true })
+  await navigateTo(returnLocation(route.query.para, route.hash), { replace: true })
 }
 
 async function submitProfile(): Promise<void> {

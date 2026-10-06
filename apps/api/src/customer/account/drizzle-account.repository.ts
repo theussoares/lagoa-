@@ -4,13 +4,18 @@ import { and, eq, inArray, or, sql } from 'drizzle-orm'
 import { REFERRAL_CODE_LENGTH } from '#shared/constants/domain'
 import { generateReadableCode } from '../../common/readable-code'
 import { DB, type Database } from '../../database/database.module'
-import { appUsers, customerProfiles, loyaltyCards, redemptions, referrals } from '../../database/schema'
+import { appUsers, customerProfiles, loyaltyCards, redemptions, referrals, visitQrs } from '../../database/schema'
 import { AccountRepository } from './account.repository'
 
 @Injectable()
 export class DrizzleAccountRepository extends AccountRepository {
   constructor(@Inject(DB) private readonly db: Database) {
     super()
+  }
+
+  /** Pública para o `EXPLAIN` provar o índice parcial `visit_qrs_claimed_by_idx` com a mesma consulta que roda de verdade. */
+  clearVisitQrClaimsQuery(executor: Pick<Database, 'update'>, userId: string) {
+    return executor.update(visitQrs).set({ claimedBy: null }).where(eq(visitQrs.claimedBy, userId))
   }
 
   async erase(userId: string, now: Date): Promise<boolean> {
@@ -25,6 +30,8 @@ export class DrizzleAccountRepository extends AccountRepository {
         .update(referrals)
         .set({ status: 'rejected' })
         .where(and(or(eq(referrals.referrerId, userId), eq(referrals.referredId, userId)), eq(referrals.status, 'pending')))
+      // O QR usado continua `claimed` (e o ganho no ledger) sem apontar para a pessoa que saiu.
+      await this.clearVisitQrClaimsQuery(tx, userId)
       await tx
         .update(customerProfiles)
         .set({

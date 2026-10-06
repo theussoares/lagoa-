@@ -13,3 +13,6 @@ export const ledgerKind = pgEnum('ledger_kind', [
 ])
 export const redemptionStatus = pgEnum('redemption_status', ['active', 'redeemed', 'expired'])
 export const referralStatus = pgEnum('referral_status', ['pending', 'rewarded', 'rejected'])
+export const visitQrStatus = pgEnum('visit_qr_status', ['active', 'claimed', 'expired', 'cancelled'])
+export const visitQrCancelReason = pgEnum('visit_qr_cancel_reason', ['merchant', 'programChanged'])
+export const visitQrEarnKind = pgEnum('visit_qr_earn_kind', ['visit', 'amount'])
