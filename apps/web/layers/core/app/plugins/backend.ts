@@ -36,7 +36,14 @@ function wireMock(mockAuth: MockAuthService): BackendWiring {
 function wireHttp(mockAuth: MockAuthService): BackendWiring {
   const fetcher: typeof fetch = (input, init) => fetch(input, init)
   const sessions = useSessionStore()
-  const api = new ApiClient({ baseUrl: BFF_API_BASE, fetcher, onUnauthorized: () => sessions.endCustomer() })
+  const api = new ApiClient({
+    baseUrl: BFF_API_BASE,
+    fetcher,
+    onUnauthorized: () => {
+      sessions.endCustomer()
+      sessions.endMerchant()
+    },
+  })
   const auth: AuthService = new HttpAuthService(new BffPhoneAuthGateway(fetcher), api, mockAuth, () => new Date())
   return { auth, api }
 }

@@ -1,6 +1,14 @@
 import type { PhoneNumber } from '#shared/schemas/phone'
 import { IsoDateTimeSchema } from '#shared/schemas/common'
-import { CustomerSessionSchema, type CustomerSession, type LoginChallenge, type LoginCode, type MerchantSignInResult } from '#shared/schemas/session'
+import {
+  CustomerSessionSchema,
+  MerchantSessionSchema,
+  type CustomerSession,
+  type LoginChallenge,
+  type LoginCode,
+  type MerchantSignInResult,
+  type SignUpTicket,
+} from '#shared/schemas/session'
 import { LOGIN_CODE_TTL_MINUTES } from '#shared/constants/domain'
 import type { TransportError } from '#shared/types/errors'
 import { ok, type Result } from '#shared/types/result'
@@ -37,8 +45,18 @@ export class HttpAuthService implements AuthService {
     return allowing('invalidLoginCode', 'loginCodeExpired')(await this.api.post('/customer/registration', CustomerSessionSchema, { body: {} }))
   }
 
-  signInMerchant(phone: PhoneNumber, code: LoginCode): Promise<Result<MerchantSignInResult, MerchantSignInError>> {
-    return this.merchant.signInMerchant(phone, code)
+  async signInMerchant(phone: PhoneNumber, code: LoginCode): Promise<Result<MerchantSignInResult, MerchantSignInError>> {
+    const verified = await this.gateway.verifyCode(phone, code)
+    if (!verified.ok) return verified
+    const session = await this.api.get('/merchant/session', MerchantSessionSchema)
+    if (session.ok) return ok({ kind: 'session', session: session.value })
+    if (session.error.code === 'notFound') {
+      const expiresAt = IsoDateTimeSchema.parse(
+        new Date(this.now().getTime() + LOGIN_CODE_TTL_MINUTES * MS_PER_MINUTE).toISOString(),
+      )
+      return ok({ kind: 'signUp', ticket: 'session' as SignUpTicket, expiresAt })
+    }
+    return allowing('invalidLoginCode', 'loginCodeExpired')(session)
   }
 
   signOut(): Promise<void> {
