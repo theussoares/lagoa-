@@ -10,7 +10,6 @@ import { CounterRedemptionsService } from './counter-redemptions.service'
 import {
   CounterRepository,
   type ActiveRedemptionPreview,
-  type ResolvedCustomer,
   type SettleRedemptionError,
   type ShopWithProgram,
 } from './counter.repository'
@@ -63,13 +62,7 @@ class TestCounterRepository extends CounterRepository {
     return this.shop
   }
 
-  async resolveOrCreateCustomer(): Promise<ResolvedCustomer> {
-    throw new Error('Not implemented')
-  }
 
-  async recordVisit(): Promise<any> {
-    throw new Error('Not implemented')
-  }
 
   async listTodayEntries(): Promise<CounterEntry[]> {
     return []

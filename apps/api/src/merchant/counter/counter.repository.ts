@@ -1,7 +1,6 @@
 import type { BonusRules, ProgramMode, ProgramUnit } from '#shared/schemas/program'
 import type { ShopStatus } from '#shared/schemas/shop'
-import type { CounterEntry, VisitRegistered } from '#shared/schemas/visit'
-import type { EarnInput } from '#shared/domain/programStrategies'
+import type { CounterEntry } from '#shared/schemas/visit'
 import type { ErrorOf } from '#shared/types/errors'
 import type { Result } from '#shared/types/result'
 
@@ -22,13 +21,6 @@ export interface ShopWithProgram {
   readonly checkInCooldownHours: number
 }
 
-export interface ResolvedCustomer {
-  readonly customerId: string
-  readonly birthday: string | null
-  readonly isNewCustomer: boolean
-  readonly phone: string
-}
-
 export interface ActiveRedemptionPreview {
   readonly redemptionId: string
   readonly rewardTitle: string
@@ -47,19 +39,6 @@ export type SettleRedemptionError = ErrorOf<
 
 export abstract class CounterRepository {
   abstract findShopAndProgramByOwner(ownerUserId: string): Promise<ShopWithProgram | null>
-  abstract resolveOrCreateCustomer(
-    phone: string,
-    phoneHash: Buffer,
-    phoneEncrypted: Buffer,
-    referralCode: string,
-  ): Promise<ResolvedCustomer>
-  abstract recordVisit(
-    shop: ShopWithProgram,
-    customer: ResolvedCustomer,
-    input: EarnInput,
-    merchantUserId: string,
-    now: Date,
-  ): Promise<{ visit: VisitRegistered; isFirstVisit: boolean }>
   abstract listTodayEntries(shopId: string, startOfDay: Date): Promise<CounterEntry[]>
   abstract findActiveRedemption(
     shopId: string,

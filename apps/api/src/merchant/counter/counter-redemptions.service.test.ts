@@ -6,7 +6,6 @@ import { err, ok } from '#shared/types/result'
 import {
   CounterRepository,
   type ActiveRedemptionPreview,
-  type ResolvedCustomer,
   type SettleRedemptionError,
   type ShopWithProgram,
 } from './counter.repository'
@@ -54,14 +53,6 @@ class FakeCounterRepository extends CounterRepository {
 
   async findShopAndProgramByOwner(): Promise<ShopWithProgram | null> {
     return this.shop
-  }
-
-  async resolveOrCreateCustomer(): Promise<ResolvedCustomer> {
-    throw new Error('Not implemented')
-  }
-
-  async recordVisit(): Promise<any> {
-    throw new Error('Not implemented')
   }
 
   async listTodayEntries(): Promise<CounterEntry[]> {

@@ -8,14 +8,14 @@ import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
 import { toIso } from '#shared/utils/time'
 import { CounterRepository, type SettleRedemptionError } from './counter.repository'
-import { assertOperationalShop, type RegisterVisitRuleError } from './counter.rules'
+import { assertOperationalShop, type ShopClosedError } from './counter.rules'
 
 export type ValidateRedemptionServiceError =
-  | RegisterVisitRuleError
+  | ShopClosedError
   | ErrorOf<'notFound' | 'redemptionInvalid' | 'redemptionExpired'>
 
 export type ConfirmRedemptionServiceError =
-  | RegisterVisitRuleError
+  | ShopClosedError
   | SettleRedemptionError
   | ErrorOf<'notFound'>
 

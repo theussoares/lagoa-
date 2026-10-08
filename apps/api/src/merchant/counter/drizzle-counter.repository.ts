@@ -1,26 +1,20 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { and, desc, eq, gte, inArray } from 'drizzle-orm'
-import { uuidv7 } from 'uuidv7'
-import { planEarning } from '#shared/domain/earning'
-import type { EarnInput } from '#shared/domain/programStrategies'
-import type { Birthday } from '#shared/schemas/common'
-import { LoyaltyCardIdSchema, ShopIdSchema, VisitIdSchema } from '#shared/schemas/ids'
+import { ShopIdSchema } from '#shared/schemas/ids'
 import type { PhoneNumber } from '#shared/schemas/phone'
-import { CounterEntrySchema, type CounterEntry, type VisitRegistered } from '#shared/schemas/visit'
+import { CounterEntrySchema, type CounterEntry } from '#shared/schemas/visit'
 import { maskPhone } from '#shared/utils/phone'
 import { toIso } from '#shared/utils/time'
 import { PiiService } from '../../common/pii.service'
 import { DB, type Database } from '../../database/database.module'
-import { appUsers, customerProfiles, ledgerEntries, programs, redemptions, shops } from '../../database/schema'
-import { type ExpiryContext, LedgerStore } from '../../ledger/ledger.store'
-import { toExpirationPolicy, toProgramRules } from '../../programs/program-rules.mapper'
+import { appUsers, ledgerEntries, programs, redemptions, shops } from '../../database/schema'
+import { LedgerStore } from '../../ledger/ledger.store'
 import { RedemptionLookup } from '../../ledger/redemption-lookup'
 import { err, ok, type Result } from '#shared/types/result'
 import type { ErrorOf } from '#shared/types/errors'
 import {
   CounterRepository,
   type ActiveRedemptionPreview,
-  type ResolvedCustomer,
   type SettleRedemptionError,
   type ShopWithProgram,
 } from './counter.repository'
@@ -60,147 +54,6 @@ export class DrizzleCounterRepository extends CounterRepository {
       .limit(1)
 
     return row ?? null
-  }
-
-  async resolveOrCreateCustomer(
-    phone: string,
-    phoneHash: Buffer,
-    phoneEncrypted: Buffer,
-    referralCode: string,
-  ): Promise<ResolvedCustomer> {
-    const [existing] = await this.db
-      .select({ id: appUsers.id })
-      .from(appUsers)
-      .where(eq(appUsers.phoneHash, phoneHash))
-      .limit(1)
-
-    if (existing) {
-      const [profile] = await this.db
-        .select({ birthday: customerProfiles.birthday })
-        .from(customerProfiles)
-        .where(eq(customerProfiles.userId, existing.id))
-        .limit(1)
-
-      return {
-        customerId: existing.id,
-        birthday: profile?.birthday ?? null,
-        isNewCustomer: false,
-        phone,
-      }
-    }
-
-    const newUserId = uuidv7()
-    await this.db.transaction(async (tx) => {
-      await tx.insert(appUsers).values({
-        id: newUserId,
-        phoneEncrypted,
-        phoneHash,
-      })
-      await tx.insert(customerProfiles).values({
-        userId: newUserId,
-        referralCode,
-        notificationsConsent: false,
-      })
-    })
-
-    return {
-      customerId: newUserId,
-      birthday: null,
-      isNewCustomer: true,
-      phone,
-    }
-  }
-
-  async recordVisit(
-    shop: ShopWithProgram,
-    customer: ResolvedCustomer,
-    input: EarnInput,
-    merchantUserId: string,
-    now: Date,
-  ): Promise<{ visit: VisitRegistered; isFirstVisit: boolean }> {
-    return this.db.transaction(async (tx) => {
-      const policyResult = toExpirationPolicy({
-        expirationKind: shop.expirationKind,
-        expirationMonths: shop.expirationMonths,
-      })
-      if (!policyResult.ok) throw new Error('Invalid expiration policy')
-
-      const rulesResult = toProgramRules({
-        mode: shop.mode,
-        earnUnits: shop.earnUnits,
-        target: shop.target,
-      })
-      if (!rulesResult.ok) throw new Error('Invalid program rules')
-
-      const expiry: ExpiryContext = {
-        policy: policyResult.value,
-        target: shop.target,
-        now,
-      }
-
-      const { card } = await this.ledger.lockOrCreateCard(
-        tx,
-        {
-          shopId: shop.shopId,
-          customerId: customer.customerId,
-          programId: shop.programId,
-        },
-        expiry,
-      )
-
-      const isFirstVisit = card.lastVisitAt === null
-
-      const plan = planEarning({
-        rules: rulesResult.value,
-        bonusRules: shop.bonusRules,
-        customerBirthday: customer.birthday as Birthday | null,
-        card,
-        input,
-        now,
-      })
-
-      if (!plan.ok) {
-        throw new Error(`planEarning failed: ${plan.error.code}`)
-      }
-
-      const { entryId } = await this.ledger.credit(tx, {
-        card,
-        shopId: shop.shopId,
-        customerId: customer.customerId,
-        plan: plan.value,
-        kind: input.kind === 'amount' ? 'amount' : 'visit',
-        now,
-        idempotencyKey: `counter:${shop.shopId}:${card.id}:${now.getTime()}`,
-        recordedBy: merchantUserId,
-        amountCents: input.kind === 'amount' ? input.amountCents : null,
-      })
-
-      const visit: VisitRegistered = {
-        entry: {
-          id: VisitIdSchema.parse(entryId),
-          shopId: ShopIdSchema.parse(shop.shopId),
-          maskedPhone: maskPhone(customer.phone as PhoneNumber),
-          kind: input.kind === 'amount' ? 'amount' : 'visit',
-          unit: shop.unit,
-          units: plan.value.units,
-          amountCents: input.kind === 'amount' ? input.amountCents : null,
-          rewardTitle: null,
-          isNewCustomer: isFirstVisit,
-          createdAt: toIso(now),
-        },
-        card: {
-          cardId: LoyaltyCardIdSchema.parse(card.id),
-          unit: shop.unit,
-          balance: plan.value.balanceAfter,
-          target: shop.target,
-          rewardReady: plan.value.balanceAfter >= shop.target,
-        },
-        unitsEarned: plan.value.units,
-        welcomeUnits: plan.value.welcomeUnits,
-      }
-
-      return { visit, isFirstVisit }
-    })
   }
 
   async listTodayEntries(shopId: string, startOfDay: Date): Promise<CounterEntry[]> {
