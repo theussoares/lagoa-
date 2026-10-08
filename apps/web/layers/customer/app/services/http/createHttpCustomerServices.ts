@@ -8,6 +8,7 @@ import { HttpProfileService } from './HttpProfileService'
 import { HttpRankingService } from './HttpRankingService'
 import { HttpReferralService } from './HttpReferralService'
 import { HttpRewardRedemptionService } from './HttpRewardRedemptionService'
+import { HttpSessionService } from './HttpSessionService'
 import { HttpWalletService } from './HttpWalletService'
 
 export function createHttpCustomerServices(api: ApiClient, newIdempotencyKey: () => string): CustomerServices {
@@ -21,5 +22,6 @@ export function createHttpCustomerServices(api: ApiClient, newIdempotencyKey: ()
     dataExport: new HttpDataExportService(api),
     ranking: new HttpRankingService(api),
     account: new HttpAccountService(api),
+    session: new HttpSessionService(api),
   }
 }

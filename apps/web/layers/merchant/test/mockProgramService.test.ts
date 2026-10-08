@@ -1,12 +1,17 @@
 import { describe, expect, it } from 'vitest'
-import { PhoneNumberSchema } from '#shared/schemas/phone'
+import { EXAMPLE_IDS } from '#layers/core/app/mock'
 import { barbershopSession, makeBackend, staticSession } from '#layers/core/test/fixtures'
 import { createMockMerchantServices } from '../app/services/mock/createMockMerchantServices'
 import { toProgramDraft } from '../app/utils/programForm'
+import { earnVisit } from './earnVisit'
+
+function setupWithBackend() {
+  const { backend } = makeBackend()
+  return { backend, services: createMockMerchantServices(backend, staticSession(barbershopSession)) }
+}
 
 function setup() {
-  const { backend } = makeBackend()
-  return createMockMerchantServices(backend, staticSession(barbershopSession))
+  return setupWithBackend().services
 }
 
 describe('mock ProgramService', () => {
@@ -26,16 +31,15 @@ describe('mock ProgramService', () => {
   })
 
   it('applies a new target to cards in progress', async () => {
-    const services = setup()
+    const { backend, services } = setupWithBackend()
     const current = await services.program.getProgram()
     if (!current.ok) throw new Error(current.error.code)
     const draft = { ...toProgramDraft(current.value), rules: { mode: 'stamps' as const, target: 12 }, reward: { title: 'Corte e barba' } }
     const saved = await services.program.updateProgram(draft)
     expect(saved.ok && saved.value.rules.target).toBe(12)
 
-    const visit = await services.counter.registerVisit(PhoneNumberSchema.parse('67900000001'))
-    if (!visit.ok) throw new Error(visit.error.code)
-    expect(visit.value.card.target).toBe(12)
+    const visit = await earnVisit(backend, services, EXAMPLE_IDS.customers.joao)
+    expect(visit.card.target).toBe(12)
   })
 })
 

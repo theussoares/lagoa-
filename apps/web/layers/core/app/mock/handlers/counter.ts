@@ -1,58 +1,20 @@
-import { consumeReward, toCardProgress } from '#shared/domain/loyaltyCard'
+import { consumeReward } from '#shared/domain/loyaltyCard'
 import { isCounterKind } from '#shared/domain/ledger'
 import { welcomeUnits } from '#shared/domain/bonusRules'
 import { addUnits } from '#shared/domain/loyaltyCard'
-import type { EarnInput } from '#shared/domain/programStrategies'
 import type { RedemptionId, ShopId } from '#shared/schemas/ids'
-import type { PhoneNumber } from '#shared/schemas/phone'
 import type { RedemptionCode, RedemptionPreview } from '#shared/schemas/redemption'
-import type { CounterEntry, VisitRegistered } from '#shared/schemas/visit'
+import type { CounterEntry } from '#shared/schemas/visit'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok } from '#shared/types/result'
 import type { Result } from '#shared/types/result'
 import { localDateParts, toIso } from '#shared/utils/time'
 import type { MockContext } from './context'
-import { appendLedger, creditCard, toCounterEntry, visitUnits } from './earning'
-import { ensureCustomer, findProgram, maskedPhoneOf, replaceCard } from './queries'
+import { appendLedger, toCounterEntry } from './earning'
+import { findProgram, maskedPhoneOf, replaceCard } from './queries'
 import { requireOperationalShop } from './shopAccess'
 import type { ShopAccessError } from './shopAccess'
 import type { RedemptionRecord } from '../state'
-
-export function registerVisit(
-  ctx: MockContext,
-  shopId: ShopId,
-  phone: PhoneNumber,
-  input: EarnInput,
-): Result<VisitRegistered, ErrorOf<'invalidAmount' | 'amountNotAccepted'> | ShopAccessError> {
-  // Loja nova monta o clube antes, mas só lança visita depois que a rede aprova.
-  const shop = requireOperationalShop(ctx, shopId)
-  if (!shop.ok) return shop
-  const program = findProgram(ctx, shopId)
-  if (program === undefined) return err({ code: 'unauthorized' })
-  const { customer, isNew } = ensureCustomer(ctx, phone)
-  const units = visitUnits(ctx, customer, program, input)
-  if (!units.ok) return units
-  const source = input.kind === 'amount' ? 'counterAmount' : 'counter'
-  const credited = creditCard(ctx, customer, program, units.value, source)
-  const record = appendLedger(ctx, {
-    shopId,
-    customerId: customer.id,
-    kind: input.kind === 'amount' ? 'amount' : 'visit',
-    unit: credited.card.unit,
-    units: units.value,
-    amountCents: input.kind === 'amount' ? input.amountCents : null,
-    rewardTitle: null,
-    isNewCustomer: isNew,
-  })
-  const entry = toCounterEntry(ctx, record)
-  if (!entry.ok) return err({ code: 'unauthorized' })
-  return ok({
-    entry: entry.value,
-    card: toCardProgress(credited.card),
-    unitsEarned: units.value,
-    welcomeUnits: credited.welcomeUnits,
-  })
-}
 
 type ValidateError = ErrorOf<'redemptionInvalid' | 'redemptionExpired' | 'redemptionAlreadyUsed'>
 

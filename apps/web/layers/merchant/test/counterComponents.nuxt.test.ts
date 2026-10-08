@@ -7,14 +7,16 @@ import { typeCode, typeInto } from '#layers/core/test/pageHarness.nuxt'
 import { MaskedPhoneSchema } from '#shared/schemas/phone'
 import AmountField from '../app/components/counter/AmountField.vue'
 import CounterLedger from '../app/components/counter/CounterLedger.vue'
-import LaunchFeedback from '../app/components/counter/LaunchFeedback.vue'
-import LaunchForm from '../app/components/counter/LaunchForm.vue'
-import LaunchPanel from '../app/components/counter/LaunchPanel.vue'
-import LaunchReceipt from '../app/components/counter/LaunchReceipt.vue'
 import LedgerPanel from '../app/components/counter/LedgerPanel.vue'
 import RedemptionPanel from '../app/components/counter/RedemptionPanel.vue'
 import RedemptionStatus from '../app/components/counter/RedemptionStatus.vue'
+import VisitQrCard from '../app/components/counter/VisitQrCard.vue'
+import VisitQrFeedback from '../app/components/counter/VisitQrFeedback.vue'
+import VisitQrIssueForm from '../app/components/counter/VisitQrIssueForm.vue'
+import VisitQrPanel from '../app/components/counter/VisitQrPanel.vue'
+import VisitQrReceipt from '../app/components/counter/VisitQrReceipt.vue'
 import type { CounterAction, CounterLedgerEntryModel, CounterRedemptionPreviewModel, LaunchReceiptModel } from '../app/types/counter'
+import type { VisitQrDisplayModel } from '../app/types/visitQr'
 
 function t(key: string, named?: Record<string, unknown>, plural?: number): string {
   return useNuxtApp().$i18n.t(key, named ?? {}, plural ?? 1)
@@ -54,14 +56,31 @@ const visitAction: CounterAction = { kind: 'visit', unit: 'stamp', units: 1 }
 const amountAction: CounterAction = { kind: 'amount', pointsPerReal: 1 }
 
 const formProps = {
-  phone: '',
   amountText: '',
   action: visitAction,
-  submitLabel: 'Dar 1 carimbo',
+  issueLabel: 'Gerar QR da visita',
   pending: false,
-  phoneErrorCode: null,
   amountErrorCode: null,
   focusRequest: null,
+}
+
+const activeDisplay: VisitQrDisplayModel = {
+  qr: { size: 29, d: 'M4 4h1v1h-1z' },
+  qrLabel: 'QR da visita, vale até 12:05',
+  visitCode: 'K7M2Q',
+  status: 'active',
+  statusLabel: 'Aguardando o cliente',
+  countdown: 'Vence em 4:12',
+  refusal: null,
+  receipt: null,
+}
+
+const panelProps = {
+  ...formProps,
+  alertCode: null,
+  programFailed: false,
+  display: null,
+  canSimulate: false,
 }
 
 function codeCells(page: VueWrapper): ReturnType<VueWrapper['findAll']> {
@@ -74,57 +93,45 @@ function button(page: VueWrapper, label: string): ReturnType<VueWrapper['get']> 
   return found
 }
 
-describe('counter components: LaunchFeedback', () => {
-  const feedbackProps = { alertCode: null, programFailed: false, receipt: null }
+describe('counter components: VisitQrFeedback', () => {
+  const feedbackProps = { alertCode: null, programFailed: false }
 
   it('keeps the polite live region mounted, empty, when there is nothing to say', async () => {
-    const page = await mountIt(LaunchFeedback, feedbackProps)
+    const page = await mountIt(VisitQrFeedback, feedbackProps)
     const region = page.get('[aria-live="polite"]')
     expect(region.text()).toBe('')
     expect(region.classes()).toContain('empty:hidden')
   })
 
   it('shows the error for the code inside the live region', async () => {
-    const page = await mountIt(LaunchFeedback, { ...feedbackProps, alertCode: 'shopPendingApproval' })
+    const page = await mountIt(VisitQrFeedback, { ...feedbackProps, alertCode: 'shopPendingApproval' })
     expect(page.get('[aria-live="polite"]').text()).toContain(t('errors.shopPendingApproval'))
   })
 
   it('offers to retry when the program failed to load', async () => {
-    const page = await mountIt(LaunchFeedback, { ...feedbackProps, programFailed: true })
-    expect(page.text()).toContain(t('counter.launch.programProblem'))
+    const page = await mountIt(VisitQrFeedback, { ...feedbackProps, programFailed: true })
+    expect(page.text()).toContain(t('counter.visitQr.programProblem'))
     await button(page, t('common.retry')).trigger('click')
     expect(page.emitted('retryProgram')).toHaveLength(1)
   })
 
-  it('shows the receipt when everything went well', async () => {
-    const page = await mountIt(LaunchFeedback, { ...feedbackProps, receipt: { key: 'visit_1', model: rulerReceipt } })
-    expect(page.text()).toContain(rulerReceipt.title)
-    expect(page.text()).toContain(rulerReceipt.detail)
-  })
-
-  it('puts an error before a program failure and a program failure before the receipt', async () => {
-    const receipt = { key: 'visit_1', model: rulerReceipt }
-    const withAlert = await mountIt(LaunchFeedback, { alertCode: 'unauthorized', programFailed: true, receipt })
-    expect(withAlert.text()).toContain(t('errors.unauthorized'))
-    expect(withAlert.text()).not.toContain(t('counter.launch.programProblem'))
-    expect(withAlert.text()).not.toContain(rulerReceipt.title)
-    withAlert.unmount()
-    const withProgram = await mountIt(LaunchFeedback, { alertCode: null, programFailed: true, receipt })
-    expect(withProgram.text()).toContain(t('counter.launch.programProblem'))
-    expect(withProgram.text()).not.toContain(rulerReceipt.title)
+  it('puts an error before a program failure', async () => {
+    const page = await mountIt(VisitQrFeedback, { alertCode: 'unauthorized', programFailed: true })
+    expect(page.text()).toContain(t('errors.unauthorized'))
+    expect(page.text()).not.toContain(t('counter.visitQr.programProblem'))
   })
 })
 
-describe('counter components: LaunchReceipt', () => {
+describe('counter components: VisitQrReceipt', () => {
   it('shows a ruler for a points or long card, hiding no information from the reader', async () => {
-    const page = await mountIt(LaunchReceipt, { receipt: rulerReceipt, icon: 'i-ph-check-fat-bold' })
+    const page = await mountIt(VisitQrReceipt, { receipt: rulerReceipt, icon: 'i-ph-check-fat-bold' })
     expect(page.text()).toContain(rulerReceipt.title)
     expect(page.find('ol[aria-hidden="true"]').exists()).toBe(false)
     expect(page.html()).toContain(rulerReceipt.body.kind === 'ruler' ? rulerReceipt.body.label : '')
   })
 
   it('shows one slot per card house, hidden from screen readers, and the reward colour', async () => {
-    const page = await mountIt(LaunchReceipt, { receipt: slotsReceipt, icon: 'i-ph-check-fat-bold' })
+    const page = await mountIt(VisitQrReceipt, { receipt: slotsReceipt, icon: 'i-ph-check-fat-bold' })
     const slots = page.get('ol[aria-hidden="true"]')
     expect(slots.findAll('li')).toHaveLength(3)
     expect(page.get('p.letreiro').classes()).toContain('text-secondary')
@@ -134,11 +141,11 @@ describe('counter components: LaunchReceipt', () => {
 describe('counter components: AmountField', () => {
   const amountProps = { amountText: '', errorCode: null, focusRequest: null }
 
-  it('has a labelled field that keeps the virtual keyboard closed', async () => {
+  it('has a labelled numeric field with the hint', async () => {
     const page = await mountIt(AmountField, { ...amountProps, hint: '1 ponto por real' })
     const input = page.get('input')
-    expect(page.get('label').text()).toBe(t('counter.launch.amountLabel'))
-    expect(input.attributes('inputmode')).toBe('none')
+    expect(page.get('label').text()).toBe(t('counter.visitQr.amountLabel'))
+    expect(input.attributes('inputmode')).toBe('numeric')
     expect(page.text()).toContain('1 ponto por real')
   })
 
@@ -148,20 +155,15 @@ describe('counter components: AmountField', () => {
     expect(page.get('input').attributes('aria-invalid')).toBe('true')
   })
 
-  it('emits typed text, focus and the Esc clear request', async () => {
+  it('emits the typed text', async () => {
     const page = await mountIt(AmountField, amountProps)
-    const input = page.get('input')
-    await typeInto(input.element as HTMLInputElement, '2490')
+    await typeInto(page.get('input').element as HTMLInputElement, '2490')
     expect(page.emitted('input')?.[0]).toEqual(['2490'])
-    await input.trigger('focus')
-    expect(page.emitted('fieldFocus')).toHaveLength(1)
-    await input.trigger('keydown', { key: 'Escape' })
-    expect(page.emitted('clear')).toHaveLength(1)
   })
 
   it('takes the focus only for an amount request', async () => {
     const page = await mountIt(AmountField, amountProps)
-    await page.setProps({ focusRequest: { target: 'phone', id: 1 } })
+    await page.setProps({ focusRequest: { target: 'issueVisitQr', id: 1 } })
     await flushPromises()
     expect(document.activeElement).not.toBe(page.get('input').element)
     await page.setProps({ focusRequest: { target: 'amount', id: 2 } })
@@ -170,76 +172,141 @@ describe('counter components: AmountField', () => {
   })
 })
 
-describe('counter components: LaunchForm', () => {
-  it('shows the phone field, the keypad and the submit label from props', async () => {
-    const page = await mountIt(LaunchForm, formProps)
-    expect(page.get('label').text()).toBe(t('counter.launch.phoneLabel'))
-    expect(page.get('button[type="submit"]').text()).toBe('Dar 1 carimbo')
-    expect(page.find('input[inputmode="none"]:not([type="tel"])').exists()).toBe(false)
-    expect(page.findAll('button[type="button"]')).toHaveLength(12)
+describe('counter components: VisitQrIssueForm', () => {
+  it('has no phone field or keypad: only the lead and the issue button', async () => {
+    const page = await mountIt(VisitQrIssueForm, formProps)
+    expect(page.text()).toContain(t('counter.visitQr.lead', { minutes: 5 }))
+    expect(page.get('button[type="submit"]').text()).toBe('Gerar QR da visita')
+    expect(page.find('input').exists()).toBe(false)
+    expect(page.findAll('button')).toHaveLength(1)
   })
 
-  it('adds the amount field only when the action asks for the amount', async () => {
-    const page = await mountIt(LaunchForm, { ...formProps, action: amountAction, submitLabel: 'Lançar valor' })
-    expect(page.find('input[inputmode="none"]:not([type="tel"])').exists()).toBe(true)
+  it('adds the amount field, the hint and the preview only in the amount mode', async () => {
+    const page = await mountIt(VisitQrIssueForm, {
+      ...formProps,
+      action: amountAction,
+      amountText: 'R$ 24,00',
+      amountHint: 'Vale 1 ponto por real gasto.',
+      amountPreview: 'R$ 24,00 vale 24 pontos (antes de bônus).',
+    })
+    expect(page.get('input').element).toBeInstanceOf(HTMLInputElement)
+    expect(page.text()).toContain('Vale 1 ponto por real gasto.')
+    expect(page.get('[aria-live="polite"]').text()).toContain('24 pontos')
   })
 
-  it('disables submit while there is no action and shows the pending state', async () => {
-    const page = await mountIt(LaunchForm, { ...formProps, action: null })
+  it('disables the button while there is no action and shows the pending state', async () => {
+    const page = await mountIt(VisitQrIssueForm, { ...formProps, action: null })
     expect(page.get('button[type="submit"]').attributes('disabled')).toBeDefined()
     await page.setProps({ action: visitAction, pending: true })
     expect(page.get('button[type="submit"]').attributes('disabled')).toBeDefined()
-    expect(page.findAll('button[type="button"]').every((key) => key.attributes('disabled') !== undefined)).toBe(true)
   })
 
-  it('marks the phone invalid with the error text', async () => {
-    const page = await mountIt(LaunchForm, { ...formProps, phoneErrorCode: 'invalidPhone' })
-    expect(page.text()).toContain(t('errors.invalidPhone'))
-    expect(page.get('input[type="tel"]').attributes('aria-invalid')).toBe('true')
-  })
-
-  it('emits the form submit, the keypad keys and the clear request', async () => {
-    const page = await mountIt(LaunchForm, formProps)
+  it('emits issue on submit (Enter in the amount field) and the typed amount', async () => {
+    const page = await mountIt(VisitQrIssueForm, { ...formProps, action: amountAction })
+    await typeInto(page.get('input').element as HTMLInputElement, '2490')
+    expect(page.emitted('amountInput')?.[0]).toEqual(['2490'])
     await page.get('form').trigger('submit')
-    expect(page.emitted('submit')).toHaveLength(1)
-    await button(page, '7').trigger('click')
-    expect(page.emitted('digit')?.[0]).toEqual(['7'])
-    await page.get(`button[aria-label="${t('counter.launch.keypadBackspace')}"]`).trigger('click')
-    expect(page.emitted('backspace')).toHaveLength(1)
-    await button(page, t('counter.launch.keypadClear')).trigger('click')
-    expect(page.emitted('clear')).toHaveLength(1)
+    expect(page.emitted('issue')).toHaveLength(1)
   })
 
-  it('updates the phone model with only the digits typed and announces the focus', async () => {
-    const page = await mountIt(LaunchForm, formProps)
-    const phone = page.get('input[type="tel"]')
-    await phone.trigger('focusin')
-    expect(page.emitted('fieldFocus')?.[0]).toEqual(['phone'])
-    await typeInto(phone.element as HTMLInputElement, '(67) 9000')
-    expect(page.emitted('update:phone')?.[0]).toEqual(['679000'])
+  it('marks the amount invalid with the error text', async () => {
+    const page = await mountIt(VisitQrIssueForm, { ...formProps, action: amountAction, amountErrorCode: 'invalidAmount' })
+    expect(page.text()).toContain(t('errors.invalidAmount'))
+    expect(page.get('input').attributes('aria-invalid')).toBe('true')
   })
 
-  it('focuses the phone field for a phone request', async () => {
-    const page = await mountIt(LaunchForm, formProps)
-    await page.setProps({ focusRequest: { target: 'phone', id: 1 } })
+  it('focuses the issue button for an issue request, and the amount field for an amount request', async () => {
+    const page = await mountIt(VisitQrIssueForm, { ...formProps, action: amountAction })
+    await page.setProps({ focusRequest: { target: 'issueVisitQr', id: 1 } })
     await flushPromises()
-    expect(document.activeElement).toBe(page.get('input[type="tel"]').element)
+    expect(document.activeElement).toBe(page.get('button[type="submit"]').element)
+    await page.setProps({ focusRequest: { target: 'amount', id: 2 } })
+    await flushPromises()
+    expect(document.activeElement).toBe(page.get('input').element)
   })
 })
 
-describe('counter components: LaunchPanel', () => {
-  it('composes the form and the feedback and passes their events up', async () => {
-    const page = await mountIt(LaunchPanel, {
-      ...formProps,
-      alertCode: null,
-      programFailed: true,
-      receipt: null,
-    })
-    expect(page.get('h2').text()).toBe(t('counter.launch.title'))
+describe('counter components: VisitQrCard', () => {
+  const cardProps = { display: activeDisplay, canSimulate: false, focusRequest: null }
+
+  it('shows the QR with its label, the code to type, the status and the countdown', async () => {
+    const page = await mountIt(VisitQrCard, cardProps)
+    expect(page.get('svg[role="img"]').attributes('aria-label')).toBe(activeDisplay.qrLabel)
+    expect(page.text()).toContain('K7M2Q')
+    expect(page.get('[role="status"]').text()).toBe('Aguardando o cliente')
+    expect(page.text()).toContain('Vence em 4:12')
+  })
+
+  it('offers print and cancel while waiting, and the test simulation only when there is one', async () => {
+    const page = await mountIt(VisitQrCard, cardProps)
+    expect(page.findAll('button').map((item) => item.text())).toEqual([t('counter.visitQr.print'), t('counter.visitQr.cancel')])
+    await button(page, t('counter.visitQr.print')).trigger('click')
+    await button(page, t('counter.visitQr.cancel')).trigger('click')
+    expect(page.emitted('print')).toHaveLength(1)
+    expect(page.emitted('cancel')).toHaveLength(1)
+    await page.setProps({ canSimulate: true })
+    await button(page, t('counter.visitQr.simulateClaim')).trigger('click')
+    expect(page.emitted('simulateClaim')).toHaveLength(1)
+  })
+
+  it('keeps everything but the QR out of the printed page', async () => {
+    const page = await mountIt(VisitQrCard, cardProps)
+    expect(page.get('figure').classes()).not.toContain('print:hidden')
+    expect(page.get('[role="status"]').element.parentElement?.classList.contains('print:hidden')).toBe(true)
+    expect(page.get('button').element.parentElement?.classList.contains('print:hidden')).toBe(true)
+  })
+
+  it('shows the antifraud refusal while the QR keeps waiting', async () => {
+    const refusal = 'Recusado: esse cliente já ganhou aqui. Libera hoje às 18:40.'
+    const page = await mountIt(VisitQrCard, { ...cardProps, display: { ...activeDisplay, refusal } })
+    expect(page.text()).toContain(refusal)
+    expect(page.find('svg').exists()).toBe(true)
+  })
+
+  it('drops the QR once used and shows the receipt and the issue-another button', async () => {
+    const display: VisitQrDisplayModel = {
+      ...activeDisplay,
+      status: 'claimed',
+      statusLabel: 'Usado',
+      countdown: null,
+      receipt: { key: 'visit_1', model: rulerReceipt },
+    }
+    const page = await mountIt(VisitQrCard, { ...cardProps, display })
+    expect(page.find('svg[role="img"]').exists()).toBe(false)
+    expect(page.get('[role="status"]').text()).toBe('Usado')
+    expect(page.text()).toContain(rulerReceipt.title)
+    expect(page.findAll('button').map((item) => item.text())).toEqual([t('counter.visitQr.issueAnother')])
+    await button(page, t('counter.visitQr.issueAnother')).trigger('click')
+    expect(page.emitted('issueAnother')).toHaveLength(1)
+  })
+
+  it('shows expired and cancelled without a QR, and focuses the issue-another button on request', async () => {
+    const display: VisitQrDisplayModel = { ...activeDisplay, status: 'expired', statusLabel: 'Vencido', countdown: null }
+    const page = await mountIt(VisitQrCard, { ...cardProps, display })
+    expect(page.find('svg').exists()).toBe(false)
+    expect(page.text()).toContain('Vencido')
+    await page.setProps({ focusRequest: { target: 'issueVisitQr', id: 1 } })
+    await flushPromises()
+    expect(document.activeElement).toBe(page.get('button').element)
+  })
+})
+
+describe('counter components: VisitQrPanel', () => {
+  it('shows the form when no QR is on the air and passes the events up', async () => {
+    const page = await mountIt(VisitQrPanel, { ...panelProps, programFailed: true })
+    expect(page.get('h2').text()).toBe(t('counter.visitQr.title'))
     await button(page, t('common.retry')).trigger('click')
     expect(page.emitted('retryProgram')).toHaveLength(1)
     await page.get('form').trigger('submit')
-    expect(page.emitted('submit')).toHaveLength(1)
+    expect(page.emitted('issue')).toHaveLength(1)
+  })
+
+  it('swaps the form for the card while a QR is on the air', async () => {
+    const page = await mountIt(VisitQrPanel, { ...panelProps, display: activeDisplay })
+    expect(page.find('form').exists()).toBe(false)
+    expect(page.find('svg[role="img"]').exists()).toBe(true)
+    await button(page, t('counter.visitQr.cancel')).trigger('click')
+    expect(page.emitted('cancel')).toHaveLength(1)
   })
 })
 

@@ -31,7 +31,7 @@ export class DrizzleRegistrationRepository extends RegistrationRepository {
             phoneHash: customer.phoneHash,
           })
           .onConflictDoNothing({ target: appUsers.id })
-        await tx.insert(customerProfiles).values({ userId: customer.userId, referralCode: customer.referralCode })
+        await tx.insert(customerProfiles).values({ userId: customer.userId, firstName: customer.firstName, referralCode: customer.referralCode })
       })
       return 'created'
     } catch (error) {

@@ -12,35 +12,35 @@ const REWARD_HISTORY_LIMIT = 20
 
 export function useWalletCards(): AsyncResult<WalletCard[], TransportError> {
   const { wallet } = useCustomerServices()
-  return useAsyncResult(() => wallet.listCards())
+  return useAsyncQuery('wallet-cards', () => wallet.listCards())
 }
 
 export function useWalletActivity(): AsyncResult<WalletActivity[], TransportError> {
   const { wallet } = useCustomerServices()
-  return useAsyncResult(() => wallet.listActivity(RECENT_ACTIVITY_LIMIT))
+  return useAsyncQuery('wallet-activity', () => wallet.listActivity(RECENT_ACTIVITY_LIMIT))
 }
 
 export function useRewardHistory(): AsyncResult<WalletActivity[], TransportError> {
   const { wallet } = useCustomerServices()
-  return useAsyncResult(() => wallet.listRewardHistory(REWARD_HISTORY_LIMIT))
+  return useAsyncQuery('wallet-rewards', () => wallet.listRewardHistory(REWARD_HISTORY_LIMIT))
 }
 
 export function useCustomerProfile(): AsyncResult<CustomerProfile, TransportError> {
   const { profile } = useCustomerServices()
-  return useAsyncResult(() => profile.getProfile())
+  return useAsyncQuery('customer-profile', () => profile.getProfile())
 }
 
 export function useDiscoverShops(): AsyncResult<ShopSummary[], TransportError> {
   const { discover } = useCustomerServices()
-  return useAsyncResult(() => discover.listShops())
+  return useAsyncQuery('discover-shops', () => discover.listShops())
 }
 
 export function useDiscoverChallenges(): AsyncResult<Challenge[], TransportError> {
   const { discover } = useCustomerServices()
-  return useAsyncResult(() => discover.listChallenges())
+  return useAsyncQuery('discover-challenges', () => discover.listChallenges())
 }
 
 export function useRanking(): AsyncResult<Ranking, TransportError> {
   const { ranking } = useCustomerServices()
-  return useAsyncResult(() => ranking.getRanking())
+  return useAsyncQuery('ranking', () => ranking.getRanking())
 }

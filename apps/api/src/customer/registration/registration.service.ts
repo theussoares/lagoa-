@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { REFERRAL_CODE_LENGTH } from '#shared/constants/domain'
+import type { CustomerRegistration } from '#shared/schemas/customer'
 import type { CustomerSession } from '#shared/schemas/session'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, type Result } from '#shared/types/result'
@@ -11,6 +12,9 @@ import { SessionService } from '../session/session.service'
 import { type NewCustomer, RegistrationRepository } from './registration.repository'
 
 const REFERRAL_CODE_ATTEMPTS = 5
+
+/** O que a pessoa conta de si no cadastro; tudo opcional para a API (o app exige o nome). */
+export type RegistrationDetails = Pick<CustomerRegistration, 'firstName' | 'email'>
 
 export type RegistrationError = ErrorOf<
   'unauthorized' | 'invalidPhone' | 'phoneAlreadyUsed' | 'emailAlreadyUsed' | 'notFound'
@@ -28,10 +32,16 @@ export class RegistrationService {
    * Idempotente. Devolve sempre a sessão que o `GET /customer/session` devolveria, para o app
    * decidir sobre os termos por uma regra só (repetir o cadastro não pode pular o aceite).
    */
-  async register(user: AuthUser, declaredPhone: string | undefined): Promise<Result<CustomerSession, RegistrationError>> {
-    const { id: userId, email } = user
+  async register(
+    user: AuthUser,
+    declaredPhone: string | undefined,
+    details: RegistrationDetails = {},
+  ): Promise<Result<CustomerSession, RegistrationError>> {
+    const { id: userId } = user
+    // O e-mail do login vale mais que o declarado (quem entra por SMS não tem um).
+    const email = user.email ?? details.email
     // Celular confirmado por SMS vale mais que o digitado: ninguém "toma" o número de outra pessoa.
-    if (email === undefined && user.phone === undefined) return err({ code: 'unauthorized' })
+    if (user.email === undefined && user.phone === undefined) return err({ code: 'unauthorized' })
     const phone = user.phone === undefined ? parsePhoneNumber(declaredPhone ?? '') : { ok: true as const, value: user.phone }
     if (!phone.ok) return err(phone.error)
 
@@ -42,6 +52,7 @@ export class RegistrationService {
         emailHash: email === undefined ? null : this.pii.hashEmail(email),
         phoneEncrypted: this.pii.encrypt(phone.value),
         phoneHash: this.pii.hashPhone(phone.value),
+        firstName: details.firstName ?? null,
         referralCode: generateReadableCode(REFERRAL_CODE_LENGTH),
       }
       switch (await this.repository.register(customer)) {

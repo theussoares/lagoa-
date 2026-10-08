@@ -14,12 +14,32 @@ export const BIRTHDAY_CHANGE_COOLDOWN_DAYS = 365
 /** Cidade do piloto: completa o endereço da loja na busca do mapa. */
 export const PILOT_CITY = 'Três Lagoas, MS'
 export const LAPSED_AFTER_DAYS = 30
-/** Código impresso embaixo do QR da loja, para quem prefere digitar. */
+/** Código impresso embaixo do QR da loja (entrar no clube), para quem prefere digitar. */
 export const CHECK_IN_CODE_LENGTH = 6
 /** Folga para espaços e hífens de quem digita o código impresso embaixo do QR. */
 export const CHECK_IN_CODE_INPUT_MAX_LENGTH = 32
-/** O QR da loja é um link `/check-in?loja=<código>`: a câmera do celular já abre o app no check-in. */
+/** O QR da loja é um link `/check-in?loja=<código>`: a câmera do celular já abre o app para entrar no clube. */
 export const CHECK_IN_LINK_PARAM = 'loja'
+/** QR da visita: uso único, gerado na hora da venda. */
+export const VISIT_QR_TTL_MINUTES = 5
+/** O Balcão consulta o QR da visita nesse intervalo enquanto ele está ativo (aguardando o cliente). */
+export const VISIT_QR_STATUS_POLL_MS = 3000
+/**
+ * O QR da visita é um link `/check-in#visita=<token>`: a câmera do celular já abre o app no ganho. Fragmento, nunca
+ * query: o token não chega ao servidor no GET da página nem entra em log de acesso (P-19).
+ */
+export const VISIT_QR_LINK_PARAM = 'visita'
+/** 32 bytes (256 bits) em base64url, sem padding: 43 caracteres. */
+export const VISIT_TOKEN_BYTES = 32
+export const VISIT_TOKEN_LENGTH = 43
+/** Folga antes do parse (o servidor responde `invalidVisitQr` ao que não tiver o formato). */
+export const VISIT_TOKEN_INPUT_MAX_LENGTH = 64
+/** Código curto da visita, digitado. Diferente de CHECK_IN_CODE_LENGTH para o app saber qual dos dois é. P-03. */
+export const VISIT_CODE_LENGTH = 5
+/** Tentativas de código curto por conta (rota própria): 28⁵ combinações só ficam fora de alcance com teto baixo. */
+export const VISIT_CODE_ATTEMPTS_LIMIT = 5
+export const VISIT_CODE_ATTEMPTS_WINDOW_MINUTES = 10
+export const VISIT_CODE_INPUT_MAX_LENGTH = 32
 /** Teto da vitrine do Descobrir: o piloto é uma cidade; lista sempre limitada. */
 export const DISCOVER_SHOPS_LIMIT = 200
 /** Versão dos termos de uso/LGPD que o app mostra; vai para o aceite (auditoria). Muda quando o texto muda. */
@@ -39,6 +59,9 @@ export const DATA_EXPORT_LIST_LIMIT = 5000
 /** Indicações pagas por indicador em cada loja: quem fabrica contas para si não acumula carimbo sem fim. */
 export const REFERRAL_REWARDS_MAX_PER_SHOP = 10
 export const PHONE_INPUT_MAX_LENGTH = 32
+export const CUSTOMER_FIRST_NAME_MAX_LENGTH = 40
+/** Limite do endereço de e-mail (RFC 5321). */
+export const EMAIL_MAX_LENGTH = 254
 export const LOGIN_CODE_LENGTH = 6
 export const LOGIN_CODE_TTL_MINUTES = 5
 export const FOUNDER_PLAN_PRICE_CENTS = 7900
@@ -55,6 +78,9 @@ export const REWARD_TITLE_MAX_LENGTH = 60
 export const AMOUNT_MAX_CENTS = 10_000_00
 /** Espera antes de liberar "Reenviar código" no login. */
 export const LOGIN_CODE_RESEND_SECONDS = 60
+/** Teto de SMS de login por celular na janela: cada envio custa, e número sem entrega vira fila de códigos. */
+export const SMS_SENDS_MAX_PER_WINDOW = 3
+export const SMS_SEND_WINDOW_MINUTES = 60
 /** Ticket médio de referência para estimar quanto uma visita rende em pontos por real. */
 export const REFERENCE_TICKET_REAIS = 20
 export const REMINDER_MESSAGE_MAX_LENGTH = 140

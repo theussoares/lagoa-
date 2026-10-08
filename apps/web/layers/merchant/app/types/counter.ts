@@ -1,12 +1,13 @@
 import type { MaskedPhone } from '#shared/schemas/phone'
 import type { StampCardBody } from '#layers/ui/app/types/wallet'
 import type { ProgramUnit } from '#shared/schemas/program'
-import type { CounterEntry, VisitRegistered } from '#shared/schemas/visit'
+import type { CounterEntry } from '#shared/schemas/visit'
 import type { DomainErrorCode, TransportError } from '#shared/types/errors'
 import type { ComputedRef, Ref } from 'vue'
 import type { AsyncResultState } from '#layers/core/app/types/asyncResult'
 import type { RedemptionPreview } from '#shared/schemas/redemption'
 import type { FocusRequest } from '#layers/ui/app/types/focus'
+import type { CounterVisitQrView } from './visitQr'
 
 /** Modelos de exibição do Balcão. Texto pronto em pt-BR; celular só mascarado. */
 
@@ -27,7 +28,7 @@ export interface CounterLedgerEntryModel {
   readonly fresh: boolean
 }
 
-/** O cartão do cliente logo depois do lançamento, para o atendente conferir de relance. */
+/** O cartão do cliente logo depois do uso do QR da visita, para o atendente conferir de relance. */
 export interface LaunchReceiptModel {
   readonly tone: 'ink' | 'reward'
   /** Inclinação fixa da impressão grande do recibo. */
@@ -43,21 +44,6 @@ export interface LaunchReceiptModel {
 export type CounterAction =
   | { readonly kind: 'visit'; readonly unit: ProgramUnit; readonly units: number }
   | { readonly kind: 'amount'; readonly pointsPerReal: number }
-
-export type CounterLaunchState =
-  | { status: 'idle' }
-  | { status: 'pending' }
-  | { status: 'error'; code: DomainErrorCode }
-  | { status: 'success'; result: VisitRegistered }
-
-export interface CounterLaunch {
-  phone: Ref<string>
-  amount: Ref<string>
-  state: Readonly<Ref<CounterLaunchState>>
-  /** Lança a visita (ou o valor). Devolve o resultado para a caderneta, ou null. */
-  submit: (action: CounterAction) => Promise<VisitRegistered | null>
-  clear: () => void
-}
 
 export interface CounterLedger {
   state: ComputedRef<AsyncResultState<CounterEntry[], TransportError>>
@@ -84,38 +70,8 @@ export interface RedemptionCheck {
   reset: () => void
 }
 
-/** Texto do botão principal e da dica do valor, conforme o modo do clube. */
-export interface LaunchFormText {
-  readonly submitLabel: string
-  readonly amountHint: string | undefined
-}
-
-export type CounterField = 'phone' | 'amount'
-export type CounterFocusTarget = CounterField | 'redemptionCode'
+export type CounterFocusTarget = 'amount' | 'issueVisitQr' | 'redemptionCode'
 export type CounterFocus = (target: CounterFocusTarget) => void
-
-export interface CounterLaunchView {
-  /** Só dígitos; v-model do visor. */
-  phone: string
-  readonly amountText: string
-  readonly action: CounterAction | null
-  readonly submitLabel: string
-  readonly amountHint: string | undefined
-  readonly pending: boolean
-  readonly phoneErrorCode: 'invalidPhone' | null
-  readonly amountErrorCode: 'invalidAmount' | null
-  /** Erro que não é de campo. */
-  readonly alertCode: DomainErrorCode | null
-  readonly programFailed: boolean
-  readonly receipt: { readonly key: string; readonly model: LaunchReceiptModel } | null
-  readonly setActiveField: (field: CounterField) => void
-  readonly inputAmount: (value: string | number) => void
-  readonly pressDigit: (digit: string) => void
-  readonly pressBackspace: () => void
-  readonly clear: () => void
-  readonly submit: () => Promise<void>
-  readonly retryProgram: () => Promise<void>
-}
 
 export interface CounterRedemptionPreviewModel {
   readonly rewardTitle: string
@@ -145,7 +101,7 @@ export interface CounterLedgerView {
 export interface CounterScreen {
   readonly today: string
   readonly focusRequest: FocusRequest<CounterFocusTarget> | null
-  readonly launch: CounterLaunchView
+  readonly visitQr: CounterVisitQrView
   readonly redemption: CounterRedemptionView
   readonly ledger: CounterLedgerView
 }

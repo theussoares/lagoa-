@@ -6,6 +6,6 @@ export class HttpAccountService implements AccountService {
   constructor(private readonly api: ApiClient) {}
 
   async eraseAccount() {
-    return transportOnly(await this.api.delete('/customer/account', z.undefined()))
+    return transportOnly(await this.api.delete('/account', z.undefined()))
   }
 }

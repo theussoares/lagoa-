@@ -89,4 +89,22 @@ describe('toStampCardModel', () => {
     expect(seenBefore.status).toMatchObject({ kind: 'ready', fresh: false })
     expect(firstTime.rewardReady).toBe(true)
   })
+
+  describe('note', () => {
+    it('hints at the visit QR and the pending welcome bonus on a card with no visit yet', () => {
+      const model = toStampCardModel(card({ balance: 0 }), options)
+      expect(model.note).toBe('wallet.card.firstVisitHintWelcome units=units.stamp #2')
+    })
+
+    it('hints only at the visit QR when the shop gives no welcome bonus', () => {
+      const base = card({ balance: 0 })
+      const noWelcome = { ...base, shop: { ...base.shop, program: { ...base.shop.program, welcomeUnits: 0 } } }
+      expect(toStampCardModel(noWelcome, options).note).toBe('wallet.card.firstVisitHint')
+    })
+
+    it('shows nothing once the card has a visit', () => {
+      const model = toStampCardModel(card({ lastVisitAt: '2026-10-01T12:00:00.000Z' }), options)
+      expect(model.note).toBeNull()
+    })
+  })
 })

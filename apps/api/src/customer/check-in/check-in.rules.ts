@@ -1,29 +1,26 @@
-import { checkInAvailableAt } from '#shared/domain/antifraud'
-import { type EarningPlan, planEarning } from '#shared/domain/earning'
+import { type EarningPlan } from '#shared/domain/earning'
+import { decideVisitEarning, decideVisitQrUse, type VisitQrUseError } from '#shared/domain/visitQr'
 import type { ErrorOf } from '#shared/types/errors'
-import { err, type Result } from '#shared/types/result'
-import { toIso } from '#shared/utils/time'
-import type { CheckInShop, CheckInState } from './check-in.repository'
+import type { Result } from '#shared/types/result'
+import type { LockedVisitQr, VisitClaimState, VisitQrTarget } from './check-in.repository'
 
-export type CheckInDecisionError = ErrorOf<'checkInCooldown' | 'checkInDisabled'>
+export type EarningDecisionError = ErrorOf<'checkInCooldown' | 'visitQrStale'>
 
-/** Antifraude primeiro (janela de qualquer visita), depois o que a visita rende. */
-export function decideCheckIn(
-  { shop, cooldownHours }: CheckInShop,
-  state: CheckInState,
-  now: Date,
-): Result<EarningPlan, CheckInDecisionError> {
-  const availableAt = checkInAvailableAt(state.card.lastVisitAt, cooldownHours, now)
-  if (availableAt !== null) return err({ code: 'checkInCooldown', availableAt: toIso(availableAt) })
+/** RN-11 passos 1–4 sobre o QR travado: quem decide validade e uso único é o domínio compartilhado. */
+export function decideQrUse(qr: LockedVisitQr, customerId: string, now: Date): Result<'claim' | 'replay', VisitQrUseError> {
+  return decideVisitQrUse(qr, customerId, now)
+}
 
-  const plan = planEarning({
-    rules: shop.program.rules,
-    bonusRules: shop.program.bonusRules,
-    customerBirthday: state.birthday,
+/** RN-11 passos 5–6: janela da versão ativa, depois o que o QR rende nas regras do cartão. */
+export function decideEarning(target: VisitQrTarget, state: VisitClaimState, now: Date): Result<EarningPlan, EarningDecisionError> {
+  const { rules, bonusRules } = target.shop.program
+  return decideVisitEarning({
+    rules,
+    bonusRules,
+    cooldownHours: target.cooldownHours,
     card: state.card,
-    input: { kind: 'visit' },
+    birthday: state.birthday,
+    earn: target.earn,
     now,
   })
-  // Clube que só ganha por valor (pontos por real) não aceita check-in: não há valor para ler.
-  return plan.ok ? plan : err({ code: 'checkInDisabled' })
 }

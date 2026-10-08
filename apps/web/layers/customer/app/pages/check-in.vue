@@ -10,11 +10,12 @@ const screen = useCheckInScreen()
     <p class="sr-only" aria-live="polite">{{ screen.announcement }}</p>
 
     <CheckInEarnedStep v-if="screen.earned" :earned="screen.earned" :focus-request="screen.focusRequest" />
+    <CheckInJoinedStep v-else-if="screen.joined" :joined="screen.joined" :focus-request="screen.focusRequest" />
 
     <template v-else>
       <PageTitle
         :title="$t('checkIn.title')"
-        :lead="screen.view === 'notice' ? undefined : $t(screen.view === 'scan' ? 'checkIn.leadScan' : 'checkIn.leadType')"
+        :lead="screen.view === 'notice' ? undefined : $t(screen.view === 'scan' ? 'checkIn.leadScan' : 'checkIn.leadType', { length: screen.codeLength })"
       />
 
       <CheckInNotice v-if="screen.notice" :notice="screen.notice" @recover="screen.recover" @type-code="screen.typeCode" />
@@ -27,15 +28,16 @@ const screen = useCheckInScreen()
       <CheckInCodeForm
         v-else
         v-model:code="screen.code"
+        :kind="screen.codeKind"
+        :length="screen.codeLength"
         :camera-issue="screen.cameraIssue"
         :invalid="screen.codeInvalid"
         :typing="screen.typing"
         :focus-request="screen.focusRequest"
         @submit="screen.submitTyped"
         @switch-to-camera="screen.switchToCamera"
+        @switch-kind="screen.switchCodeKind"
       />
-
-      <InkNote v-if="screen.mockCode && !screen.notice" tone="pencil" :description="$t('checkIn.mockHint', { code: screen.mockCode })" />
     </template>
   </div>
 </template>

@@ -16,6 +16,7 @@ import { maskPhone } from '#shared/utils/phone'
 import { addDays, toIso } from '#shared/utils/time'
 import type { MockContext } from './context'
 import { findCustomer, findProgram } from './queries'
+import { cancelActiveVisitQrs } from './visitQr'
 
 const filters: Readonly<Record<CustomerFilter, (row: MerchantCustomerRow) => boolean>> = {
   all: () => true,
@@ -97,5 +98,6 @@ export function updateProgram(
   const next: Program = { ...current, ...parsed.data }
   ctx.state.programs = ctx.state.programs.map((program) => (program.shopId === shopId ? next : program))
   ctx.state.cards = ctx.state.cards.map((card) => (card.shopId === shopId ? retarget(ctx, card, next) : card))
+  cancelActiveVisitQrs(ctx, shopId)
   return ok(next)
 }

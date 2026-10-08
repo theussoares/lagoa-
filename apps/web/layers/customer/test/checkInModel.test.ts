@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
+import { WalletCardSchema } from '#shared/schemas/loyaltyCard'
 import { CheckInResultSchema } from '#shared/schemas/visit'
 import type { Translate } from '#layers/core/app/types/i18n'
-import { formatCheckInWhen, seenBalanceBefore, toCheckInEarnedModel, toCheckInNotice } from '../app/utils/checkInModel'
+import { seenBalanceBefore, toCheckInEarnedModel, toCheckInJoinedModel, toCheckInNotice } from '../app/utils/checkInModel'
 
 const t: Translate = (key, named = {}, plural) =>
   [key, ...Object.entries(named).map(([name, value]) => `${name}=${String(value)}`), plural === undefined ? '' : `#${plural}`]
@@ -26,21 +27,12 @@ const result = CheckInResultSchema.parse({
   nextCheckInAt: '2026-10-02T18:00:00Z',
 })
 
-describe('formatCheckInWhen', () => {
-  it.each([
-    ['2026-10-02T22:40:00Z', 'checkIn.when.today time=18:40'],
-    ['2026-10-03T13:00:00Z', 'checkIn.when.tomorrow time=09:00'],
-    ['2026-10-05T13:00:00Z', 'checkIn.when.later date=5 de out. time=09:00'],
-  ])('describes %s in the city time zone', (iso, expected) => {
-    expect(formatCheckInWhen(iso, now, t)).toBe(expected)
-  })
-
-  it('treats 23h local as today even when UTC already turned the day', () => {
-    expect(formatCheckInWhen('2026-10-03T03:00:00Z', now, t)).toBe('checkIn.when.today time=23:00')
-  })
-})
-
 describe('toCheckInNotice', () => {
+  it('sends a typed code that hit the attempts limit back to the camera instead of offering the same try again', () => {
+    expect(toCheckInNotice({ code: 'rateLimited' }, 'typed', now, t)).toMatchObject({ recovery: 'scanAgain' })
+    expect(toCheckInNotice({ code: 'rateLimited' }, 'camera', now, t)).toMatchObject({ recovery: 'retry' })
+  })
+
   it('explains the cooldown with the moment it ends and sends the customer to the wallet', () => {
     const notice = toCheckInNotice({ code: 'checkInCooldown', availableAt: '2026-10-02T18:00:00Z' }, 'camera', now, t)
     expect(notice).toMatchObject({ tone: 'warning', recovery: 'wallet', message: 'checkIn.notice.cooldown when=checkIn.when.today time=14:00' })
@@ -52,6 +44,37 @@ describe('toCheckInNotice', () => {
 
   it('offers a new scan for a QR that is not a shop', () => {
     expect(toCheckInNotice({ code: 'invalidShopQr' }, 'camera', now, t)).toMatchObject({ tone: 'error', recovery: 'scanAgain' })
+  })
+
+  it('explains a disabled shop entrance with the wallet recovery', () => {
+    expect(toCheckInNotice({ code: 'checkInDisabled' }, 'camera', now, t)).toMatchObject({
+      title: 'checkIn.notice.joinDisabledTitle',
+      message: 'errors.checkInDisabled',
+      recovery: 'wallet',
+    })
+  })
+
+  it.each([
+    ['invalidVisitQr', 'checkIn.notice.invalidVisitQrTitle'],
+    ['visitQrExpired', 'checkIn.notice.visitQrExpiredTitle'],
+    ['visitQrAlreadyUsed', 'checkIn.notice.visitQrUsedTitle'],
+    ['visitQrStale', 'checkIn.notice.visitQrStaleTitle'],
+  ] as const)('asks for a new visit QR on %s, with the scan-again recovery', (code, title) => {
+    expect(toCheckInNotice({ code }, 'camera', now, t)).toEqual({
+      tone: 'error',
+      icon: 'i-ph-qr-code',
+      title,
+      message: `errors.${code}`,
+      recovery: 'scanAgain',
+    })
+  })
+
+  it('keeps a wrong typed visit code on the field instead of a notice', () => {
+    expect(toCheckInNotice({ code: 'invalidVisitQr' }, 'typed', now, t)).toBeNull()
+  })
+
+  it.each(['visitQrExpired', 'visitQrAlreadyUsed', 'visitQrStale'] as const)('still shows a notice for a typed code that is %s', (code) => {
+    expect(toCheckInNotice({ code }, 'typed', now, t)).toMatchObject({ recovery: 'scanAgain' })
   })
 
   it('offers a retry when the network fails', () => {
@@ -113,5 +136,57 @@ describe('earned check-in', () => {
       card: { ...result.card, unit: 'point', balance: 95, target: 100 },
     })
     expect(toCheckInEarnedModel(points, null, now, t).cheer).toBe('checkIn.earned.almost units=units.point count=5 #5 #5')
+  })
+})
+
+describe('joined shop', () => {
+  const card = WalletCardSchema.parse({
+    id: 'card_1',
+    shopId: 'shop_barbearia',
+    programId: 'prog_shop_barbearia',
+    unit: 'stamp',
+    balance: 0,
+    target: 10,
+    rewardTitle: 'Corte grátis',
+    stamps: [],
+    lastVisitAt: null,
+    rewardExpiresAt: null,
+    shop: {
+      id: 'shop_barbearia',
+      name: 'Barbearia Navalha',
+      category: 'barbershop',
+      neighborhood: 'Centro',
+      addressLine: 'Endereço de exemplo, Centro',
+      program: { unit: 'stamp', target: 10, rewardTitle: 'Corte grátis', earnRate: { per: 'visit', units: 1 }, welcomeUnits: 2 },
+    },
+  })
+  const joined = { shopId: card.shopId, cardId: card.id, alreadyMember: false }
+
+  it('welcomes a new member with the shop name, the pending welcome bonus and the next step', () => {
+    expect(toCheckInJoinedModel(joined, card, t)).toEqual({
+      title: 'checkIn.joined.title',
+      lead: 'checkIn.joined.lead shop=Barbearia Navalha',
+      welcome: 'checkIn.joined.welcome units=units.stamp #2',
+      next: 'checkIn.joined.next',
+      announcement: 'checkIn.joined.announce title=checkIn.joined.title lead=checkIn.joined.lead shop=Barbearia Navalha',
+    })
+  })
+
+  it('says the customer already belonged and keeps the welcome while no visit happened', () => {
+    const model = toCheckInJoinedModel({ ...joined, alreadyMember: true }, card, t)
+    expect(model.title).toBe('checkIn.joined.titleAgain')
+    expect(model.welcome).not.toBeNull()
+  })
+
+  it('drops the welcome bonus once there was a visit or when the shop has none', () => {
+    expect(toCheckInJoinedModel(joined, { ...card, lastVisitAt: '2026-10-01T10:00:00Z' }, t).welcome).toBeNull()
+    const noBonus = { ...card, shop: { ...card.shop, program: { ...card.shop.program, welcomeUnits: 0 } } }
+    expect(toCheckInJoinedModel(joined, noBonus, t).welcome).toBeNull()
+  })
+
+  it('talks about the shop in general when the card did not load', () => {
+    const model = toCheckInJoinedModel(joined, null, t)
+    expect(model.lead).toBe('checkIn.joined.leadNoShop')
+    expect(model.welcome).toBeNull()
   })
 })

@@ -1,6 +1,4 @@
-import { useSessionStore } from '#layers/core/app/stores/session'
-
-export default defineNuxtRouteMiddleware((to) => {
-  if (useSessionStore().customer === null) return
-  return navigateTo(safeReturnPath(to.query.para))
+export default defineNuxtRouteMiddleware(async (to) => {
+  if ((await useCustomerSession().restore()) === null) return
+  return navigateTo(returnLocation(to.query.para, to.hash))
 })

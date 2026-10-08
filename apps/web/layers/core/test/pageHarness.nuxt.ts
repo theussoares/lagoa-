@@ -3,6 +3,8 @@ import type { VueWrapper } from '@vue/test-utils'
 import { vi } from 'vitest'
 import { useNuxtApp } from '#imports'
 import { useSessionStore } from '#layers/core/app/stores/session'
+import { useMerchantSessionStore } from '#layers/merchant/app/stores/merchantSession'
+import { createMockCustomerServices } from '#layers/core/test/mockCustomerServices'
 import { TEST_NOW } from '#layers/core/test/fixtures'
 import type { CustomerSession, MerchantSession } from '#shared/schemas/session'
 
@@ -21,10 +23,14 @@ export function resetWorld(world: World = {}): void {
   window.localStorage.clear()
   useNuxtApp().$mockBackend.reset()
   const sessions = useSessionStore()
+  const merchants = useMerchantSessionStore()
   sessions.endCustomer()
-  sessions.endMerchant()
+  merchants.endMerchant()
   if (world.customer) sessions.startCustomer(world.customer)
-  if (world.merchant) sessions.startMerchant(world.merchant)
+  if (world.merchant) merchants.startMerchant(world.merchant)
+  // O app do cliente só fala com o BFF; nos testes de página os services HTTP dão lugar ao mock em memória.
+  const { $mockBackend, $customerServices } = useNuxtApp()
+  Object.assign($customerServices, createMockCustomerServices($mockBackend, { current: () => sessions.customer }))
 }
 
 export function restoreClock(): void {

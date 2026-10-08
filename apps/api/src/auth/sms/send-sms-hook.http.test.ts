@@ -6,6 +6,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import type { PhoneNumber } from '#shared/schemas/phone'
 import { ENV } from '../../config/config.module'
 import { SendSmsHookController } from './send-sms-hook.controller'
+import { SmsSendGate } from './sms-send-gate'
 import { SmsSender } from './sms-sender'
 
 const KEY = Buffer.from('hook-test-secret-hook-test-secret')
@@ -27,14 +28,22 @@ function signed(body: string, at = Math.floor(Date.now() / 1000)): Record<string
 
 const PAYLOAD = JSON.stringify({ user: { phone: '5567991230374' }, sms: { otp: '123456' } })
 
+class ScriptedGate {
+  allowed = true
+  async allow(): Promise<boolean> {
+    return this.allowed
+  }
+}
+
 describe('Send SMS hook', () => {
   let app: INestApplication
   const sender = new RecordingSmsSender()
+  const gate = new ScriptedGate()
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [SendSmsHookController],
-      providers: [{ provide: ENV, useValue: { SEND_SMS_HOOK_SECRET: SECRET } }, { provide: SmsSender, useValue: sender }],
+      providers: [{ provide: ENV, useValue: { SEND_SMS_HOOK_SECRET: SECRET } }, { provide: SmsSender, useValue: sender }, { provide: SmsSendGate, useValue: gate }],
     }).compile()
     app = moduleRef.createNestApplication({ rawBody: true })
     await app.init()
@@ -43,6 +52,7 @@ describe('Send SMS hook', () => {
   beforeEach(() => {
     sender.sent = []
     sender.accepts = true
+    gate.allowed = true
   })
 
   it('sends the code to the 11-digit phone when the signature is valid', async () => {
@@ -70,5 +80,12 @@ describe('Send SMS hook', () => {
     sender.accepts = false
     const response = await request(app.getHttpServer()).post('/auth/hooks/send-sms').set(signed(PAYLOAD)).send(PAYLOAD).expect(200)
     expect(response.body).toEqual({ error: { http_code: 502, message: 'sms provider failed' } })
+  })
+
+  it('answers 429 and sends nothing when the phone hit its SMS limit', async () => {
+    gate.allowed = false
+    const response = await request(app.getHttpServer()).post('/auth/hooks/send-sms').set(signed(PAYLOAD)).send(PAYLOAD).expect(200)
+    expect(response.body).toEqual({ error: { http_code: 429, message: 'too many sms requests' } })
+    expect(sender.sent).toHaveLength(0)
   })
 })

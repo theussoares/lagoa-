@@ -3,22 +3,34 @@ import { BirthdaySchema, IsoDateTimeSchema } from '#shared/schemas/common'
 import { CampaignSchema } from '#shared/schemas/campaign'
 import { ChallengeSchema } from '#shared/schemas/discover'
 import { ConsentSchema } from '#shared/schemas/customer'
-import { CustomerIdSchema, MerchantIdSchema, ShopIdSchema, VisitIdSchema } from '#shared/schemas/ids'
+import { CustomerIdSchema, MerchantIdSchema, ProgramIdSchema, ShopIdSchema, VisitIdSchema, VisitQrIdSchema } from '#shared/schemas/ids'
 import { LoyaltyCardSchema } from '#shared/schemas/loyaltyCard'
 import { PhoneNumberSchema } from '#shared/schemas/phone'
 import { ProgramSchema, ProgramUnitSchema } from '#shared/schemas/program'
 import { RedemptionSchema } from '#shared/schemas/redemption'
 import { LoginCodeSchema, SignUpTicketSchema } from '#shared/schemas/session'
 import { CheckInCodeSchema, ShopSchema } from '#shared/schemas/shop'
-import { LedgerKindSchema } from '#shared/schemas/visit'
+import { CardProgressSchema, LedgerKindSchema } from '#shared/schemas/visit'
+import {
+  VisitCodeSchema,
+  VisitQrCancelReasonSchema,
+  VisitQrEarnSchema,
+  VisitQrRefusalSchema,
+  VisitQrStatusSchema,
+  VisitTokenSchema,
+} from '#shared/schemas/visitQr'
 
 /**
  * Banco do backend falso. Só existe no mock: é o "servidor" que guarda o
  * celular completo. Nada daqui sai para a UI sem passar pelos handlers.
  */
-export const MOCK_STATE_VERSION = 7
+export const MOCK_STATE_VERSION = 9
 
-export const ShopRecordSchema = ShopSchema.extend({ checkInCode: CheckInCodeSchema })
+export const ShopRecordSchema = ShopSchema.extend({
+  checkInCode: CheckInCodeSchema,
+  /** O lojista já imprimiu o cartaz novo (só entra no clube). Futuro: coluna em `shops`. */
+  posterReprinted: z.boolean(),
+})
 export type ShopRecord = z.infer<typeof ShopRecordSchema>
 
 export const CustomerRecordSchema = z.object({
@@ -80,6 +92,33 @@ export type ChallengeRecord = z.infer<typeof ChallengeRecordSchema>
 export const CampaignRecordSchema = CampaignSchema.extend({ recipientIds: z.array(CustomerIdSchema) })
 export type CampaignRecord = z.infer<typeof CampaignRecordSchema>
 
+/**
+ * QR da visita no servidor falso. EXCEÇÃO DO MOCK: o `token` fica em claro no estado (`localStorage`) porque não há hash
+ * síncrono no navegador e o mock não é um servidor de verdade; a API do lojista guarda só o hash e some com este registro.
+ */
+export const VisitQrRecordSchema = z.object({
+  id: VisitQrIdSchema,
+  shopId: ShopIdSchema,
+  programId: ProgramIdSchema,
+  issuedBy: MerchantIdSchema,
+  token: VisitTokenSchema,
+  visitCode: VisitCodeSchema,
+  earn: VisitQrEarnSchema,
+  /** Como gravado: `active` vencido só vira `expired` na leitura (`visitQrStatusAt`). */
+  status: VisitQrStatusSchema,
+  cancelReason: VisitQrCancelReasonSchema.nullable(),
+  createdAt: IsoDateTimeSchema,
+  expiresAt: IsoDateTimeSchema,
+  claimedBy: CustomerIdSchema.nullable(),
+  claimedAt: IsoDateTimeSchema.nullable(),
+  ledgerEntryId: VisitIdSchema.nullable(),
+  /** Só do mock: o recibo do ganho (cartão logo depois e boas-vindas) para o replay e o Balcão devolverem o mesmo. */
+  cardAfter: CardProgressSchema.nullable(),
+  welcomeUnits: z.number().int().nonnegative(),
+  refusal: VisitQrRefusalSchema.nullable(),
+})
+export type VisitQrRecord = z.infer<typeof VisitQrRecordSchema>
+
 export const MockStateSchema = z.object({
   version: z.literal(MOCK_STATE_VERSION),
   shops: z.array(ShopRecordSchema),
@@ -93,5 +132,6 @@ export const MockStateSchema = z.object({
   challenges: z.array(ChallengeRecordSchema),
   campaigns: z.array(CampaignRecordSchema),
   signUpTickets: z.array(SignUpTicketRecordSchema),
+  visitQrs: z.array(VisitQrRecordSchema),
 })
 export type MockState = z.infer<typeof MockStateSchema>

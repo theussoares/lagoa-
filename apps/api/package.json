@@ -12,6 +12,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "node --env-file-if-exists=.env --require @swc-node/register src/database/seed.ts",
+    "visit-qr:dev": "node --env-file-if-exists=.env --require @swc-node/register src/database/dev-issue-visit-qr.ts",
     "build:vercel": "node scripts/build-vercel.mjs"
   },
   "dependencies": {

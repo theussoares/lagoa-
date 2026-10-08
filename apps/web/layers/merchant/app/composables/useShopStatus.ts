@@ -1,10 +1,10 @@
-import { useSessionStore } from '#layers/core/app/stores/session'
+import { useMerchantSessionStore } from '../stores/merchantSession'
 import type { ShopStatusSync } from '../types/session'
 
 /** A sessão guarda a situação da loja do login; o servidor é quem sabe se ela mudou. */
 export function useShopStatus(): ShopStatusSync {
   const { shopStatus, shopApprovalTesting } = useMerchantServices()
-  const sessions = useSessionStore()
+  const sessions = useMerchantSessionStore()
 
   async function refresh(): Promise<void> {
     if (sessions.merchant === null) return

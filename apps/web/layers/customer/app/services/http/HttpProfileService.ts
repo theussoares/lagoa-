@@ -6,18 +6,18 @@ export class HttpProfileService implements ProfileService {
   constructor(private readonly api: ApiClient) {}
 
   async getProfile() {
-    return transportOnly(await this.api.get('/customer/profile', CustomerProfileSchema))
+    return transportOnly(await this.api.get('/profile', CustomerProfileSchema))
   }
 
   async updateProfile(update: ProfileUpdate) {
-    return allowing('birthdayLocked')(await this.api.put('/customer/profile', CustomerProfileSchema, { body: update }))
+    return allowing('birthdayLocked')(await this.api.put('/profile', CustomerProfileSchema, { body: update }))
   }
 
   async setNotificationConsent(granted: boolean) {
-    return transportOnly(await this.api.put('/customer/profile/consent', CustomerProfileSchema, { body: { granted } }))
+    return transportOnly(await this.api.put('/profile/consent', CustomerProfileSchema, { body: { granted } }))
   }
 
   async acceptTerms() {
-    return transportOnly(await this.api.post('/customer/profile/terms', CustomerProfileSchema))
+    return transportOnly(await this.api.post('/profile/terms', CustomerProfileSchema))
   }
 }

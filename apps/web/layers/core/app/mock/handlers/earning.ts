@@ -1,12 +1,10 @@
-import { welcomeUnits } from '#shared/domain/bonusRules'
-import { planEarning } from '#shared/domain/earning'
+import type { EarningPlan } from '#shared/domain/earning'
 import { addUnits, isRewardReady } from '#shared/domain/loyaltyCard'
-import type { EarnError, EarnInput } from '#shared/domain/programStrategies'
+import { REWARD_HOLD_DAYS } from '#shared/constants/domain'
 import { VisitIdSchema } from '#shared/schemas/ids'
 import type { EarnSource, LoyaltyCard } from '#shared/schemas/loyaltyCard'
 import type { Program } from '#shared/schemas/program'
 import type { CounterEntry, WalletActivity } from '#shared/schemas/visit'
-import { REWARD_HOLD_DAYS } from '#shared/constants/domain'
 import { err, ok } from '#shared/types/result'
 import type { Result } from '#shared/types/result'
 import { addDays, toIso } from '#shared/utils/time'
@@ -14,41 +12,26 @@ import type { MockContext } from './context'
 import { findCard, findShop, maskedPhoneOf, newCard, replaceCard } from './queries'
 import type { CustomerRecord, LedgerRecord } from '../state'
 
-export function visitUnits(
+/** Aplica no cartão o plano inteiro de `planEarning` (boas-vindas, unidades, prazo do prêmio): o mock não refaz a conta. */
+export function applyEarningPlan(
   ctx: MockContext,
   customer: CustomerRecord,
   program: Program,
-  input: EarnInput,
-): Result<number, EarnError> {
-  // Mesma conta do servidor (`planEarning`); as boas-vindas do cartão novo o mock aplica em `creditCard`.
-  const plan = planEarning({
-    rules: program.rules,
-    bonusRules: program.bonusRules,
-    customerBirthday: customer.birthday,
-    card: null,
-    input,
-    now: ctx.now,
-  })
-  return plan.ok ? ok(plan.value.units) : plan
-}
-
-/** Credita unidades no cartão (criando-o com boas-vindas se for o primeiro). */
-export function creditCard(
-  ctx: MockContext,
-  customer: CustomerRecord,
-  program: Program,
-  units: number,
+  plan: EarningPlan,
   source: EarnSource,
-): { card: LoyaltyCard; welcomeUnits: number } {
+): LoyaltyCard {
   const nowIso = toIso(ctx.now)
-  const existing = findCard(ctx, customer.id, program.shopId)
-  const welcome = existing === undefined ? welcomeUnits(program.bonusRules) : 0
-  const start = existing ?? newCard(ctx, customer.id, program)
-  const welcomed = welcome > 0 ? addUnits(start, welcome, 'welcomeBonus', nowIso) : start
-  const credited = addUnits(welcomed, units, source, nowIso)
-  const card: LoyaltyCard = { ...holdRewardIfReady(ctx, credited), lastVisitAt: nowIso }
+  const start = findCard(ctx, customer.id, program.shopId) ?? newCard(ctx, customer.id, program)
+  const welcomed = plan.welcomeUnits > 0 ? addUnits(start, plan.welcomeUnits, 'welcomeBonus', nowIso) : start
+  const credited = addUnits(welcomed, plan.units, source, nowIso)
+  const card: LoyaltyCard = {
+    ...credited,
+    balance: plan.balanceAfter,
+    rewardExpiresAt: plan.rewardExpiresAt === null ? null : toIso(plan.rewardExpiresAt),
+    lastVisitAt: nowIso,
+  }
   replaceCard(ctx, card)
-  return { card, welcomeUnits: welcome }
+  return card
 }
 
 /** Prêmio que acabou de liberar fica guardado REWARD_HOLD_DAYS a partir de agora. */

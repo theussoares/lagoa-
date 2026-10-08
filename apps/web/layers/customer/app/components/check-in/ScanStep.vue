@@ -12,6 +12,7 @@ interface Emits {
 
 const VIEWFINDER_TEXT: Record<ViewfinderStatus, string> = {
   busy: 'checkIn.submitting',
+  joining: 'checkIn.submittingJoin',
   scanning: 'checkIn.cameraScanning',
   starting: 'checkIn.cameraStarting',
 }
@@ -25,6 +26,6 @@ onBeforeUnmount(() => emit('video', null))
 </script>
 
 <template>
-  <QrViewfinder ref="viewfinder" :label="$t('checkIn.viewfinderLabel')" :status="status" :status-text="$t(VIEWFINDER_TEXT[status])" />
-  <UButton variant="outline" color="neutral" size="xl" block icon="i-ph-keyboard" :label="$t('checkIn.typeCode')" @click="emit('typeCode')" />
+  <QrViewfinder ref="viewfinder" :label="$t('checkIn.viewfinderLabel')" :status="status === 'joining' ? 'busy' : status" :status-text="$t(VIEWFINDER_TEXT[status])" />
+  <UButton variant="outline" color="neutral" size="xl" block icon="i-ph-keyboard" :label="$t('checkIn.typeVisitCode')" @click="emit('typeCode')" />
 </template>

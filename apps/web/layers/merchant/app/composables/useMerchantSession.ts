@@ -1,4 +1,4 @@
-import { useSessionStore } from '#layers/core/app/stores/session'
+import { useMerchantSessionStore } from '../stores/merchantSession'
 import { useClubSetupStore } from '../stores/clubSetup'
 import type { MerchantSessionControl } from '../types/session'
 
@@ -8,7 +8,7 @@ export const CLUB_SETUP_PATH = '/balcao/criar-clube'
 export const MERCHANT_PANEL_PATH = '/painel'
 
 export function useMerchantSession(): MerchantSessionControl {
-  const sessions = useSessionStore()
+  const sessions = useMerchantSessionStore()
   const clubSetup = useClubSetupStore()
 
   async function signOut(): Promise<void> {

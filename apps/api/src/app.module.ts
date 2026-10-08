@@ -10,9 +10,10 @@ import { AllExceptionsFilter } from './common/http/all-exceptions.filter'
 import { CommonModule } from './common/common.module'
 import { ConfigModule } from './config/config.module'
 import { CustomerModule } from './customer/customer.module'
-import { DatabaseModule } from './database/database.module'
+import { DatabaseModule, DB, type Database } from './database/database.module'
 import { HealthController } from './health/health.controller'
 import { MerchantModule } from './merchant/merchant.module'
+import { PostgresThrottlerStorage } from './throttling/postgres-throttler.storage'
 
 @Module({
   imports: [
@@ -20,11 +21,18 @@ import { MerchantModule } from './merchant/merchant.module'
     DatabaseModule,
     CommonModule,
     AuthModule,
-    ThrottlerModule.forRoot([
-      { name: 'default', ttl: 60_000, limit: 120 },
-      // Teto por IP (confiável com TRUST_PROXY_HOPS; atrás do BFF vale o IP que ele repassa com o segredo): contas diferentes no mesmo IP somam aqui.
-      { name: 'ip', ttl: 60_000, limit: 600, getTracker: (request) => clientIpOf(request) },
-    ]),
+    // Contador no Postgres: a API é serverless e um contador em memória valeria só por instância (ADR-0002).
+    ThrottlerModule.forRootAsync({
+      inject: [DB],
+      useFactory: (db: Database) => ({
+        storage: new PostgresThrottlerStorage(db),
+        throttlers: [
+          { name: 'default', ttl: 60_000, limit: 120 },
+          // Teto por IP (confiável com TRUST_PROXY_HOPS; atrás do BFF vale o IP que ele repassa com o segredo): contas diferentes no mesmo IP somam aqui.
+          { name: 'ip', ttl: 60_000, limit: 600, getTracker: (request: { readonly ip?: string }) => clientIpOf(request) },
+        ],
+      }),
+    }),
     CustomerModule,
     MerchantModule,
     SmsModule,

@@ -22,7 +22,7 @@
     "ledgerTitle": "Caderneta",
     "ledgerEmpty": "Suas visitas aparecem aqui assim que o primeiro carimbo cair.",
     "emptyTitle": "Seu primeiro carimbo está numa loja da cidade",
-    "empty": "Peça seu carimbo no balcão de uma loja da rede ou faça check-in pelo QR da loja.",
+    "empty": "Entre no clube de uma loja pelo QR do cartaz e, na hora de pagar, peça o QR da visita no caixa.",
     "emptyAction": "Ver lojas da rede",
     "card": {
       "unitsFor": {
@@ -35,24 +35,37 @@
       "peekRemaining": "Falta {units} | Faltam {units}",
       "rulerLabel": "{balance} de {target} {unit}",
       "summary": "{shop}: {balance} de {target}. Falta {units} para {reward}. | {shop}: {balance} de {target}. Faltam {units} para {reward}.",
-      "summaryReady": "{shop}: prêmio liberado, {reward}."
+      "summaryReady": "{shop}: prêmio liberado, {reward}.",
+      "firstVisitHint": "Peça o QR da visita no caixa para ganhar.",
+      "firstVisitHintWelcome": "Peça o QR da visita no caixa para ganhar. Seus {units} de boas-vindas entram na primeira compra."
     }
   },
   "counter": {
     "title": "Balcão",
     "todayCount": "Nenhum lançamento hoje | 1 lançamento hoje | {count} lançamentos hoje",
     "signedOut": "Entre com o celular da loja para usar o Balcão.",
-    "launch": {
-      "title": "Lançar visita",
-      "phoneLabel": "Celular do cliente",
-      "phoneHint": "Digite pelo teclado ou toque nas teclas. Enter lança, Esc limpa.",
-      "give": "Dar {units}",
+    "visitQr": {
+      "title": "QR da visita",
+      "lead": "Gere na hora da venda e mostre ao cliente. Vale {minutes} min e uma vez só.",
+      "issue": "Gerar QR da visita",
+      "issueAmount": "Gerar QR de {amount}",
       "amountLabel": "Valor da compra",
       "amountHint": "Vale {points} por real gasto.",
-      "giveAmount": "Lançar valor",
-      "keypadLabel": "Teclado do celular",
-      "keypadClear": "Limpar",
-      "keypadBackspace": "Apagar o último dígito",
+      "amountPreview": "{amount} vale {points} (antes de bônus).",
+      "qrLabel": "QR da visita, vale até {time}",
+      "codeLabel": "Código para digitar",
+      "expiresIn": "Vence em {time}",
+      "status": {
+        "active": "Aguardando o cliente",
+        "claimed": "Usado",
+        "expired": "Vencido",
+        "cancelled": "Cancelado"
+      },
+      "refused": "Recusado: esse cliente já ganhou aqui. Libera {when}.",
+      "cancel": "Cancelar QR",
+      "print": "Imprimir QR",
+      "issueAnother": "Gerar outro",
+      "simulateClaim": "Simular uso (teste)",
       "programProblem": "Não deu para carregar o clube da loja."
     },
     "receipt": {
@@ -121,8 +134,13 @@
     "invalidAmount": "Valor inválido. Digite o valor da compra em reais.",
     "amountNotAccepted": "Este clube não lança por valor. Use \"Dar 1 carimbo\".",
     "invalidShopQr": "Esse QR não é de uma loja da rede. Peça o QR do balcão.",
-    "checkInDisabled": "Esta loja não usa check-in. Peça o carimbo no balcão.",
-    "checkInCooldown": "Você já fez check-in aqui. O próximo libera {when}.",
+    "checkInDisabled": "Esta loja não aceita entrada pelo cartaz. Peça o QR da visita no caixa.",
+    "checkInCooldown": "Você já ganhou nesta loja. A próxima libera {when}.",
+    "invalidVisitQr": "Esse QR da visita não vale. Peça um novo no caixa.",
+    "visitQrExpired": "Este QR venceu. Peça um novo no caixa.",
+    "visitQrAlreadyUsed": "Esse QR já foi usado. Peça um novo no caixa.",
+    "visitQrStale": "A loja mudou o clube. Peça um novo QR no caixa.",
+    "shopQrJoinOnly": "Esse é o QR do cartaz: ele só coloca você no clube. Atualize o app e peça o QR da visita no caixa.",
     "rewardNotReady": "Ainda faltam {remaining} para o prêmio.",
     "redemptionInvalid": "Código não encontrado nesta loja. Confira as letras com o cliente.",
     "redemptionExpired": "Esse código venceu. Peça para o cliente gerar outro.",
@@ -165,8 +183,24 @@
     "consentLabel": "Quero receber avisos e promoções das lojas",
     "consentHint": "Só das lojas onde você tem cartão. Dá para desligar quando quiser, no Perfil.",
     "terms": "Ao entrar, você aceita os Termos de uso e a Política de privacidade do Lagoa+.",
+    "termsSignUp": "Ao criar a conta, você aceita os Termos de uso e a Política de privacidade do Lagoa+.",
     "submit": "Entrar",
+    "profileTitle": "Como podemos te chamar?",
+    "profileLead": "Seu celular está confirmado. Falta só o seu nome para criar a conta.",
+    "nameLabel": "Seu nome",
+    "nameHint": "Aparece no app e para as lojas.",
+    "namePlaceholder": "Ana",
+    "nameRequired": "Conte seu nome para continuar.",
+    "emailLabel": "E-mail",
+    "emailHint": "Opcional. Só para identificar sua conta.",
+    "emailPlaceholder": "voce{'@'}exemplo.com",
+    "emailInvalid": "Esse e-mail não parece certo. Confira ou deixe em branco.",
+    "signUpSubmit": "Criar minha conta",
+    "welcomeBack": "Bem-vindo de volta, {name}!",
+    "welcomeBackAnonymous": "Bem-vindo de volta!",
+    "welcomeNew": "Tudo pronto, {name}! Seu cartão da cidade começa aqui.",
     "resend": "Reenviar código",
+    "smsDelayHint": "O SMS pode demorar alguns minutos. Se não chegar, espere antes de pedir outro: cada pedido gera um código novo.",
     "resendIn": "Reenviar código em {seconds}s",
     "mockHint": "Ambiente de teste: o SMS não sai. Use o código {code}."
   },
@@ -279,7 +313,7 @@
     },
     "progress": "{balance} de {target} {units}",
     "lastVisit": {
-      "never": "nunca",
+      "never": "Entrou, sem visita ainda",
       "today": "hoje",
       "daysAgo": "hoje | há 1 dia | há {count} dias"
     },
@@ -355,13 +389,13 @@
       "noStacking": "Bônus em dobro não se somam: aniversário no dia surpresa continua valendo o dobro."
     },
     "visitRules": {
-      "title": "Check-in e validade",
+      "title": "Entrada e validade",
       "checkIn": {
-        "label": "Check-in pelo QR da loja",
-        "description": "O cliente escaneia o QR no balcão e ganha sozinho, sem o atendente digitar."
+        "label": "Aceita entrada pelo cartaz",
+        "description": "O cliente escaneia o QR do cartaz e entra no clube sozinho. O carimbo só vem do QR da visita."
       },
-      "cooldown": "Intervalo entre visitas",
-      "cooldownHint": "Antifraude: no máximo uma visita por cliente nesse intervalo, contando também as lançadas no Balcão.",
+      "cooldown": "Intervalo mínimo entre visitas do mesmo cliente",
+      "cooldownHint": "Antifraude: o mesmo cliente não ganha duas visitas dentro desse intervalo, contando também as lançadas no Balcão.",
       "cooldownHours": "{count} hora | {count} hora | {count} horas",
       "cooldownDays": "{count} dia | 1 dia | {count} dias",
       "expiration": "Validade dos carimbos e pontos",
@@ -372,8 +406,8 @@
     "summary": {
       "noBonus": "Nenhuma regra ligada",
       "welcome": "Boas-vindas com {units}",
-      "checkInOn": "Check-in pelo QR ligado",
-      "checkInOff": "Check-in pelo QR desligado",
+      "checkInOn": "Entrada pelo cartaz ligada",
+      "checkInOff": "Entrada pelo cartaz desligada",
       "cooldown": "1 visita a cada {interval}",
       "neverExpires": "não vencem",
       "expiresAfter": "vencem após {count} mês sem visita | vencem após 1 mês sem visita | vencem após {count} meses sem visita"
@@ -481,7 +515,12 @@
       "remind": "Mandar lembrete",
       "reachable": "Ninguém pode receber um lembrete agora. | 1 cliente pode receber um lembrete agora. | {count} clientes podem receber um lembrete agora."
     },
-    "refresh": "Atualizar o Início"
+    "refresh": "Atualizar o Início",
+    "posterReprint": {
+      "title": "Imprima o cartaz novo",
+      "body": "O cartaz agora só coloca o cliente no clube; o carimbo vem do QR da visita.",
+      "action": "Imprimir cartaz"
+    }
   },
   "redemption": {
     "pageTitle": "Resgatar prêmio",
@@ -552,27 +591,35 @@
   "checkIn": {
     "pageTitle": "Check-in",
     "title": "Fazer check-in",
-    "leadScan": "Aponte a câmera para o QR no balcão da loja. O carimbo cai na hora.",
-    "leadType": "Digite o código de 6 letras e números impresso embaixo do QR.",
-    "viewfinderLabel": "Câmera lendo o QR da loja",
+    "leadScan": "Aponte a câmera para o QR da visita que o caixa mostrar. O carimbo cai na hora.",
+    "leadType": "Digite o código de {length} letras e números que aparece embaixo do QR.",
+    "viewfinderLabel": "Câmera lendo o QR da visita",
     "cameraStarting": "Abrindo a câmera…",
     "cameraScanning": "Procurando o QR…",
     "submitting": "Registrando sua visita…",
-    "typeCode": "Digitar código da loja",
     "useCamera": "Usar a câmera",
-    "codeLabel": "Código da loja",
-    "submit": "Fazer check-in",
-    "invalidCode": "Esse código não é de nenhuma loja da rede. Confira as letras no cartaz do balcão.",
-    "cameraDenied": "Sem permissão para usar a câmera. Libere nas configurações do navegador ou digite o código da loja.",
-    "cameraUnavailable": "Não deu para abrir a câmera neste aparelho. Digite o código da loja.",
-    "mockHint": "Ambiente de teste: não há cartaz impresso. Use o código {code}, da Barbearia de exemplo.",
+    "typeVisitCode": "Tenho o código da visita",
+    "typeShopCode": "Tenho o código do cartaz da loja",
+    "visitCodeLabel": "Código da visita",
+    "shopCodeLabel": "Código da loja",
+    "submitClaim": "Ganhar",
+    "submitJoin": "Entrar no clube",
+    "invalidVisitCode": "Esse código não vale. Confira com o caixa ou peça um novo.",
+    "submittingJoin": "Entrando no clube…",
+    "invalidShopCode": "Esse código não é de nenhuma loja da rede. Confira as letras no cartaz do balcão.",
+    "cameraDenied": "Sem permissão para usar a câmera. Libere nas configurações do navegador ou digite o código da visita.",
+    "cameraUnavailable": "Não deu para abrir a câmera neste aparelho. Digite o código da visita.",
     "notice": {
-      "cooldownTitle": "Você já fez check-in aqui",
-      "cooldown": "O próximo check-in nesta loja libera {when}. Carimbo dado no balcão também conta para essa espera.",
+      "cooldownTitle": "Você já ganhou aqui",
+      "cooldown": "A próxima visita que rende nesta loja libera {when}.",
       "invalidQrTitle": "QR não reconhecido",
-      "disabledTitle": "Check-in desligado nesta loja",
       "networkTitle": "Sem conexão",
-      "errorTitle": "Não deu certo"
+      "errorTitle": "Não deu certo",
+      "visitQrExpiredTitle": "QR vencido",
+      "visitQrUsedTitle": "QR já usado",
+      "visitQrStaleTitle": "O clube mudou",
+      "invalidVisitQrTitle": "QR não reconhecido",
+      "joinDisabledTitle": "Entrada pelo cartaz desligada"
     },
     "scanAgain": "Escanear de novo",
     "toWallet": "Ver carteira",
@@ -589,10 +636,20 @@
       },
       "lead": "+{units} no seu cartão.",
       "almost": "Falta só {units}! | Falta só {units}! | Faltam só {units}!",
-      "next": "Próximo check-in aqui: {when}.",
+      "next": "Próxima visita que rende aqui: {when}.",
       "redeem": "Resgatar prêmio",
       "announce": "{title}. {summary}",
       "announceCheer": "{title}. {cheer} {summary}"
+    },
+    "joined": {
+      "title": "Você entrou no clube",
+      "titleAgain": "Você já é do clube",
+      "lead": "{shop} já está na sua carteira.",
+      "leadNoShop": "A loja já está na sua carteira.",
+      "welcome": "Seus {units} de boas-vindas entram na primeira compra.",
+      "next": "Na hora de pagar, peça o QR da visita no caixa.",
+      "toWallet": "Ver na carteira",
+      "announce": "{title}. {lead}"
     }
   },
   "shop": {
@@ -609,10 +666,10 @@
     }
   },
   "poster": {
-    "headline": "Junte {units} e ganhe {reward}",
-    "instruction": "Aponte a câmera do celular para o código e ganhe na hora.",
+    "headline": "Entre no clube e junte {units} para ganhar {reward}",
+    "instruction": "Aponte a câmera do celular para o código e entre no clube. Na hora de pagar, peça o QR da visita no caixa.",
     "codeLabel": "Ou digite o código da loja no app",
-    "qrLabel": "QR do check-in da {shop}"
+    "qrLabel": "QR de entrada no clube da {shop}"
   },
   "merchantSettings": {
     "title": "Configurações",
@@ -670,8 +727,8 @@
     },
     "poster": {
       "title": "Clube criado. Agora é o cartaz.",
-      "lead": "Imprima e deixe no balcão: o cliente aponta a câmera e ganha o carimbo sozinho.",
-      "approved": "Loja aprovada: o check-in e o Balcão já valem.",
+      "lead": "Imprima e deixe no balcão: o cliente aponta a câmera e entra no clube. O carimbo vem do QR da visita, que você gera na venda.",
+      "approved": "Loja aprovada: a entrada pelo cartaz e o Balcão já valem.",
       "print": "Imprimir cartaz",
       "goToPanel": "Ir para o Início",
       "loadError": "Não conseguimos montar o cartaz agora."

@@ -46,7 +46,7 @@ export interface CreditCommand {
   readonly now: Date
   /** Único por lançamento: repetir o mesmo pedido não grava duas vezes. */
   readonly idempotencyKey: string
-  /** Lojista que lançou no balcão; `null` no check-in. */
+  /** Quem atestou a venda: o emissor do QR da visita (o lojista); `null` só nas linhas antigas de check-in. */
   readonly recordedBy?: string | null
   readonly amountCents?: number | null
 }
@@ -87,7 +87,7 @@ export type SettleError =
 const laterOf = (last: Date | undefined, requested: Date): Date => (last !== undefined && last > requested ? last : requested)
 
 /**
- * Única porta de escrita do ledger. Check-in (cliente) e Balcão (lojista) passam por aqui, então
+ * Única porta de escrita do ledger. O uso do QR da visita (cliente) e o Balcão (lojista) passam por aqui, então
  * antifraude, boas-vindas e cache do cartão não têm duas implementações. Sempre dentro de uma
  * transação que o chamador abre: o cartão é travado, o ledger recebe as linhas e o saldo (cache)
  * muda junto.
@@ -157,9 +157,9 @@ export class LedgerStore {
   /**
    * Grava boas-vindas (se houver) e a visita, e atualiza o cartão. As boas-vindas entram primeiro:
    * as duas linhas têm o mesmo instante e o `id` (UUID v7) desempata, deixando as boas-vindas nas
-   * primeiras casas do cartão. Devolve o id da linha da visita.
+   * primeiras casas do cartão. Devolve o id da linha da visita e o instante em que ela foi gravada (que pode ser depois do pedido).
    */
-  async credit(tx: Tx, command: CreditCommand): Promise<{ entryId: string }> {
+  async credit(tx: Tx, command: CreditCommand): Promise<{ entryId: string; recordedAt: Date }> {
     const { card, plan } = command
     const now = await this.instantFor(tx, card.id, command.now)
     const common = { cardId: card.id, shopId: command.shopId, customerId: command.customerId, occurredAt: now }
@@ -191,7 +191,7 @@ export class LedgerStore {
       .update(loyaltyCards)
       .set({ balance: plan.balanceAfter, lastVisitAt: now, lastActivityAt: now, rewardExpiresAt: plan.rewardExpiresAt })
       .where(eq(loyaltyCards.id, card.id))
-    return { entryId: visit.id }
+    return { entryId: visit.id, recordedAt: now }
   }
 
   /**

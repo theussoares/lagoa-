@@ -4,11 +4,12 @@ import type { DataExportService } from './DataExportService'
 import type { DiscoverService } from './DiscoverService'
 import type { ProfileService } from './ProfileService'
 import type { RankingService } from './RankingService'
+import type { SessionService } from './SessionService'
 import type { ReferralService } from './ReferralService'
 import type { RewardRedemptionService } from './RewardRedemptionService'
 import type { WalletService } from './WalletService'
 
-/** Tudo que a superfície consome; a implementação (mock ou http) é escolhida no plugin. */
+/** Tudo que a superfície consome; a implementação HTTP (via BFF) é montada no plugin. */
 export interface CustomerServices {
   readonly wallet: WalletService
   readonly checkIn: CheckInService
@@ -19,4 +20,5 @@ export interface CustomerServices {
   readonly dataExport: DataExportService
   readonly ranking: RankingService
   readonly account: AccountService
+  readonly session: SessionService
 }

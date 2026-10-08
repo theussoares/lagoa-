@@ -2,13 +2,17 @@
 // automaticamente pelo Nuxt 4 e ganham os aliases #layers/<nome>.
 import { fileURLToPath } from 'node:url'
 
+/** Rotas do lojista (layer `merchant`): sem SSR, o mock mora no navegador. */
+const MERCHANT_SPA_ROUTES = ['/painel', '/configuracoes', '/campanhas', '/balcao/**', '/programa', '/clientes']
+
 export default defineNuxtConfig({
   // `shared/` mora na raiz do monorepo para o futuro `apps/api` usar os mesmos contratos.
   alias: { '#shared': fileURLToPath(new URL('../../shared', import.meta.url)) },
   compatibilityDate: '2026-10-01',
-  // SPA enquanto o backend é mock: o "servidor" falso vive no navegador
-  // (localStorage) e SSR renderizaria outro estado. Revisar no ADR do backend.
-  ssr: false,
+  // O app do cliente renderiza no servidor (cookie httpOnly -> BFF -> API). O painel do lojista ainda usa o mock
+  // do navegador (localStorage), então fica como SPA até a API dele existir.
+  ssr: true,
+  routeRules: Object.fromEntries(MERCHANT_SPA_ROUTES.map((route) => [route, { ssr: false }])),
   devtools: { enabled: true },
   modules: ['@vite-pwa/nuxt'],
   runtimeConfig: {
@@ -22,8 +26,6 @@ export default defineNuxtConfig({
     /** Origens extras (separadas por vírgula) que podem escrever em `/api/**`; o próprio host sempre pode. Env: NUXT_ALLOWED_ORIGINS. */
     allowedOrigins: '',
     public: {
-      /** 'mock' (localStorage) ou 'http' (API real do cliente, via BFF `/api`; o painel do lojista segue mock). */
-      apiMode: 'mock',
       /** URL do projeto Supabase (não é segredo): login no servidor e fotos do bucket público. */
       supabaseUrl: '',
       /** Atraso artificial do mock para a UI exercitar carregamento. */

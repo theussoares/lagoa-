@@ -15,3 +15,13 @@ export interface ApiRequestOptions {
 }
 
 export type ApiResult<T> = Result<T, DomainError>
+
+type LocalFetch = (input: string, init?: RequestInit) => Promise<Response>
+
+export interface ServerFetcherOptions {
+  /** Chamada em memória ao próprio servidor (`event.fetch` do Nitro). */
+  readonly localFetch: LocalFetch
+  /** Cabeçalhos do pedido da página que a API precisa ver: o cookie de sessão e o IP do cliente. */
+  readonly forwarded: Readonly<Record<string, string>>
+  readonly onSetCookie: (cookie: string) => void
+}

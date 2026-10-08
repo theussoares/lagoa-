@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { PHONE_INPUT_MAX_LENGTH } from '../constants/domain'
+import { CUSTOMER_FIRST_NAME_MAX_LENGTH, EMAIL_MAX_LENGTH, PHONE_INPUT_MAX_LENGTH } from '../constants/domain'
 import { BirthdaySchema, IsoDateTimeSchema } from './common'
 import { CustomerIdSchema } from './ids'
 import { MaskedPhoneSchema } from './phone'
@@ -14,7 +14,7 @@ export type Consent = z.infer<typeof ConsentSchema>
 
 export const CustomerProfileSchema = z.object({
   id: CustomerIdSchema,
-  firstName: z.string().min(1).max(40).nullable(),
+  firstName: z.string().min(1).max(CUSTOMER_FIRST_NAME_MAX_LENGTH).nullable(),
   birthday: BirthdaySchema.nullable(),
   /** Quando a data pode ser trocada de novo; `null` = já pode. */
   birthdayChangeableAt: IsoDateTimeSchema.nullable(),
@@ -25,7 +25,7 @@ export const CustomerProfileSchema = z.object({
 export type CustomerProfile = z.infer<typeof CustomerProfileSchema>
 
 export const ProfileUpdateSchema = z.object({
-  firstName: z.string().trim().min(1).max(40).nullable(),
+  firstName: z.string().trim().min(1).max(CUSTOMER_FIRST_NAME_MAX_LENGTH).nullable(),
   birthday: BirthdaySchema.nullable(),
 })
 export type ProfileUpdate = z.infer<typeof ProfileUpdateSchema>
@@ -33,9 +33,14 @@ export type ProfileUpdate = z.infer<typeof ProfileUpdateSchema>
 export const ConsentUpdateSchema = z.object({ granted: z.boolean() })
 export type ConsentUpdate = z.infer<typeof ConsentUpdateSchema>
 
-/** Cadastro do cliente: o e-mail vem do login; o celular é declarado, sem verificação por SMS. */
-export const CustomerRegistrationSchema = z.object({ /** Só no login por e-mail: quem entrou por SMS já tem o celular confirmado no token. */
+/**
+ * Cadastro do cliente. O celular de quem entrou por SMS já vem confirmado no token; `phone` só vale no login por e-mail.
+ * `firstName` é o nome pelo qual a pessoa quer ser chamada (app e painel); `email` é opcional e só identifica a conta.
+ */
+export const CustomerRegistrationSchema = z.object({
   phone: z.string().max(PHONE_INPUT_MAX_LENGTH).optional(),
+  firstName: z.string().trim().min(1).max(CUSTOMER_FIRST_NAME_MAX_LENGTH).optional(),
+  email: z.email().max(EMAIL_MAX_LENGTH).optional(),
 })
 export type CustomerRegistration = z.infer<typeof CustomerRegistrationSchema>
 

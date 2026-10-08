@@ -6,10 +6,10 @@ export class HttpRankingService implements RankingService {
   constructor(private readonly api: ApiClient) {}
 
   async getRanking() {
-    return transportOnly(await this.api.get('/customer/ranking', RankingSchema))
+    return transportOnly(await this.api.get('/ranking', RankingSchema))
   }
 
   async setConsent(update: RankingConsentUpdate) {
-    return transportOnly(await this.api.put('/customer/ranking/consent', RankingSchema, { body: update }))
+    return transportOnly(await this.api.put('/ranking/consent', RankingSchema, { body: update }))
   }
 }

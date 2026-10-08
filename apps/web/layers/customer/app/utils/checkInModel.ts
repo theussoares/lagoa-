@@ -1,22 +1,39 @@
+import type { WalletCard } from '#shared/schemas/loyaltyCard'
+import type { ShopJoinResult } from '#shared/schemas/shop'
 import type { CheckInResult } from '#shared/schemas/visit'
-import { addDays, localDateParts } from '#shared/utils/time'
 import type { Translate } from '#layers/core/app/types/i18n'
 import type { CheckInError } from '../services/CheckInService'
-import { formatShortDate, formatTime } from '#shared/utils/dateFormat'
-import type { CheckInSource, CheckInNoticeModel, CheckInMoment, CheckInEarnedModel } from '../types/checkIn'
+import { formatWhen } from '#layers/core/app/utils/formatWhen'
+import { pendingWelcomeUnits } from './pendingWelcome'
+import type { CheckInRecovery, CheckInSource, CheckInNoticeModel, CheckInMoment, CheckInEarnedModel, CheckInJoinedModel } from '../types/checkIn'
 
-/** "hoje às 18:40", "amanhã às 09:00", "em 5 de out. às 09:00" — no fuso da cidade. */
-export function formatCheckInWhen(iso: string, now: Date, t: Translate): string {
-  const time = formatTime(iso)
-  const day = localDateParts(new Date(iso)).isoDate
-  if (day === localDateParts(now).isoDate) return t('checkIn.when.today', { time })
-  if (day === localDateParts(addDays(now, 1)).isoDate) return t('checkIn.when.tomorrow', { time })
-  return t('checkIn.when.later', { date: formatShortDate(iso), time })
+const visitQrNoticeTitle = {
+  invalidVisitQr: 'invalidVisitQrTitle',
+  visitQrExpired: 'visitQrExpiredTitle',
+  visitQrAlreadyUsed: 'visitQrUsedTitle',
+  visitQrStale: 'visitQrStaleTitle',
+} as const
+
+type VisitQrErrorCode = keyof typeof visitQrNoticeTitle
+
+/** Todo QR da visita que não vale leva ao mesmo caminho: pedir um novo no caixa. */
+function visitQrNotice(code: VisitQrErrorCode, t: Translate): CheckInNoticeModel {
+  return {
+    tone: 'error',
+    icon: 'i-ph-qr-code',
+    title: t(`checkIn.notice.${visitQrNoticeTitle[code]}`),
+    message: t(`errors.${code}`),
+    recovery: 'scanAgain',
+  }
+}
+
+function errorNotice(code: 'rateLimited' | 'internal' | 'termsNotAccepted', recovery: CheckInRecovery, t: Translate): CheckInNoticeModel {
+  return { tone: 'error', icon: 'i-ph-warning-circle', title: t('checkIn.notice.errorTitle'), message: t(`errors.${code}`), recovery }
 }
 
 /**
- * Aviso que substitui a câmera depois de uma tentativa. Código digitado errado
- * não vira aviso (o erro fica no próprio campo) e sessão vencida leva ao login.
+ * Aviso que substitui a câmera depois de uma tentativa. Código digitado que não existe
+ * (loja ou visita) não vira aviso (o erro fica no próprio campo) e sessão vencida leva ao login.
  */
 export function toCheckInNotice(error: CheckInError, source: CheckInSource, now: Date, t: Translate): CheckInNoticeModel | null {
   switch (error.code) {
@@ -25,14 +42,14 @@ export function toCheckInNotice(error: CheckInError, source: CheckInSource, now:
         tone: 'warning',
         icon: 'i-ph-clock-countdown',
         title: t('checkIn.notice.cooldownTitle'),
-        message: t('checkIn.notice.cooldown', { when: formatCheckInWhen(error.availableAt, now, t) }),
+        message: t('checkIn.notice.cooldown', { when: formatWhen(error.availableAt, now, t) }),
         recovery: 'wallet',
       }
     case 'checkInDisabled':
       return {
         tone: 'warning',
         icon: 'i-ph-storefront',
-        title: t('checkIn.notice.disabledTitle'),
+        title: t('checkIn.notice.joinDisabledTitle'),
         message: t('errors.checkInDisabled'),
         recovery: 'wallet',
       }
@@ -45,6 +62,13 @@ export function toCheckInNotice(error: CheckInError, source: CheckInSource, now:
         message: t('errors.invalidShopQr'),
         recovery: 'scanAgain',
       }
+    case 'invalidVisitQr':
+      if (source === 'typed') return null
+      return visitQrNotice(error.code, t)
+    case 'visitQrExpired':
+    case 'visitQrAlreadyUsed':
+    case 'visitQrStale':
+      return visitQrNotice(error.code, t)
     case 'network':
       return {
         tone: 'error',
@@ -54,15 +78,11 @@ export function toCheckInNotice(error: CheckInError, source: CheckInSource, now:
         recovery: 'retry',
       }
     case 'rateLimited':
+      // Tentar o mesmo código de novo só gasta mais tentativas: quem digitou volta para a câmera.
+      return errorNotice(error.code, source === 'typed' ? 'scanAgain' : 'retry', t)
     case 'internal':
     case 'termsNotAccepted':
-      return {
-        tone: 'error',
-        icon: 'i-ph-warning-circle',
-        title: t('checkIn.notice.errorTitle'),
-        message: t(`errors.${error.code}`),
-        recovery: 'retry',
-      }
+      return errorNotice(error.code, 'retry', t)
     case 'unauthorized':
       return null
   }
@@ -85,7 +105,7 @@ export function toCheckInEarnedModel(result: CheckInResult, cardSummary: string 
     title,
     lead: t('checkIn.earned.lead', { units: t(`units.${unit}`, {}, units) }),
     cheer,
-    next: t('checkIn.earned.next', { when: formatCheckInWhen(result.nextCheckInAt, now, t) }),
+    next: t('checkIn.earned.next', { when: formatWhen(result.nextCheckInAt, now, t) }),
     announcement: earnedAnnouncement(title, cheer, cardSummary, t),
   }
 }
@@ -103,4 +123,23 @@ function checkInMoment(result: CheckInResult): CheckInMoment {
   if (result.card.rewardReady) return seenBalanceBefore(result) < result.card.target ? 'reward' : 'earned'
   const remaining = result.card.target - result.card.balance
   return remaining > 0 && remaining <= result.activity.units ? 'almost' : 'earned'
+}
+
+function pendingWelcome(card: WalletCard | null, t: Translate): string | null {
+  const welcomeUnits = pendingWelcomeUnits(card)
+  if (card === null || welcomeUnits === 0) return null
+  return t('checkIn.joined.welcome', { units: t(`units.${card.unit}`, {}, welcomeUnits) })
+}
+
+/** Tela "entrou no clube": a loja vem do cartão; sem ele (rede caiu no meio) o texto fala só da loja em geral. */
+export function toCheckInJoinedModel(result: ShopJoinResult, card: WalletCard | null, t: Translate): CheckInJoinedModel {
+  const title = result.alreadyMember ? t('checkIn.joined.titleAgain') : t('checkIn.joined.title')
+  const lead = card === null ? t('checkIn.joined.leadNoShop') : t('checkIn.joined.lead', { shop: card.shop.name })
+  return {
+    title,
+    lead,
+    welcome: pendingWelcome(card, t),
+    next: t('checkIn.joined.next'),
+    announcement: t('checkIn.joined.announce', { title, lead }),
+  }
 }

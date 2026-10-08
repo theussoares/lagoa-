@@ -41,7 +41,7 @@ export function createClub(ctx: MockContext, ticket: SignUpTicket, draft: ClubSe
   if (!parsed.success) return err({ code: 'invalidClubSetup' })
 
   const shopId = ShopIdSchema.parse(ctx.ids.next('shop'))
-  const shop: ShopRecord = { id: shopId, ...parsed.data.shop, status: 'pending', checkInCode: newCheckInCode(ctx) }
+  const shop: ShopRecord = { id: shopId, ...parsed.data.shop, status: 'pending', checkInCode: newCheckInCode(ctx), posterReprinted: true }
   const merchantId = MerchantIdSchema.parse(ctx.ids.next('merchant'))
   ctx.state.shops.push(shop)
   ctx.state.programs.push({ id: ProgramIdSchema.parse(ctx.ids.next('prog')), shopId, ...parsed.data.program })
@@ -76,4 +76,17 @@ export function approveShop(ctx: MockContext, shopId: ShopId): Result<ShopStatus
   if (shop === undefined) return err({ code: 'unauthorized' })
   if (shop.status === 'pending') shop.status = 'approved'
   return ok(shop.status)
+}
+
+/** Loja que ainda tem o cartaz antigo na parede: o Início avisa até imprimir o novo. */
+export function posterReprintPending(ctx: MockContext, shopId: ShopId): Result<boolean, ErrorOf<'unauthorized'>> {
+  const shop = findShop(ctx, shopId)
+  return shop === undefined ? err({ code: 'unauthorized' }) : ok(!shop.posterReprinted)
+}
+
+export function markPosterReprinted(ctx: MockContext, shopId: ShopId): Result<boolean, ErrorOf<'unauthorized'>> {
+  const shop = findShop(ctx, shopId)
+  if (shop === undefined) return err({ code: 'unauthorized' })
+  shop.posterReprinted = true
+  return ok(false)
 }

@@ -1,32 +1,24 @@
 import type { PhoneNumber } from '#shared/schemas/phone'
 import { IsoDateTimeSchema } from '#shared/schemas/common'
-import {
-  CustomerSessionSchema,
-  MerchantSessionSchema,
-  type CustomerSession,
-  type LoginChallenge,
-  type LoginCode,
-  type MerchantSignInResult,
-  type SignUpTicket,
-} from '#shared/schemas/session'
+import { CustomerSessionSchema, type CustomerSession, type LoginChallenge, type LoginCode } from '#shared/schemas/session'
 import { LOGIN_CODE_TTL_MINUTES } from '#shared/constants/domain'
 import type { TransportError } from '#shared/types/errors'
 import { ok, type Result } from '#shared/types/result'
-import type { AuthService, MerchantSignInError, SignInError } from './AuthService'
+import type { CustomerSignInResult, CustomerSignUp } from '../types/signIn'
+import type { AuthService, RegisterError, SignInError } from './AuthService'
 import type { PhoneAuthGateway } from './PhoneAuthGateway'
 import { allowing, type ApiClient } from './http/ApiClient'
 
 const MS_PER_MINUTE = 60_000
 
 /**
- * Cliente: celular + SMS (Supabase) e depois a sessão da API; primeiro acesso cadastra na hora, sem corpo:
- * o celular vem do token. Lojista segue em outra implementação (painel do Caio).
+ * Cliente: celular + SMS (Supabase, no servidor do Nuxt) e depois a sessão da API. Número sem cadastro não é criado
+ * sozinho: o app pede o nome antes (`registerCustomer`); o celular vem do token.
  */
 export class HttpAuthService implements AuthService {
   constructor(
     private readonly gateway: PhoneAuthGateway,
     private readonly api: ApiClient,
-    private readonly merchant: Pick<AuthService, 'signInMerchant'>,
     private readonly now: () => Date,
   ) {}
 
@@ -36,27 +28,17 @@ export class HttpAuthService implements AuthService {
     return ok({ expiresAt: IsoDateTimeSchema.parse(new Date(this.now().getTime() + LOGIN_CODE_TTL_MINUTES * MS_PER_MINUTE).toISOString()) })
   }
 
-  async signInCustomer(phone: PhoneNumber, code: LoginCode): Promise<Result<CustomerSession, SignInError>> {
+  async signInCustomer(phone: PhoneNumber, code: LoginCode): Promise<Result<CustomerSignInResult, SignInError>> {
     const verified = await this.gateway.verifyCode(phone, code)
     if (!verified.ok) return verified
-    const session = await this.api.get('/customer/session', CustomerSessionSchema)
-    if (session.ok) return session
-    if (session.error.code !== 'notFound') return allowing('invalidLoginCode', 'loginCodeExpired')(session)
-    return allowing('invalidLoginCode', 'loginCodeExpired')(await this.api.post('/customer/registration', CustomerSessionSchema, { body: {} }))
+    const session = await this.api.get('/session', CustomerSessionSchema)
+    if (session.ok) return ok({ kind: 'signedIn', session: session.value })
+    if (session.error.code === 'notFound') return ok({ kind: 'signUp' })
+    return allowing('invalidLoginCode', 'loginCodeExpired')(session)
   }
 
-  async signInMerchant(phone: PhoneNumber, code: LoginCode): Promise<Result<MerchantSignInResult, MerchantSignInError>> {
-    const verified = await this.gateway.verifyCode(phone, code)
-    if (!verified.ok) return verified
-    const session = await this.api.get('/merchant/session', MerchantSessionSchema)
-    if (session.ok) return ok({ kind: 'session', session: session.value })
-    if (session.error.code === 'notFound') {
-      const expiresAt = IsoDateTimeSchema.parse(
-        new Date(this.now().getTime() + LOGIN_CODE_TTL_MINUTES * MS_PER_MINUTE).toISOString(),
-      )
-      return ok({ kind: 'signUp', ticket: 'session' as SignUpTicket, expiresAt })
-    }
-    return allowing('invalidLoginCode', 'loginCodeExpired')(session)
+  async registerCustomer(details: CustomerSignUp): Promise<Result<CustomerSession, RegisterError>> {
+    return allowing('emailAlreadyUsed')(await this.api.post('/registration', CustomerSessionSchema, { body: details }))
   }
 
   signOut(): Promise<void> {
