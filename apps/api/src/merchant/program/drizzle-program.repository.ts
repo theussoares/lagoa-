@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common'
 import { and, count, eq } from 'drizzle-orm'
 import type { Program, ProgramDraft } from '#shared/schemas/program'
 import { DB, type Database } from '../../database/database.module'
-import { loyaltyCards, programs, shops } from '../../database/schema'
+import { loyaltyCards, programs, shops, visitQrs } from '../../database/schema'
 import { toProgram } from '../../programs/program-rules.mapper'
 import { ProgramRepository, type ActiveProgramData } from './program.repository'
 import { mapDraftToProgramInsert } from './program.rules'
@@ -69,6 +69,14 @@ export class DrizzleProgramRepository extends ProgramRepository {
           .update(programs)
           .set({ active: false })
           .where(and(eq(programs.shopId, shopId), eq(programs.id, currentProgramId)))
+
+        await tx
+          .update(visitQrs)
+          .set({
+            status: 'cancelled',
+            cancelReason: 'programChanged',
+          })
+          .where(and(eq(visitQrs.shopId, shopId), eq(visitQrs.status, 'active')))
 
         const insertValues = mapDraftToProgramInsert(shopId, draft)
         const [inserted] = await tx

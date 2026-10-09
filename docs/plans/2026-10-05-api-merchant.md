@@ -212,7 +212,7 @@ Ajustar o módulo `merchant/counter`:
 ---
 
 ### Task 5: Program Management & Dynamic Invalidation (`merchant/program`)
-> **Status:** IN PROGRESS ⚠️ (Adicionar cancelamento atômico de QRs ativos na atualização)
+> **Status:** IMPLEMENTED ✅
 
 #### 1. Objetivo da etapa
 Garantir o gerenciamento do programa de fidelidade do lojista com a trava de alteração de modo quando houver cartões emitidos e **cancelamento atômico de QRs da visita ativos** quando uma nova versão do programa for criada.
@@ -295,8 +295,8 @@ Verificar a integração ponta a ponta de todo o ciclo de vida do lojista e clie
 
 - [x] **Task 1: Merchant Session & Guard** (`merchant/session`)
 - [x] **Task 2: Club Setup & Poster** (`merchant/club-setup`)
-- [ ] **Task 3: Dynamic Visit QRs** (`merchant/visit-qrs`)
-- [ ] **Task 4: Refactor Counter (Remove Phone Visits, Keep Redemptions & Today Entries)** (`merchant/counter`)
-- [ ] **Task 5: Program Management Update (Invalidate Active QRs on Program Change)** (`merchant/program`)
+- [x] **Task 3: Dynamic Visit QRs** (`merchant/visit-qrs`)
+- [x] **Task 4: Refactor Counter (Remove Phone Visits, Keep Redemptions & Today Entries)** (`merchant/counter`)
+- [x] **Task 5: Program Management Update (Invalidate Active QRs on Program Change)** (`merchant/program`)
 - [ ] **Task 6: Customers Directory & Weekly Summary** (`merchant/customers`, `merchant/home`)
 - [ ] **Task 7: E2E Integration & Verification** (`merchant.integration.test.ts`)
