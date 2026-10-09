@@ -10,6 +10,7 @@ const PRO_ITEMS = ['lapsed', 'campaigns'] as const
     <div v-reveal>
       <SectionHeading :title="t('pricing.title')" align="center" />
       <p class="mx-auto mt-4 max-w-2xl text-center text-[0.9375rem] text-toned">{{ t('pricing.paybackNote') }}</p>
+      <p class="mx-auto mt-4 max-w-2xl text-center text-[0.9375rem] font-semibold text-highlighted">{{ t('pricing.scarcity', COPY_PARAMS) }}</p>
     </div>
 
     <div v-reveal class="mx-auto mt-14 grid max-w-4xl gap-6 md:grid-cols-2">

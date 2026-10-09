@@ -46,7 +46,7 @@ const sampleCard = computed<StampCardModel>(() => ({
           </UButton>
         </div>
 
-        <p class="text-[0.9375rem] text-muted">{{ t('hero.note') }}</p>
+        <p class="text-[0.9375rem] text-muted">{{ t('hero.note', COPY_PARAMS) }}</p>
       </div>
 
       <!-- Ilustração: o figure fala a frase inteira, o desenho dentro fica fora da árvore. -->

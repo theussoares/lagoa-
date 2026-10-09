@@ -30,7 +30,7 @@ const STEPS = ['call', 'reply', 'setup'] as const
             {{ t(`closing.steps.${step}`) }}
           </li>
         </ol>
-        <p class="text-[0.9375rem] text-muted">{{ t('closing.note') }}</p>
+        <p class="text-[0.9375rem] text-muted">{{ t('closing.note', COPY_PARAMS) }}</p>
       </div>
     </div>
   </section>

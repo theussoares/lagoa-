@@ -1,7 +1,7 @@
 {
   "seo": {
     "title": "Lagoa+ · Faça seu cliente voltar e comprar de novo",
-    "description": "Cliente que volta compra de novo. Com o Lagoa+, você gera um QR na venda, o cliente junta carimbos no celular e volta para buscar o prêmio. A partir de R$ 79,90/mês, sem fidelidade."
+    "description": "Pare de perder cliente para o concorrente. Com o Lagoa+, quem compra uma vez volta e compra de novo. A partir de R$ 79,90/mês, sem fidelidade."
   },
   "nav": {
     "label": "Navegação principal",
@@ -25,11 +25,11 @@
     "whatsappMessagePro": "Olá! Tenho uma loja em Três Lagoas e quero saber mais sobre o plano Fundador Pro do Lagoa+."
   },
   "hero": {
-    "titleLead": "Seu cliente comprou uma vez e não voltou mais?",
-    "titleAccent": "Faça ele voltar e comprar de novo.",
-    "lead": "Cada cliente que volta é uma venda a mais, sem gastar com anúncio. Na venda, você gera um QR: ele junta carimbos no celular e volta para buscar o prêmio. Dois passos no balcão.",
+    "titleLead": "Todo dia sai cliente da sua loja que nunca mais volta.",
+    "titleAccent": "É dinheiro que já era seu indo embora.",
+    "lead": "O Lagoa+ faz esse cliente voltar e comprar de novo. Na venda você gera um QR, ele junta carimbos no celular e volta para buscar o prêmio. Venda a mais, sem gastar um real com anúncio.",
     "secondary": "Experimentar o Balcão",
-    "note": "Piloto em Três Lagoas/MS · a partir de R$ 79,90/mês, preço travado e sem fidelidade",
+    "note": "Piloto em Três Lagoas/MS · só {founderSpots} lojas com preço de Fundador, a partir de R$ 79,90/mês",
     "receipt": "+1 carimbo pelo QR da visita",
     "receiptDetail": "agora 8 de 10",
     "visualLabel": "Exemplo: o cartão do cliente com 8 de 10 carimbos, faltando 2 para um corte grátis, e o aviso do carimbo que acabou de cair pelo QR da visita."
@@ -43,8 +43,8 @@
     "summary": "Cartão de exemplo: 8 de 10 carimbos. Faltam 2 para Corte grátis."
   },
   "counter": {
-    "title": "Dois passos no balcão. Mais vendas no mês.",
-    "lead": "Não atrasa a fila: você gera o QR, o cliente escaneia e já sai sabendo quanto falta para o prêmio.",
+    "title": "Leva menos tempo que dar o troco.",
+    "lead": "Dois passos: você gera o QR, o cliente escaneia. Ele sai da loja com um motivo para voltar.",
     "stepsLabel": "Como dar o carimbo",
     "steps": {
       "generate": {
@@ -88,8 +88,8 @@
     }
   },
   "lapsed": {
-    "title": "Quem sumiu já comprou de você. Venda de novo.",
-    "lead": "Veja quem está há mais de {lapsedDays} dias sem comprar e mande um lembrete com carimbo de presente. Trazer de volta quem já te conhece é mais fácil do que conquistar alguém novo.",
+    "title": "Quem sumiu está comprando no concorrente agora.",
+    "lead": "O Lagoa+ mostra quem não aparece há mais de {lapsedDays} dias e manda um lembrete com carimbo de presente. É venda que já foi sua, voltando para o seu caixa.",
     "consent": "Só recebe aviso quem aceitou. O celular aparece sempre mascarado.",
     "listTitle": "Sem visita há mais de {lapsedDays} dias",
     "daysAgo": "há {days} dias",
@@ -127,7 +127,7 @@
     "redeemHint": "Vale por {redeemMinutes} minutos e só uma vez"
   },
   "bonus": {
-    "title": "Motivos para comprar mais vezes.",
+    "title": "Cada regra é um motivo a mais para ele gastar com você.",
     "lead": "Ligue as regras que fazem sentido para a sua loja. Se duas caírem no mesmo dia, vale a maior: aniversário no dia surpresa continua 2×.",
     "welcome": {
       "tag": "+2",
@@ -147,12 +147,12 @@
     "surprise": {
       "tag": "2×",
       "title": "Dia surpresa",
-      "body": "Encha o dia parado da semana: carimbo em dobro só naquele dia."
+      "body": "Dia fraco? Carimbo em dobro só naquele dia, e o cliente aparece."
     }
   },
   "network": {
-    "title": "Cliente novo vindo das outras lojas da cidade.",
-    "lead": "Na vitrine Descobrir, o cliente vê as lojas da rede e os desafios da cidade. Quem junta carimbo no café descobre a sua loja no caminho e vira venda para você.",
+    "title": "Cliente das outras lojas da cidade entrando na sua.",
+    "lead": "Na vitrine Descobrir, o cliente vê as lojas da rede e os desafios da cidade. Quem junta carimbo no café descobre a sua loja no caminho. Cliente novo, sem você pagar por ele.",
     "challengeTitle": "Visite 3 lojas novas",
     "challengeBody": "Complete o desafio do mês e ganhe carimbo extra.",
     "challengeProgress": "1 de 3 visitadas",
@@ -166,8 +166,9 @@
     "stopPending": "{shop}: falta visitar"
   },
   "pricing": {
-    "title": "Poucos clientes voltando já pagam o plano.",
+    "title": "Menos de R$ 3 por dia para parar de perder cliente.",
     "paybackNote": "Exemplo: com ticket médio de R$ 30, 3 voltas a mais no mês cobrem o Fundador.",
+    "scarcity": "Só {founderSpots} lojas entram com preço de Fundador. Depois, o preço volta para R$ 119,90 e R$ 249,90.",
     "currency": "R$",
     "period": "/mês",
     "featured": "Mais completo",
@@ -243,7 +244,7 @@
       },
       "price": {
         "q": "Quanto custa?",
-        "a": "O Fundador custa R$ 79,90 por mês e o Fundador Pro, R$ 89,90, os dois com preço travado e sem fidelidade. A loja entra depois da aprovação da rede."
+        "a": "O Fundador custa R$ 79,90 por mês e o Fundador Pro, R$ 89,90, os dois com preço travado e sem fidelidade. A loja entra depois da aprovação da rede. O preço de Fundador vale só para as primeiras {founderSpots} lojas."
       },
       "plans": {
         "q": "Qual a diferença entre Fundador e Pro?",
@@ -256,8 +257,8 @@
     }
   },
   "closing": {
-    "title": "A próxima venda começa no seu balcão.",
-    "lead": "Quem atende é a Equipe Lagoa+, aqui em Três Lagoas.",
+    "title": "Cada dia sem clube é cliente indo embora.",
+    "lead": "Chame agora no WhatsApp. A gente monta o clube com você, sem custo de implantação.",
     "phoneLabel": "WhatsApp da rede",
     "steps": {
       "call": "Você chama no WhatsApp e conta sobre a sua loja.",
@@ -265,7 +266,7 @@
       "setup": "Com a loja aprovada, a gente monta o clube com você."
     },
     "stepsLabel": "O que acontece depois",
-    "note": "Fundador a partir de R$ 79,90/mês · preço travado · sem fidelidade"
+    "note": "Só {founderSpots} lojas com preço de Fundador · a partir de R$ 79,90/mês · sem fidelidade"
   },
   "footer": {
     "tagline": "Clube de fidelidade do comércio de Três Lagoas/MS.",
