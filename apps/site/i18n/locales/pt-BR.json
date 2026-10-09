@@ -7,9 +7,8 @@
     "label": "Navegação principal",
     "skip": "Pular para o conteúdo",
     "home": "Lagoa+, início",
-    "counter": "Balcão",
-    "lapsed": "Clientes sumidos",
-    "how": "Como funciona",
+    "counter": "Como funciona",
+    "lapsed": "Clientes de volta",
     "pricing": "Preço",
     "faq": "Dúvidas",
     "signIn": "Entrar no Balcão",
@@ -43,8 +42,8 @@
     "summary": "Cartão de exemplo: 8 de 10 carimbos. Faltam 2 para Corte grátis."
   },
   "counter": {
-    "title": "Leva menos tempo que dar o troco.",
-    "lead": "Dois passos: você gera o QR, o cliente escaneia. Ele sai da loja com um motivo para voltar.",
+    "title": "Seu cliente sai da loja já pensando em voltar.",
+    "lead": "Na venda, você gera um QR e ele escaneia. Pronto: ele tem um prêmio pela frente e um motivo para voltar.",
     "stepsLabel": "Como dar o carimbo",
     "steps": {
       "generate": {
@@ -63,7 +62,7 @@
       "pointsPerReal": "Nos pontos por real, quanto mais ele compra, mais rápido chega no prêmio"
     },
     "panelTitle": "Balcão",
-    "tryIt": "Experimente: gere um QR e simule a leitura do cliente.",
+    "tryIt": "Veja como é simples: gere um QR e simule a leitura do cliente.",
     "demo": {
       "modeLabel": "Tipo de QR",
       "modeStamp": "Carimbo",
@@ -88,7 +87,7 @@
     }
   },
   "lapsed": {
-    "title": "Quem sumiu está comprando no concorrente agora.",
+    "title": "Quem sumiu volta a comprar.",
     "lead": "O Lagoa+ mostra quem não aparece há mais de {lapsedDays} dias e manda um lembrete com carimbo de presente. É venda que já foi sua, voltando para o seu caixa.",
     "consent": "Só recebe aviso quem aceitou. O celular aparece sempre mascarado.",
     "listTitle": "Sem visita há mais de {lapsedDays} dias",
@@ -98,61 +97,33 @@
     "sample": "Exemplo ilustrativo",
     "proTag": "No Fundador Pro"
   },
-  "how": {
-    "title": "E do lado do cliente, tudo no celular.",
-    "lead": "Sem app para baixar: a carteira abre no navegador.",
-    "steps": {
-      "join": {
-        "title": "Entra no clube",
-        "body": "Escaneia o cartaz da loja e ganha o cartão."
-      },
-      "earn": {
-        "title": "Junta a cada compra",
-        "body": "Pelo QR da visita que você gera."
-      },
-      "wallet": {
-        "title": "Acompanha",
-        "body": "A carteira mostra quanto falta para o prêmio e as outras lojas da rede."
-      },
-      "redeem": {
-        "title": "Resgata com código",
-        "body": "Ele gera um código de {redeemLength} letras e números que vale por cerca de {redeemMinutes} minutos. Você confere no Balcão e entrega."
-      }
-    },
-    "fraudTitle": "Sem carimbo duplicado",
-    "fraudBody": "Cada cliente ganha no máximo uma visita por loja a cada intervalo que você escolhe, como 4 horas ou 1 dia. E cada QR da visita só vale uma vez.",
-    "redeemTitle": "Código de resgate",
-    "redeemCode": "K7M4QR",
-    "redeemCodeLabel": "Código de exemplo: K 7 M 4 Q R",
-    "redeemHint": "Vale por {redeemMinutes} minutos e só uma vez"
-  },
   "bonus": {
-    "title": "Cada regra é um motivo a mais para ele gastar com você.",
-    "lead": "Ligue as regras que fazem sentido para a sua loja. Se duas caírem no mesmo dia, vale a maior: aniversário no dia surpresa continua 2×.",
-    "welcome": {
-      "tag": "+2",
-      "title": "Boas-vindas",
-      "body": "O cartão já começa com 2 carimbos. Quem começa andado tem pressa de terminar."
-    },
-    "birthday": {
+    "title": "Movimento até no dia fraco.",
+    "lead": "Ligue o que faz sentido para a sua loja. Se duas regras caírem no mesmo dia, vale a maior.",
+    "surprise": {
       "tag": "2×",
-      "title": "Aniversário em dobro",
-      "body": "O aniversário vira motivo para comprar com você: cada visita vale dois carimbos."
+      "title": "Dia fraco com movimento",
+      "body": "Carimbo em dobro só no dia que você escolher."
     },
     "referral": {
       "tag": "+1",
-      "title": "Traga um amigo",
-      "body": "Seu cliente traz cliente novo: ganha +1 carimbo quando o amigo faz a primeira compra."
+      "title": "Cliente trazendo cliente",
+      "body": "Quem indica ganha +1 carimbo quando o amigo faz a primeira compra."
     },
-    "surprise": {
+    "welcome": {
+      "tag": "+2",
+      "title": "Cliente novo que já quer voltar",
+      "body": "O cartão começa com 2 carimbos. Quem começa andado tem pressa de terminar."
+    },
+    "birthday": {
       "tag": "2×",
-      "title": "Dia surpresa",
-      "body": "Dia fraco? Carimbo em dobro só naquele dia, e o cliente aparece."
+      "title": "Um motivo a mais no aniversário",
+      "body": "No dia do aniversário, cada visita vale dois carimbos."
     }
   },
   "network": {
-    "title": "Cliente das outras lojas da cidade entrando na sua.",
-    "lead": "Na vitrine Descobrir, o cliente vê as lojas da rede e os desafios da cidade. Quem junta carimbo no café descobre a sua loja no caminho. Cliente novo, sem você pagar por ele.",
+    "title": "Cliente novo sem pagar anúncio.",
+    "lead": "Na vitrine Descobrir, o cliente vê as lojas da cidade e os desafios do mês. Quem junta carimbo no café descobre a sua loja no caminho.",
     "challengeTitle": "Visite 3 lojas novas",
     "challengeBody": "Complete o desafio do mês e ganhe carimbo extra.",
     "challengeProgress": "1 de 3 visitadas",
@@ -163,7 +134,9 @@
       "yours": "Sua loja"
     },
     "stopVisited": "{shop}: visitada",
-    "stopPending": "{shop}: falta visitar"
+    "stopPending": "{shop}: falta visitar",
+    "proTag": "Destaque no Fundador Pro",
+    "proNote": "No Pro, sua loja aparece em destaque no Descobrir."
   },
   "pricing": {
     "title": "Menos de R$ 3 por dia para parar de perder cliente.",
@@ -180,12 +153,10 @@
         "from": "119,90",
         "price": "79,90",
         "items": {
-          "counter": "Balcão com QR da visita e conferência de resgate",
-          "poster": "Cartaz para o cliente entrar no clube",
-          "modes": "Cartão de carimbos, pontos por real ou por visita",
-          "bonus": "Boas-vindas, aniversário, amigo e dia surpresa",
-          "customers": "Lista de clientes",
-          "discover": "Sua loja na vitrine Descobrir"
+          "retention": "Cliente voltando a cada compra",
+          "slowDay": "Movimento no dia fraco",
+          "newCustomers": "Cliente novo pela indicação e pela vitrine da cidade",
+          "setup": "Implantação com a Equipe Lagoa+"
         }
       },
       "pro": {
@@ -194,8 +165,9 @@
         "price": "89,90",
         "lead": "Tudo do Fundador, mais:",
         "items": {
-          "lapsed": "Veja quem parou de comprar",
-          "campaigns": "Lembrete com carimbo de presente para trazer de volta"
+          "lapsed": "Recupere quem parou de comprar",
+          "campaigns": "Lembrete com carimbo de presente para trazer de volta",
+          "spotlight": "Sua loja em destaque no Descobrir"
         }
       }
     },
@@ -210,37 +182,33 @@
   "faq": {
     "title": "Perguntas frequentes",
     "items": {
-      "next": {
-        "q": "O que acontece depois que eu chamo no WhatsApp?",
-        "a": "A Equipe Lagoa+ responde em até 24 horas, conversa sobre a sua loja e, com a loja aprovada, monta o clube com você."
+      "effort": {
+        "q": "Vai dar trabalho no balcão?",
+        "a": "Não. São dois passos na venda: você gera o QR e o cliente escaneia. Não precisa digitar nada dele."
       },
       "app": {
         "q": "O cliente precisa baixar um aplicativo?",
         "a": "Não precisa de loja de aplicativos. A carteira abre no navegador do celular e pode ser instalada na tela inicial."
       },
-      "checkIn": {
-        "q": "Como o cliente ganha o carimbo?",
-        "a": "Na venda, você gera o QR da visita no Balcão. O cliente aponta a câmera (ou digita o código curto) e o carimbo cai na carteira. O cartaz da loja serve para ele entrar no clube."
-      },
       "system": {
         "q": "Preciso mudar meu caixa ou sistema?",
         "a": "Não. O Balcão roda no navegador do computador, do tablet ou do celular que já fica no balcão."
+      },
+      "results": {
+        "q": "E se não funcionar para a minha loja?",
+        "a": "Sem fidelidade e sem multa: se não fizer sentido, é só avisar a Equipe Lagoa+."
+      },
+      "checkIn": {
+        "q": "Como o cliente ganha o carimbo?",
+        "a": "Na venda, você gera o QR da visita no Balcão. O cliente aponta a câmera (ou digita o código curto) e o carimbo cai na carteira. O cartaz da loja serve para ele entrar no clube."
       },
       "fraud": {
         "q": "E se alguém tentar juntar carimbo demais?",
         "a": "Cada QR da visita vale uma vez só e expira em {minutes} minutos. Além disso, cada cliente ganha no máximo uma visita por loja a cada intervalo que você define. O código de resgate também é de uso único e vence em cerca de {redeemMinutes} minutos."
       },
       "reward": {
-        "q": "O que acontece com o prêmio que o cliente não resgatou?",
-        "a": "Fica guardado por {holdDays} dias. Depois do resgate, o próximo cartão já começa andado se as boas-vindas estiverem ligadas."
-      },
-      "change": {
-        "q": "Posso mudar a meta depois?",
-        "a": "Pode, quando quiser. A mudança cria uma nova versão do programa: os cartões em andamento terminam na versão em que começaram e os cartões novos já usam a regra nova."
-      },
-      "privacy": {
-        "q": "Como ficam os dados dos meus clientes?",
-        "a": "O celular é dado pessoal: aparece mascarado nas listas e nunca é exposto. Lembrete só vai para quem aceitou receber avisos, e a pessoa pode cancelar quando quiser."
+        "q": "Como o cliente resgata o prêmio?",
+        "a": "Ele gera um código de {redeemLength} letras e números que vale por cerca de {redeemMinutes} minutos. Você confere no Balcão e entrega. O prêmio que não for resgatado fica guardado por {holdDays} dias, e depois do resgate o próximo cartão já começa andado se as boas-vindas estiverem ligadas."
       },
       "price": {
         "q": "Quanto custa?",
@@ -248,11 +216,19 @@
       },
       "plans": {
         "q": "Qual a diferença entre Fundador e Pro?",
-        "a": "O Pro inclui a lista de quem sumiu e os lembretes com carimbo de presente para trazer essas pessoas de volta."
+        "a": "O Pro inclui a lista de quem sumiu, os lembretes com carimbo de presente e o destaque da sua loja no Descobrir."
       },
-      "cancel": {
-        "q": "E se eu quiser sair?",
-        "a": "Sem fidelidade e sem multa: é só avisar a Equipe Lagoa+."
+      "privacy": {
+        "q": "Como ficam os dados dos meus clientes?",
+        "a": "O celular é dado pessoal: aparece mascarado nas listas e nunca é exposto. Lembrete só vai para quem aceitou receber avisos, e a pessoa pode cancelar quando quiser."
+      },
+      "change": {
+        "q": "Posso mudar a meta depois?",
+        "a": "Pode, quando quiser. A mudança cria uma nova versão do programa: os cartões em andamento terminam na versão em que começaram e os cartões novos já usam a regra nova."
+      },
+      "next": {
+        "q": "O que acontece depois que eu chamo no WhatsApp?",
+        "a": "A Equipe Lagoa+ responde em até 24 horas, conversa sobre a sua loja e, com a loja aprovada, monta o clube com você."
       }
     }
   },
@@ -272,5 +248,14 @@
     "tagline": "Clube de fidelidade do comércio de Três Lagoas/MS.",
     "merchantSignIn": "Entrar no Balcão",
     "copyright": "© {year} Lagoa+"
+  },
+  "pain": {
+    "title": "Você conhece esse mês.",
+    "items": {
+      "slowDays": "Terça e quarta, a loja às moscas.",
+      "oneAndDone": "O cliente compra uma vez e some.",
+      "competitor": "Ele vai para o concorrente e você nem fica sabendo."
+    },
+    "closing": "Não é falta de cliente. É falta de motivo para ele voltar."
   }
 }

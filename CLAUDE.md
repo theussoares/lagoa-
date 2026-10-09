@@ -125,6 +125,7 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
 | Resgate / código          | `redemption` / `redemptionCode`|
 | Balcão                    | `counter`                      |
 | Descobrir / desafio       | `discover` / `challenge`       |
+| Destaque no Descobrir (Pro) | `discoverFeatured`           |
 | Clientes sumidos          | `lapsedCustomers`              |
 | Campanha / aviso          | `campaign` / `notification`    |
 | Lembrete (para sumidos)   | `reminder` (`lapsedReminder`)  |
@@ -139,6 +140,7 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
 | Cabeçalho de tela / card herói | `screenHeader` / `heroCard` |
 | Situação da loja          | `shopStatus` (`pending` \| `approved` \| `suspended`) |
 | Plano / cobrança          | `plan` / `billing`             |
+| Fundador / Fundador Pro   | `founder` / `founderPro`       |
 
 Termo novo de domínio entra nesta tabela antes de virar código.
 
@@ -286,10 +288,11 @@ composables  → stores (Pinia, estado)
   resgatado fica guardado 30 dias. Após o resgate o próximo cartão já começa
   andado se a regra de boas-vindas estiver ligada.
 - **Descobrir:** vitrine das lojas da rede e desafios da cidade
-  (ex.: "visite 3 lojas novas").
+  (ex.: "visite 3 lojas novas"). Loja do Fundador Pro aparece em destaque
+  (`discoverFeatured`).
 - **Clientes sumidos:** sem visita há mais de 30 dias; alvo de lembrete com
   carimbo bônus, só para quem aceitou avisos.
-- **Planos Fundador:** Fundador R$ 79,90/mês (de R$ 119,90) e Fundador Pro R$ 89,90/mês (de R$ 249,90; inclui clientes sumidos e campanhas), preço travado e sem fidelidade; lojas entram por aprovação
+- **Planos Fundador:** Fundador R$ 79,90/mês (de R$ 119,90) e Fundador Pro R$ 89,90/mês (de R$ 249,90; inclui clientes sumidos, campanhas e destaque no Descobrir). Preço de Fundador só para as 10 primeiras lojas, preço travado e sem fidelidade; lojas entram por aprovação
   do admin da rede.
 
 ## Regras que não se negociam

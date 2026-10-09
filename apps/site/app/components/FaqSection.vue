@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const { t } = useI18n()
 
-const QUESTIONS = ['next', 'app', 'checkIn', 'system', 'fraud', 'reward', 'change', 'privacy', 'plans', 'price', 'cancel'] as const
+const QUESTIONS = ['effort', 'app', 'system', 'results', 'checkIn', 'fraud', 'reward', 'price', 'plans', 'privacy', 'change', 'next'] as const
 </script>
 
 <template>

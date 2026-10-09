@@ -49,7 +49,8 @@ outra. Para o lojista, o balcão é tão rápido quanto anotar no papel.
   ganha; sem cartão, ganha o cartão na hora. Antifraude por janela (ex.: 1 por
   4 h). O QR do cartaz da loja só faz o cliente entrar no clube.
 - Planos: Fundador R$ 79,90/mês e Fundador Pro R$ 89,90/mês (inclui clientes
-  sumidos e campanhas), preço travado e sem fidelidade.
+  sumidos, campanhas e destaque da loja no Descobrir), preço travado e sem
+  fidelidade. Preço de Fundador só para as 10 primeiras lojas.
 - Resgate: cliente gera código de 6 caracteres válido por ~10 min; lojista
   valida no Balcão e confirma a entrega.
 - Modos de programa: cartão de carimbos, pontos por real, pontos por visita.
