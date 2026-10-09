@@ -410,7 +410,8 @@ describe.skipIf(!TEST_DATABASE_URL)('claiming a visit QR against a real database
       const scans = await data.scansWithoutSeqScan(repository.lookupQuery({ kind: 'visitCode', code: VisitCodeSchema.parse('K7M4P') }))
       const onQrs = scans.filter((scan) => scan.relation === 'visit_qrs')
       expect(onQrs.map((scan) => scan.node)).not.toContain('Seq Scan')
-      expect(onQrs.map((scan) => scan.index)).toContain('visit_qrs_code_created_idx')
+      // O planner pode usar o índice por Bitmap Index Scan, que traz o nome do índice mas não o da tabela.
+      expect(scans.map((scan) => scan.index)).toContain('visit_qrs_code_created_idx')
     }, SLOW)
 
     it('locks the QR through its primary key', async () => {

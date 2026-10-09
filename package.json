@@ -16,7 +16,12 @@
     "dev:api": "pnpm --filter @lagoa/api dev",
     "build:api": "pnpm --filter @lagoa/api build",
     "test:api": "pnpm --filter @lagoa/api test",
-    "typecheck:api": "pnpm --filter @lagoa/api typecheck"
+    "typecheck:api": "pnpm --filter @lagoa/api typecheck",
+    "db:up": "docker compose up -d --wait postgres",
+    "db:down": "docker compose down",
+    "db:reset": "docker compose down -v && docker compose up -d --wait postgres",
+    "db:migrate:local": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/lagoa_dev pnpm --filter @lagoa/api db:migrate && DATABASE_URL=postgresql://postgres:postgres@localhost:5432/lagoa_test pnpm --filter @lagoa/api db:migrate",
+    "test:api:db": "TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/lagoa_test pnpm --filter @lagoa/api test"
   },
   "dependencies": {
     "zod": "^4.6.5"
