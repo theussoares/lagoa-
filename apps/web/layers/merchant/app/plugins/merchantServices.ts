@@ -10,3 +10,4 @@ export default defineNuxtPlugin({
     return { provide: { merchantServices } }
   },
 })
+

@@ -52,3 +52,52 @@ describe('toExpirationPolicy', () => {
     expect(toExpirationPolicy({ expirationKind: 'afterInactivity', expirationMonths: months })).toEqual({ ok: false, error: { code: 'invalidProgram' } })
   })
 })
+
+import { toProgram, type ProgramDatabaseColumns } from './program-rules.mapper'
+
+describe('toProgram', () => {
+  const validColumns: ProgramDatabaseColumns = {
+    id: '018f98a2-7b2a-7182-9f33-6d004bbbb111',
+    shopId: '018f98a2-7b2a-7182-9f33-6d004bbbb222',
+    rewardTitle: 'Açaí 500ml',
+    mode: 'stamps',
+    earnUnits: 1,
+    target: 10,
+    bonusRules: {
+      welcomeBonus: { enabled: true, units: 1 },
+      birthdayMultiplier: { enabled: false, multiplier: 2 },
+      referralBonus: { enabled: true, units: 2 },
+      surpriseDay: { enabled: false, multiplier: 2, date: null },
+    },
+    expirationKind: 'never',
+    expirationMonths: null,
+    checkInEnabled: true,
+    checkInCooldownHours: 24,
+  }
+
+  it('maps valid database columns to a complete Program', () => {
+    const result = toProgram(validColumns)
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value).toEqual({
+      id: validColumns.id,
+      shopId: validColumns.shopId,
+      reward: { title: 'Açaí 500ml' },
+      rules: { mode: 'stamps', target: 10 },
+      bonusRules: validColumns.bonusRules,
+      expirationPolicy: { kind: 'never' },
+      checkIn: { enabled: true, cooldownHours: 24 },
+    })
+  })
+
+  it('fails with invalidProgram if rules are invalid', () => {
+    const result = toProgram({ ...validColumns, target: 9999 })
+    expect(result).toEqual({ ok: false, error: { code: 'invalidProgram' } })
+  })
+
+  it('fails with invalidProgram if expiration policy is invalid', () => {
+    const result = toProgram({ ...validColumns, expirationKind: 'afterInactivity', expirationMonths: null })
+    expect(result).toEqual({ ok: false, error: { code: 'invalidProgram' } })
+  })
+})
+

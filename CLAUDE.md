@@ -297,6 +297,10 @@ composables  → stores (Pinia, estado)
 
 ## Regras que não se negociam
 
+- **Banco de produção só depois do de teste.** Migration só entra em produção pelo
+  `db:migrate:prod` (`apps/api/scripts/migrate-prod.sh`): o banco de teste precisa ter exatamente as migrations do repo e os
+  testes de integração passando nele, e a produção não pode divergir. Nada de `apply_migration` do MCP nem SQL à mão em
+  produção. Detalhes em `apps/api/README.md`.
 - **Celular é dado pessoal (LGPD).** Mascarado em listas
   (`(67) 9••••-0374`), nunca em logs, URLs, analytics ou métricas da rede. O
   admin vê só dados agregados.

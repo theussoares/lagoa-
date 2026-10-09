@@ -43,10 +43,11 @@ export const visitQrs = pgTable(
     refusalAvailableAt: timestamp('refusal_available_at', { withTimezone: true }),
   },
   (t) => [
-    // 1000000 = AMOUNT_MAX_CENTS (literal: o drizzle-kit não resolve `#shared`).
+    // 1000000 = AMOUNT_MAX_CENTS (literal: o drizzle-kit não resolve `#shared`). `coalesce`: CHECK aprova NULL, e
+    // `amount` sem valor dava NULL (não false) e passava.
     check(
       'visit_qrs_earn_check',
-      sql`(${t.earnKind} = 'amount' AND ${t.amountCents} BETWEEN 1 AND 1000000) OR (${t.earnKind} = 'visit' AND ${t.amountCents} IS NULL)`,
+      sql`coalesce((${t.earnKind} = 'amount' AND ${t.amountCents} BETWEEN 1 AND 1000000) OR (${t.earnKind} = 'visit' AND ${t.amountCents} IS NULL), false)`,
     ),
     // Sem `claimed_by`: ele é apagado quando a conta sai.
     check('visit_qrs_claim_check', sql`(${t.status} = 'claimed') = (${t.claimedAt} IS NOT NULL AND ${t.ledgerEntryId} IS NOT NULL)`),

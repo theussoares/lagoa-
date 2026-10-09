@@ -12,6 +12,7 @@ import { ConfigModule } from './config/config.module'
 import { CustomerModule } from './customer/customer.module'
 import { DatabaseModule, DB, type Database } from './database/database.module'
 import { HealthController } from './health/health.controller'
+import { MerchantModule } from './merchant/merchant.module'
 import { PostgresThrottlerStorage } from './throttling/postgres-throttler.storage'
 
 @Module({
@@ -33,6 +34,7 @@ import { PostgresThrottlerStorage } from './throttling/postgres-throttler.storag
       }),
     }),
     CustomerModule,
+    MerchantModule,
     SmsModule,
   ],
   controllers: [HealthController],

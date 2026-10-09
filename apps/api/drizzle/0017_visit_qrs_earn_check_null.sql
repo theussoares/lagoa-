@@ -1,0 +1,2 @@
+ALTER TABLE "visit_qrs" DROP CONSTRAINT "visit_qrs_earn_check";--> statement-breakpoint
+ALTER TABLE "visit_qrs" ADD CONSTRAINT "visit_qrs_earn_check" CHECK (coalesce(("visit_qrs"."earn_kind" = 'amount' AND "visit_qrs"."amount_cents" BETWEEN 1 AND 1000000) OR ("visit_qrs"."earn_kind" = 'visit' AND "visit_qrs"."amount_cents" IS NULL), false));

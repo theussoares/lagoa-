@@ -232,10 +232,15 @@ export class TestDatabase {
   async scansWithoutSeqScan(query: SQLWrapper): Promise<PlanScan[]> {
     return this.db.transaction(async (tx) => {
       await tx.execute(sql`set local enable_seqscan = off`)
-      const [row] = await tx.execute(sql`explain (format json) ${query}`)
+      const [row] = await tx.execute(sql`explain (format json) ${query.getSQL()}`)
       const plan: unknown = row?.['QUERY PLAN']
       return collectScans(typeof plan === 'string' ? JSON.parse(plan) : plan)
     })
+  }
+
+  /** Para a loja criada pelo próprio serviço sob teste (não por `createShop`): entra na limpeza do fim. */
+  trackShop(shopId: string): void {
+    this.shopIds.push(shopId)
   }
 
   async cleanup(): Promise<void> {

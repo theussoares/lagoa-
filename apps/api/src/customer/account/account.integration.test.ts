@@ -94,6 +94,7 @@ describe.skipIf(!TEST_DATABASE_URL)('account erasure against a real database', (
     const scans = await data.scansWithoutSeqScan(accounts.clearVisitQrClaimsQuery(data.db, '0190a000-0000-7000-8000-0000000000d2'))
     const onQrs = scans.filter((scan) => scan.relation === 'visit_qrs')
     expect(onQrs.map((scan) => scan.node)).not.toContain('Seq Scan')
-    expect(onQrs.map((scan) => scan.index)).toContain('visit_qrs_claimed_by_idx')
+    // Bitmap Index Scan traz o nome do índice, mas não o da tabela.
+    expect(scans.map((scan) => scan.index)).toContain('visit_qrs_claimed_by_idx')
   }, SLOW)
 })

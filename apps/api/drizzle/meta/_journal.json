@@ -120,6 +120,20 @@
       "when": 1791318566656,
       "tag": "0016_rate_limits",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1791581598848,
+      "tag": "0017_visit_qrs_earn_check_null",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1791582576858,
+      "tag": "0018_shop_assets_bucket",
+      "breakpoints": true
     }
   ]
 }
