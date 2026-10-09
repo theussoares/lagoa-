@@ -216,7 +216,7 @@ export class DrizzleVisitQrsRepository extends VisitQrsRepository {
       .from(ledgerEntries)
       .innerJoin(loyaltyCards, eq(loyaltyCards.id, ledgerEntries.cardId))
       .innerJoin(appUsers, eq(appUsers.id, ledgerEntries.customerId))
-      .innerJoin(programs, and(eq(programs.shopId, shopId), eq(programs.active, true)))
+      .innerJoin(programs, eq(programs.id, loyaltyCards.programId))
       .leftJoin(redemptions, eq(redemptions.id, ledgerEntries.redemptionId))
       .where(eq(ledgerEntries.id, ledgerEntryId))
       .limit(1)

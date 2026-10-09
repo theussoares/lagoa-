@@ -7,7 +7,7 @@ import { maskPhone } from '#shared/utils/phone'
 import { toIso } from '#shared/utils/time'
 import { PiiService } from '../../common/pii.service'
 import { DB, type Database } from '../../database/database.module'
-import { appUsers, ledgerEntries, programs, redemptions, shops } from '../../database/schema'
+import { appUsers, ledgerEntries, loyaltyCards, programs, redemptions, shops } from '../../database/schema'
 import { LedgerStore } from '../../ledger/ledger.store'
 import { RedemptionLookup } from '../../ledger/redemption-lookup'
 import { err, ok, type Result } from '#shared/types/result'
@@ -72,7 +72,8 @@ export class DrizzleCounterRepository extends CounterRepository {
       .from(ledgerEntries)
       .innerJoin(appUsers, eq(appUsers.id, ledgerEntries.customerId))
       .leftJoin(redemptions, eq(redemptions.id, ledgerEntries.redemptionId))
-      .innerJoin(programs, and(eq(programs.shopId, ledgerEntries.shopId), eq(programs.active, true)))
+      .innerJoin(loyaltyCards, eq(loyaltyCards.id, ledgerEntries.cardId))
+      .innerJoin(programs, eq(programs.id, loyaltyCards.programId))
       .where(
         and(
           eq(ledgerEntries.shopId, shopId),

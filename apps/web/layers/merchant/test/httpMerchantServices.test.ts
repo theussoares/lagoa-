@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
 import { ApiClient } from '#layers/core/app/services/http/ApiClient'
-import { PhoneNumberSchema } from '#shared/schemas/phone'
 import { RedemptionCodeSchema } from '#shared/schemas/redemption'
 import { RedemptionIdSchema } from '#shared/schemas/ids'
 import { createHttpMerchantServices } from '../app/services/http/createHttpMerchantServices'
@@ -13,48 +12,33 @@ function servicesWith(fetcher: typeof fetch) {
 }
 
 describe('http merchant services', () => {
-  const phone = PhoneNumberSchema.parse('67999990001')
 
-  it('counter registerVisit posts to /merchant/counter/visits', async () => {
+  it('visitQr issueVisitQr posts to /merchant/visit-qrs', async () => {
     const fetcher = vi.fn<typeof fetch>(async () =>
-      json(200, {
-        entry: {
-          id: '01925b44-9000-7000-8000-000000000001',
-          shopId: '01925b44-9000-7000-8000-000000000002',
-          maskedPhone: '(67) 9••••-0001',
-          kind: 'visit',
-          unit: 'stamp',
-          units: 1,
-          amountCents: null,
-          rewardTitle: null,
-          isNewCustomer: false,
-          createdAt: '2026-10-06T12:00:00.000Z',
-        },
-        card: {
-          cardId: '01925b44-9000-7000-8000-000000000003',
-          unit: 'stamp',
-          balance: 3,
-          target: 10,
-          rewardReady: false,
-        },
-        unitsEarned: 1,
-        welcomeUnits: 0,
+      json(201, {
+        id: '01925b44-9000-7000-8000-000000000001',
+        token: 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG',
+        visitCode: 'AC3EF',
+        status: 'active',
+        earn: { kind: 'visit' },
+        createdAt: '2026-10-06T12:00:00.000Z',
+        expiresAt: '2026-10-06T12:05:00.000Z',
+        claim: null,
+        refusal: null,
       }),
     )
-    const { counter } = servicesWith(fetcher)
-    const result = await counter.registerVisit(phone)
+    const { visitQr } = servicesWith(fetcher)
+    const result = await visitQr.issueVisitQr({})
     expect(result.ok).toBe(true)
-    expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/merchant/counter/visits')
-    expect(fetcher.mock.calls[0]?.[1]?.body).toBe(JSON.stringify({ phone }))
+    expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/merchant/visit-qrs')
   })
 
-  it('counter registerAmount posts to /merchant/counter/amount', async () => {
-    const fetcher = vi.fn<typeof fetch>(async () => json(400, { code: 'amountNotAccepted' }))
-    const { counter } = servicesWith(fetcher)
-    const result = await counter.registerAmount(phone, 5000)
-    expect(result).toEqual({ ok: false, error: { code: 'amountNotAccepted' } })
-    expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/merchant/counter/amount')
-    expect(fetcher.mock.calls[0]?.[1]?.body).toBe(JSON.stringify({ phone, amountCents: 5000 }))
+  it('visitQr getVisitQr reads GET /merchant/visit-qrs/:id', async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => json(404, { code: 'notFound', entity: 'visitQr' }))
+    const { visitQr } = servicesWith(fetcher)
+    const result = await visitQr.getVisitQr('01925b44-9000-7000-8000-000000000001' as any)
+    expect(result).toEqual({ ok: false, error: { code: 'notFound', entity: 'visitQr' } })
+    expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/merchant/visit-qrs/01925b44-9000-7000-8000-000000000001')
   })
 
   it('counter listTodayEntries reads GET /merchant/counter/entries/today', async () => {
