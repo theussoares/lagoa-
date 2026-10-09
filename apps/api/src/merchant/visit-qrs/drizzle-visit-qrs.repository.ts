@@ -1,5 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common'
-import { and, desc, eq, sql } from 'drizzle-orm'
+import { Inject, Injectable, Logger } from '@nestjs/common'
+import { and, eq, lt, sql } from 'drizzle-orm'
 import { VISIT_CODE_LENGTH } from '#shared/constants/domain'
 import type { PhoneNumber } from '#shared/schemas/phone'
 import type {
@@ -34,6 +34,8 @@ import {
 
 @Injectable()
 export class DrizzleVisitQrsRepository extends VisitQrsRepository {
+  private readonly logger = new Logger(DrizzleVisitQrsRepository.name)
+
   constructor(
     @Inject(DB) private readonly db: Database,
     private readonly pii: PiiService,
@@ -223,15 +225,28 @@ export class DrizzleVisitQrsRepository extends VisitQrsRepository {
 
     if (!entryRow) return null
 
-    let maskedPhone = '(00) 9••••-0000' as ReturnType<typeof maskPhone>
-    if (entryRow.phoneEncrypted) {
-      try {
-        const decrypted = this.pii.decrypt(entryRow.phoneEncrypted)
-        maskedPhone = maskPhone(decrypted as PhoneNumber)
-      } catch {
-        // se descriptografia falhar, mantém fallback
-      }
-    }
+    const maskedPhone = this.maskedPhoneOf(entryRow.id, entryRow.phoneEncrypted)
+    const [welcome] = await this.db
+      .select({ unitsDelta: ledgerEntries.unitsDelta })
+      .from(ledgerEntries)
+      .where(
+        and(
+          eq(ledgerEntries.idempotencyKey, `welcome:${entryRow.cardId}`),
+          eq(ledgerEntries.occurredAt, entryRow.occurredAt),
+        ),
+      )
+      .limit(1)
+    const [earlierVisit] = await this.db
+      .select({ id: ledgerEntries.id })
+      .from(ledgerEntries)
+      .where(
+        and(
+          eq(ledgerEntries.cardId, entryRow.cardId),
+          eq(ledgerEntries.countsAsVisit, true),
+          lt(ledgerEntries.occurredAt, entryRow.occurredAt),
+        ),
+      )
+      .limit(1)
 
     const entry: CounterEntry = CounterEntrySchema.parse({
       id: entryRow.id,
@@ -242,8 +257,8 @@ export class DrizzleVisitQrsRepository extends VisitQrsRepository {
       units: entryRow.unitsDelta > 0 ? entryRow.unitsDelta : 0,
       amountCents: entryRow.amountCents,
       rewardTitle: entryRow.rewardTitle,
-      isNewCustomer: false,
-      createdAt: toIso(entryRow.occurredAt ?? new Date()),
+      isNewCustomer: !earlierVisit,
+      createdAt: toIso(entryRow.occurredAt),
     })
 
     return VisitRegisteredSchema.parse({
@@ -255,8 +270,18 @@ export class DrizzleVisitQrsRepository extends VisitQrsRepository {
         target: entryRow.cardTarget,
         rewardReady: entryRow.cardBalance >= entryRow.cardTarget,
       },
-      unitsEarned: entryRow.unitsDelta > 0 ? entryRow.unitsDelta : 1,
-      welcomeUnits: 0,
+      unitsEarned: entryRow.unitsDelta,
+      welcomeUnits: welcome?.unitsDelta ?? 0,
     })
+  }
+
+  /** Falha de cifra é erro do servidor: loga só o id do lançamento (nunca o celular) e deixa subir, em vez de mostrar um número inventado. */
+  private maskedPhoneOf(entryId: string, phoneEncrypted: Buffer): ReturnType<typeof maskPhone> {
+    try {
+      return maskPhone(this.pii.decrypt(phoneEncrypted) as PhoneNumber)
+    } catch (error) {
+      this.logger.error(`Could not decrypt customer phone for ledger entry ${entryId}`)
+      throw error
+    }
   }
 }
