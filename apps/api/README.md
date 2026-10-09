@@ -103,7 +103,18 @@ Schema em `src/database/schema`. Mudou? `pnpm --filter @lagoa/api db:generate --
 - Unidade e HTTP: repositório falso, rodam sempre.
 - Integração (`*.integration.test.ts`): Postgres de verdade, só com `TEST_DATABASE_URL`. Cada teste cria os dados
   que usa e apaga no fim (`TestDatabase`). No CI sobe um `postgres:17`, aplica as migrations e roda tudo.
-  Local: `TEST_DATABASE_URL=$DATABASE_URL pnpm test:api` **só contra banco de dev**.
+  Local: `pnpm db:up && pnpm db:migrate:local && pnpm test:api:db` (Postgres 17 em Docker, o mesmo do CI).
+  Nunca aponte `TEST_DATABASE_URL` para o Supabase.
+
+### Banco local compartilhado
+
+`docker-compose.yml` na raiz sobe o `postgres:17` com dois bancos (`lagoa_dev` e `lagoa_test`, usuário/senha
+`postgres`, porta 5432 só em localhost). Comandos da raiz: `pnpm db:up`, `pnpm db:down`, `pnpm db:reset` (apaga o
+volume), `pnpm db:migrate:local` (aplica as migrations nos dois bancos). Quem clona o repo (Caio incluso) tem o mesmo banco.
+
+**Espelho da produção = estrutura, não dado.** O que mantém o local igual ao Supabase são as migrations em `drizzle/`
+(a mesma pasta vai para os dois). Dado de produção não é copiado: tem celular e e-mail de cliente (LGPD). Para ter dado
+de exemplo use `pnpm --filter @lagoa/api db:seed` com `ALLOW_SEED=1` e `DATABASE_URL` do banco local.
 
 ## Para o painel do lojista (Balcão)
 
