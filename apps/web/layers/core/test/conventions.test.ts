@@ -12,7 +12,6 @@ import { describe, expect, it } from 'vitest'
  */
 
 const PERMANENT_IO_EXCEPTIONS: readonly string[] = [
-  'layers/merchant/app/stores/merchantSession.ts',
   'layers/core/app/plugins/mockBackend.client.ts',
   'layers/core/app/mock/**',
 ]
@@ -178,9 +177,9 @@ function describeRule(name: string, transitional: readonly string[], rule: (path
 }
 
 describe('permanent I/O exceptions', () => {
-  it('are exactly the merchant session persistence, the mock backend plugin and the mock', () => {
+  it('are exactly the mock backend plugin and the mock', () => {
     expect([...PERMANENT_IO_EXCEPTIONS].sort()).toEqual(
-      ['layers/core/app/mock/**', 'layers/core/app/plugins/mockBackend.client.ts', 'layers/merchant/app/stores/merchantSession.ts'].sort(),
+      ['layers/core/app/mock/**', 'layers/core/app/plugins/mockBackend.client.ts'].sort(),
     )
   })
 

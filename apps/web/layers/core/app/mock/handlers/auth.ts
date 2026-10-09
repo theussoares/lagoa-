@@ -45,7 +45,7 @@ function issueSignUpTicket(ctx: MockContext, phone: PhoneNumber): MerchantSignIn
   const ticket = SignUpTicketSchema.parse(ctx.ids.next('signup'))
   const expiresAt = toIso(addMinutes(ctx.now, SIGN_UP_TICKET_TTL_MINUTES))
   ctx.state.signUpTickets = [...ctx.state.signUpTickets.filter((item) => item.phone !== phone), { ticket, phone, expiresAt }]
-  return { kind: 'signUp', ticket, expiresAt }
+  return { kind: 'signUp' }
 }
 
 export function signInMerchant(
