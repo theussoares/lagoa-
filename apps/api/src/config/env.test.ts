@@ -45,4 +45,10 @@ describe('corsOrigins', () => {
   it('trims and drops empty entries', () => {
     expect(corsOrigins({ CORS_ORIGIN: ' https://a.com , https://b.com,, ' })).toEqual(['https://a.com', 'https://b.com'])
   })
+
+  it('keeps test approval off by default and refuses it in production', () => {
+    expect(parseEnv(valid()).ENABLE_TEST_APPROVE).toBe('0')
+    const production = { ...valid(), NODE_ENV: 'production', TRUST_PROXY_HOPS: '1', COMTELE_AUTH_KEY: 'key', SEND_SMS_HOOK_SECRET: 'v1,whsec_abc' }
+    expect(() => parseEnv({ ...production, ENABLE_TEST_APPROVE: '1' })).toThrow('ENABLE_TEST_APPROVE')
+  })
 })
