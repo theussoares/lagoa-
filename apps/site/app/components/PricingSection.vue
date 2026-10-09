@@ -9,6 +9,7 @@ const PRO_ITEMS = ['lapsed', 'campaigns'] as const
   <section id="preco" class="mx-auto max-w-6xl px-4 py-16 sm:py-24 sm:px-6 lg:py-32">
     <div v-reveal>
       <SectionHeading :title="t('pricing.title')" align="center" />
+      <p class="mx-auto mt-4 max-w-2xl text-center text-[0.9375rem] text-toned">{{ t('pricing.paybackNote') }}</p>
     </div>
 
     <div v-reveal class="mx-auto mt-14 grid max-w-4xl gap-6 md:grid-cols-2">

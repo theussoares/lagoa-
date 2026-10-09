@@ -1,7 +1,7 @@
 {
   "seo": {
-    "title": "Lagoa+ · Clube de fidelidade do comércio de Três Lagoas",
-    "description": "Seu cliente veio uma vez e não voltou? Com o Lagoa+, você gera um QR na venda e ele junta carimbos no celular. A partir de R$ 79,90/mês, sem fidelidade."
+    "title": "Lagoa+ · Faça seu cliente voltar e comprar de novo",
+    "description": "Cliente que volta compra de novo. Com o Lagoa+, você gera um QR na venda, o cliente junta carimbos no celular e volta para buscar o prêmio. A partir de R$ 79,90/mês, sem fidelidade."
   },
   "nav": {
     "label": "Navegação principal",
@@ -17,7 +17,7 @@
     "closeMenu": "Fechar menu"
   },
   "cta": {
-    "primary": "Quero entrar no clube",
+    "primary": "Quero vender mais",
     "newTab": "(abre o WhatsApp)",
     "forPlan": "plano {plan}",
     "whatsappMessage": "Olá! Tenho uma loja em Três Lagoas e quero saber mais sobre o Lagoa+.",
@@ -25,9 +25,9 @@
     "whatsappMessagePro": "Olá! Tenho uma loja em Três Lagoas e quero saber mais sobre o plano Fundador Pro do Lagoa+."
   },
   "hero": {
-    "titleLead": "Seu cliente veio uma vez e não voltou mais?",
-    "titleAccent": "Resolva em 2 passos.",
-    "lead": "Na venda, você gera um QR. O cliente escaneia e o carimbo cai no celular dele. Quem junta carimbo volta para buscar o prêmio e compra de novo.",
+    "titleLead": "Seu cliente comprou uma vez e não voltou mais?",
+    "titleAccent": "Faça ele voltar e comprar de novo.",
+    "lead": "Cada cliente que volta é uma venda a mais, sem gastar com anúncio. Na venda, você gera um QR: ele junta carimbos no celular e volta para buscar o prêmio. Dois passos no balcão.",
     "secondary": "Experimentar o Balcão",
     "note": "Piloto em Três Lagoas/MS · a partir de R$ 79,90/mês, preço travado e sem fidelidade",
     "receipt": "+1 carimbo pelo QR da visita",
@@ -43,8 +43,8 @@
     "summary": "Cartão de exemplo: 8 de 10 carimbos. Faltam 2 para Corte grátis."
   },
   "counter": {
-    "title": "Dois passos e pronto.",
-    "lead": "Você não digita nada do cliente. Gera o QR na venda, ele escaneia, acabou.",
+    "title": "Dois passos no balcão. Mais vendas no mês.",
+    "lead": "Não atrasa a fila: você gera o QR, o cliente escaneia e já sai sabendo quanto falta para o prêmio.",
     "stepsLabel": "Como dar o carimbo",
     "steps": {
       "generate": {
@@ -53,13 +53,14 @@
       },
       "scan": {
         "title": "O cliente escaneia",
-        "body": "Ou digita o código curto. O carimbo cai na carteira dele na hora."
+        "body": "Ou digita o código curto. O carimbo cai na carteira e ele já vê quanto falta para o prêmio."
       }
     },
     "bullets": {
       "newCustomer": "Cliente novo já sai com o cartão",
       "singleUse": "Cada QR vale uma vez só e expira em {minutes} minutos",
-      "noPhone": "Sem celular do cliente no balcão: nada para digitar"
+      "noPhone": "Sem celular do cliente no balcão: nada para digitar",
+      "pointsPerReal": "Nos pontos por real, quanto mais ele compra, mais rápido chega no prêmio"
     },
     "panelTitle": "Balcão",
     "tryIt": "Experimente: gere um QR e simule a leitura do cliente.",
@@ -87,8 +88,8 @@
     }
   },
   "lapsed": {
-    "title": "Cliente sumido é venda parada.",
-    "lead": "Veja quem está há mais de {lapsedDays} dias sem aparecer e chame de volta com um carimbo de presente. É o que o cartão de papel não faz.",
+    "title": "Quem sumiu já comprou de você. Venda de novo.",
+    "lead": "Veja quem está há mais de {lapsedDays} dias sem comprar e mande um lembrete com carimbo de presente. Trazer de volta quem já te conhece é mais fácil do que conquistar alguém novo.",
     "consent": "Só recebe aviso quem aceitou. O celular aparece sempre mascarado.",
     "listTitle": "Sem visita há mais de {lapsedDays} dias",
     "daysAgo": "há {days} dias",
@@ -126,7 +127,7 @@
     "redeemHint": "Vale por {redeemMinutes} minutos e só uma vez"
   },
   "bonus": {
-    "title": "Motivos a mais para voltar.",
+    "title": "Motivos para comprar mais vezes.",
     "lead": "Ligue as regras que fazem sentido para a sua loja. Se duas caírem no mesmo dia, vale a maior: aniversário no dia surpresa continua 2×.",
     "welcome": {
       "tag": "+2",
@@ -136,22 +137,22 @@
     "birthday": {
       "tag": "2×",
       "title": "Aniversário em dobro",
-      "body": "No dia do aniversário, cada visita vale dois carimbos."
+      "body": "O aniversário vira motivo para comprar com você: cada visita vale dois carimbos."
     },
     "referral": {
       "tag": "+1",
       "title": "Traga um amigo",
-      "body": "Quem indicou ganha +1 carimbo quando o amigo faz a primeira visita."
+      "body": "Seu cliente traz cliente novo: ganha +1 carimbo quando o amigo faz a primeira compra."
     },
     "surprise": {
       "tag": "2×",
       "title": "Dia surpresa",
-      "body": "Escolha um dia parado da semana e ofereça carimbo em dobro."
+      "body": "Encha o dia parado da semana: carimbo em dobro só naquele dia."
     }
   },
   "network": {
-    "title": "Clientes de outras lojas passam a conhecer a sua.",
-    "lead": "Na vitrine Descobrir, o cliente vê as lojas da rede e os desafios da cidade. Quem junta carimbo no café descobre a sua loja no caminho.",
+    "title": "Cliente novo vindo das outras lojas da cidade.",
+    "lead": "Na vitrine Descobrir, o cliente vê as lojas da rede e os desafios da cidade. Quem junta carimbo no café descobre a sua loja no caminho e vira venda para você.",
     "challengeTitle": "Visite 3 lojas novas",
     "challengeBody": "Complete o desafio do mês e ganhe carimbo extra.",
     "challengeProgress": "1 de 3 visitadas",
@@ -165,7 +166,8 @@
     "stopPending": "{shop}: falta visitar"
   },
   "pricing": {
-    "title": "Entre como Fundador. O preço não sobe depois.",
+    "title": "Poucos clientes voltando já pagam o plano.",
+    "paybackNote": "Exemplo: com ticket médio de R$ 30, 3 voltas a mais no mês cobrem o Fundador.",
     "currency": "R$",
     "period": "/mês",
     "featured": "Mais completo",
@@ -191,8 +193,8 @@
         "price": "89,90",
         "lead": "Tudo do Fundador, mais:",
         "items": {
-          "lapsed": "Lista de quem sumiu",
-          "campaigns": "Lembretes com carimbo de presente (campanhas)"
+          "lapsed": "Veja quem parou de comprar",
+          "campaigns": "Lembrete com carimbo de presente para trazer de volta"
         }
       }
     },
@@ -254,7 +256,7 @@
     }
   },
   "closing": {
-    "title": "A próxima visita começa no seu balcão.",
+    "title": "A próxima venda começa no seu balcão.",
     "lead": "Quem atende é a Equipe Lagoa+, aqui em Três Lagoas.",
     "phoneLabel": "WhatsApp da rede",
     "steps": {

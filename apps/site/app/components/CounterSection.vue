@@ -8,6 +8,7 @@ const BULLETS = [
   { key: 'newCustomer', icon: 'i-ph-user-plus' },
   { key: 'singleUse', icon: 'i-ph-qr-code' },
   { key: 'noPhone', icon: 'i-ph-keyboard' },
+  { key: 'pointsPerReal', icon: 'i-ph-trend-up' },
 ] as const
 </script>
 
