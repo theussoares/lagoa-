@@ -13,7 +13,9 @@
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "node --env-file-if-exists=.env --require @swc-node/register src/database/seed.ts",
     "visit-qr:dev": "node --env-file-if-exists=.env --require @swc-node/register src/database/dev-issue-visit-qr.ts",
-    "build:vercel": "node scripts/build-vercel.mjs"
+    "build:vercel": "node scripts/build-vercel.mjs",
+    "db:check": "node --env-file-if-exists=.env scripts/check-db-parity.mjs",
+    "db:migrate:prod": "bash scripts/migrate-prod.sh"
   },
   "dependencies": {
     "@nestjs/common": "^12.1.2",

@@ -34,6 +34,8 @@ jobs:
         run: pnpm typecheck:api
       - name: Apply migrations to the test database
         run: pnpm --filter @lagoa/api db:migrate
+      - name: Test database matches the repo migrations
+        run: node apps/api/scripts/check-db-parity.mjs postgresql://postgres:postgres@localhost:5432/lagoa_test --exact
       - name: API tests (with a real Postgres)
         run: pnpm test:api
         env:

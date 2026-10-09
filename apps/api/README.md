@@ -94,8 +94,8 @@ valor), `rateLimited` (429), `routeNotFound` (404), `internal` (500, sem detalhe
 ## Banco e migrations
 
 Schema em `src/database/schema`. Mudou? `pnpm --filter @lagoa/api db:generate --name <nome>` e revise o SQL em
-`drizzle/`. Aplicar: `pnpm --filter @lagoa/api db:migrate` (com `DATABASE_URL`) **ou** pelo MCP do Supabase
-(`apply_migration`) com o mesmo SQL. Migration aplicada não se reescreve: corrija com uma nova. Armadilha: índice
+`drizzle/`. Aplicar em dev/teste: `pnpm --filter @lagoa/api db:migrate` (com `DATABASE_URL`).
+Em produção, só pelo `db:migrate:prod` (regra abaixo). Migration aplicada não se reescreve: corrija com uma nova. Armadilha: índice
 `DESC` do Drizzle é `NULLS LAST`; a consulta precisa de `order by ... desc nulls last` (ver `CLAUDE.md`).
 
 ## Testes
@@ -105,6 +105,16 @@ Schema em `src/database/schema`. Mudou? `pnpm --filter @lagoa/api db:generate --
   que usa e apaga no fim (`TestDatabase`). No CI sobe um `postgres:17`, aplica as migrations e roda tudo.
   Local: `pnpm db:up && pnpm db:migrate:local && pnpm test:api:db` (Postgres 17 em Docker, o mesmo do CI).
   Nunca aponte `TEST_DATABASE_URL` para o Supabase.
+
+### Regra: produção só depois do banco de teste
+
+Nenhuma migration vai para o banco de produção antes de estar aplicada no banco de teste e com os testes de
+integração passando nele. O único caminho para produção é `pnpm --filter @lagoa/api db:migrate:prod`
+(`scripts/migrate-prod.sh`, com `PROD_DATABASE_URL` e `TEST_DATABASE_URL`), que só segue se: (1) o banco de teste
+tem todas as migrations do repo e nenhuma a mais (`scripts/check-db-parity.mjs --exact`); (2) `pnpm test` passa nele;
+(3) a produção está atrás do repo, sem migration diferente (`--behind`). Não aplique migration em produção pelo MCP do
+Supabase (`apply_migration`) nem à mão: o Supabase grava em outra tabela e o script deixa de enxergar o que foi aplicado.
+A CI confere o mesmo no banco de teste dela a cada PR.
 
 ### Banco local compartilhado
 
