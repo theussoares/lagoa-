@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm'
+import { and, count, eq } from 'drizzle-orm'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { Clock } from '../common/clock'
 import { PiiService } from '../common/pii.service'
@@ -8,12 +8,14 @@ import { DrizzleRedemptionRepository } from '../customer/redemption/drizzle-rede
 import { RedemptionService } from '../customer/redemption/redemption.service'
 import { DrizzleReferralRepository } from '../customer/referral/drizzle-referral.repository'
 import { ReferralService } from '../customer/referral/referral.service'
-import { loyaltyCards, referrals, visitQrs } from '../database/schema'
+import { loyaltyCards, programs, referrals, visitQrs } from '../database/schema'
 import { DrizzleReferralSettlement } from '../ledger/drizzle-referral-settlement'
 import { LedgerStore } from '../ledger/ledger.store'
 import { RedemptionLookup } from '../ledger/redemption-lookup'
 import { createTestPii } from '../test-support/pii'
 import { TEST_DATABASE_URL, TestDatabase } from '../test-support/test-database'
+import { DrizzleProgramRepository } from './program/drizzle-program.repository'
+import { ProgramService } from './program/program.service'
 import { ClubSetupService } from './club-setup/club-setup.service'
 import { DrizzleClubSetupRepository } from './club-setup/drizzle-club-setup.repository'
 import { CounterRedemptionsService } from './counter/counter-redemptions.service'
@@ -53,6 +55,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
 
   // Merchant services
   let clubSetupService: ClubSetupService
+  let programService: ProgramService
   let visitQrsService: VisitQrsService
   let counterRedemptionsService: CounterRedemptionsService
   let customersService: CustomersService
@@ -79,6 +82,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
     const homeRepo = new DrizzleHomeRepository(data.db)
 
     clubSetupService = new ClubSetupService(clubSetupRepo)
+    programService = new ProgramService(new DrizzleProgramRepository(data.db))
     visitQrsService = new VisitQrsService(visitQrsRepo, sessionRepo, new VisitQrsRules(), clock)
     counterRedemptionsService = new CounterRedemptionsService(counterRepo, clock)
     customersService = new CustomersService(sessionRepo, customersRepo, pii, clock)
@@ -109,9 +113,9 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
       },
       program: {
         reward: { title: 'Café e Pão na Chapa' },
-        rules: { mode: 'stamps' as const, target: 2 },
+        rules: { mode: 'stamps' as const, target: 3 },
         bonusRules: {
-          welcomeBonus: { enabled: false, units: 1 },
+          welcomeBonus: { enabled: true, units: 1 },
           birthdayMultiplier: { enabled: false, multiplier: 2 as const },
           referralBonus: { enabled: true, units: 2 },
           surpriseDay: { enabled: false, multiplier: 2 as const, date: null },
@@ -125,6 +129,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
     expect(clubResult.ok).toBe(true)
     if (!clubResult.ok) throw new Error('Failed to create club')
     const shopId = clubResult.value.shopId
+    data.trackShop(shopId)
     expect(clubResult.value.shopStatus).toBe('pending')
 
     // 2. Aprovação da loja via test-approve
@@ -146,6 +151,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
     // 4. Clientes: Indicador e Indicado. Indicado captura convite e escaneia QR
     const referrerId = await data.createCustomer()
     const referredId = await data.createCustomer()
+    await data.setPhone(referrerId, pii.encrypt('67988776655'))
     await data.setPhone(referredId, pii.encrypt('67999887766'))
 
     const referrerCode = await data.referralCodeOf(referrerId)
@@ -189,6 +195,9 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
     expect(fetchedQr.value.status).toBe('claimed')
     expect(fetchedQr.value.claim).not.toBeNull()
     expect(fetchedQr.value.claim?.entry.maskedPhone).toBe('(67) 9••••-7766')
+    expect(fetchedQr.value.claim?.entry.isNewCustomer).toBe(true)
+    expect(fetchedQr.value.claim?.welcomeUnits).toBe(1)
+    expect(fetchedQr.value.claim?.unitsEarned).toBe(1)
     expect(JSON.stringify(fetchedQr.value)).not.toContain('67999887766')
 
     // 7. Cliente acumula pontos até a meta e gera resgate; lojista valida e entrega no balcão
@@ -203,12 +212,12 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
     const claim2 = await checkInService.claimVisitQr(referredId, { token: secondIssued.value.token })
     expect(claim2.ok).toBe(true)
 
-    // Cartão do indicado agora tem 2 carimbos (meta atingida)
+    // Cartão do indicado: 1 de boas-vindas + 2 visitas = 3 carimbos (meta atingida)
     const [referredCard] = await data.db
       .select()
       .from(loyaltyCards)
       .where(and(eq(loyaltyCards.shopId, shopId), eq(loyaltyCards.customerId, referredId)))
-    expect(referredCard?.balance).toBe(2)
+    expect(referredCard?.balance).toBe(3)
 
     // Cliente gera código de resgate
     const redemptionResult = await redemptionService.requestCode(referredId, referredCard!.id)
@@ -230,12 +239,12 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
     expect(confirmResult.value.kind).toBe('redemption')
     expect(confirmResult.value.rewardTitle).toBe('Café e Pão na Chapa')
 
-    // Saldo do cliente é consumido após o resgate
+    // O resgate zera o cartão e o próximo já começa andado pelas boas-vindas (1 carimbo)
     const [cardAfterRedemption] = await data.db
       .select()
       .from(loyaltyCards)
       .where(and(eq(loyaltyCards.shopId, shopId), eq(loyaltyCards.customerId, referredId)))
-    expect(cardAfterRedemption?.balance).toBe(0)
+    expect(cardAfterRedemption?.balance).toBe(1)
 
     // 8. Verificação do diretório de clientes e resumo semanal
     const customersResult = await customersService.listCustomers(merchantUserId, 'all')
@@ -254,5 +263,29 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
     expect(homeResult.value.visits).toBe(2)
     expect(homeResult.value.redemptions).toBe(1)
     expect(homeResult.value.customers).toBe(1)
+
+    // 9. Troca de programa: nova versão cancela o QR aberto; trocar a modalidade com cartões é recusado
+    const openQr = await visitQrsService.issueVisitQr(merchantUserId, {})
+    if (!openQr.ok) throw new Error('Failed to issue QR before program change')
+
+    const current = await programService.getProgram(merchantUserId)
+    if (!current.ok) throw new Error('Failed to read program')
+    const { id: _id, shopId: _shopId, ...draft } = current.value
+    const newTarget = await programService.updateProgram(merchantUserId, { ...draft, rules: { mode: 'stamps', target: 4 } })
+    expect(newTarget.ok).toBe(true)
+    if (!newTarget.ok) throw new Error('Failed to change target')
+    expect(newTarget.value.id).not.toBe(current.value.id)
+
+    const [cancelledQr] = await data.db.select().from(visitQrs).where(eq(visitQrs.id, openQr.value.id))
+    expect(cancelledQr?.status).toBe('cancelled')
+    expect(cancelledQr?.cancelReason).toBe('programChanged')
+
+    const modeChange = await programService.updateProgram(merchantUserId, {
+      ...draft,
+      rules: { mode: 'pointsPerVisit', pointsPerVisit: 10, target: 100 },
+    })
+    expect(modeChange).toEqual({ ok: false, error: { code: 'programModeLocked' } })
+    const [activePrograms] = await data.db.select({ n: count() }).from(programs).where(and(eq(programs.shopId, shopId), eq(programs.active, true)))
+    expect(activePrograms?.n).toBe(1)
   }, SLOW)
 })

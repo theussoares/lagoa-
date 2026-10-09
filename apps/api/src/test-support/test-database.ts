@@ -238,6 +238,11 @@ export class TestDatabase {
     })
   }
 
+  /** Para a loja criada pelo próprio serviço sob teste (não por `createShop`): entra na limpeza do fim. */
+  trackShop(shopId: string): void {
+    this.shopIds.push(shopId)
+  }
+
   async cleanup(): Promise<void> {
     if (this.shopIds.length > 0) {
       // Antes do ledger: o QR usado aponta para a linha de ganho.
