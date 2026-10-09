@@ -8,7 +8,6 @@ const menuId = useId()
 const links = computed(() => [
   { href: '#balcao', label: t('nav.counter') },
   { href: '#sumidos', label: t('nav.lapsed') },
-  { href: '#como-funciona', label: t('nav.how') },
   { href: '#preco', label: t('nav.pricing') },
   { href: '#duvidas', label: t('nav.faq') },
 ])

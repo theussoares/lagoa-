@@ -12,7 +12,8 @@ const SAMPLE_LAPSED = [
 <template>
   <section id="sumidos" class="mx-auto grid max-w-6xl items-center gap-14 px-4 py-16 sm:py-24 sm:px-6 lg:grid-cols-2 lg:gap-20 lg:py-32">
     <div v-reveal class="flex flex-col gap-6">
-      <SectionHeading :title="t('lapsed.title')" :lead="t('lapsed.lead')" />
+      <StampTag :label="t('lapsed.proTag')" tone="reward" icon="i-ph-star-bold" class="self-start" />
+      <SectionHeading :title="t('lapsed.title')" :lead="t('lapsed.lead', COPY_PARAMS)" />
       <p class="flex items-start gap-3 text-toned">
         <UIcon name="i-ph-lock-simple" class="mt-0.5 size-6 shrink-0 text-primary" aria-hidden="true" />
         {{ t('lapsed.consent') }}
@@ -21,7 +22,7 @@ const SAMPLE_LAPSED = [
 
     <!-- Página da caderneta do painel; desenho, o texto ao lado diz o mesmo. -->
     <figure v-reveal class="rounded-(--radius-card) bg-default p-6 shadow-(--lagoa-shadow-card)" aria-hidden="true">
-      <p class="type-h2 ledger-rule">{{ t('lapsed.listTitle') }}</p>
+      <p class="type-h2 ledger-rule">{{ t('lapsed.listTitle', COPY_PARAMS) }}</p>
       <ul>
         <li v-for="customer in SAMPLE_LAPSED" :key="customer.phone" class="flex flex-wrap items-center justify-between gap-3 border-b border-(--lagoa-rule) py-4">
           <span class="flex flex-col">

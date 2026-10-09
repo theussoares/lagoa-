@@ -23,7 +23,7 @@ definido: o front consome services com implementação mock.
   carimbo e ver quanto falta para o prêmio.
 - **Lojista:** dono ou atendente de comércio local (barbearia, café, pizzaria,
   pet shop, academia). Usa o painel no computador ou tablet do balcão, entre um
-  atendimento e outro, para lançar visita pelo celular do cliente e validar
+  atendimento e outro, para gerar o QR da visita na venda e validar
   resgates. Também configura o clube e vê quem sumiu.
 - **Admin da rede:** aprova lojas, cobra o plano e vê métricas agregadas.
 
@@ -42,10 +42,15 @@ outra. Para o lojista, o balcão é tão rápido quanto anotar no papel.
 
 ## Operating Context
 
-- Balcão: lojista digita o celular do cliente e dá 1 carimbo (ou lança por
-  valor). Cliente novo ganha cartão na hora.
-- Check-in: cliente escaneia o QR da loja e ganha o carimbo sozinho, com
-  antifraude por janela (ex.: 1 por 4 h).
+- Balcão: na venda, o lojista gera um QR da visita de uso único (5 min), de
+  carimbo ou com o valor da compra para dar pontos. Não digita o celular do
+  cliente.
+- Check-in: cliente escaneia o QR da visita (ou digita o código curto) e
+  ganha; sem cartão, ganha o cartão na hora. Antifraude por janela (ex.: 1 por
+  4 h). O QR do cartaz da loja só faz o cliente entrar no clube.
+- Planos: Fundador R$ 79,90/mês e Fundador Pro R$ 89,90/mês (inclui clientes
+  sumidos, campanhas e destaque da loja no Descobrir), preço travado e sem
+  fidelidade. Preço de Fundador só para as 10 primeiras lojas.
 - Resgate: cliente gera código de 6 caracteres válido por ~10 min; lojista
   valida no Balcão e confirma a entrega.
 - Modos de programa: cartão de carimbos, pontos por real, pontos por visita.

@@ -24,7 +24,9 @@ verificação de celular por SMS.
 Consequências:
 - Sem campanhas, o lembrete para "clientes sumidos" fica de fora. A lista de sumidos
   na tela Clientes continua, porque é só consulta.
-- Sem plano e cobrança, o Fundador (R$ 79/mês) é combinado fora do sistema.
+- Sem plano e cobrança, os planos Fundador (R$ 79,90/mês) e Fundador Pro (R$ 89,90/mês) são combinados fora do sistema.
+  O que é só do Pro (campanhas e destaque no Descobrir, `discoverFeatured`) ainda não tem marcação no banco nem ordem
+  na vitrine. **Ponto a confirmar:** onde guardar o plano da loja e como o Descobrir ordena o destaque.
 - Sem admin no sistema, a aprovação de loja (`Shop.status`) é feita direto no banco
   ou por script interno. **Ponto a confirmar.**
 

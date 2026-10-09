@@ -2,10 +2,10 @@
 const { t } = useI18n()
 
 const RULES = [
+  { key: 'surprise', icon: 'i-ph-calendar-star-bold', tilt: 2 },
+  { key: 'referral', icon: 'i-ph-users-three-bold', tilt: -5 },
   { key: 'welcome', icon: 'i-ph-hand-waving-bold', tilt: -3 },
   { key: 'birthday', icon: 'i-ph-cake-bold', tilt: 4 },
-  { key: 'referral', icon: 'i-ph-users-three-bold', tilt: -5 },
-  { key: 'surprise', icon: 'i-ph-calendar-star-bold', tilt: 2 },
 ] as const
 </script>
 

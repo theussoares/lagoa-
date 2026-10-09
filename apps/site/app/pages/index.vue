@@ -29,9 +29,9 @@ useHead({
     <SiteHeader />
     <main id="conteudo" tabindex="-1" class="outline-none">
       <HeroSection />
-      <LapsedSection />
+      <PainSection />
       <CounterSection />
-      <HowSection />
+      <LapsedSection />
       <BonusSection />
       <NetworkSection />
       <PricingSection />
