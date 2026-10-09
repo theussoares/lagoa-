@@ -237,12 +237,12 @@ Garantir o gerenciamento do programa de fidelidade do lojista com a trava de alt
 ---
 
 ### Task 6: Customers Directory & Weekly Metrics (`merchant/customers` & `merchant/home`)
-> **Status:** PENDING ❌
+> **Status:** IMPLEMENTED ✅
 
 #### 1. Objetivo da etapa
 Fornecer a visualização da carteira de clientes da loja com mascaramento obrigatório de dados pessoais (LGPD), suporte a filtros (`all`, `lapsed`, `rewardReady`), e métricas agregadas da semana para o painel inicial do lojista.
 
-#### 2. Arquivos que serão criados
+#### 2. Arquivos criados
 - Create: `apps/api/src/merchant/customers/customers.controller.ts`
 - Create: `apps/api/src/merchant/customers/customers.service.ts`
 - Create: `apps/api/src/merchant/customers/customers.repository.ts`
@@ -259,18 +259,18 @@ Fornecer a visualização da carteira de clientes da loja com mascaramento obrig
 - Create: `apps/api/src/merchant/home/home.http.test.ts`
 - Modify: `apps/api/src/merchant/merchant.module.ts`
 
-#### 3. O que será implementado
-- `customers.repository.ts`:
-  - Query juntando `loyalty_cards`, `customer_profiles`, `app_users` e total de visitas em `ledger_entries`.
-  - Ordenação por `lastVisitAt DESC NULLS LAST`.
+#### 3. O que foi implementado
+- `customers.repository.ts` & `drizzle-customers.repository.ts`:
+  - Query juntando `loyalty_cards`, `customer_profiles`, `app_users` e total de visitas em `ledger_entries` via subquery agrupada.
+  - Ordenação por `lastVisitAt DESC NULLS LAST`, `loyaltyCards.id DESC`.
 - `customers.service.ts`:
-  - Decifra e mascara telefone via `PiiService` (`maskedPhone`).
-  - Filtros: `all`, `lapsed` (sem visita há 30+ dias via `isLapsedSince` ou `lastVisitAt === null`), `rewardReady` (`balance >= target`).
+  - Decifra e mascara telefone via `PiiService` (`maskedPhone`), nunca expondo o telefone em claro.
+  - Filtros: `all`, `lapsed` (via `isLapsedSince`), `rewardReady` (`balance >= target`).
 - `home.service.ts`:
   - Agrega métricas dos últimos 7 dias via função pura `summarizeWeek(entries, now)` de `#shared/domain/weekSummary`.
 - Endpoints:
   - `GET /v1/merchant/customers?filter=all|lapsed|rewardReady`
-  - `GET /v1/merchant/home/week-summary`
+  - `GET /v1/merchant/home/summary` e `GET /v1/merchant/home/week-summary`
 
 ---
 
@@ -298,5 +298,5 @@ Verificar a integração ponta a ponta de todo o ciclo de vida do lojista e clie
 - [x] **Task 3: Dynamic Visit QRs** (`merchant/visit-qrs`)
 - [x] **Task 4: Refactor Counter (Remove Phone Visits, Keep Redemptions & Today Entries)** (`merchant/counter`)
 - [x] **Task 5: Program Management Update (Invalidate Active QRs on Program Change)** (`merchant/program`)
-- [ ] **Task 6: Customers Directory & Weekly Summary** (`merchant/customers`, `merchant/home`)
+- [x] **Task 6: Customers Directory & Weekly Summary** (`merchant/customers`, `merchant/home`)
 - [ ] **Task 7: E2E Integration & Verification** (`merchant.integration.test.ts`)
