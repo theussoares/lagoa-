@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const { t } = useI18n()
 
-const QUESTIONS = ['next', 'app', 'checkIn', 'system', 'fraud', 'reward', 'change', 'privacy', 'price'] as const
+const QUESTIONS = ['next', 'app', 'checkIn', 'system', 'fraud', 'reward', 'change', 'privacy', 'plans', 'price', 'cancel'] as const
 </script>
 
 <template>
@@ -18,7 +18,7 @@ const QUESTIONS = ['next', 'app', 'checkIn', 'system', 'fraud', 'reward', 'chang
             {{ t(`faq.items.${key}.q`) }}
             <UIcon name="i-ph-caret-down" class="size-5 shrink-0 text-muted transition-transform duration-(--lagoa-dur-base) group-open:rotate-180" aria-hidden="true" />
           </summary>
-          <p class="pb-5 text-base text-toned">{{ t(`faq.items.${key}.a`) }}</p>
+          <p class="pb-5 text-base text-toned">{{ t(`faq.items.${key}.a`, COPY_PARAMS) }}</p>
         </details>
       </div>
     </div>

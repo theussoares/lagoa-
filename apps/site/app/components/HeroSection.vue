@@ -23,6 +23,7 @@ const sampleCard = computed<StampCardModel>(() => ({
   peek: t('card.peek'),
   summary: t('card.summary'),
   rewardReady: false,
+  note: null,
 }))
 </script>
 

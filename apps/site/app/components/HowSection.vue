@@ -2,8 +2,8 @@
 const { t } = useI18n()
 
 const STEPS = [
-  { key: 'setup', icon: 'i-ph-storefront-bold', tilt: -4 },
-  { key: 'visit', icon: 'i-ph-seal-check-bold', tilt: 3 },
+  { key: 'join', icon: 'i-ph-storefront-bold', tilt: -4 },
+  { key: 'earn', icon: 'i-ph-seal-check-bold', tilt: 3 },
   { key: 'wallet', icon: 'i-ph-wallet-bold', tilt: -2 },
   { key: 'redeem', icon: 'i-ph-gift-bold', tilt: 5 },
 ] as const
@@ -19,7 +19,7 @@ const codeChars = computed(() => t('how.redeemCode').split(''))
           <SectionHeading :title="t('how.title')" :lead="t('how.lead')" />
         </div>
 
-        <!-- A ordem importa (criar, lançar, acompanhar, resgatar): por isso é lista numerada. -->
+        <!-- A ordem importa (entrar, juntar, acompanhar, resgatar): por isso é lista numerada. -->
         <ol class="flex flex-col">
           <li v-for="step in STEPS" :key="step.key" v-reveal class="flex gap-5 border-t border-(--lagoa-rule) py-7 first:border-t-0 first:pt-0">
             <span class="size-14 shrink-0">
@@ -27,7 +27,7 @@ const codeChars = computed(() => t('how.redeemCode').split(''))
             </span>
             <div class="flex flex-col gap-1.5">
               <h3 class="type-card-title">{{ t(`how.steps.${step.key}.title`) }}</h3>
-              <p class="text-toned">{{ t(`how.steps.${step.key}.body`) }}</p>
+              <p class="text-toned">{{ t(`how.steps.${step.key}.body`, COPY_PARAMS) }}</p>
             </div>
           </li>
         </ol>
@@ -50,7 +50,7 @@ const codeChars = computed(() => t('how.redeemCode').split(''))
               >{{ char }}</span>
             </p>
             <p class="mt-4 flex items-center gap-2 text-muted">
-              <UIcon name="i-ph-timer" class="size-5" aria-hidden="true" />{{ t('how.redeemHint') }}
+              <UIcon name="i-ph-timer" class="size-5" aria-hidden="true" />{{ t('how.redeemHint', COPY_PARAMS) }}
             </p>
           </div>
         </div>

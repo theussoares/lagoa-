@@ -289,7 +289,7 @@ composables  → stores (Pinia, estado)
   (ex.: "visite 3 lojas novas").
 - **Clientes sumidos:** sem visita há mais de 30 dias; alvo de lembrete com
   carimbo bônus, só para quem aceitou avisos.
-- **Plano Fundador:** R$ 79/mês com preço travado; lojas entram por aprovação
+- **Planos Fundador:** Fundador R$ 79,90/mês (de R$ 119,90) e Fundador Pro R$ 89,90/mês (de R$ 249,90; inclui clientes sumidos e campanhas), preço travado e sem fidelidade; lojas entram por aprovação
   do admin da rede.
 
 ## Regras que não se negociam
