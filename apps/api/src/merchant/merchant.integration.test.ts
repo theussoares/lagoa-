@@ -1,5 +1,5 @@
 import { and, eq } from 'drizzle-orm'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { Clock } from '../common/clock'
 import { PiiService } from '../common/pii.service'
 import { CheckInService } from '../customer/check-in/check-in.service'
@@ -128,7 +128,9 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
     expect(clubResult.value.shopStatus).toBe('pending')
 
     // 2. Aprovação da loja via test-approve
+    vi.stubEnv('ENABLE_TEST_APPROVE', '1')
     const approvalResult = await clubSetupService.testApprove(merchantUserId)
+    vi.unstubAllEnvs()
     expect(approvalResult.ok).toBe(true)
     if (!approvalResult.ok) throw new Error('Failed to approve shop')
     expect(approvalResult.value).toBe('approved')

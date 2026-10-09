@@ -51,7 +51,7 @@ export class ClubSetupService {
   }
 
   async testApprove(ownerUserId: string): Promise<Result<ShopStatus, ErrorOf<'notFound' | 'unauthorized'>>> {
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.ENABLE_TEST_APPROVE !== '1') {
       return err({ code: 'unauthorized' })
     }
     const status = await this.repo.approveShop(ownerUserId)

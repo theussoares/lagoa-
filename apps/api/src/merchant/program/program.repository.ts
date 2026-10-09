@@ -1,4 +1,6 @@
 import type { Program, ProgramDraft } from '#shared/schemas/program'
+import type { ErrorOf } from '#shared/types/errors'
+import type { Result } from '#shared/types/result'
 
 export interface ActiveProgramData {
   shopId: string
@@ -18,14 +20,14 @@ export abstract class ProgramRepository {
   abstract countCardsByShopId(shopId: string): Promise<number>
 
   /**
-   * Salva as alterações no programa.
-   * Se `isNewVersion` for true, desativa a versão anterior (`active = false`) e insere nova linha ativa.
-   * Se for false (ex.: apenas atualização de título do prêmio), atualiza a linha ativa existente in-place.
+   * Troca o programa ativo numa transação que trava a loja (`FOR UPDATE`), então a contagem de
+   * cartões que `decide` vê vale até o commit: um cliente que entra no clube espera a troca acabar.
+   * `decide` devolve se a troca cria nova versão (desativa a ativa e cancela os QRs da visita abertos)
+   * ou só atualiza o prêmio da linha ativa; um erro desfaz tudo. `notFound` se o lojista não tem programa ativo.
    */
-  abstract saveProgram(
-    shopId: string,
-    currentProgramId: string,
+  abstract updateActiveProgram(
+    ownerUserId: string,
     draft: ProgramDraft,
-    isNewVersion: boolean,
-  ): Promise<Program>
+    decide: (current: Program, cardsCount: number) => Result<{ isNewVersion: boolean }, ErrorOf<'programModeLocked'>>,
+  ): Promise<Result<Program, ErrorOf<'notFound' | 'programModeLocked'>>>
 }

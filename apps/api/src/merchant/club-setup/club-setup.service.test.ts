@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { TEST_USER } from '../../test-support/fake-auth.guard'
 import type { ClubSetupDraft } from '#shared/schemas/onboarding'
 import type { ShopStatus } from '#shared/schemas/shop'
@@ -121,10 +121,22 @@ describe('ClubSetupService', () => {
     const statusBefore = await service.getStatus(TEST_USER.id)
     expect(statusBefore).toEqual({ ok: true, value: 'pending' })
 
+    vi.stubEnv('ENABLE_TEST_APPROVE', '1')
     const approved = await service.testApprove(TEST_USER.id)
+    vi.unstubAllEnvs()
     expect(approved).toEqual({ ok: true, value: 'approved' })
 
     const statusAfter = await service.getStatus(TEST_USER.id)
     expect(statusAfter).toEqual({ ok: true, value: 'approved' })
+  })
+
+  it('refuses test approval unless ENABLE_TEST_APPROVE is on', async () => {
+    const repo = new InMemoryClubSetupRepository()
+    const service = new ClubSetupService(repo)
+    await service.createClub(TEST_USER.id, sampleDraft)
+
+    const refused = await service.testApprove(TEST_USER.id)
+    expect(refused).toEqual({ ok: false, error: { code: 'unauthorized' } })
+    expect(await service.getStatus(TEST_USER.id)).toEqual({ ok: true, value: 'pending' })
   })
 })

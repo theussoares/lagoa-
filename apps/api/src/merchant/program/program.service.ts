@@ -34,21 +34,13 @@ export class ProgramService {
     ownerUserId: string,
     draft: ProgramDraft,
   ): Promise<Result<Program, ProgramServiceError>> {
-    const data = await this.repo.findActiveProgramByOwner(ownerUserId)
-    if (!data) {
-      return err({ code: 'notFound', entity: 'program' })
-    }
-
-    const cardsCount = await this.repo.countCardsByShopId(data.shopId)
-
-    if (!canChangeProgramMode(cardsCount, data.program.rules.mode, draft.rules.mode)) {
-      this.logger.warn(`Program mode change locked for shop ${data.shopId}: ${cardsCount} active cards exist`)
-      return err({ code: 'programModeLocked' })
-    }
-
-    const isNewVersion = hasCriticalChanges(data.program, draft)
-    const saved = await this.repo.saveProgram(data.shopId, data.program.id, draft, isNewVersion)
-
-    return ok(saved)
+    const saved = await this.repo.updateActiveProgram(ownerUserId, draft, (current, cardsCount) => {
+      if (!canChangeProgramMode(cardsCount, current.rules.mode, draft.rules.mode)) {
+        this.logger.warn(`Program mode change locked: ${cardsCount} cards exist`)
+        return err({ code: 'programModeLocked' })
+      }
+      return ok({ isNewVersion: hasCriticalChanges(current, draft) })
+    })
+    return saved
   }
 }

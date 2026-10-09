@@ -2,7 +2,7 @@ import type { INestApplication } from '@nestjs/common'
 import { APP_FILTER, APP_GUARD } from '@nestjs/core'
 import { Test } from '@nestjs/testing'
 import request from 'supertest'
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ClubSetupDraft } from '#shared/schemas/onboarding'
 import type { ShopStatus } from '#shared/schemas/shop'
 import { AllExceptionsFilter } from '../../common/http/all-exceptions.filter'
@@ -134,7 +134,9 @@ describe('merchant club-setup HTTP', () => {
     const status1 = await request(app.getHttpServer()).get('/merchant/shop/status').expect(200)
     expect(status1.body).toEqual({ status: 'pending' })
 
+    vi.stubEnv('ENABLE_TEST_APPROVE', '1')
     const approve = await request(app.getHttpServer()).post('/merchant/shop/test-approve').expect(201)
+    vi.unstubAllEnvs()
     expect(approve.body).toEqual({ status: 'approved' })
 
     const status2 = await request(app.getHttpServer()).get('/merchant/shop/status').expect(200)

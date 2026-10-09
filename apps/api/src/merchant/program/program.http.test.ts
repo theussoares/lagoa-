@@ -7,6 +7,8 @@ import type { Program, ProgramDraft } from '#shared/schemas/program'
 import { AllExceptionsFilter } from '../../common/http/all-exceptions.filter'
 import { FakeAuthGuard } from '../../test-support/fake-auth.guard'
 import { ProgramController } from './program.controller'
+import type { ErrorOf } from '#shared/types/errors'
+import { err, ok, type Result } from '#shared/types/result'
 import { ProgramRepository, type ActiveProgramData } from './program.repository'
 import { ProgramService } from './program.service'
 
@@ -22,25 +24,25 @@ class TestProgramRepository extends ProgramRepository {
     return this.cardCount
   }
 
-  async saveProgram(
-    shopId: string,
-    currentProgramId: string,
+  async updateActiveProgram(
+    _ownerUserId: string,
     draft: ProgramDraft,
-    isNewVersion: boolean,
-  ): Promise<Program> {
+    decide: (current: Program, cardsCount: number) => Result<{ isNewVersion: boolean }, ErrorOf<'programModeLocked'>>,
+  ): Promise<Result<Program, ErrorOf<'notFound' | 'programModeLocked'>>> {
+    if (!this.data) return err({ code: 'notFound', entity: 'program' })
+    const decision = decide(this.data.program, this.cardCount)
+    if (!decision.ok) return decision
     const updated: Program = {
-      id: isNewVersion ? ('018f98a2-7b2a-7182-9f33-6d004bbbb999' as any) : (currentProgramId as any),
-      shopId: shopId as any,
+      id: decision.value.isNewVersion ? ('018f98a2-7b2a-7182-9f33-6d004bbbb999' as any) : this.data.program.id,
+      shopId: this.data.shopId as any,
       reward: draft.reward,
       rules: draft.rules,
       bonusRules: draft.bonusRules,
       expirationPolicy: draft.expirationPolicy,
       checkIn: draft.checkIn,
     }
-    if (this.data) {
-      this.data.program = updated
-    }
-    return updated
+    this.data.program = updated
+    return ok(updated)
   }
 }
 

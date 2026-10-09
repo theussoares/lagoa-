@@ -1,11 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { and, count, eq } from 'drizzle-orm'
 import type { Program, ProgramDraft } from '#shared/schemas/program'
+import type { ErrorOf } from '#shared/types/errors'
+import { err, ok, type Result } from '#shared/types/result'
 import { DB, type Database } from '../../database/database.module'
 import { loyaltyCards, programs, shops, visitQrs } from '../../database/schema'
 import { toProgram } from '../../programs/program-rules.mapper'
 import { ProgramRepository, type ActiveProgramData } from './program.repository'
 import { mapDraftToProgramInsert } from './program.rules'
+
+type Tx = Parameters<Parameters<Database['transaction']>[0]>[0]
 
 @Injectable()
 export class DrizzleProgramRepository extends ProgramRepository {
@@ -57,64 +61,70 @@ export class DrizzleProgramRepository extends ProgramRepository {
     return Number(row?.count ?? 0)
   }
 
-  async saveProgram(
-    shopId: string,
-    currentProgramId: string,
+  async updateActiveProgram(
+    ownerUserId: string,
     draft: ProgramDraft,
-    isNewVersion: boolean,
-  ): Promise<Program> {
-    if (isNewVersion) {
-      return this.db.transaction(async (tx) => {
-        await tx
-          .update(programs)
-          .set({ active: false })
-          .where(and(eq(programs.shopId, shopId), eq(programs.id, currentProgramId)))
+    decide: (current: Program, cardsCount: number) => Result<{ isNewVersion: boolean }, ErrorOf<'programModeLocked'>>,
+  ): Promise<Result<Program, ErrorOf<'notFound' | 'programModeLocked'>>> {
+    return this.db.transaction(async (tx) => {
+      // O FK de loyalty_cards pede KEY SHARE nesta linha: cartão novo espera a troca terminar.
+      const [shop] = await tx
+        .select({ id: shops.id })
+        .from(shops)
+        .where(eq(shops.ownerUserId, ownerUserId))
+        .for('update')
+      if (!shop) return err({ code: 'notFound', entity: 'program' })
 
-        await tx
-          .update(visitQrs)
-          .set({
-            status: 'cancelled',
-            cancelReason: 'programChanged',
-          })
-          .where(and(eq(visitQrs.shopId, shopId), eq(visitQrs.status, 'active')))
+      const [row] = await tx
+        .select()
+        .from(programs)
+        .where(and(eq(programs.shopId, shop.id), eq(programs.active, true)))
+        .limit(1)
+      if (!row) return err({ code: 'notFound', entity: 'program' })
 
-        const insertValues = mapDraftToProgramInsert(shopId, draft)
-        const [inserted] = await tx
-          .insert(programs)
-          .values(insertValues)
-          .returning()
+      const current = toProgram(row)
+      if (!current.ok) throw new Error(`Active program row ${row.id} violated domain rules`)
 
-        if (!inserted) {
-          throw new Error('Failed to insert new program version')
-        }
+      const [cards] = await tx.select({ count: count() }).from(loyaltyCards).where(eq(loyaltyCards.shopId, shop.id))
+      const decision = decide(current.value, Number(cards?.count ?? 0))
+      if (!decision.ok) return decision
 
-        const mapped = toProgram(inserted)
-        if (!mapped.ok) {
-          throw new Error('Inserted program row violated domain rules')
-        }
+      const saved = decision.value.isNewVersion
+        ? await this.insertNewVersion(tx, shop.id, row.id, draft)
+        : await this.updateRewardTitle(tx, shop.id, row.id, draft)
+      return ok(saved)
+    })
+  }
 
-        return mapped.value
-      })
-    }
-
-    const [updated] = await this.db
+  private async insertNewVersion(tx: Tx, shopId: string, currentProgramId: string, draft: ProgramDraft): Promise<Program> {
+    await tx
       .update(programs)
-      .set({
-        rewardTitle: draft.reward.title,
-        updatedAt: new Date(),
-      })
+      .set({ active: false })
+      .where(and(eq(programs.shopId, shopId), eq(programs.id, currentProgramId)))
+
+    await tx
+      .update(visitQrs)
+      .set({ status: 'cancelled', cancelReason: 'programChanged' })
+      .where(and(eq(visitQrs.shopId, shopId), eq(visitQrs.status, 'active')))
+
+    const [inserted] = await tx.insert(programs).values(mapDraftToProgramInsert(shopId, draft)).returning()
+    if (!inserted) throw new Error('Failed to insert new program version')
+
+    const mapped = toProgram(inserted)
+    if (!mapped.ok) throw new Error('Inserted program row violated domain rules')
+    return mapped.value
+  }
+
+  private async updateRewardTitle(tx: Tx, shopId: string, currentProgramId: string, draft: ProgramDraft): Promise<Program> {
+    const [updated] = await tx
+      .update(programs)
+      .set({ rewardTitle: draft.reward.title, updatedAt: new Date() })
       .where(and(eq(programs.shopId, shopId), eq(programs.id, currentProgramId)))
       .returning()
-
-    if (!updated) {
-      throw new Error('Failed to update active program')
-    }
+    if (!updated) throw new Error('Failed to update active program')
 
     const mapped = toProgram(updated)
-    if (!mapped.ok) {
-      throw new Error('Updated program row violated domain rules')
-    }
-
+    if (!mapped.ok) throw new Error('Updated program row violated domain rules')
     return mapped.value
   }
 }
