@@ -275,7 +275,7 @@ Fornecer a visualização da carteira de clientes da loja com mascaramento obrig
 ---
 
 ### Task 7: Full Integration & Referral Settlement Verification
-> **Status:** PENDING ❌
+> **Status:** IMPLEMENTED ✅
 
 #### 1. Objetivo da etapa
 Verificar a integração ponta a ponta de todo o ciclo de vida do lojista e clientes contra banco PostgreSQL real (usando `TestDatabase`):
@@ -299,4 +299,4 @@ Verificar a integração ponta a ponta de todo o ciclo de vida do lojista e clie
 - [x] **Task 4: Refactor Counter (Remove Phone Visits, Keep Redemptions & Today Entries)** (`merchant/counter`)
 - [x] **Task 5: Program Management Update (Invalidate Active QRs on Program Change)** (`merchant/program`)
 - [x] **Task 6: Customers Directory & Weekly Summary** (`merchant/customers`, `merchant/home`)
-- [ ] **Task 7: E2E Integration & Verification** (`merchant.integration.test.ts`)
+- [x] **Task 7: E2E Integration & Verification** (`merchant.integration.test.ts`)
