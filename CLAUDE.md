@@ -64,10 +64,13 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
   `GET /api/session` uma vez (`useCustomerSession().restore()`) e o estado vai no payload. Dados de tela do cliente
   usam `useAsyncQuery(key, load)` (SSR); `useAsyncResult` (só no cliente) segue no lojista. `watch` com `immediate`
   não roda no SSR: estado derivado de dado assíncrono é `computed`.
-- **Lojista (transitório):** ainda não há API `merchant/*`. O painel (`/painel`, `/balcao/**`, `/programa`, `/clientes`,
-  `/campanhas`, `/configuracoes`) é SPA (`routeRules` `ssr: false`) com o mock do navegador (`layers/core/app/mock`,
-  plugin `mockBackend.client.ts`, `localStorage`, código de login `246810`). Sessão do lojista em `useMerchantSessionStore`.
-  Quando a API do lojista existir, o mock e as exceções de browser somem. Dados de exemplo em `seed.example.ts`.
+- **Lojista (painel):** SPA (`routeRules` `ssr: false`: `/painel`, `/balcao/**`, `/programa`, `/clientes`, `/campanhas`,
+  `/configuracoes`) sobre a API `merchant/*` pelo mesmo BFF (`server/api/merchant/**`, uma rota por rota da API). Login
+  pelo mesmo SMS do cliente (`/api/auth`); depois do código, `GET /api/merchant/session` diz se já há loja (`session`) ou
+  se falta o Criar o clube (`signUp`, sem ticket: o cookie identifica o dono). A sessão (`useMerchantSessionStore`) fica só
+  na memória e é conferida no servidor pelos middlewares (`useMerchantSession().check()`). `runtimeConfig.public.merchantBackend`
+  (`NUXT_PUBLIC_MERCHANT_BACKEND`) é `http` por padrão; `mock` (navegador, `localStorage`, código `246810`) só para testes e
+  demonstração offline, e some na M6. **Ainda sem API:** Campanhas (M5). Plano: `docs/specs/api-merchant/`.
 - **Monorepo (pnpm workspace):** o front vive em `apps/web` (Nuxt + `layers/`);
   `shared/` fica na raiz (alias `#shared`) para o futuro `apps/api` reusar
   os contratos. Caminhos `layers/...` neste documento são relativos a `apps/web/`.
