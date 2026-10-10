@@ -20,6 +20,9 @@ export class DrizzleAccountRepository extends AccountRepository {
 
   async erase(userId: string, now: Date): Promise<EraseOutcome> {
     return this.db.transaction(async (tx) => {
+      // Trava a conta antes de olhar as lojas: o Criar o clube lê esta mesma linha com `FOR SHARE`, então ou a loja nasce
+      // antes (e aqui vale `ownsShop`) ou depois (e lá vale `erased_at`). Sem isso nasceria loja de dono sem login.
+      await tx.select({ id: appUsers.id }).from(appUsers).where(eq(appUsers.id, userId)).for('update')
       const [profile] = await tx.select({ id: customerProfiles.userId }).from(customerProfiles).where(eq(customerProfiles.userId, userId)).for('update').limit(1)
       if (!profile) return 'notFound'
       const [owned] = await tx.select({ id: shops.id }).from(shops).where(eq(shops.ownerUserId, userId)).limit(1)

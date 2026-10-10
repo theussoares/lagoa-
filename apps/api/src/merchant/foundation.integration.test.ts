@@ -1,4 +1,5 @@
-import { eq } from 'drizzle-orm'
+import { randomUUID } from 'node:crypto'
+import { eq, sql } from 'drizzle-orm'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { SystemClock } from '../common/clock'
 import { AccountService } from '../customer/account/account.service'
@@ -62,6 +63,37 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant foundation against a real database
     expect(await cardOf(me)).toMatchObject({ visitsCount: good.visitsCount, firstVisitAt: good.firstVisitAt })
   }, SLOW)
 
+  it('backfill does not overwrite a check-in that commits while it waits for the card lock', async () => {
+    const shop = await data.createShop()
+    const me = await data.createCustomer()
+    await claimVisit(data, checkIn, me, shop)
+    const card = await cardOf(me)
+    await data.db.update(loyaltyCards).set({ visitsCount: 0, firstVisitAt: null }).where(eq(loyaltyCards.id, card.id))
+
+    let release: () => void = () => {}
+    const gate = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    // Faz o que o `LedgerStore.credit` faz: trava o cartão, grava a visita e sobe o contador, e só depois confirma.
+    const checkingIn = data.db.transaction(async (tx) => {
+      await tx.execute(sql`select id from loyalty_cards where id = ${card.id} for update`)
+      await tx.insert(ledgerEntries).values({
+        cardId: card.id, shopId: shop.id, customerId: me, kind: 'visit', unitsDelta: 1, countsAsVisit: true,
+        idempotencyKey: `race-${randomUUID()}`, occurredAt: new Date(),
+      })
+      await tx.update(loyaltyCards).set({ visitsCount: sql`${loyaltyCards.visitsCount} + 1`, firstVisitAt: new Date() }).where(eq(loyaltyCards.id, card.id))
+      await gate
+    })
+    await new Promise((resolve) => setTimeout(resolve, 150))
+    const backfilling = backfillCardVisits(data.db)
+    await new Promise((resolve) => setTimeout(resolve, 300))
+    release()
+    await Promise.all([checkingIn, backfilling])
+
+    const rows = await data.db.select().from(ledgerEntries).where(eq(ledgerEntries.cardId, card.id))
+    expect((await cardOf(me)).visitsCount).toBe(rows.filter((row) => row.countsAsVisit).length)
+  }, SLOW)
+
   it('refuses a second shop for the same owner (one owner, one shop)', async () => {
     const shop = await data.createShop()
     const [owned] = await data.db.select({ ownerUserId: shops.ownerUserId }).from(shops).where(eq(shops.id, shop.id))
@@ -90,6 +122,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant foundation against a real database
       { fromStatus: 'pending', toStatus: 'approved', plan: 'founderPro', actor: 'matheus', reason: 'piloto' },
     ])
     expect(await changeShopStatus(data.db, { shopId: shop.id, actor: 'matheus' })).toEqual({ ok: false, reason: 'nothingToChange' })
+    expect(await changeShopStatus(data.db, { shopId: shop.id, status: 'approved', plan: 'founderPro', actor: 'matheus' })).toEqual({ ok: false, reason: 'nothingToChange' })
     expect(await changeShopStatus(data.db, { shopId: shop.id, status: 'suspended', actor: 'ana@x.com' })).toEqual({ ok: false, reason: 'invalidActor' })
     expect(await changeShopStatus(data.db, { shopId: '0190ae00-0000-7000-8000-00000000dead', status: 'approved', actor: 'matheus' })).toEqual({ ok: false, reason: 'shopNotFound' })
   }, SLOW)
@@ -109,5 +142,27 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant foundation against a real database
     expect(kept?.erasedAt).toBeNull()
     expect(kept?.phone.length).toBeGreaterThan(0)
     expect((await data.db.select({ firstName: customerProfiles.firstName }).from(customerProfiles).where(eq(customerProfiles.userId, owner)))[0]?.firstName).toBe('Dona')
+  }, SLOW)
+  it('erasure waits for a shop being created for the same account and then refuses (no shop without a login)', async () => {
+    const accounts = new AccountService(new DrizzleAccountRepository(data.db), new SystemClock())
+    const owner = await data.createCustomer()
+    const shop = await data.createShop()
+    let release: () => void = () => {}
+    const gate = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    // O que o Criar o clube faz: lê a conta com FOR SHARE, dá a loja ao dono e só então confirma.
+    const creating = data.db.transaction(async (tx) => {
+      await tx.select({ id: appUsers.id }).from(appUsers).where(eq(appUsers.id, owner)).for('share')
+      await tx.update(shops).set({ ownerUserId: owner }).where(eq(shops.id, shop.id))
+      await gate
+    })
+    await new Promise((resolve) => setTimeout(resolve, 150))
+    const erasing = accounts.erase(owner)
+    await new Promise((resolve) => setTimeout(resolve, 300))
+    release()
+    await creating
+    expect(await erasing).toEqual({ ok: false, error: { code: 'accountOwnsShop' } })
+    expect((await data.db.select({ erasedAt: appUsers.erasedAt }).from(appUsers).where(eq(appUsers.id, owner)))[0]?.erasedAt).toBeNull()
   }, SLOW)
 })

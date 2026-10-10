@@ -6,6 +6,7 @@ import { ProgramService } from './program.service'
 import { AccessModule } from '../access/access.module'
 
 @Module({
+  imports: [AccessModule],
   controllers: [ProgramController],
   providers: [
     ProgramService,
