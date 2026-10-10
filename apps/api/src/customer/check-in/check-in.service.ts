@@ -1,11 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common'
+import { cooldownEndsAt } from '#shared/domain/antifraud'
 import { unitOf } from '#shared/domain/programStrategies'
 import type { VisitQrUseError } from '#shared/domain/visitQr'
 import { type CheckInResult, CheckInResultSchema, type VisitCodeClaimRequest, type VisitQrClaimRequest } from '#shared/schemas/visit'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
 import { parseVisitCode, parseVisitToken } from '#shared/utils/checkInCode'
-import { addHours, toIso } from '#shared/utils/time'
+import { toIso } from '#shared/utils/time'
 import { Clock } from '../../common/clock'
 import { hashVisitToken } from '../../common/visit-token'
 import { ReferralSettlement } from '../../ledger/referral-settlement'
@@ -114,6 +115,6 @@ function toResult(target: VisitQrTarget, recorded: VisitClaimRecorded): CheckInR
       createdAt: toIso(recordedAt),
     },
     card: { cardId, unit, balance: balanceAfter, target: rules.target, rewardReady: balanceAfter >= rules.target },
-    nextCheckInAt: toIso(addHours(recordedAt, target.cooldownHours)),
+    nextCheckInAt: toIso(cooldownEndsAt(recordedAt, target.cooldown)),
   })
 }

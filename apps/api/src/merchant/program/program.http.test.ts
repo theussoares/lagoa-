@@ -63,7 +63,7 @@ describe('merchant program HTTP', () => {
       surpriseDay: { enabled: false, multiplier: 2, date: null },
     },
     expirationPolicy: { kind: 'never' },
-    checkIn: { enabled: true, cooldownHours: 24 },
+    checkIn: { enabled: true, cooldownHours: 24, cooldownMode: 'rolling' },
   }
 
   const validDraft: ProgramDraft = {
@@ -76,7 +76,7 @@ describe('merchant program HTTP', () => {
       surpriseDay: { enabled: false, multiplier: 2, date: null },
     },
     expirationPolicy: { kind: 'never' },
-    checkIn: { enabled: true, cooldownHours: 24 },
+    checkIn: { enabled: true, cooldownHours: 24, cooldownMode: 'rolling' },
   }
 
   beforeAll(async () => {

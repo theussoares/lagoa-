@@ -30,14 +30,14 @@ describe('parseEnv', () => {
 
   it('requires the SMS provider and hook secret in production', () => {
     const production = { ...valid(), NODE_ENV: 'production', TRUST_PROXY_HOPS: '1' }
-    expect(() => parseEnv(production)).toThrow('COMTELE_AUTH_KEY, SEND_SMS_HOOK_SECRET')
-    expect(parseEnv({ ...production, COMTELE_AUTH_KEY: 'key', SEND_SMS_HOOK_SECRET: 'v1,whsec_abc' })).toMatchObject({ COMTELE_ROUTE: 17 })
+    expect(() => parseEnv(production)).toThrow('COMTELE_AUTH_KEY, SEND_SMS_HOOK_SECRET, SUPABASE_SERVICE_ROLE_KEY')
+    expect(parseEnv({ ...production, COMTELE_AUTH_KEY: 'key', SEND_SMS_HOOK_SECRET: 'v1,whsec_abc', SUPABASE_SERVICE_ROLE_KEY: 'service-role' })).toMatchObject({ COMTELE_ROUTE: 17 })
   })
 
   it('requires the proxy hop count and https in production', () => {
     expect(() => parseEnv({ ...valid(), NODE_ENV: 'production' })).toThrow('TRUST_PROXY_HOPS')
     expect(() => parseEnv({ ...valid(), NODE_ENV: 'production', TRUST_PROXY_HOPS: '1', SUPABASE_URL: 'http://project.supabase.co' })).toThrow('SUPABASE_URL')
-    expect(parseEnv({ ...valid(), NODE_ENV: 'production', TRUST_PROXY_HOPS: '1', COMTELE_AUTH_KEY: 'key', SEND_SMS_HOOK_SECRET: 'v1,whsec_abc' })).toMatchObject({ TRUST_PROXY_HOPS: 1 })
+    expect(parseEnv({ ...valid(), NODE_ENV: 'production', TRUST_PROXY_HOPS: '1', COMTELE_AUTH_KEY: 'key', SEND_SMS_HOOK_SECRET: 'v1,whsec_abc', SUPABASE_SERVICE_ROLE_KEY: 'service-role' })).toMatchObject({ TRUST_PROXY_HOPS: 1 })
   })
 })
 
@@ -48,7 +48,7 @@ describe('corsOrigins', () => {
 
   it('keeps test approval off by default and refuses it in production', () => {
     expect(parseEnv(valid()).ENABLE_TEST_APPROVE).toBe('0')
-    const production = { ...valid(), NODE_ENV: 'production', TRUST_PROXY_HOPS: '1', COMTELE_AUTH_KEY: 'key', SEND_SMS_HOOK_SECRET: 'v1,whsec_abc' }
+    const production = { ...valid(), NODE_ENV: 'production', TRUST_PROXY_HOPS: '1', COMTELE_AUTH_KEY: 'key', SEND_SMS_HOOK_SECRET: 'v1,whsec_abc', SUPABASE_SERVICE_ROLE_KEY: 'service-role' }
     expect(() => parseEnv({ ...production, ENABLE_TEST_APPROVE: '1' })).toThrow('ENABLE_TEST_APPROVE')
   })
 })

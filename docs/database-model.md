@@ -79,6 +79,7 @@ class Program {
   +int expirationMonths?
   +bool checkInEnabled
   +int checkInCooldownHours
+  +text checkInCooldownMode «rolling | calendarDay»
   +timestamptz updatedAt
 }
 class LoyaltyCard {

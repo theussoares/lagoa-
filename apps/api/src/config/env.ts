@@ -23,13 +23,15 @@ const EnvSchema = z
     /** Liga o gate do termo do lojista (`merchantTermsNotAccepted`). Desligado até o texto do jurídico existir (P-M7). */
     MERCHANT_TERMS_REQUIRED: z.enum(['0', '1']).default('0'),
     CORS_ORIGIN: z.string().default('http://localhost:3000'),
+    /** Chave service role do Supabase: só para gravar a foto da loja no bucket `shop-assets`. Sem ela, o envio da foto falha. */
+    SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
   })
   .superRefine((env, context) => {
     if (env.NODE_ENV !== 'production') return
     // Sem isso, atrás de um load balancer todo mundo parece vir do mesmo IP e o limite por IP vira global.
     if (env.TRUST_PROXY_HOPS === undefined) context.addIssue({ code: 'custom', path: ['TRUST_PROXY_HOPS'], message: 'required in production' })
     if (env.ENABLE_TEST_APPROVE === '1') context.addIssue({ code: 'custom', path: ['ENABLE_TEST_APPROVE'], message: 'must be off in production' })
-    for (const key of ['COMTELE_AUTH_KEY', 'SEND_SMS_HOOK_SECRET'] as const) {
+    for (const key of ['COMTELE_AUTH_KEY', 'SEND_SMS_HOOK_SECRET', 'SUPABASE_SERVICE_ROLE_KEY'] as const) {
       if (env[key] === undefined) context.addIssue({ code: 'custom', path: [key], message: 'required in production' })
     }
     // O JWKS é buscado nesta URL: sem TLS, quem está no caminho troca a chave e assina o que quiser.

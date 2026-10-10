@@ -47,7 +47,7 @@ describe('decideEarning', () => {
 
   it('holds a second visit inside the window and says when it opens', () => {
     const state = stateOf({ balance: 2, lastVisitAt: new Date('2026-10-03T10:00:00Z') })
-    expect(decideEarning(visitQrTarget({ cooldownHours: 4 }), state, now)).toEqual({
+    expect(decideEarning(visitQrTarget({ cooldown: { cooldownHours: 4, cooldownMode: 'rolling' } }), state, now)).toEqual({
       ok: false,
       error: { code: 'checkInCooldown', availableAt: '2026-10-03T14:00:00.000Z' },
     })
@@ -60,8 +60,18 @@ describe('decideEarning', () => {
 
   it('uses the window of the target (the active version), not anything stored on the card', () => {
     const state = stateOf({ balance: 2, lastVisitAt: new Date('2026-10-03T08:00:00Z') })
-    expect(decideEarning(visitQrTarget({ cooldownHours: 2 }), state, now).ok).toBe(true)
-    expect(decideEarning(visitQrTarget({ cooldownHours: 6 }), state, now).ok).toBe(false)
+    expect(decideEarning(visitQrTarget({ cooldown: { cooldownHours: 2, cooldownMode: 'rolling' } }), state, now).ok).toBe(true)
+    expect(decideEarning(visitQrTarget({ cooldown: { cooldownHours: 6, cooldownMode: 'rolling' } }), state, now).ok).toBe(false)
+  })
+
+  it('once per local day: 23h and 3h of the next day are two visits, two on the same day are not', () => {
+    const daily = visitQrTarget({ cooldown: { cooldownHours: 24, cooldownMode: 'calendarDay' } })
+    const at23h = new Date('2026-10-04T03:00:00Z') // 23h em Três Lagoas (UTC−4)
+    expect(decideEarning(daily, stateOf({ balance: 2, lastVisitAt: at23h }), new Date('2026-10-04T07:00:00Z')).ok).toBe(true)
+    expect(decideEarning(daily, stateOf({ balance: 2, lastVisitAt: at23h }), new Date('2026-10-04T03:30:00Z'))).toEqual({
+      ok: false,
+      error: { code: 'checkInCooldown', availableAt: '2026-10-04T04:00:00.000Z' },
+    })
   })
 
   it('earns what the QR carries on a points-per-real card (CA-12)', () => {

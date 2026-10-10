@@ -1,7 +1,7 @@
 import { PROGRAM_TARGET_MAX, PROGRAM_TARGET_MIN, REFERENCE_TICKET_REAIS, STAMPS_TARGET_MAX } from '#shared/constants/domain'
 import { visitWorthOf } from '#shared/domain/programStrategies'
 import { ProgramDraftSchema } from '#shared/schemas/program'
-import type { Program, ProgramDraft, ProgramMode, ProgramRules } from '#shared/schemas/program'
+import type { CheckInPolicy, Program, ProgramDraft, ProgramMode, ProgramRules } from '#shared/schemas/program'
 import type { ProgramField, ProgramFieldErrors } from '../types/program'
 
 const fieldByPath: Readonly<Record<string, ProgramField>> = {
@@ -19,8 +19,24 @@ const fieldByPath: Readonly<Record<string, ProgramField>> = {
 const DEFAULT_POINTS_PER_REAL = 1
 const DEFAULT_POINTS_PER_VISIT = 10
 
-/** Opções do seletor de janela do antifraude, em horas. */
+/** Opções do seletor de janela do antifraude, em horas corridas. */
 export const COOLDOWN_HOUR_OPTIONS: readonly number[] = [4, 12, 24, 48, 168]
+/** Valor do seletor para "1 vez por dia (vira à meia-noite)"; as horas são valores numéricos. */
+export const CALENDAR_DAY_COOLDOWN_VALUE = 'calendarDay'
+/** Horas guardadas no `calendarDay` (não contam; só satisfazem o CHECK do banco). */
+const CALENDAR_DAY_STORED_HOURS = 24
+
+/** Valor do seletor de janela para a política atual. */
+export function cooldownSelectValue(checkIn: CheckInPolicy): string {
+  return checkIn.cooldownMode === 'calendarDay' ? CALENDAR_DAY_COOLDOWN_VALUE : String(checkIn.cooldownHours)
+}
+
+/** Política nova a partir do valor escolhido no seletor; `null` para valor inválido. */
+export function withCooldownValue(checkIn: CheckInPolicy, value: unknown): CheckInPolicy | null {
+  if (value === CALENDAR_DAY_COOLDOWN_VALUE) return { ...checkIn, cooldownMode: 'calendarDay', cooldownHours: CALENDAR_DAY_STORED_HOURS }
+  const hours = Number(value)
+  return Number.isInteger(hours) && hours > 0 ? { ...checkIn, cooldownMode: 'rolling', cooldownHours: hours } : null
+}
 /** Opções de validade dos carimbos, em meses sem visita. */
 export const EXPIRATION_MONTH_OPTIONS: readonly number[] = [3, 6, 12, 24]
 

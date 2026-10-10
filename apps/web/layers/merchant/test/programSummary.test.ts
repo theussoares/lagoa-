@@ -20,15 +20,19 @@ function draft(overrides: Partial<ProgramDraft> = {}): ProgramDraft {
       surpriseDay: { enabled: false, multiplier: 2, date: null },
     },
     expirationPolicy: { kind: 'afterInactivity', months: 6 },
-    checkIn: { enabled: true, cooldownHours: 24 },
+    checkIn: { enabled: true, cooldownHours: 24, cooldownMode: 'rolling' },
     ...overrides,
   })
 }
 
 describe('cooldownLabel', () => {
   it('counts whole days in days and the rest in hours', () => {
-    expect(cooldownLabel(48, t)).toBe('program.visitRules.cooldownDays count=2 #2')
-    expect(cooldownLabel(4, t)).toBe('program.visitRules.cooldownHours count=4 #4')
+    const rolling = (cooldownHours: number) => ({ cooldownHours, cooldownMode: 'rolling' as const })
+    expect(cooldownLabel(rolling(48), t)).toBe('program.visitRules.cooldownDays count=2 #2')
+    expect(cooldownLabel(rolling(4), t)).toBe('program.visitRules.cooldownHours count=4 #4')
+    // 24 h corridas ficam em horas, para não confundir com "1 vez por dia".
+    expect(cooldownLabel(rolling(24), t)).toBe('program.visitRules.cooldownHours count=24 #24')
+    expect(cooldownLabel({ cooldownHours: 24, cooldownMode: 'calendarDay' }, t)).toBe('program.visitRules.cooldownCalendarDay')
   })
 })
 
@@ -57,7 +61,7 @@ describe('toProgramSummaries', () => {
 
   it('reads check-in, the anti-fraud window and expiration in one line', () => {
     expect(toProgramSummaries(draft({ expirationPolicy: { kind: 'never' } }), t).visitRules).toBe(
-      'program.summary.checkInOn · program.summary.cooldown interval=program.visitRules.cooldownDays count=1 #1 · program.summary.neverExpires',
+      'program.summary.checkInOn · program.summary.cooldown interval=program.visitRules.cooldownHours count=24 #24 · program.summary.neverExpires',
     )
   })
 })
