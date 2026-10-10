@@ -74,6 +74,8 @@ services e mock do lojista.
     chamada com draft diferente devolve a loja existente sem aplicar o draft (documentado no service); (d)
     `poster_reprinted_at = now()` no insert da loja nova; as lojas que já existem ficam `null` (não há loja real ainda; sem
     heurística "criada depois da 0014"). Seções 2.2, 3.1.
+    **Risco aceito (2026-10-09):** o celular informado no cadastro do cliente não é verificado; ver HANDOFF. O Criar o clube
+    não grava o e-mail do token (e-mail único faria falhar quando um cliente informasse o mesmo).
 11. **Resgate.** (a) `findByCode` prefere o código ativo; sem ativo, a linha mais nova da loja com aquele código criada
     há no máximo `REDEMPTION_LOOKUP_WINDOW_HOURS` (24) define `redemptionAlreadyUsed`/`redemptionExpired`; senão
     `redemptionInvalid` (código reaproveitado meses depois não vira "já usado"). Índice novo

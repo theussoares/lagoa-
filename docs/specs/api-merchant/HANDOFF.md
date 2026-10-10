@@ -15,15 +15,32 @@ Estado em 2026-10-09. Spec: [spec.md](./spec.md) (aprovada pelo dono). Desenho:
   entra só para ler, 20 QRs ativos por loja, lembrete = aviso no app + presente no cartão, campanha só para
   Fundador Pro (`shops.plan`), aprovação por script.
 
-## Atualização (2026-10-09, PR do BFF do lojista)
+## Atualização (2026-10-09, PRs #49, #50 e #51)
 
-O estado abaixo ("Nenhum código") estava defasado: a `develop` já tinha os módulos `merchant/*` da API (PR #43) com
-migrations `0017`/`0018` **diferentes** das do plano (a próxima livre é a `0019`). Entregue depois: BFF
-`server/api/merchant/**`, login/sessão do lojista pelo `/api/auth` + `GET /merchant/session` (sem ticket) e o plugin
-escolhendo `http`/`mock` (`merchantBackend`). **Segue pendente:** guard de acesso (`merchant/access`), `erased_at`,
-`shops.plan`, termo do lojista, `shop_status_events`/`shop:status`, `accountOwnsShop`, campanhas (M5) e o corte do mock (M6).
-O `club-setup` da API devolve `invalidClubSetup` (não é idempotente) quando o dono já tem loja; o plano pede 200 com a loja
-existente (RN-08, CA-06).
+O handoff original ("Nenhum código", abaixo) estava defasado: a `develop` já tinha os módulos `merchant/*` da API
+(PR #43) com migrations `0017`/`0018` **diferentes** das do plano (as próximas livres são `0019` e `0020`).
+
+**Entregue:**
+- BFF `server/api/merchant/**`, login/sessão do lojista pelo `/api/auth` + `GET /merchant/session` (sem ticket) e plugin
+  escolhendo `http`/`mock` (`merchantBackend`).
+- Fundação do CTO: `0019_merchant_foundation` (dono único, `shops.plan`, termo do lojista, `erased_at`,
+  `visits_count`/`first_visit_at` com backfill, `shop_status_events`), seed com um dono por loja, `LedgerStore.credit`
+  mantendo os contadores, `merchant/access` (guard + `@CurrentShop` + varredura + teste que monta o `MerchantModule`),
+  `accountOwnsShop`, `shop:status` (com `--dry-run`) e `db:backfill-visits` (cartão a cartão, com lock).
+- M1: `ensureAppUser` extraído (sem ele o Criar o clube dava FK violation para quem só tinha login), Criar o clube
+  idempotente (201/200), `phoneAlreadyUsed`, retry do código de check-in, limite de 5/h, e-mail do token nunca gravado,
+  recusa de conta apagada; `0020_poster_reprinted_at` e o aviso do cartaz ponta a ponta.
+
+**Fica para a M2 em diante (achados do code-reviewer):**
+- Balcão "Hoje" com conta apagada: `CounterEntry.maskedPhone` nulo (R8; hoje o decifrar lança e dá 500).
+- `@CurrentShop()` nos services (hoje seguem por `user.id`; o guard já barra rota sem loja).
+- `from_plan` em `shop_status_events` (exige migration nova).
+- Gate do termo do lojista (3.6), índices de Clientes e de resgate, campanhas (M5), corte do mock (M6).
+
+**Risco aceito (decisão do dono, 2026-10-09):** o celular que um cliente *informa* no cadastro (entrando por e-mail, sem
+SMS) não é verificado. Quem fizer isso com o número de um lojista faz esse lojista receber `409 phoneAlreadyUsed` no
+Criar o clube; e quem se cadastrou assim e depois cria clube com outro celular fica com o primeiro em `app_users`.
+Solução futura: `app_users.phone_verified` e deixar o celular confirmado por SMS substituir o informado (M2+).
 
 ## O que está feito (versão original do handoff)
 

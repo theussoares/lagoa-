@@ -4,7 +4,7 @@ import type { ShopPoster, ShopStatus } from '#shared/schemas/shop'
 import type { ErrorOf, TransportError } from '#shared/types/errors'
 import type { Result } from '#shared/types/result'
 
-export type CreateClubError = ErrorOf<'signUpExpired' | 'invalidClubSetup'> | TransportError
+export type CreateClubError = ErrorOf<'signUpExpired' | 'invalidClubSetup' | 'phoneAlreadyUsed'> | TransportError
 
 /** Criar o clube: roda com o celular já confirmado (cookie da sessão) e ainda sem loja. */
 export interface ClubSetupService {

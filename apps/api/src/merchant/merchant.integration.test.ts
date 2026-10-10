@@ -1,3 +1,4 @@
+import { PhoneNumberSchema } from '#shared/schemas/phone'
 import { and, count, eq } from 'drizzle-orm'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { Clock } from '../common/clock'
@@ -81,7 +82,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
     const customersRepo = new DrizzleCustomersRepository(data.db)
     const homeRepo = new DrizzleHomeRepository(data.db)
 
-    clubSetupService = new ClubSetupService(clubSetupRepo)
+    clubSetupService = new ClubSetupService(clubSetupRepo, pii, clock)
     programService = new ProgramService(new DrizzleProgramRepository(data.db))
     visitQrsService = new VisitQrsService(visitQrsRepo, sessionRepo, new VisitQrsRules(), clock)
     counterRedemptionsService = new CounterRedemptionsService(counterRepo, clock)
@@ -125,12 +126,12 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
       },
     }
 
-    const clubResult = await clubSetupService.createClub(merchantUserId, setupDraft)
+    const clubResult = await clubSetupService.createClub({ id: merchantUserId, email: undefined, phone: PhoneNumberSchema.parse('67900000099') }, setupDraft)
     expect(clubResult.ok).toBe(true)
     if (!clubResult.ok) throw new Error('Failed to create club')
-    const shopId = clubResult.value.shopId
+    const shopId = clubResult.value.session.shopId
     data.trackShop(shopId)
-    expect(clubResult.value.shopStatus).toBe('pending')
+    expect(clubResult.value.session.shopStatus).toBe('pending')
 
     // 2. Aprovação da loja via test-approve
     vi.stubEnv('ENABLE_TEST_APPROVE', '1')

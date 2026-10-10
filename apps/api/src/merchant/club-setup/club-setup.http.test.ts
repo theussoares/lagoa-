@@ -1,4 +1,5 @@
-import type { INestApplication } from '@nestjs/common'
+import type { CanActivate, ExecutionContext, INestApplication } from '@nestjs/common'
+import { PhoneNumberSchema } from '#shared/schemas/phone'
 import { APP_FILTER, APP_GUARD } from '@nestjs/core'
 import { Test } from '@nestjs/testing'
 import request from 'supertest'
@@ -6,10 +7,16 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import type { ClubSetupDraft } from '#shared/schemas/onboarding'
 import type { ShopStatus } from '#shared/schemas/shop'
 import { AllExceptionsFilter } from '../../common/http/all-exceptions.filter'
-import { FakeAuthGuard, TEST_USER } from '../../test-support/fake-auth.guard'
+import type { NewAppUser } from '../../accounts/app-user.writer'
+import type { AuthenticatedRequest, AuthUser } from '../../auth/auth.types'
+import { Clock } from '../../common/clock'
+import { PiiService } from '../../common/pii.service'
+import { TEST_USER } from '../../test-support/fake-auth.guard'
+import { createTestPii } from '../../test-support/pii'
 import { ClubSetupController } from './club-setup.controller'
+import { ShopController } from './shop.controller'
 import {
-  type CreatedClub,
+  type CreateClubOutcome,
   type PosterData,
   ClubSetupRepository,
 } from './club-setup.repository'
@@ -37,40 +44,53 @@ const sampleDraft: ClubSetupDraft = {
   },
 }
 
+const OWNER: AuthUser = { ...TEST_USER, phone: PhoneNumberSchema.parse('67991230374') }
+
+/** Troca o JWT por um lojista que entrou por SMS (o Criar o clube exige o celular do token). */
+class OwnerAuthGuard implements CanActivate {
+  canActivate(context: ExecutionContext): boolean {
+    context.switchToHttp().getRequest<AuthenticatedRequest>().user = OWNER
+    return true
+  }
+}
+
 class TestClubSetupRepository extends ClubSetupRepository {
   shop: { id: string; status: ShopStatus; name: string } | null = null
   poster: PosterData | null = null
+  phoneTaken = false
+  posterReprinted = false
 
-  async findShopByOwner(ownerUserId: string): Promise<{ id: string; status: ShopStatus } | null> {
-    return this.shop ? { id: this.shop.id, status: this.shop.status } : null
-  }
-
-  async createClub(ownerUserId: string, draft: ClubSetupDraft, checkInCode: string): Promise<CreatedClub> {
+  async createClub(_owner: NewAppUser, draft: ClubSetupDraft, newCheckInCode: () => string): Promise<CreateClubOutcome> {
+    if (this.phoneTaken) return { kind: 'phoneTaken' }
+    if (this.shop) return { kind: 'existing', club: { shopId: this.shop.id, shopName: this.shop.name, shopStatus: this.shop.status } }
     this.shop = { id: '018f98a2-7b2a-7182-9f33-6d004bbbb111', status: 'pending', name: draft.shop.name }
-    this.poster = {
-      shopName: draft.shop.name,
-      status: 'pending',
-      checkInCode,
-      rewardTitle: draft.program.reward.title,
-      unit: 'stamp',
-      target: 8,
-    }
-    return { shopId: this.shop.id, shopName: this.shop.name, shopStatus: 'pending' }
+    this.poster = { shopName: draft.shop.name, status: 'pending', checkInCode: newCheckInCode(), rewardTitle: draft.program.reward.title, unit: 'stamp', target: 8 }
+    return { kind: 'created', club: { shopId: this.shop.id, shopName: this.shop.name, shopStatus: 'pending' } }
   }
 
-  async getPoster(ownerUserId: string): Promise<PosterData | null> {
+  async getPoster(): Promise<PosterData | null> {
     return this.poster
   }
 
-  async getStatus(ownerUserId: string): Promise<ShopStatus | null> {
+  async getStatus(): Promise<ShopStatus | null> {
     return this.shop?.status ?? null
   }
 
-  async approveShop(ownerUserId: string): Promise<ShopStatus | null> {
+  async approveShop(): Promise<ShopStatus | null> {
     if (!this.shop) return null
     this.shop.status = 'approved'
     if (this.poster) this.poster = { ...this.poster, status: 'approved' }
     return 'approved'
+  }
+
+  async isPosterReprintPending(): Promise<boolean | null> {
+    return this.shop ? !this.posterReprinted : null
+  }
+
+  async markPosterReprinted(): Promise<boolean | null> {
+    if (!this.shop) return null
+    this.posterReprinted = true
+    return false
   }
 }
 
@@ -80,11 +100,13 @@ describe('merchant club-setup HTTP', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      controllers: [ClubSetupController],
+      controllers: [ClubSetupController, ShopController],
       providers: [
         ClubSetupService,
+        { provide: PiiService, useValue: createTestPii() },
+        { provide: Clock, useValue: { now: () => new Date('2026-10-09T12:00:00Z') } },
         { provide: ClubSetupRepository, useValue: repository },
-        { provide: APP_GUARD, useClass: FakeAuthGuard },
+        { provide: APP_GUARD, useClass: OwnerAuthGuard },
         { provide: APP_FILTER, useClass: AllExceptionsFilter },
       ],
     })
@@ -101,6 +123,8 @@ describe('merchant club-setup HTTP', () => {
   beforeEach(() => {
     repository.shop = null
     repository.poster = null
+    repository.phoneTaken = false
+    repository.posterReprinted = false
   })
 
   it('POST /merchant/club-setup creates shop and program, returning MerchantSession', async () => {
@@ -116,6 +140,28 @@ describe('merchant club-setup HTTP', () => {
       shopName: 'Barbearia Retrô',
       shopStatus: 'pending',
     })
+  })
+
+  it('POST /merchant/club-setup twice answers 200 with the same shop and ignores the new draft', async () => {
+    await request(app.getHttpServer()).post('/merchant/club-setup').send(sampleDraft).expect(201)
+    const again = await request(app.getHttpServer())
+      .post('/merchant/club-setup')
+      .send({ ...sampleDraft, shop: { ...sampleDraft.shop, name: 'Outro nome' } })
+      .expect(200)
+    expect(again.body).toMatchObject({ shopId: '018f98a2-7b2a-7182-9f33-6d004bbbb111', shopName: 'Barbearia Retrô' })
+  })
+
+  it('POST /merchant/club-setup with a phone of another account answers 409 phoneAlreadyUsed', async () => {
+    repository.phoneTaken = true
+    const response = await request(app.getHttpServer()).post('/merchant/club-setup').send(sampleDraft).expect(409)
+    expect(response.body).toEqual({ code: 'phoneAlreadyUsed' })
+  })
+
+  it('poster reprint: pending until the merchant prints, then done', async () => {
+    await request(app.getHttpServer()).post('/merchant/club-setup').send(sampleDraft).expect(201)
+    expect((await request(app.getHttpServer()).get('/merchant/shop/poster-reprint').expect(200)).body).toEqual({ pending: true })
+    expect((await request(app.getHttpServer()).post('/merchant/shop/poster-reprint/printed').expect(200)).body).toEqual({ pending: false })
+    expect((await request(app.getHttpServer()).get('/merchant/shop/poster-reprint').expect(200)).body).toEqual({ pending: false })
   })
 
   it('GET /merchant/poster returns poster for the created shop', async () => {

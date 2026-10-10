@@ -1,12 +1,19 @@
 import type { ClubSetupDraft } from '#shared/schemas/onboarding'
 import type { ProgramUnit } from '#shared/schemas/program'
 import type { ShopStatus } from '#shared/schemas/shop'
+import type { NewAppUser } from '../../accounts/app-user.writer'
 
 export interface CreatedClub {
   readonly shopId: string
   readonly shopName: string
   readonly shopStatus: ShopStatus
 }
+
+export type CreateClubOutcome =
+  | { readonly kind: 'created' | 'existing'; readonly club: CreatedClub }
+  | { readonly kind: 'phoneTaken' }
+  /** A conta foi apagada enquanto o pedido chegava: não nasce loja de dono sem login. */
+  | { readonly kind: 'accountErased' }
 
 export interface PosterData {
   readonly shopName: string
@@ -18,9 +25,16 @@ export interface PosterData {
 }
 
 export abstract class ClubSetupRepository {
-  abstract findShopByOwner(ownerUserId: string): Promise<{ id: string; status: ShopStatus } | null>
-  abstract createClub(ownerUserId: string, draft: ClubSetupDraft, checkInCode: string): Promise<CreatedClub>
+  /**
+   * Numa transação: garante o `app_users` do dono, cria a loja e o programa. Quem já tem loja recebe a existente
+   * (`existing`) sem aplicar o rascunho. `newCheckInCode` é chamado de novo se o código sorteado colidir.
+   */
+  abstract createClub(owner: NewAppUser, draft: ClubSetupDraft, newCheckInCode: () => string, now: Date): Promise<CreateClubOutcome>
   abstract getPoster(ownerUserId: string): Promise<PosterData | null>
   abstract getStatus(ownerUserId: string): Promise<ShopStatus | null>
   abstract approveShop(ownerUserId: string): Promise<ShopStatus | null>
+  /** `true` enquanto o cartaz novo não foi impresso; `null` sem loja. */
+  abstract isPosterReprintPending(ownerUserId: string): Promise<boolean | null>
+  /** Marca como impresso (idempotente) e devolve a situação nova; `null` sem loja. */
+  abstract markPosterReprinted(ownerUserId: string, now: Date): Promise<boolean | null>
 }

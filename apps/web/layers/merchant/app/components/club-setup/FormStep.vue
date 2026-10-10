@@ -29,7 +29,7 @@ const emit = defineEmits<Emits>()
       v-if="submitError"
       tone="error"
       icon="i-ph-warning-circle"
-      :description="$t(`errors.${submitError}`)"
+      :description="submitError === 'phoneAlreadyUsed' ? $t('clubSetup.phoneAlreadyUsed') : $t(`errors.${submitError}`)"
       :actions="submitError === 'signUpExpired' ? [{ label: $t('clubSetup.confirmPhoneAgain'), to: MERCHANT_SIGN_IN_PATH }] : []"
       live
     />

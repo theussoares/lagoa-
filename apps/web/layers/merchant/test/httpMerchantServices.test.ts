@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { ApiClient } from '#layers/core/app/services/http/ApiClient'
 import { RedemptionCodeSchema } from '#shared/schemas/redemption'
 import { RedemptionIdSchema } from '#shared/schemas/ids'
+import { emptyClubSetupForm, toClubSetupDraft } from '../app/utils/clubSetupForm'
 import { createHttpMerchantServices } from '../app/services/http/createHttpMerchantServices'
 
 const json = (status: number, body: unknown): Response => new Response(JSON.stringify(body), { status })
@@ -86,5 +87,27 @@ describe('http merchant services', () => {
   it('has no approval shortcut over http: approving a shop is the network\'s job', () => {
     const { shopApprovalTesting } = servicesWith(vi.fn<typeof fetch>())
     expect(shopApprovalTesting).toBeNull()
+  })
+
+  it('posterReprint reads and marks the notice through the API', async () => {
+    const fetcher = vi.fn<typeof fetch>(async (_input, init) => json(200, { pending: init?.method !== 'POST' }))
+    const { posterReprint } = servicesWith(fetcher)
+    expect(await posterReprint.isPending()).toEqual({ ok: true, value: true })
+    expect(await posterReprint.markPrinted()).toEqual({ ok: true, value: false })
+    expect(fetcher.mock.calls.map(([url]) => url)).toEqual([
+      'https://api.test/v1/merchant/shop/poster-reprint',
+      'https://api.test/v1/merchant/shop/poster-reprint/printed',
+    ])
+  })
+
+  it('clubSetup maps a phone that belongs to another account', async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => json(409, { code: 'phoneAlreadyUsed' }))
+    const { clubSetup } = servicesWith(fetcher)
+    const form = emptyClubSetupForm()
+    form.shop = { name: 'Café', category: 'cafe', neighborhood: 'Centro', addressLine: 'Rua A, 1' }
+    form.program.reward.title = 'Café grátis'
+    const draft = toClubSetupDraft(form)
+    if (draft === null) throw new Error('invalid draft')
+    expect(await clubSetup.createClub(draft)).toEqual({ ok: false, error: { code: 'phoneAlreadyUsed' } })
   })
 })

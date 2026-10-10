@@ -20,7 +20,7 @@ export function createHttpMerchantServices(api: ApiClient): MerchantServices {
     home: new HttpMerchantHomeService(api),
     clubSetup,
     poster: clubSetup,
-    posterReprint: new HttpPosterReprintService(),
+    posterReprint: new HttpPosterReprintService(api),
     shopStatus: clubSetup,
     shopApprovalTesting: null,
     visitQrTesting: null,

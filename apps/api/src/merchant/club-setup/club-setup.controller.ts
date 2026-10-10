@@ -1,41 +1,32 @@
-import { Body, Controller, Get, Post } from '@nestjs/common'
+import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common'
+import { Throttle } from '@nestjs/throttler'
+import type { Response } from 'express'
 import { ClubSetupDraftSchema, type ClubSetupDraft } from '#shared/schemas/onboarding'
 import type { MerchantSession } from '#shared/schemas/session'
-import type { ShopPoster, ShopStatus } from '#shared/schemas/shop'
 import type { AuthUser } from '../../auth/auth.types'
 import { CurrentUser } from '../../auth/current-user.decorator'
 import { unwrap } from '../../common/http/domain-exception'
 import { ZodValidationPipe } from '../../common/http/zod-validation.pipe'
-import { ClubSetupService } from './club-setup.service'
 import { MerchantSurface } from '../access/merchant-surface.decorator'
+import { ClubSetupService } from './club-setup.service'
 
+/** Única rota do painel que roda sem loja: é ela que cria a loja. */
 @MerchantSurface({ shopRequired: false })
 @Controller('merchant')
 export class ClubSetupController {
   constructor(private readonly setup: ClubSetupService) {}
 
+  /** 201 quando cria; 200 com a loja existente quando o dono repete a chamada (o rascunho novo não é aplicado). */
+  /** 5 criações por hora por usuário (e teto por IP): cada chamada pode abrir mais de uma transação no retry do código. */
   @Post('club-setup')
+  @Throttle({ default: { limit: 5, ttl: 3_600_000 }, ip: { limit: 15, ttl: 3_600_000 } })
   async createClub(
     @CurrentUser() user: AuthUser,
     @Body(new ZodValidationPipe(ClubSetupDraftSchema)) draft: ClubSetupDraft,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<MerchantSession> {
-    return unwrap(await this.setup.createClub(user.id, draft))
-  }
-
-  @Get('poster')
-  async getPoster(@CurrentUser() user: AuthUser): Promise<ShopPoster> {
-    return unwrap(await this.setup.getPoster(user.id))
-  }
-
-  @Get('shop/status')
-  async getStatus(@CurrentUser() user: AuthUser): Promise<{ status: ShopStatus }> {
-    const status = unwrap(await this.setup.getStatus(user.id))
-    return { status }
-  }
-
-  @Post('shop/test-approve')
-  async testApprove(@CurrentUser() user: AuthUser): Promise<{ status: ShopStatus }> {
-    const status = unwrap(await this.setup.testApprove(user.id))
-    return { status }
+    const { session, created } = unwrap(await this.setup.createClub(user, draft))
+    response.status(created ? HttpStatus.CREATED : HttpStatus.OK)
+    return session
   }
 }
