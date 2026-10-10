@@ -2,15 +2,15 @@
 // automaticamente pelo Nuxt 4 e ganham os aliases #layers/<nome>.
 import { fileURLToPath } from 'node:url'
 
-/** Rotas do lojista (layer `merchant`): sem SSR, o mock mora no navegador. */
+/** Rotas do lojista (layer `merchant`): SPA, sem SSR (desktop, sessão conferida no servidor pelos middlewares). */
 const MERCHANT_SPA_ROUTES = ['/painel', '/configuracoes', '/campanhas', '/balcao/**', '/programa', '/clientes']
 
 export default defineNuxtConfig({
   // `shared/` mora na raiz do monorepo para o futuro `apps/api` usar os mesmos contratos.
   alias: { '#shared': fileURLToPath(new URL('../../shared', import.meta.url)) },
   compatibilityDate: '2026-10-01',
-  // O app do cliente renderiza no servidor (cookie httpOnly -> BFF -> API). O painel do lojista ainda usa o mock
-  // do navegador (localStorage), então fica como SPA até a API dele existir.
+  // O app do cliente renderiza no servidor (cookie httpOnly -> BFF -> API). O painel do lojista usa o mesmo BFF, mas
+  // fica como SPA (só desktop, nada a indexar).
   ssr: true,
   routeRules: Object.fromEntries(MERCHANT_SPA_ROUTES.map((route) => [route, { ssr: false }])),
   devtools: { enabled: true },
@@ -28,6 +28,8 @@ export default defineNuxtConfig({
     public: {
       /** URL do projeto Supabase (não é segredo): login no servidor e fotos do bucket público. */
       supabaseUrl: '',
+      /** Painel do lojista: `http` (BFF + API, padrão) ou `mock` (navegador; só testes e demonstração offline). Env: NUXT_PUBLIC_MERCHANT_BACKEND. */
+      merchantBackend: 'http',
       /** Atraso artificial do mock para a UI exercitar carregamento. */
       mockLatencyMs: 250,
     },

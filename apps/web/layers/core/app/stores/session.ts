@@ -18,5 +18,11 @@ export const useSessionStore = defineStore('session', () => {
     checked.value = true
   }
 
-  return { customer, checked, startCustomer, endCustomer }
+  /** O painel do lojista trocou o cookie (entrou ou saiu): o que se sabe do cliente pode ser de outra conta, pergunte de novo. */
+  function resetCustomer(): void {
+    customer.value = null
+    checked.value = false
+  }
+
+  return { customer, checked, startCustomer, endCustomer, resetCustomer }
 })

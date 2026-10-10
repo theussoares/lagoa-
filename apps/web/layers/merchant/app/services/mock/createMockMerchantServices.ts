@@ -1,6 +1,5 @@
 import type { ReminderDraft } from '#shared/schemas/campaign'
 import type { ClubSetupDraft } from '#shared/schemas/onboarding'
-import type { SignUpTicket } from '#shared/schemas/session'
 import type { CustomerFilter } from '#shared/schemas/customer'
 import type { RedemptionId, VisitQrId } from '#shared/schemas/ids'
 import type { ProgramDraft } from '#shared/schemas/program'
@@ -52,7 +51,7 @@ export function createMockMerchantServices(backend: MockBackend, sessions: Merch
       getWeekSummary: () => asMerchant(backend, sessions, (ctx, shopId) => ok(weekSummary(ctx, shopId))),
     },
     clubSetup: {
-      createClub: (ticket: SignUpTicket, draft: ClubSetupDraft) => backend.run((ctx) => createClub(ctx, ticket, draft)),
+      createClub: (draft: ClubSetupDraft) => backend.run((ctx) => createClub(ctx, draft)),
     },
     poster: {
       getPoster: () => asMerchant(backend, sessions, shopPoster),

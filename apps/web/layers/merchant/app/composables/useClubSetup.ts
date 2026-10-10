@@ -17,8 +17,8 @@ const PREVIOUS_STEP: Readonly<Record<ClubSetupFormStep, ClubSetupFormStep | null
 /** Loja → Regra → Prêmio; "Criar o clube" envia tudo de uma vez e mostra o cartaz. */
 export function useClubSetup(): ClubSetup {
   const { clubSetup, poster } = useMerchantServices()
-  const ticketStore = useClubSetupStore()
-  const { form } = storeToRefs(ticketStore)
+  const clubSetupStore = useClubSetupStore()
+  const { form } = storeToRefs(clubSetupStore)
   const { start } = useMerchantSession()
 
   const step = ref<ClubSetupStep>('shop')
@@ -62,18 +62,13 @@ export function useClubSetup(): ClubSetup {
       step.value = pending ?? 'shop'
       return
     }
-    const ticket = ticketStore.ticket
-    if (ticket === null || !ticketStore.hasValidTicket(new Date())) {
-      submitState.value = { status: 'error', code: 'signUpExpired' }
-      return
-    }
     submitState.value = { status: 'creating' }
-    const result = await clubSetup.createClub(ticket, draft)
+    const result = await clubSetup.createClub(draft)
     if (!result.ok) {
       submitState.value = { status: 'error', code: result.error.code }
       return
     }
-    ticketStore.finish()
+    clubSetupStore.finish()
     start(result.value)
     submitState.value = { status: 'idle' }
     step.value = 'poster'

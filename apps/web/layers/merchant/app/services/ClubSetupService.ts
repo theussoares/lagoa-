@@ -1,14 +1,14 @@
 import type { ClubSetupDraft } from '#shared/schemas/onboarding'
-import type { MerchantSession, SignUpTicket } from '#shared/schemas/session'
+import type { MerchantSession } from '#shared/schemas/session'
 import type { ShopPoster, ShopStatus } from '#shared/schemas/shop'
 import type { ErrorOf, TransportError } from '#shared/types/errors'
 import type { Result } from '#shared/types/result'
 
 export type CreateClubError = ErrorOf<'signUpExpired' | 'invalidClubSetup'> | TransportError
 
-/** Criar o clube: roda antes de existir sessão, só com o ticket do celular confirmado. */
+/** Criar o clube: roda com o celular já confirmado (cookie da sessão) e ainda sem loja. */
 export interface ClubSetupService {
-  createClub(ticket: SignUpTicket, draft: ClubSetupDraft): Promise<Result<MerchantSession, CreateClubError>>
+  createClub(draft: ClubSetupDraft): Promise<Result<MerchantSession, CreateClubError>>
 }
 
 export interface ShopPosterService {

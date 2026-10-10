@@ -33,7 +33,7 @@ export default defineConfig({
             nuxt: {
               domEnvironment: 'happy-dom',
               // Sem atraso artificial: a latência do mock só serve para exercitar loading no navegador.
-              overrides: { runtimeConfig: { public: { mockLatencyMs: 0 } } },
+              overrides: { runtimeConfig: { public: { mockLatencyMs: 0, merchantBackend: 'mock' } } },
             },
           },
         },

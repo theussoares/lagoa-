@@ -13,6 +13,7 @@ import { useMerchantServices } from '../app/composables/useMerchantServices'
 import { useClubSetupScreen } from '../app/composables/useClubSetupScreen'
 import { useProgramFieldOptions } from '../app/composables/useProgramFieldOptions'
 import { useClubSetupStore } from '../app/stores/clubSetup'
+import { useMerchantSessionStore } from '../app/stores/merchantSession'
 import { emptyClubSetupForm } from '../app/utils/clubSetupForm'
 
 const { approveMock, printMock, leaveGuard } = vi.hoisted(() => ({
@@ -38,7 +39,7 @@ async function beginSignUp(): Promise<void> {
   await $merchantAuth.requestLoginCode(phone)
   const result = await $merchantAuth.signInMerchant(phone, $mockBackend.loginCode)
   if (!result.ok || result.value.kind !== 'signUp') throw new Error('expected a sign-up ticket')
-  useClubSetupStore().begin(result.value.ticket, result.value.expiresAt)
+  useMerchantSessionStore().startWithoutShop()
 }
 
 function fillShop(): void {
@@ -171,9 +172,11 @@ describe('useClubSetupScreen: creating the club', () => {
     expect(result.creating).toBe(false)
   })
 
-  it('reports an expired sign-up when there is no valid ticket', async () => {
+  it('reports an expired sign-up when the server no longer knows the confirmed phone', async () => {
     const { result } = await reachRewardStep()
-    useClubSetupStore().finish()
+    await useNuxtApp().$mockBackend.run((ctx) => {
+      ctx.state.signUpTickets = []
+    })
     fillShop()
     fillReward()
     await result.submitStep()

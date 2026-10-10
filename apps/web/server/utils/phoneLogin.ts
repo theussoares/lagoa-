@@ -29,10 +29,13 @@ export class PhoneLogin {
     return data.session === null ? { ok: false, code: 'internal' } : { ok: true, value: tokensOf(data.session) }
   }
 
-  /** Revoga a sessão no provedor; falhar aqui não impede de limpar os cookies. */
+  /**
+   * Revoga só esta sessão no provedor (`local`): o padrão `global` derrubaria também os outros aparelhos da pessoa, ex.:
+   * o lojista que sai do balcão perderia o app de cliente no celular. Falhar aqui não impede de limpar os cookies.
+   */
   async signOut(tokens: Pick<TokenPair, 'accessToken' | 'refreshToken'>): Promise<void> {
     const { error } = await this.supabase.auth.setSession({ access_token: tokens.accessToken, refresh_token: tokens.refreshToken })
-    if (error === null) await this.supabase.auth.signOut()
+    if (error === null) await this.supabase.auth.signOut({ scope: 'local' })
   }
 }
 

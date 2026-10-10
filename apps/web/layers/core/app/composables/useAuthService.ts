@@ -4,7 +4,7 @@ export function useAuthService(): AuthService {
   return useNuxtApp().$auth
 }
 
-/** Só no navegador: o login do lojista é o mock. */
+/** Login do lojista: SMS + sessão pelo BFF (ou o mock, com `merchantBackend = mock`). */
 export function useMerchantAuthService(): MerchantAuthService {
   return useNuxtApp().$merchantAuth
 }

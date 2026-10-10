@@ -22,7 +22,7 @@ export function createHttpMerchantServices(api: ApiClient): MerchantServices {
     poster: clubSetup,
     posterReprint: new HttpPosterReprintService(),
     shopStatus: clubSetup,
-    shopApprovalTesting: clubSetup,
+    shopApprovalTesting: null,
     visitQrTesting: null,
   }
 }

@@ -1,6 +1,4 @@
-import { useMerchantSessionStore } from '../stores/merchantSession'
-
-export default defineNuxtRouteMiddleware((to) => {
-  if (useMerchantSessionStore().merchant === null) return
+export default defineNuxtRouteMiddleware(async (to) => {
+  if ((await useMerchantSession().check()).status !== 'shop') return
   return navigateTo(safeMerchantReturnPath(to.query.para))
 })
