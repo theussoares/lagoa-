@@ -17,7 +17,7 @@ export function decideEarning(target: VisitQrTarget, state: VisitClaimState, now
   return decideVisitEarning({
     rules,
     bonusRules,
-    cooldownHours: target.cooldownHours,
+    cooldown: target.cooldown,
     card: state.card,
     birthday: state.birthday,
     earn: target.earn,

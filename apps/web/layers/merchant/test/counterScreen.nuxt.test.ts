@@ -354,7 +354,7 @@ function fakeProgram(rules: Program['rules'] | 'error'): AsyncResult<Program, Tr
       referralBonus: { enabled: false, units: 1 },
       surpriseDay: { enabled: false, multiplier: 2, date: null },
     },
-    checkIn: { enabled: true, cooldownHours: 4 },
+    checkIn: { enabled: true, cooldownHours: 4, cooldownMode: 'rolling' },
     expirationPolicy: { kind: 'never' },
   })
   const state: AsyncResultState<Program, TransportError> =

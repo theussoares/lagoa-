@@ -407,7 +407,8 @@
       "expiration": "Validade dos carimbos e pontos",
       "expirationHint": "Contada a partir da última visita do cliente.",
       "expirationNever": "Nunca vencem",
-      "expirationMonths": "{count} mês sem visita | 1 mês sem visita | {count} meses sem visita"
+      "expirationMonths": "{count} mês sem visita | 1 mês sem visita | {count} meses sem visita",
+      "cooldownCalendarDay": "1 vez por dia (vira à meia-noite)"
     },
     "summary": {
       "noBonus": "Nenhuma regra ligada",
@@ -416,7 +417,8 @@
       "checkInOff": "Entrada pelo cartaz desligada",
       "cooldown": "1 visita a cada {interval}",
       "neverExpires": "não vencem",
-      "expiresAfter": "vencem após {count} mês sem visita | vencem após 1 mês sem visita | vencem após {count} meses sem visita"
+      "expiresAfter": "vencem após {count} mês sem visita | vencem após 1 mês sem visita | vencem após {count} meses sem visita",
+      "cooldownCalendarDay": "1 visita por dia (vira à meia-noite)"
     },
     "card": {
       "title": "O cartão",

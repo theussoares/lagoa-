@@ -1,5 +1,5 @@
 import { unitOf } from '#shared/domain/programStrategies'
-import type { ProgramDraft } from '#shared/schemas/program'
+import type { CheckInCooldown, ProgramDraft } from '#shared/schemas/program'
 import type { Translate } from '#layers/core/app/types/i18n'
 import type { ProgramField, ProgramFieldErrors, ProgramFoldSection, ProgramSectionSummaries } from '../types/program'
 
@@ -11,9 +11,11 @@ const FIELDS_BY_SECTION: Readonly<Record<ProgramFoldSection, readonly ProgramFie
   visitRules: ['cooldownHours', 'expirationMonths'],
 }
 
-/** "4 horas", "1 dia", "7 dias". */
-export function cooldownLabel(hours: number, t: Translate): string {
-  return hours % HOURS_PER_DAY === 0
+/** "4 horas", "24 horas", "2 dias", "1 vez por dia (vira à meia-noite)". 24 h fica em horas para não confundir com o dia. */
+export function cooldownLabel(cooldown: CheckInCooldown, t: Translate): string {
+  if (cooldown.cooldownMode === 'calendarDay') return t('program.visitRules.cooldownCalendarDay')
+  const hours = cooldown.cooldownHours
+  return hours % HOURS_PER_DAY === 0 && hours > HOURS_PER_DAY
     ? t('program.visitRules.cooldownDays', { count: hours / HOURS_PER_DAY }, hours / HOURS_PER_DAY)
     : t('program.visitRules.cooldownHours', { count: hours }, hours)
 }
@@ -33,7 +35,9 @@ export function toProgramSummaries(draft: ProgramDraft, t: Translate): ProgramSe
 
   const visitRules = [
     checkIn.enabled ? t('program.summary.checkInOn') : t('program.summary.checkInOff'),
-    t('program.summary.cooldown', { interval: cooldownLabel(checkIn.cooldownHours, t) }),
+    checkIn.cooldownMode === 'calendarDay'
+      ? t('program.summary.cooldownCalendarDay')
+      : t('program.summary.cooldown', { interval: cooldownLabel(checkIn, t) }),
     expirationPolicy.kind === 'never'
       ? t('program.summary.neverExpires')
       : t('program.summary.expiresAfter', { count: expirationPolicy.months }, expirationPolicy.months),

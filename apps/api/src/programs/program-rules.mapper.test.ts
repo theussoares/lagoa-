@@ -73,6 +73,7 @@ describe('toProgram', () => {
     expirationMonths: null,
     checkInEnabled: true,
     checkInCooldownHours: 24,
+    checkInCooldownMode: 'rolling',
   }
 
   it('maps valid database columns to a complete Program', () => {
@@ -86,7 +87,7 @@ describe('toProgram', () => {
       rules: { mode: 'stamps', target: 10 },
       bonusRules: validColumns.bonusRules,
       expirationPolicy: { kind: 'never' },
-      checkIn: { enabled: true, cooldownHours: 24 },
+      checkIn: { enabled: true, cooldownHours: 24, cooldownMode: 'rolling' },
     })
   })
 

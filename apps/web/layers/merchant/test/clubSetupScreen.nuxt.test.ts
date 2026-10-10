@@ -278,14 +278,16 @@ describe('useProgramFieldOptions', () => {
 
   it('keeps a saved value outside the list selectable, in order', async () => {
     const draft = draftWith((value) => {
-      value.checkIn = { enabled: true, cooldownHours: 5 }
+      value.checkIn = { enabled: true, cooldownHours: 5, cooldownMode: 'rolling' }
       value.expirationPolicy = { kind: 'afterInactivity', months: 7 }
     })
     const { result } = await mountComposable(() => useProgramFieldOptions(draft))
     const cooldownValues = result.value.cooldownOptions.map((option) => option.value)
     const expirationValues = result.value.expirationOptions.map((option) => option.value)
     expect(cooldownValues).toContain('5')
-    expect(cooldownValues).toEqual([...cooldownValues].sort((a, b) => Number(a) - Number(b)))
+    const hourValues = cooldownValues.filter((value) => value !== 'calendarDay')
+    expect(hourValues).toEqual([...hourValues].sort((a, b) => Number(a) - Number(b)))
+    expect(cooldownValues.indexOf('calendarDay')).toBe(cooldownValues.indexOf('24') + 1)
     expect(expirationValues).toContain('7')
     expect(expirationValues[0]).toBe('never')
   })
