@@ -23,8 +23,13 @@ describe('HomeTermsAcceptance', () => {
     expect(page.emitted('accept')).toHaveLength(1)
   })
 
-  it('shows the error text for a failed accept', async () => {
+  it('asks for a reload when the server refused the shown version', async () => {
     const page = await mountComponent(TermsAcceptance, { ...props, errorCode: 'merchantTermsNotAccepted' })
-    expect(page.get('[role="alert"]').text()).toContain('Falta aceitar o termo')
+    expect(page.get('[role="alert"]').text()).toContain('Recarregue a página')
+  })
+
+  it('shows the generic error text for other failures', async () => {
+    const page = await mountComponent(TermsAcceptance, { ...props, errorCode: 'network' })
+    expect(page.find('[role="alert"]').exists()).toBe(true)
   })
 })

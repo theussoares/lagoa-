@@ -825,6 +825,7 @@
         "p1": "Fica eleito o foro da comarca de Três Lagoas/MS.",
         "p2": "O aceite fica registrado com a versão e a data."
       }
-    }
+    },
+    "stale": "O termo foi atualizado enquanto esta tela estava aberta. Recarregue a página para ler a versão nova."
   }
 }

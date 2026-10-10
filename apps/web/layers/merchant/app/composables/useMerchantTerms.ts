@@ -3,7 +3,7 @@ import { useMerchantSessionStore } from '../stores/merchantSession'
 import type { MerchantTerms, MerchantTermsAcceptState } from '../types/terms'
 
 /** Aceite do termo do lojista no Início: grava no servidor e libera a sessão na memória. */
-export function useMerchantTerms(): MerchantTerms {
+export function useMerchantTerms(onAccepted: () => Promise<void>): MerchantTerms {
   const { terms } = useMerchantServices()
   const sessions = useMerchantSessionStore()
   const { expire } = useMerchantSession()
@@ -16,6 +16,7 @@ export function useMerchantTerms(): MerchantTerms {
     if (result.ok) {
       sessions.markTermsAccepted()
       state.value = { status: 'idle' }
+      await onAccepted()
       return
     }
     if (result.error.code === 'unauthorized') return expire()

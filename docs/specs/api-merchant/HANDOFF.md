@@ -59,6 +59,8 @@ Teste do piloto = lojistas e clientes de verdade em Três Lagoas, no ambiente de
    - Web: `NUXT_API_BASE_URL`, `NUXT_SUPABASE_ANON_KEY` (nunca a service_role), `NUXT_BFF_SHARED_SECRET` igual ao da
      API, `NUXT_PUBLIC_SUPABASE_URL`, sem `NUXT_PUBLIC_MERCHANT_BACKEND=mock` e sem `NUXT_PUBLIC_CAMPAIGNS_ENABLED`.
    - API: `MERCHANT_TERMS_REQUIRED=1`.
+   - **Ordem:** API antes do web (a sessão nova traz `termsAccepted`; o web tolera a falta, mas pede o aceite).
+     Balcão sem o aceite redireciona para o Início (`merchant-terms`).
    - Vercel: deploy automático só em `main`, `develop` e `stable` (`git.deploymentEnabled` nos três `vercel.json`).
    - Supabase: hook Auth > Send SMS apontando para `POST /v1/auth/hooks/send-sms` com o segredo; saldo na Comtele.
    - Site (`apps/site`): `NUXT_PUBLIC_APP_URL` do Balcão de produção no `generate`.

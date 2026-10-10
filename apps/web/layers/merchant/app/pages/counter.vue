@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ path: '/balcao', layout: 'merchant', middleware: 'merchant-auth' })
+definePageMeta({ path: '/balcao', layout: 'merchant', middleware: ['merchant-auth', 'merchant-terms'] })
 
 usePageTitle('counter.title')
 const screen = useCounterScreen()

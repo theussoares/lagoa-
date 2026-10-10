@@ -10,12 +10,12 @@ export class HttpCounterService implements CounterService {
 
   async validateRedemption(code: RedemptionCode) {
     const res = await this.api.post('/merchant/counter/redemptions/validate', RedemptionPreviewSchema, { body: { code } })
-    return allowing('redemptionInvalid', 'redemptionExpired', 'redemptionAlreadyUsed', 'shopPendingApproval', 'shopSuspended')(res)
+    return allowing('redemptionInvalid', 'redemptionExpired', 'redemptionAlreadyUsed', 'shopPendingApproval', 'shopSuspended', 'merchantTermsNotAccepted')(res)
   }
 
   async confirmRedemption(id: RedemptionId) {
     const res = await this.api.post(`/merchant/counter/redemptions/${id}/confirm`, CounterEntrySchema, { body: {} })
-    return allowing('redemptionInvalid', 'redemptionExpired', 'redemptionAlreadyUsed', 'rewardNotReady', 'shopPendingApproval', 'shopSuspended')(res)
+    return allowing('redemptionInvalid', 'redemptionExpired', 'redemptionAlreadyUsed', 'rewardNotReady', 'shopPendingApproval', 'shopSuspended', 'merchantTermsNotAccepted')(res)
   }
 
   async listTodayEntries() {

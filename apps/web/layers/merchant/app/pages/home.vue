@@ -13,7 +13,7 @@ const { expire } = useMerchantSession()
 useHead({ title: () => `${t('home.title')} · ${t('app.name')}` })
 
 const { state, reload, posterReprint } = useMerchantHome()
-const terms = useMerchantTerms()
+const terms = useMerchantTerms(reload)
 const termsError = computed(() => (terms.state.value.status === 'error' ? terms.state.value.code : null))
 const campaignsEnabled = useCampaignsEnabled()
 

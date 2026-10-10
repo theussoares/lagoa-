@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { MERCHANT_TERMS_SECTIONS } from '../../utils/merchantTerms'
+import type { MerchantTermsError } from '../../services/MerchantTermsService'
 
 interface Props {
   version: string
   accepting: boolean
   /** Código do erro do último aceite; `null` sem erro. */
-  errorCode: string | null
+  errorCode: MerchantTermsError['code'] | null
 }
 
 interface Emits {
@@ -43,7 +44,7 @@ const checkboxId = useId()
         </label>
         <UButton type="submit" size="lg" icon="i-ph-check" :label="t('merchantTerms.accept')" :loading="accepting" :disabled="!agreed" />
       </form>
-      <p v-if="errorCode" class="text-error" role="alert">{{ t(`errors.${errorCode}`) }}</p>
+      <p v-if="errorCode" class="text-error" role="alert">{{ errorCode === 'merchantTermsNotAccepted' ? t('merchantTerms.stale') : t(`errors.${errorCode}`) }}</p>
     </div>
   </PanelModule>
 </template>

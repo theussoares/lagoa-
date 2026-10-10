@@ -102,6 +102,15 @@ describe('http merchant services', () => {
     expect(JSON.parse(String(init?.body))).toEqual({ version: '2026-10-pilot' })
   })
 
+  it('counter and visit QR pass the terms gate refusal through (not internal)', async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => json(403, { code: 'merchantTermsNotAccepted' }))
+    const { counter, visitQr } = servicesWith(fetcher)
+    const refused = { ok: false, error: { code: 'merchantTermsNotAccepted' } }
+    expect(await visitQr.issueVisitQr({})).toEqual(refused)
+    expect(await counter.validateRedemption(RedemptionCodeSchema.parse('ACDEFG'))).toEqual(refused)
+    expect(await counter.confirmRedemption(RedemptionIdSchema.parse('01925b44-9000-7000-8000-000000000009'))).toEqual(refused)
+  })
+
   it('posterReprint reads and marks the notice through the API', async () => {
     const fetcher = vi.fn<typeof fetch>(async (_input, init) => json(200, { pending: init?.method !== 'POST' }))
     const { posterReprint } = servicesWith(fetcher)
