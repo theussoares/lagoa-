@@ -28,5 +28,6 @@ export interface MerchantAuthService {
   signInMerchant(phone: PhoneNumber, code: LoginCode): Promise<Result<MerchantSignInResult, MerchantSignInError>>
   /** Pergunta ao servidor quem está logado: `notFound` = celular confirmado sem loja, `unauthorized` = sem sessão. */
   currentSession(): Promise<Result<MerchantSession, MerchantSessionError>>
-  signOut(): Promise<void>
+  /** `err` = o servidor não confirmou: a sessão pode ainda estar de pé, então o app não deve fingir que saiu. */
+  signOut(): Promise<Result<true, TransportError>>
 }

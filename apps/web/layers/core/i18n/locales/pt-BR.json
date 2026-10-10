@@ -277,6 +277,7 @@
     }
   },
   "merchantNav": {
+    "signOutFailed": "Não deu para sair agora. Confira a internet e tente de novo; sua sessão continua aberta.",
     "label": "Navegação do painel",
     "signOut": "Sair do painel",
     "settings": "Configurações",

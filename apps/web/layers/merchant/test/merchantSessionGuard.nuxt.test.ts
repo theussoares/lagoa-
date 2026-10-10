@@ -7,7 +7,8 @@ import type { MerchantSessionGuardOptions } from '../app/types/session'
 import { useMerchantSessionGuard } from '../app/composables/useMerchantSessionGuard'
 
 const { signOutMock, refreshMock } = vi.hoisted(() => ({ signOutMock: vi.fn(), refreshMock: vi.fn() }))
-mockNuxtImport('useMerchantSession', () => () => ({ session: { value: null }, start: vi.fn(), signOut: signOutMock }))
+// Sessão recusada pelo servidor: o guard só esquece a sessão local (`expire`), não tenta sair de novo no servidor.
+mockNuxtImport('useMerchantSession', () => () => ({ session: { value: null }, start: vi.fn(), signOut: vi.fn(), expire: signOutMock }))
 mockNuxtImport('useShopStatus', () => () => ({ status: { value: 'approved' }, refresh: refreshMock, approveForTesting: null }))
 
 const SUCCESS: ErrorCarrier = { status: 'success' }

@@ -24,7 +24,7 @@ function setup(verify: Result<true, SignInError>, routes: Record<string, () => R
   const gateway: PhoneAuthGateway = {
     sendCode: vi.fn(async () => ({ ok: true as const, value: true as const })),
     verifyCode: vi.fn(async () => verify),
-    signOut: vi.fn(async () => {}),
+    signOut: vi.fn(async () => ({ ok: true as const, value: true as const })),
   }
   const calls: string[] = []
   const fetcher: typeof fetch = async (input, init) => {
@@ -75,7 +75,7 @@ describe('HttpMerchantAuthService', () => {
 
   it('signs out through the gateway', async () => {
     const { auth, gateway } = setup({ ok: true, value: true }, {})
-    await auth.signOut()
+    expect(await auth.signOut()).toEqual({ ok: true, value: true })
     expect(gateway.signOut).toHaveBeenCalledOnce()
   })
 })

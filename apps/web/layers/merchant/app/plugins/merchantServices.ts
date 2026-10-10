@@ -15,7 +15,8 @@ export default defineNuxtPlugin({
   name: 'lagoa:merchant-services',
   dependsOn: ['lagoa:backend', 'lagoa:mock-backend'],
   setup(nuxtApp): { provide: { merchantAuth: MerchantAuthService; merchantServices: MerchantServices } } {
-    if (useRuntimeConfig().public.merchantBackend === 'mock') {
+    // O mock só existe no navegador (as rotas do painel são `ssr: false`); no servidor sempre vale o http.
+    if (import.meta.client && useRuntimeConfig().public.merchantBackend === 'mock') {
       const sessions = useMerchantSessionStore()
       return {
         provide: {

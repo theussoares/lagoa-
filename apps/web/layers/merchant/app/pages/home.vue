@@ -9,13 +9,13 @@ definePageMeta({ path: '/painel', layout: 'merchant', middleware: 'merchant-auth
 
 const { t } = useI18n()
 const translate = useTranslate()
-const { signOut } = useMerchantSession()
+const { expire } = useMerchantSession()
 useHead({ title: () => `${t('home.title')} · ${t('app.name')}` })
 
 const { state, reload, posterReprint } = useMerchantHome()
 
 watch(state, (current) => {
-  if (current.status === 'error' && current.error.code === 'unauthorized') void signOut()
+  if (current.status === 'error' && current.error.code === 'unauthorized') void expire()
 })
 
 const snapshot = computed(() => (state.value.status === 'success' ? state.value.value : null))

@@ -41,7 +41,7 @@ export class HttpAuthService implements AuthService {
     return allowing('emailAlreadyUsed')(await this.api.post('/registration', CustomerSessionSchema, { body: details }))
   }
 
-  signOut(): Promise<void> {
-    return this.gateway.signOut()
+  async signOut(): Promise<void> {
+    await this.gateway.signOut()
   }
 }

@@ -24,5 +24,7 @@ export class MockAuthService implements MerchantAuthService {
     return err({ code: 'unauthorized' })
   }
 
-  async signOut(): Promise<void> {}
+  async signOut(): Promise<Result<true, TransportError>> {
+    return ok(true)
+  }
 }
