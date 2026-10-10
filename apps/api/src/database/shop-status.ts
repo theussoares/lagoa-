@@ -5,6 +5,7 @@ import postgres from 'postgres'
 import { ShopPlanSchema, ShopStatusSchema, type ShopPlan, type ShopStatus } from '#shared/schemas/shop'
 import { parseEnv } from '../config/env'
 import type { Database } from './database.module'
+import * as schema from './schema'
 import { shops, shopStatusEvents } from './schema'
 
 export interface ShopStatusChange {
@@ -70,7 +71,7 @@ async function main(): Promise<void> {
   const client = postgres(parseEnv(process.env).DATABASE_URL, { prepare: false })
   try {
     const reason = argument('reason')
-    const db = drizzle(client)
+    const db = drizzle(client, { schema })
     if (dryRun) {
       const [shop] = await db.select({ name: shops.name, status: shops.status, plan: shops.plan }).from(shops).where(eq(shops.id, shopId))
       if (!shop) throw new Error('Not changed: shopNotFound')
