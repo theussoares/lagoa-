@@ -25,8 +25,9 @@ type ConfirmRedemptionBody = z.infer<typeof ConfirmRedemptionBodySchema>
 
 const RedemptionIdParamSchema = z.string().uuid()
 
-@MerchantSurface()
+// Decorador de classe roda de baixo para cima: o guard da loja precisa entrar antes do guard do termo.
 @RequiresMerchantTerms()
+@MerchantSurface()
 @Controller('merchant/counter/redemptions')
 export class CounterRedemptionsController {
   constructor(private readonly service: CounterRedemptionsService) {}
