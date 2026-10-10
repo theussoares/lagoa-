@@ -11,7 +11,10 @@ export interface MerchantSessionControl {
   startWithoutShop: () => void
   /** Pergunta ao servidor uma vez e guarda; as próximas leituras vêm da memória. */
   check: () => Promise<MerchantAccess>
+  /** Sai no servidor e só então deixa o painel; se o servidor não confirmar, avisa e mantém a sessão. */
   signOut: () => Promise<void>
+  /** Esquece a sessão local e vai para o login, sem falar com o servidor (ele já recusou a sessão). */
+  expire: () => Promise<void>
 }
 
 export interface MerchantSessionGuardOptions {

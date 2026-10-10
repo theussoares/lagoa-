@@ -8,5 +8,6 @@ import type { TransportError } from '#shared/types/errors'
 export interface PhoneAuthGateway {
   sendCode(phone: PhoneNumber): Promise<Result<true, TransportError>>
   verifyCode(phone: PhoneNumber, code: LoginCode): Promise<Result<true, SignInError>>
-  signOut(): Promise<void>
+  /** `err` só quando o servidor não respondeu: o cookie httpOnly continua valendo e quem chamou precisa saber. */
+  signOut(): Promise<Result<true, TransportError>>
 }

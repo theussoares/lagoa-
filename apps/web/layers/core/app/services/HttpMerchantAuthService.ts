@@ -41,7 +41,7 @@ export class HttpMerchantAuthService implements MerchantAuthService {
     return allowing('notFound', 'unauthorized')(await this.api.get('/merchant/session', MerchantSessionSchema))
   }
 
-  signOut(): Promise<void> {
+  signOut(): Promise<Result<true, TransportError>> {
     return this.gateway.signOut()
   }
 }

@@ -24,8 +24,10 @@ export class BffPhoneAuthGateway implements PhoneAuthGateway {
     return err({ code: failure.code === 'loginCodeExpired' ? 'loginCodeExpired' : 'invalidLoginCode' })
   }
 
-  async signOut(): Promise<void> {
-    await this.post('signout', {})
+  async signOut(): Promise<Result<true, TransportError>> {
+    const failure = await this.post('signout', {})
+    if (failure === null) return ok(true)
+    return err(isTransportError(failure) ? failure : { code: 'internal' })
   }
 
   /** `null` = deu certo; senão o erro traduzido do corpo `{ code }`. */

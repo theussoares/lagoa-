@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { err, ok } from '#shared/types/result'
-import { MerchantSessionSchema } from '#shared/schemas/session'
+import { CustomerSessionSchema, MerchantSessionSchema } from '#shared/schemas/session'
 import { useMerchantSession } from '../app/composables/useMerchantSession'
+import { useSessionStore } from '#layers/core/app/stores/session'
 import { useMerchantSessionStore } from '../app/stores/merchantSession'
 
 const SESSION = MerchantSessionSchema.parse({
@@ -13,7 +14,7 @@ const SESSION = MerchantSessionSchema.parse({
   shopStatus: 'approved',
 })
 
-const { currentSession, signOut } = vi.hoisted(() => ({ currentSession: vi.fn(), signOut: vi.fn(async () => {}) }))
+const { currentSession, signOut } = vi.hoisted(() => ({ currentSession: vi.fn(), signOut: vi.fn() }))
 mockNuxtImport('useMerchantAuthService', () => () => ({ currentSession, signOut }))
 
 function resetStore(): void {
@@ -54,9 +55,33 @@ describe('useMerchantSession().check', () => {
   })
 
   it('signs out on the server before forgetting the session', async () => {
+    signOut.mockResolvedValueOnce(ok(true))
     useMerchantSessionStore().startMerchant(SESSION)
     await useMerchantSession().signOut()
     expect(signOut).toHaveBeenCalledOnce()
     expect(useMerchantSessionStore().merchant).toBeNull()
+  })
+
+  it('keeps the session when the server does not confirm the sign out (the cookie would still be valid)', async () => {
+    signOut.mockResolvedValueOnce(err({ code: 'network' }))
+    useMerchantSessionStore().startMerchant(SESSION)
+    await useMerchantSession().signOut()
+    expect(useMerchantSessionStore().merchant).toEqual(SESSION)
+  })
+
+  it('expire forgets the session locally without calling the server', async () => {
+    signOut.mockClear()
+    useMerchantSessionStore().startMerchant(SESSION)
+    await useMerchantSession().expire()
+    expect(signOut).not.toHaveBeenCalled()
+    expect(useMerchantSessionStore().merchant).toBeNull()
+  })
+
+  it('makes the customer side ask the server again, because the cookie may now belong to another account', async () => {
+    const customer = useSessionStore()
+    customer.startCustomer(CustomerSessionSchema.parse({ role: 'customer', customerId: '0190a000-0000-7000-8000-0000000000aa', isNewCustomer: false }))
+    useMerchantSession().start(SESSION)
+    expect(customer.customer).toBeNull()
+    expect(customer.checked).toBe(false)
   })
 })
