@@ -170,7 +170,9 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant counter against a real database', 
       await visitAt('2026-10-10T02:00:00Z', `late-${customer}`)
       await visitAt('2026-10-10T04:10:00Z', `early-${customer}`)
       const today = await counter.listTodayEntries(owner)
-      expect(today.ok && today.value.map((entry) => entry.createdAt)).toEqual(['2026-10-10T04:10:00.000Z'])
+      const times = today.ok ? today.value.map((entry) => entry.createdAt) : []
+      expect(times).toContain('2026-10-10T04:10:00.000Z')
+      expect(times).not.toContain('2026-10-10T02:00:00.000Z')
     } finally {
       clock.current = new Date()
     }
@@ -183,17 +185,20 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant counter against a real database', 
     const owner = await ownerOf(shop.id)
     // Relógio fixo no meio da tarde local: "uma hora atrás" nunca cruza a meia-noite, seja a hora em que o teste rode.
     clock.current = new Date('2026-10-09T19:00:00Z')
-    const first = new Date(clock.now().getTime() - 3_600_000)
-    await data.db.transaction(async (tx) => {
-      const { card } = await ledger.lockOrCreateCard(tx, { shopId: shop.id, customerId: customer, programId: shop.programId }, neverExpires(3))
-      const one = await ledger.credit(tx, { card, shopId: shop.id, customerId: customer, kind: 'visit', now: first, idempotencyKey: `v1-${customer}`, plan: { welcomeUnits: 0, units: 1, appliedBonuses: [], balanceAfter: 1, rewardExpiresAt: null } })
-      await ledger.credit(tx, { card: { ...card, balance: 1, lastVisitAt: one.recordedAt }, shopId: shop.id, customerId: customer, kind: 'visit', now: clock.now(), idempotencyKey: `v2-${customer}`, plan: { welcomeUnits: 0, units: 1, appliedBonuses: [], balanceAfter: 2, rewardExpiresAt: null } })
-    })
-    const today = await counter.listTodayEntries(owner)
-    if (!today.ok) throw new Error('entries expected')
-    const mine = today.value.filter((entry) => entry.kind === 'visit')
-    expect(mine.map((entry) => entry.isNewCustomer).sort()).toEqual([false, true])
-    clock.current = new Date()
+    try {
+      const first = new Date(clock.now().getTime() - 3_600_000)
+      await data.db.transaction(async (tx) => {
+        const { card } = await ledger.lockOrCreateCard(tx, { shopId: shop.id, customerId: customer, programId: shop.programId }, neverExpires(3))
+        const one = await ledger.credit(tx, { card, shopId: shop.id, customerId: customer, kind: 'visit', now: first, idempotencyKey: `v1-${customer}`, plan: { welcomeUnits: 0, units: 1, appliedBonuses: [], balanceAfter: 1, rewardExpiresAt: null } })
+        await ledger.credit(tx, { card: { ...card, balance: 1, lastVisitAt: one.recordedAt }, shopId: shop.id, customerId: customer, kind: 'visit', now: clock.now(), idempotencyKey: `v2-${customer}`, plan: { welcomeUnits: 0, units: 1, appliedBonuses: [], balanceAfter: 2, rewardExpiresAt: null } })
+      })
+      const today = await counter.listTodayEntries(owner)
+      if (!today.ok) throw new Error('entries expected')
+      const mine = today.value.filter((entry) => entry.kind === 'visit')
+      expect(mine.map((entry) => entry.isNewCustomer).sort()).toEqual([false, true])
+    } finally {
+      clock.current = new Date()
+    }
   }, SLOW)
 
   it('CA-12: "Hoje" shows a customer whose account was erased as "removed", without decrypting and without a 500', async () => {

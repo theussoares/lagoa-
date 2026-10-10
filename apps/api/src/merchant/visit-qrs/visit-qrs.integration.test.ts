@@ -45,7 +45,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant visit QRs against a real database'
     clock = new FixedClock(new Date())
     service = new VisitQrsService(new DrizzleVisitQrsRepository(data.db, pii), new DrizzleSessionRepository(data.db), new VisitQrsRules(), clock)
     programService = new ProgramService(new DrizzleProgramRepository(data.db), clock)
-    checkIn = new CheckInService(new DrizzleCheckInRepository(data.db, ledger), new SystemClock(), new DrizzleReferralSettlement(data.db, ledger))
+    checkIn = new CheckInService(new DrizzleCheckInRepository(data.db, ledger), clock, new DrizzleReferralSettlement(data.db, ledger))
   })
 
   afterAll(async () => data.close())
@@ -119,6 +119,27 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant visit QRs against a real database'
     if (!issued?.ok) throw new Error('issue expected')
     const [row] = await data.db.select({ programId: visitQrs.programId }).from(visitQrs).where(eq(visitQrs.id, issued.value.id))
     expect(row?.programId).toBe(newId)
+  }, SLOW)
+
+  it('using a QR waits for a program change in progress (no deadlock) and then finds the QR cancelled', async () => {
+    const shop = await data.createShop({ rules: { mode: 'stamps', target: 10 } })
+    const owner = await ownerOf(shop.id)
+    const customer = await data.createCustomer()
+    const issued = await service.issueVisitQr(owner, {})
+    if (!issued.ok) throw new Error('issue expected')
+    const pending: { claim: ReturnType<CheckInService['claimVisitQr']> | null } = { claim: null }
+
+    // O que o `PUT /program` faz: trava a loja `FOR UPDATE`, cancela os QRs vivos e só então confirma.
+    await data.db.transaction(async (tx) => {
+      await tx.select({ id: shops.id }).from(shops).where(eq(shops.id, shop.id)).for('update')
+      const claiming = checkIn.claimVisitQr(customer, { token: issued.value.token })
+      pending.claim = claiming
+      const state = await Promise.race([claiming.then(() => 'done'), new Promise((resolve) => setTimeout(() => resolve('waiting'), 400))])
+      expect(state, 'the claim must wait for the shop lock before touching the QR').toBe('waiting')
+      await tx.update(visitQrs).set({ status: 'cancelled', cancelReason: 'programChanged' }).where(eq(visitQrs.id, issued.value.id))
+    })
+
+    expect(await pending.claim).toMatchObject({ ok: false, error: { code: 'visitQrStale' } })
   }, SLOW)
 
   it('a program change cancels live QRs as programChanged and only expires the ones already past their time', async () => {
