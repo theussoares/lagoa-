@@ -20,7 +20,7 @@ export class HttpClubSetupService
     const res = await this.api.post('/merchant/club-setup', MerchantSessionSchema, { body: draft })
     // Sem sessão no servidor = o celular precisa ser confirmado de novo.
     if (!res.ok && res.error.code === 'unauthorized') return err({ code: 'signUpExpired' })
-    return allowing('invalidClubSetup')(res)
+    return allowing('invalidClubSetup', 'phoneAlreadyUsed')(res)
   }
 
   async getPoster() {

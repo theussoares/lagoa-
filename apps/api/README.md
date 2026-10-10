@@ -77,9 +77,10 @@ Prefixo `/v1` (menos `/health`). Todas exigem `Authorization: Bearer <JWT do Sup
 | Método e rota | O que faz |
 |---|---|
 | `GET /merchant/session` | `MerchantSession` da loja do lojista. |
-| `POST /merchant/club-setup` | Cria loja e programa do clube de fidelidade (`pending`). |
+| `POST /merchant/club-setup` | Cria o `app_users` do dono (celular do token), a loja e o programa (`pending`). 201; repetir devolve 200 com a loja existente. `409 phoneAlreadyUsed` se o celular é de outra conta. |
 | `GET /merchant/poster` | Dados para impressão do cartaz com QR code da loja. |
 | `GET /merchant/shop/status` | Situação da loja (`pending`, `approved`, `suspended`). |
+| `GET /merchant/shop/poster-reprint` · `POST …/printed` | Aviso do Início "imprima o cartaz novo" (`{ pending }`); loja nova já nasce impressa. |
 | `POST /merchant/shop/test-approve` | Aprovação rápida de loja em ambiente de teste/dev. |
 | `POST /merchant/visit-qrs` `{ amountCents? }` | Emite QR dinâmico de visita (token opaco de uso único). |
 | `GET /merchant/visit-qrs/:id` | Consulta estado, claim e dados do cliente mascarados. |

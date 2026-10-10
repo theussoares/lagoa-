@@ -87,4 +87,22 @@ describe('http merchant services', () => {
     const { shopApprovalTesting } = servicesWith(vi.fn<typeof fetch>())
     expect(shopApprovalTesting).toBeNull()
   })
+
+  it('posterReprint reads and marks the notice through the API', async () => {
+    const fetcher = vi.fn<typeof fetch>(async (_input, init) => json(200, { pending: init?.method !== 'POST' }))
+    const { posterReprint } = servicesWith(fetcher)
+    expect(await posterReprint.isPending()).toEqual({ ok: true, value: true })
+    expect(await posterReprint.markPrinted()).toEqual({ ok: true, value: false })
+    expect(fetcher.mock.calls.map(([url]) => url)).toEqual([
+      'https://api.test/v1/merchant/shop/poster-reprint',
+      'https://api.test/v1/merchant/shop/poster-reprint/printed',
+    ])
+  })
+
+  it('clubSetup maps a phone that belongs to another account', async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => json(409, { code: 'phoneAlreadyUsed' }))
+    const { clubSetup } = servicesWith(fetcher)
+    const draft = { shop: { name: 'x', category: 'cafe', neighborhood: 'c', addressLine: 'r' } } as never
+    expect(await clubSetup.createClub(draft)).toEqual({ ok: false, error: { code: 'phoneAlreadyUsed' } })
+  })
 })
