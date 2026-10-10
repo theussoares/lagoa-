@@ -78,6 +78,7 @@
       "tellCustomer": "{phone} completou o cartão. Avise o cliente que o prêmio está liberado."
     },
     "redemption": {
+      "rewardNotReady": "O cartão deste cliente não está mais com o prêmio completo. O código foi cancelado: peça para ele gerar outro.",
       "title": "Validar resgate",
       "hint": "Peça o código de 6 letras e números que aparece no app do cliente.",
       "codeLabel": "Código do cliente",
@@ -93,6 +94,7 @@
       "refresh": "Atualizar caderneta",
       "empty": "Nenhum lançamento hoje. O primeiro carimbo do dia aparece aqui.",
       "newCustomer": "Cliente novo",
+      "removedCustomer": "Cliente removido",
       "earned": "+{units}",
       "earnedAmount": "+{units} · {amount}",
       "earnedCheckIn": "+{units} · check-in",

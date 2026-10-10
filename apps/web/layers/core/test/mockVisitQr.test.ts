@@ -1,3 +1,4 @@
+import { VISIT_QR_ACTIVE_MAX_PER_SHOP } from '#shared/constants/domain'
 import { describe, expect, it } from 'vitest'
 import { EXAMPLE_IDS } from '#layers/core/app/mock'
 import { joinShop } from '#layers/core/app/mock/handlers/wallet'
@@ -38,9 +39,9 @@ describe('mock visit QR: issue', () => {
   it('never repeats a code among the active QRs and hands out distinct tokens', async () => {
     const { issue } = setup()
     const issued = []
-    for (let index = 0; index < 30; index += 1) issued.push(await issue())
-    expect(new Set(issued.map((qr) => qr.visitCode)).size).toBe(30)
-    expect(new Set(issued.map((qr) => qr.token)).size).toBe(30)
+    for (let index = 0; index < VISIT_QR_ACTIVE_MAX_PER_SHOP; index += 1) issued.push(await issue())
+    expect(new Set(issued.map((qr) => qr.visitCode)).size).toBe(VISIT_QR_ACTIVE_MAX_PER_SHOP)
+    expect(new Set(issued.map((qr) => qr.token)).size).toBe(VISIT_QR_ACTIVE_MAX_PER_SHOP)
   })
 
   it('keeps the token out of the merchant view', async () => {

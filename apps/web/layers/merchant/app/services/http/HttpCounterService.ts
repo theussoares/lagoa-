@@ -16,7 +16,7 @@ export class HttpCounterService implements CounterService {
 
   async confirmRedemption(id: RedemptionId) {
     const res = await this.api.post(`/merchant/counter/redemptions/${id}/confirm`, CounterEntrySchema, { body: {} })
-    return allowing('redemptionInvalid', 'redemptionExpired', 'redemptionAlreadyUsed', 'shopPendingApproval', 'shopSuspended')(res)
+    return allowing('redemptionInvalid', 'redemptionExpired', 'redemptionAlreadyUsed', 'rewardNotReady', 'shopPendingApproval', 'shopSuspended')(res)
   }
 
   async listTodayEntries() {

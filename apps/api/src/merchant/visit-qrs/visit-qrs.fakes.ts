@@ -18,10 +18,13 @@ export class FakeVisitQrsRepository extends VisitQrsRepository {
   activeCount = 0
   qrs = new Map<string, VisitQr>()
   lastIssued: IssueVisitQrCommand | null = null
+  /** Simula o erro inesperado do driver (que pode trazer credencial na mensagem). */
+  issueFails: Error | null = null
   private nextId = 0
 
   async issue(command: IssueVisitQrCommand): Promise<Result<IssuedRow, IssueError>> {
     this.lastIssued = command
+    if (this.issueFails) throw this.issueFails
     if (!this.activeProgram) return err({ code: 'notFound', entity: 'program' })
     const planned = command.plan({ status: this.shopStatus(), programId: this.activeProgram.id, rules: this.activeProgram.rules })
     if (!planned.ok) return planned

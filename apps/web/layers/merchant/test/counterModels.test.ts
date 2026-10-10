@@ -58,6 +58,11 @@ describe('amountDigits', () => {
 })
 
 describe('toCounterLedgerModel', () => {
+  it('shows "removed customer" instead of a phone when the account was erased', () => {
+    const model = toCounterLedgerModel(entry({ maskedPhone: null }), t, false)
+    expect(model.phone).toBe('counter.ledger.removedCustomer')
+  })
+
   it('shows only the masked phone and the earned units', () => {
     const model = toCounterLedgerModel(entry({}), t, false)
     expect(model.phone).toBe('(67) 9••••-0374')

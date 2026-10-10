@@ -110,4 +110,17 @@ describe('http merchant services', () => {
     if (draft === null) throw new Error('invalid draft')
     expect(await clubSetup.createClub(draft)).toEqual({ ok: false, error: { code: 'phoneAlreadyUsed' } })
   })
+
+  it('visitQr maps the live QR limit', async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => json(409, { code: 'visitQrLimitReached' }))
+    const { visitQr } = servicesWith(fetcher)
+    expect(await visitQr.issueVisitQr({})).toEqual({ ok: false, error: { code: 'visitQrLimitReached' } })
+  })
+
+  it('counter confirm keeps rewardNotReady (the code stops being valid on the server)', async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => json(409, { code: 'rewardNotReady', remaining: 1 }))
+    const { counter } = servicesWith(fetcher)
+    const result = await counter.confirmRedemption(RedemptionIdSchema.parse('01925b44-9000-7000-8000-000000000001'))
+    expect(result).toEqual({ ok: false, error: { code: 'rewardNotReady', remaining: 1 } })
+  })
 })
