@@ -1,6 +1,7 @@
 import type { StampCardBody } from '#layers/ui/app/types/wallet'
 import type { ProgramUnit } from '#shared/schemas/program'
 import type { CounterEntry } from '#shared/schemas/visit'
+import type { MaskedPhone } from '#shared/schemas/phone'
 import type { DomainErrorCode, TransportError } from '#shared/types/errors'
 import type { ComputedRef, Ref } from 'vue'
 import type { AsyncResultState } from '#layers/core/app/types/asyncResult'
@@ -14,9 +15,10 @@ export interface CounterLedgerEntryModel {
   readonly id: string
   /** "14:32" */
   readonly time: string
-  /** `(67) 9••••-0374` — nunca o número completo. */
-  /** Celular mascarado, ou o texto "Cliente removido" quando a conta foi apagada. */
-  readonly phone: string
+  /** `(67) 9••••-0374` — nunca o número completo; `null` quando a conta foi apagada. */
+  readonly phone: MaskedPhone | null
+  /** O que a linha mostra: o celular mascarado ou "Cliente removido". */
+  readonly customerLabel: string
   /** "Cliente novo" quando o cartão nasceu neste lançamento. */
   readonly badge: string | null
   /** "+1 carimbo", "+24 pontos · R$ 24,00", "Prêmio entregue: Corte grátis". */

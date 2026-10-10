@@ -18,7 +18,7 @@ defineProps<Props>()
       >
         <span class="tabular text-muted">{{ entry.time }}</span>
         <span class="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">
-          <span class="tabular font-semibold whitespace-nowrap text-highlighted">{{ entry.phone }}</span>
+          <span class="tabular font-semibold whitespace-nowrap text-highlighted">{{ entry.customerLabel }}</span>
           <StampTag v-if="entry.badge" :label="entry.badge" tone="success" />
         </span>
         <span class="tabular text-right font-semibold" :class="entry.tone === 'reward' ? 'text-secondary' : 'text-primary'">

@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common'
-import { and, eq, gt, lt, lte, sql } from 'drizzle-orm'
+import { and, eq, gt, lte, sql } from 'drizzle-orm'
 import { VISIT_QR_ACTIVE_MAX_PER_SHOP } from '#shared/constants/domain'
 import type { PhoneNumber } from '#shared/schemas/phone'
 import type {
@@ -204,6 +204,7 @@ export class DrizzleVisitQrsRepository extends VisitQrsRepository {
         rewardTitle: redemptions.rewardTitle,
         programUnit: programs.unit,
         cardBalance: loyaltyCards.balance,
+        firstVisitAt: loyaltyCards.firstVisitAt,
         cardTarget: programs.target,
       })
       .from(ledgerEntries)
@@ -228,17 +229,6 @@ export class DrizzleVisitQrsRepository extends VisitQrsRepository {
         ),
       )
       .limit(1)
-    const [earlierVisit] = await this.db
-      .select({ id: ledgerEntries.id })
-      .from(ledgerEntries)
-      .where(
-        and(
-          eq(ledgerEntries.cardId, entryRow.cardId),
-          eq(ledgerEntries.countsAsVisit, true),
-          lt(ledgerEntries.occurredAt, entryRow.occurredAt),
-        ),
-      )
-      .limit(1)
 
     const entry: CounterEntry = CounterEntrySchema.parse({
       id: entryRow.id,
@@ -249,7 +239,8 @@ export class DrizzleVisitQrsRepository extends VisitQrsRepository {
       units: entryRow.unitsDelta > 0 ? entryRow.unitsDelta : 0,
       amountCents: entryRow.amountCents,
       rewardTitle: entryRow.rewardTitle,
-      isNewCustomer: !earlierVisit,
+      // Mesmo critério da lista "Hoje": a linha É a que gravou `first_visit_at`.
+      isNewCustomer: entryRow.firstVisitAt !== null && entryRow.occurredAt.getTime() === entryRow.firstVisitAt.getTime(),
       createdAt: toIso(entryRow.occurredAt),
     })
 
