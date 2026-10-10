@@ -20,9 +20,10 @@ Estado em **2026-10-10**. Spec: [spec.md](./spec.md) (aprovada pelo dono). Desen
 | Fundação (`0019`) + M1 Criar o clube (`0020`) | Feito | `develop` (#50, #51) |
 | M2 Balcão (QR da visita, resgate, `0021`) | Feito | `develop` (#52) |
 | M3 Programa + mecanismo do termo | Feito, gate desligado | `develop` (#53) |
-| Pendências do piloto (`isSameProgram`, rascunho do termo, Playwright de fumaça) | PR aberto, CI verde | [theussoares/lagoa-#54](https://github.com/theussoares/lagoa-/pull/54) |
+| Pendências do piloto (`isSameProgram`, rascunho do termo, Playwright de fumaça) | Feito | `develop` (#54) |
+| Tela de aceite do termo + Campanhas escondida | Feito | `feat/mvp-pilot-ready` |
 | M4 Início e Clientes | API e BFF existem (do #43), **sem o endurecimento da 4.2/4.3** | `develop` |
-| M5 Campanhas | **Não existe na API nem no BFF** | — |
+| M5 Campanhas | Não existe na API nem no BFF; **escondida no piloto** (decisão do dono, 2026-10-10) | — |
 | M6 Corte do mock | Não começou (não bloqueia) | — |
 
 - Painel do lojista roda na API real por padrão (`merchantBackend = 'http'`); o mock só com
@@ -39,14 +40,14 @@ Teste do piloto = lojistas e clientes de verdade em Três Lagoas, no ambiente de
 
 ### Bloqueia (fazer antes do primeiro lojista)
 
-1. **Fechar o #54** (revisão + merge na `develop`).
-2. **Campanhas:** a tela `/campanhas` chama `/merchant/campaigns/*`, que não existe no BFF nem na API (404). Escolher:
-   - **(recomendado)** esconder Campanhas do menu e da rota no piloto e fazer a M5 depois (é só Fundador Pro e precisa
-     de clientes com consentimento para fazer sentido); ou
-   - fazer a M5 inteira (API do lojista + `GET /v1/customer/notices` + faixa na Carteira, no mesmo PR, R6).
-3. **Termo do lojista (P-M7):** jurídico revisa o [rascunho](./termo-lojista-rascunho.md) (vem no #54) → tela de aceite →
-   `MERCHANT_TERMS_REQUIRED=1`. Decisão do dono: se o teste fechado com lojistas conhecidos pode começar com o gate
-   desligado e aceite em papel. Junto: revisar o termo do cliente (P-17 do [handoff do QR](../dynamic-visit-qr/HANDOFF.md)).
+1. ~~#54~~ feito.
+2. ~~Campanhas~~ escondida no `http` (menu, botão do Início e rota redirecionam para `/painel`; `useCampaignsEnabled`).
+   Volta com `NUXT_PUBLIC_CAMPAIGNS_ENABLED=true` quando a M5 existir.
+3. **Termo do lojista:** feito no código. A sessão traz `termsAccepted`; o Início mostra o termo (versão limpa do
+   [rascunho](./termo-lojista-rascunho.md), `merchantTerms.*`, versão `2026-10-pilot`) e grava o aceite. Em produção,
+   ligar `MERCHANT_TERMS_REQUIRED=1` na API. **Decisão do dono:** o piloto usa o rascunho sem revisão jurídica; o texto
+   revisado entra com versão nova (todo lojista aceita de novo). Ficaram de fora do texto as lacunas do rascunho
+   (encarregado/DPO, canal de atendimento, prazos de cancelamento e aviso). Junto: revisar o termo do cliente (P-17).
 4. **Release `develop` → `main`** com CI verde.
 5. **Banco de produção:** `pnpm --filter @lagoa/api db:migrate:prod` (aplica `0019`–`0021`; exige o banco de teste
    igual ao repo e os testes passando nele). Logo depois do deploy da API: `db:backfill-visits` (zero lojas hoje, mas
@@ -56,7 +57,11 @@ Teste do piloto = lojistas e clientes de verdade em Três Lagoas, no ambiente de
      `COMTELE_AUTH_KEY`, `SEND_SMS_HOOK_SECRET`, `BFF_SHARED_SECRET`, `CORS_ORIGIN` vazio, **`ENABLE_TEST_APPROVE=0`**,
      sem `ALLOW_SEED`/`ALLOW_DEV_VISIT_QR`.
    - Web: `NUXT_API_BASE_URL`, `NUXT_SUPABASE_ANON_KEY` (nunca a service_role), `NUXT_BFF_SHARED_SECRET` igual ao da
-     API, `NUXT_PUBLIC_SUPABASE_URL`, sem `NUXT_PUBLIC_MERCHANT_BACKEND=mock`.
+     API, `NUXT_PUBLIC_SUPABASE_URL`, sem `NUXT_PUBLIC_MERCHANT_BACKEND=mock` e sem `NUXT_PUBLIC_CAMPAIGNS_ENABLED`.
+   - API: `MERCHANT_TERMS_REQUIRED=1`.
+   - **Ordem:** API antes do web (a sessão nova traz `termsAccepted`; o web tolera a falta, mas pede o aceite).
+     Balcão sem o aceite redireciona para o Início (`merchant-terms`).
+   - Vercel: deploy automático só em `main`, `develop` e `stable` (`git.deploymentEnabled` nos três `vercel.json`).
    - Supabase: hook Auth > Send SMS apontando para `POST /v1/auth/hooks/send-sms` com o segredo; saldo na Comtele.
    - Site (`apps/site`): `NUXT_PUBLIC_APP_URL` do Balcão de produção no `generate`.
 7. **Ensaio ponta a ponta em celular real** (não existe e2e com sessão; o Playwright do #54 é só fumaça sem login).
@@ -98,7 +103,6 @@ Teste do piloto = lojistas e clientes de verdade em Três Lagoas, no ambiente de
 
 ## Próximo passo (nova sessão)
 
-1. Revisar e mergear o #54.
-2. Dono decide: Campanhas escondida ou M5; piloto com ou sem o gate do termo.
-3. Fazer o item escolhido do passo 2 numa branch da `develop`, depois release → `main`, `db:migrate:prod`, deploy e o
-   ensaio do roteiro acima.
+1. Merge de `feat/mvp-pilot-ready` na `develop`, release → `main`.
+2. `db:migrate:prod`, `db:backfill-visits`, variáveis e deploy.
+3. Ensaio do roteiro acima, incluindo o aceite do termo no Início antes de gerar o primeiro QR.

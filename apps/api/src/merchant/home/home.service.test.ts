@@ -53,6 +53,7 @@ describe('HomeService', () => {
       ownerUserId,
       name: 'Padaria Central',
       status: 'approved',
+      merchantTermsVersion: null,
     }
     homeRepo = new FakeHomeRepository()
     service = new HomeService(sessionRepo, homeRepo, clock)

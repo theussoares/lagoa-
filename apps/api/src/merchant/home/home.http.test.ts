@@ -20,6 +20,7 @@ class TestSessionRepository extends SessionRepository {
     ownerUserId: TEST_USER.id,
     name: 'Padaria Central',
     status: 'approved',
+    merchantTermsVersion: null,
   }
 
   async findByOwnerUserId(userId: string): Promise<MerchantShopRecord | null> {
@@ -74,6 +75,7 @@ describe('merchant home HTTP', () => {
       ownerUserId: TEST_USER.id,
       name: 'Padaria Central',
       status: 'approved',
+      merchantTermsVersion: null,
     }
     const cust1 = '018f98a2-7b2a-7182-9f33-6d004bbbb011' as any
     homeRepo.records = [

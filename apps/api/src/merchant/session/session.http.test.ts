@@ -57,6 +57,7 @@ describe('merchant session HTTP', () => {
       ownerUserId: TEST_USER.id,
       name: 'Padaria Central',
       status: 'approved',
+      merchantTermsVersion: null,
     }
 
     const response = await request(app.getHttpServer()).get('/merchant/session').expect(200)
@@ -66,6 +67,7 @@ describe('merchant session HTTP', () => {
       shopId: repository.shop.id,
       shopName: 'Padaria Central',
       shopStatus: 'approved',
+      termsAccepted: false,
     })
   })
 })

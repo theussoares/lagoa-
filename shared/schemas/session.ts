@@ -27,6 +27,9 @@ export const MerchantSessionSchema = z.object({
   shopName: z.string().min(1),
   /** Lida no login. Loja nova fica `pending` até a rede aprovar; o servidor é quem barra o Balcão. */
   shopStatus: ShopStatusSchema,
+  /** A loja aceitou a versão atual do termo do lojista (`MERCHANT_TERMS_VERSION`). Falso = o Início pede o aceite. */
+  // Tolerante enquanto a API publicada não manda o campo: sem ele, o Início pede o aceite.
+  termsAccepted: z.boolean().default(false),
 })
 export type MerchantSession = z.infer<typeof MerchantSessionSchema>
 

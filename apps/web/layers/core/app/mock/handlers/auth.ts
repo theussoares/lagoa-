@@ -63,6 +63,6 @@ export function signInMerchant(
   if (shop.status === 'suspended') return err({ code: 'shopSuspended' })
   return ok({
     kind: 'session',
-    session: { role: 'merchant', merchantId: merchant.id, shopId: shop.id, shopName: shop.name, shopStatus: shop.status },
+    session: { role: 'merchant', merchantId: merchant.id, shopId: shop.id, shopName: shop.name, shopStatus: shop.status, termsAccepted: true },
   })
 }

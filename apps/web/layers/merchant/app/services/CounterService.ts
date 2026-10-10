@@ -6,12 +6,15 @@ import type { Result } from '#shared/types/result'
 
 /** Loja pendente ou suspensa: o servidor recusa tudo que mexe com cliente. */
 export type ShopClosedError = ErrorOf<'shopPendingApproval' | 'shopSuspended'>
+/** Gate do termo do lojista (`MERCHANT_TERMS_REQUIRED=1`): emitir QR e resgatar exigem o aceite da versão atual. */
+export type TermsPendingError = ErrorOf<'merchantTermsNotAccepted'>
 /** Entre o pedido e a entrega a meta pode ter subido ou o prêmio vencido: o servidor recusa e o código deixa de valer. */
 export type ConfirmRedemptionError = ValidateRedemptionError | ErrorOf<'rewardNotReady'>
 
 export type ValidateRedemptionError =
   | ErrorOf<'redemptionInvalid' | 'redemptionExpired' | 'redemptionAlreadyUsed'>
   | ShopClosedError
+  | TermsPendingError
   | TransportError
 
 /** Balcão: resgate e caderneta. Ganhar é pelo QR da visita (`VisitQrService`). */

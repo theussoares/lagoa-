@@ -30,6 +30,8 @@ export default defineNuxtConfig({
       supabaseUrl: '',
       /** Painel do lojista: `http` (BFF + API, padrão) ou `mock` (navegador; só testes e demonstração offline). Env: NUXT_PUBLIC_MERCHANT_BACKEND. */
       merchantBackend: 'http',
+      /** Campanhas do lojista (M5, sem API ainda). Env: NUXT_PUBLIC_CAMPAIGNS_ENABLED. */
+      campaignsEnabled: false,
       /** Atraso artificial do mock para a UI exercitar carregamento. */
       mockLatencyMs: 250,
     },

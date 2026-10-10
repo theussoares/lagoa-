@@ -2,9 +2,9 @@ import type { VisitQrId } from '#shared/schemas/ids'
 import type { IssuedVisitQr, VisitQr, VisitQrIssueRequest } from '#shared/schemas/visitQr'
 import type { ErrorOf, TransportError } from '#shared/types/errors'
 import type { Result } from '#shared/types/result'
-import type { ShopClosedError } from './CounterService'
+import type { ShopClosedError, TermsPendingError } from './CounterService'
 
-export type IssueVisitQrError = ErrorOf<'invalidAmount' | 'amountNotAccepted' | 'visitQrLimitReached'> | ShopClosedError | TransportError
+export type IssueVisitQrError = ErrorOf<'invalidAmount' | 'amountNotAccepted' | 'visitQrLimitReached'> | ShopClosedError | TermsPendingError | TransportError
 /** QR de outra loja responde como inexistente. */
 export type VisitQrLookupError = ErrorOf<'notFound'> | ShopClosedError | TransportError
 

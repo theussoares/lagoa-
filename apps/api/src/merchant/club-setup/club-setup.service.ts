@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { MERCHANT_TERMS_VERSION } from '#shared/constants/domain'
 import { MerchantIdSchema, ShopIdSchema } from '#shared/schemas/ids'
 import type { ClubSetupDraft } from '#shared/schemas/onboarding'
 import type { MerchantSession } from '#shared/schemas/session'
@@ -58,6 +59,7 @@ export class ClubSetupService {
         shopId: ShopIdSchema.parse(club.shopId),
         shopName: club.shopName,
         shopStatus: club.shopStatus,
+        termsAccepted: club.merchantTermsVersion === MERCHANT_TERMS_VERSION,
       },
     })
   }

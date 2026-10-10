@@ -89,6 +89,28 @@ describe('http merchant services', () => {
     expect(shopApprovalTesting).toBeNull()
   })
 
+  it('terms accept posts the shown version and passes a stale version through', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(json(200, { version: '2026-10-pilot' }))
+      .mockResolvedValueOnce(json(403, { code: 'merchantTermsNotAccepted' }))
+    const { terms } = servicesWith(fetcher)
+    expect(await terms.accept('2026-10-pilot')).toEqual({ ok: true, value: undefined })
+    expect(await terms.accept('old')).toEqual({ ok: false, error: { code: 'merchantTermsNotAccepted' } })
+    const [url, init] = fetcher.mock.calls[0] ?? []
+    expect(url).toBe('https://api.test/v1/merchant/shop/terms/accept')
+    expect(JSON.parse(String(init?.body))).toEqual({ version: '2026-10-pilot' })
+  })
+
+  it('counter and visit QR pass the terms gate refusal through (not internal)', async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => json(403, { code: 'merchantTermsNotAccepted' }))
+    const { counter, visitQr } = servicesWith(fetcher)
+    const refused = { ok: false, error: { code: 'merchantTermsNotAccepted' } }
+    expect(await visitQr.issueVisitQr({})).toEqual(refused)
+    expect(await counter.validateRedemption(RedemptionCodeSchema.parse('ACDEFG'))).toEqual(refused)
+    expect(await counter.confirmRedemption(RedemptionIdSchema.parse('01925b44-9000-7000-8000-000000000009'))).toEqual(refused)
+  })
+
   it('posterReprint reads and marks the notice through the API', async () => {
     const fetcher = vi.fn<typeof fetch>(async (_input, init) => json(200, { pending: init?.method !== 'POST' }))
     const { posterReprint } = servicesWith(fetcher)

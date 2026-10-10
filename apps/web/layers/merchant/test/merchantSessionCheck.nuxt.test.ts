@@ -12,6 +12,7 @@ const SESSION = MerchantSessionSchema.parse({
   shopId: '0190a000-0000-7000-8000-000000000002',
   shopName: 'Barbearia Central',
   shopStatus: 'approved',
+  termsAccepted: true,
 })
 
 const { currentSession, signOut } = vi.hoisted(() => ({ currentSession: vi.fn(), signOut: vi.fn() }))

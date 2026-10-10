@@ -761,5 +761,71 @@
     "left": "Você saiu do ranking e seu apelido foi apagado.",
     "privacy": "O ranking conta só visitas confirmadas no mês, nas lojas da rede. Não vale prêmio: é só pela graça.",
     "link": "Ranking da cidade"
+  },
+  "merchantTerms": {
+    "title": "Termo de uso do lojista",
+    "lead": "Antes de gerar QR da visita e validar resgates, leia e aceite as regras do Lagoa+ para a sua loja.",
+    "versionLabel": "Versão {version}",
+    "textLabel": "Texto do termo de uso do lojista",
+    "checkbox": "Li e aceito o termo de uso do lojista",
+    "accept": "Aceitar e continuar",
+    "accepted": "Termo aceito. O Balcão está liberado.",
+    "sections": {
+      "object": {
+        "title": "1. Objeto",
+        "p1": "O Lagoa+ é uma plataforma de fidelidade para o comércio local. Ela permite que o cliente junte carimbos ou pontos em lojas parceiras numa carteira única, e que o lojista lance visitas e resgates pelo Balcão."
+      },
+      "role": {
+        "title": "2. Papel do Lagoa+",
+        "p1": "O Lagoa+ fornece a tecnologia do programa de fidelidade. Não vende produtos nem serviços das lojas, não é parte nas vendas feitas pelo lojista e não garante disponibilidade, qualidade ou entrega de prêmios.",
+        "p2": "Cada prêmio é oferecido e cumprido exclusivamente pelo lojista, conforme o programa que ele definiu."
+      },
+      "duties": {
+        "title": "3. Obrigações do lojista",
+        "p1": "Manter cadastro verdadeiro (responsável, endereço e dados da loja).",
+        "p2": "Gerar o QR da visita somente no momento de uma venda real ao cliente presente. É proibido gerar QR para si mesmo, para a própria conta ou para terceiros sem venda.",
+        "p3": "Não usar o programa para cobrar, expor ou constranger cliente.",
+        "p4": "Cumprir os prêmios anunciados e honrar os resgates validados pelo Balcão.",
+        "p5": "Manter o cartaz do QR da loja no balcão, sem alterá-lo."
+      },
+      "data": {
+        "title": "4. Dados pessoais dos clientes (LGPD)",
+        "p1": "Os dados dos clientes servem somente para operar o programa de fidelidade da loja: lançar visitas, validar e entregar prêmios e mostrar o histórico de visitas e o saldo.",
+        "p2": "O lojista vê o celular do cliente mascarado e não tem acesso a outros dados além do necessário para o programa.",
+        "p3": "É proibido exportar, copiar ou guardar listas de clientes fora do painel, usar os dados para outras finalidades, compartilhá-los com terceiros ou tentar identificar o cliente por outros meios.",
+        "p4": "Mensagens fora do uso do cartão (campanhas e lembretes) só chegam a quem deu consentimento explícito, que pode ser revogado a qualquer hora.",
+        "p5": "O lojista mantém o acesso restrito à conta do dono, não compartilha o login e comunica ao Lagoa+ qualquer incidente com dados em até 24 horas.",
+        "p6": "Pedidos de clientes sobre seus dados (acesso, correção, eliminação) são encaminhados ao atendimento do Lagoa+.",
+        "p7": "Ao encerrar a relação, o lojista deixa de usar os dados dos clientes."
+      },
+      "antifraud": {
+        "title": "5. Regras antifraude e uso dos QRs",
+        "p1": "O QR da visita é de uso único e vale por 5 minutos. Uma recusa não consome o QR.",
+        "p2": "Vale no máximo uma visita que rende por cliente e loja a cada janela configurada pela loja.",
+        "p3": "O próprio emissor e o dono da loja não ganham pontos pelo QR que geraram.",
+        "p4": "A rede pode cancelar ou recusar lançamentos com indício de fraude, avisando o lojista."
+      },
+      "plan": {
+        "title": "6. Plano e cobrança",
+        "p1": "Fundador: R$ 79,90 por mês (de R$ 119,90). Fundador Pro: R$ 89,90 por mês (de R$ 249,90), com clientes sumidos, campanhas e destaque no Descobrir. O preço de Fundador vale para as 10 primeiras lojas, fica travado e não tem fidelidade.",
+        "p2": "A loja pode mudar de plano ou cancelar combinando com a rede Lagoa+."
+      },
+      "approval": {
+        "title": "7. Aprovação, suspensão e cancelamento",
+        "p1": "A loja só fica ativa e recebe clientes depois da aprovação da rede.",
+        "p2": "A rede pode suspender a loja por descumprimento deste termo, por falta de pagamento ou por indício de fraude, com aviso ao lojista.",
+        "p3": "Loja suspensa só consulta os próprios dados: não gera QR nem valida resgates."
+      },
+      "changes": {
+        "title": "8. Alterações",
+        "p1": "Mudanças neste texto geram uma nova versão. Para continuar gerando QR e validando resgates, o lojista aceita a versão nova."
+      },
+      "general": {
+        "title": "9. Disposições gerais",
+        "p1": "Fica eleito o foro da comarca de Três Lagoas/MS.",
+        "p2": "O aceite fica registrado com a versão e a data."
+      }
+    },
+    "stale": "O termo foi atualizado enquanto esta tela estava aberta. Recarregue a página para ler a versão nova."
   }
 }

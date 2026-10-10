@@ -1,6 +1,6 @@
 # Termo do lojista: rascunho para revisão jurídica
 
-**Status:** RASCUNHO. Não é texto final e não pode ir para a tela de aceite nem ligar o gate (`MERCHANT_TERMS_REQUIRED=1`) antes da revisão de advogado humano.
+**Status:** RASCUNHO. Por decisão do dono (2026-10-10), uma versão limpa dele (sem as marcações) vai para a tela de aceite do piloto (`merchantTerms.*` em `pt-BR.json`, versão `2026-10-pilot`). Continua precisando da revisão de advogado; o texto revisado entra com versão nova e todo lojista aceita de novo.
 **Versão proposta:** `MERCHANT_TERMS_VERSION` = `2026-10-draft` (trocar quando o texto final for aprovado).
 **Marcações:** `[LACUNA]` = dado ou decisão que falta. `[REVISÃO JURÍDICA]` = ponto que precisa de parecer de advogado.
 

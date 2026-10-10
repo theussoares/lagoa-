@@ -48,7 +48,7 @@ export function createClub(ctx: MockContext, draft: ClubSetupDraft): Result<Merc
   ctx.state.programs.push({ id: ProgramIdSchema.parse(ctx.ids.next('prog')), shopId, ...parsed.data.program })
   ctx.state.merchants.push({ id: merchantId, phone: record.phone, shopId })
   ctx.state.signUpTickets = ctx.state.signUpTickets.filter((item) => item.ticket !== record.ticket)
-  return ok({ role: 'merchant', merchantId, shopId, shopName: shop.name, shopStatus: shop.status })
+  return ok({ role: 'merchant', merchantId, shopId, shopName: shop.name, shopStatus: shop.status, termsAccepted: true })
 }
 
 export function shopPoster(ctx: MockContext, shopId: ShopId): Result<ShopPoster, ErrorOf<'unauthorized' | 'notFound'>> {

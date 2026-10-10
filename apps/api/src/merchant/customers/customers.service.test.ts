@@ -56,6 +56,7 @@ describe('CustomersService', () => {
       ownerUserId,
       name: 'Padaria Central',
       status: 'approved',
+      merchantTermsVersion: null,
     }
     customersRepo = new FakeCustomersRepository()
     service = new CustomersService(sessionRepo, customersRepo, pii, clock)

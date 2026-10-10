@@ -73,7 +73,7 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
   demonstração offline, e some na M6.
   **Cookie compartilhado com o app do cliente** (mesma conta Supabase): entrar ou sair pelo painel zera o cache do cliente
   (`resetCustomer`) e o logout é `scope: 'local'`; outra aba aberta só descobre a troca na próxima navegação (risco aceito).
-  Sair só deixa o painel depois que o servidor confirma (`signOut`); `expire()` é o logout só local, para `unauthorized`. **Ainda sem API:** Campanhas (M5). Plano: `docs/specs/api-merchant/`.
+  Sair só deixa o painel depois que o servidor confirma (`signOut`); `expire()` é o logout só local, para `unauthorized`. **Ainda sem API:** Campanhas (M5); no `http` a tela fica escondida (`useCampaignsEnabled`, `NUXT_PUBLIC_CAMPAIGNS_ENABLED`). Termo do lojista: a sessão traz `termsAccepted` e o Início pede o aceite (`HomeTermsAcceptance`). Plano: `docs/specs/api-merchant/`.
 - **Monorepo (pnpm workspace):** o front vive em `apps/web` (Nuxt + `layers/`);
   `shared/` fica na raiz (alias `#shared`) para o futuro `apps/api` reusar
   os contratos. Caminhos `layers/...` neste documento são relativos a `apps/web/`.
