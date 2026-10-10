@@ -72,6 +72,21 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant program against a real database', 
     expect((await data.db.select().from(loyaltyCards).where(eq(loyaltyCards.customerId, newcomer)))[0]?.programId).toBe(newVersion)
   }, SLOW)
 
+  it('a points-per-real card with balance moves to the new version when the shop leaves per-real mode, and keeps earning', async () => {
+    const shop = await data.createShop({ rules: { mode: 'pointsPerCurrency', pointsPerReal: 1, target: 100 }, bonusRules: NO_BONUS_RULES })
+    const owner = await ownerOf(shop.id)
+    const customer = await data.createCustomer()
+    expect(await claimVisit(data, checkIn, customer, shop, { earn: { kind: 'amount', amountCents: 4000 } })).toMatchObject({ ok: true })
+    const [before] = await data.db.select().from(loyaltyCards).where(eq(loyaltyCards.customerId, customer))
+    expect(before?.balance).toBe(40)
+
+    await service.updateProgram(owner, await draftFor(owner, { mode: 'pointsPerVisit', pointsPerVisit: 10, target: 100 }))
+    const [newVersion] = await activeProgramIds(shop.id)
+    const [moved] = await data.db.select().from(loyaltyCards).where(eq(loyaltyCards.customerId, customer))
+    expect(moved).toMatchObject({ balance: 40, programId: newVersion })
+    expect(before?.programId).not.toBe(newVersion)
+  }, SLOW)
+
   it('a QR issued before the change answers visitQrStale to the customer (it was cancelled as programChanged)', async () => {
     const shop = await data.createShop({ rules: { mode: 'stamps', target: 10 }, bonusRules: NO_BONUS_RULES })
     const owner = await ownerOf(shop.id)
