@@ -685,15 +685,25 @@
     "lead": "Foto da loja e ajustes deste computador ou tablet do balcão.",
     "appearance": "Aparência",
     "photo": {
-      "title": "Foto da loja",
-      "lead": "Aparece no card da sua loja no Descobrir. Prefira a fachada ou o balcão, na horizontal.",
-      "choose": "Escolher foto",
-      "change": "Trocar foto",
       "uploading": "Enviando a foto…",
-      "saved": "Foto salva. Ela já aparece no Descobrir.",
-      "empty": "Sua loja ainda não tem foto.",
-      "alt": "Foto atual da loja",
-      "unreadable": "Não deu para abrir essa imagem. Tente outra foto."
+      "saved": "Imagem salva. Ela já aparece no Descobrir.",
+      "unreadable": "Não deu para abrir essa imagem. Tente outra foto.",
+      "logo": {
+        "title": "Logo",
+        "lead": "Aparece no círculo do card da sua loja no Descobrir. Use o logo ou o símbolo da loja; o app recorta no centro, em quadrado.",
+        "choose": "Escolher logo",
+        "change": "Trocar logo",
+        "empty": "Sem logo",
+        "alt": "Logo atual da loja"
+      },
+      "banner": {
+        "title": "Banner",
+        "lead": "É a capa do card da sua loja no Descobrir. Prefira a fachada ou o balcão, na horizontal.",
+        "choose": "Escolher banner",
+        "change": "Trocar banner",
+        "empty": "Sua loja ainda não tem banner.",
+        "alt": "Banner atual da loja"
+      }
     }
   },
   "clubSetup": {

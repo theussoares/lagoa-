@@ -4,20 +4,21 @@ import ShopPhoto from '../app/components/settings/ShopPhoto.vue'
 
 afterEach(unmountAll)
 
-const idle = { imageUrl: null, loading: false, send: { status: 'idle' } }
+const idle = { kind: 'banner', imageUrl: null, loading: false, send: { status: 'idle' } }
 
 describe('SettingsShopPhoto', () => {
-  it('says there is no photo yet and offers a real file input with a label', async () => {
+  it('says there is no banner yet and offers a real file input with a label', async () => {
     const page = await mountComponent(ShopPhoto, idle)
-    expect(page.text()).toContain('Sua loja ainda não tem foto.')
+    expect(page.text()).toContain('Sua loja ainda não tem banner.')
     const input = page.get('input[type="file"]')
-    expect(page.get(`label[for="${input.attributes('id')}"]`).text()).toContain('Escolher foto')
+    expect(page.get(`label[for="${input.attributes('id')}"]`).text()).toContain('Escolher banner')
   })
 
-  it('shows the current photo and offers to change it', async () => {
-    const page = await mountComponent(ShopPhoto, { ...idle, imageUrl: 'https://example.test/photo.webp' })
-    expect(page.get('img').attributes('src')).toBe('https://example.test/photo.webp')
-    expect(page.text()).toContain('Trocar foto')
+  it('shows the current logo in a circle and offers to change it', async () => {
+    const page = await mountComponent(ShopPhoto, { ...idle, kind: 'logo', imageUrl: 'https://example.test/logo.webp' })
+    expect(page.get('img').attributes('src')).toBe('https://example.test/logo.webp')
+    expect(page.get('img').element.parentElement?.className).toContain('rounded-full')
+    expect(page.text()).toContain('Trocar logo')
   })
 
   it('emits the chosen file', async () => {
