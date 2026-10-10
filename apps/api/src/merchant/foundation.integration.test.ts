@@ -18,6 +18,7 @@ import { createTestPii } from '../test-support/pii'
 import { ClubSetupService } from './club-setup/club-setup.service'
 import { DrizzleClubSetupRepository } from './club-setup/drizzle-club-setup.repository'
 import { newCheckInCode } from './club-setup/club-setup.rules'
+import { DrizzleMerchantTermsRepository } from './terms/drizzle-terms.repository'
 import { DrizzleMerchantShopResolver } from './access/drizzle-merchant-shop.resolver'
 
 const SLOW = 30_000
@@ -271,5 +272,21 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant foundation against a real database
     await creating
     expect(await erasing).toEqual({ ok: false, error: { code: 'accountOwnsShop' } })
     expect((await data.db.select({ erasedAt: appUsers.erasedAt }).from(appUsers).where(eq(appUsers.id, owner)))[0]?.erasedAt).toBeNull()
+  }, SLOW)
+
+  it('accepting the merchant terms is idempotent and keeps the proof of the first acceptance', async () => {
+    const shop = await data.createShop()
+    const [row] = await data.db.select({ owner: shops.ownerUserId }).from(shops).where(eq(shops.id, shop.id))
+    const terms = new DrizzleMerchantTermsRepository(data.db)
+    const first = new Date('2026-10-09T12:00:00Z')
+    expect(await terms.accept(row?.owner ?? '', 'v1', first)).toBe(true)
+    expect(await terms.accept(row?.owner ?? '', 'v1', new Date('2026-10-10T12:00:00Z'))).toBe(true)
+    const [saved] = await data.db.select({ version: shops.merchantTermsVersion, at: shops.merchantTermsAcceptedAt }).from(shops).where(eq(shops.id, shop.id))
+    expect(saved).toEqual({ version: 'v1', at: first })
+    // Versão nova pede aceite novo e grava o instante novo.
+    await terms.accept(row?.owner ?? '', 'v2', new Date('2026-10-11T12:00:00Z'))
+    expect((await data.db.select({ at: shops.merchantTermsAcceptedAt }).from(shops).where(eq(shops.id, shop.id)))[0]?.at).toEqual(new Date('2026-10-11T12:00:00Z'))
+    expect(await new DrizzleMerchantShopResolver(data.db).resolveForUser(row?.owner ?? '')).toMatchObject({ termsVersion: 'v2' })
+    expect(await terms.accept(await data.createCustomer(), 'v1', first)).toBe(false)
   }, SLOW)
 })

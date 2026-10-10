@@ -37,6 +37,11 @@ os QRs vivos como `programChanged` e vence os demais, cancelar nunca transforma 
 no próprio QR (R12, `decideVisitQrUse`), recibo e "Hoje" com conta apagada (`maskedPhone` nulo, "Cliente removido"), `findByCode` do
 resgate (R11, índice `0021`), `validate` com `FailClosedThrottle`, "Hoje" pelo dia local do piloto (`startOfLocalDay`) com
 `isNewCustomer` por `first_visit_at`, `rewardNotReady` na confirmação (front). Testes de integração de CA-03/08/09/10/11/12.
+**M3 (branch `feat/merchant-m3-program`):** trava de modo removida (P-M1: mudar a regra cria versão nova; cartão em andamento termina na sua); testes CA-14/CA-15;
+`mapDraftToProgramInsert` em um lugar só; **termo do lojista**: `MERCHANT_TERMS_VERSION`, `POST /merchant/shop/terms/accept`, `MerchantTermsGuard`
+(`@RequiresMerchantTerms()` em emitir QR e no resgate) atrás de `MERCHANT_TERMS_REQUIRED=1` (desligado até o texto do jurídico, P-M7, e a tela de aceite
+existirem). Falta: tela de aceite, `isSameProgram`/`toProgramRow` em `shared`, mock de programa ainda aplica no lugar (sem versionar).
+
 **Fica da M2:** e2e Playwright (2.7), rodar o contrato `visitQrService.contract` também contra o `HttpVisitQrService`, `@CurrentShop()` nos services.
 
 **Fica para depois (achados do code-reviewer):**

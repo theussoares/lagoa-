@@ -19,6 +19,7 @@ import { err, ok } from '#shared/types/result'
 import { ShopIdSchema, VisitIdSchema } from '#shared/schemas/ids'
 import { MaskedPhoneSchema } from '#shared/schemas/phone'
 import { MerchantShopGuard } from '../access/merchant-shop.guard'
+import { ENV } from '../../config/config.module'
 
 class FakeClock {
   now(): Date {
@@ -107,6 +108,7 @@ describe('CounterRedemptions HTTP', () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [CounterRedemptionsController],
       providers: [
+        { provide: ENV, useValue: { MERCHANT_TERMS_REQUIRED: '0' } },
         CounterRedemptionsService,
         { provide: CounterRepository, useValue: repo },
         { provide: Clock, useClass: FakeClock },
