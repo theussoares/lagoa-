@@ -5,7 +5,7 @@ const ENTITIES = ['shop', 'program', 'customer', 'merchant', 'card', 'redemption
 const SIMPLE_CODES = [
   'unauthorized', 'rateLimited', 'invalidPhone', 'phoneAlreadyUsed', 'accountOwnsShop', 'emailAlreadyUsed', 'invalidLoginCode', 'loginCodeExpired',
   'invalidAmount', 'amountNotAccepted', 'invalidShopQr', 'checkInDisabled', 'redemptionInvalid', 'redemptionExpired',
-  'redemptionAlreadyUsed', 'invalidProgram', 'programModeLocked', 'invalidCampaign', 'noReachableCustomers', 'reachChanged',
+  'redemptionAlreadyUsed', 'invalidProgram', 'invalidCampaign', 'noReachableCustomers', 'reachChanged',
   'invalidClubSetup', 'signUpExpired', 'shopPendingApproval', 'shopSuspended', 'termsNotAccepted',
 ] as const
 

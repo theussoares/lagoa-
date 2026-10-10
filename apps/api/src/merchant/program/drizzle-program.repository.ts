@@ -64,9 +64,9 @@ export class DrizzleProgramRepository extends ProgramRepository {
   async updateActiveProgram(
     ownerUserId: string,
     draft: ProgramDraft,
-    decide: (current: Program, cardsCount: number) => Result<{ isNewVersion: boolean }, ErrorOf<'programModeLocked'>>,
+    decide: (current: Program) => { isNewVersion: boolean },
     now: Date,
-  ): Promise<Result<Program, ErrorOf<'notFound' | 'programModeLocked'>>> {
+  ): Promise<Result<Program, ErrorOf<'notFound'>>> {
     return this.db.transaction(async (tx) => {
       // O FK de loyalty_cards pede KEY SHARE nesta linha: cartão novo espera a troca terminar.
       const [shop] = await tx
@@ -86,11 +86,8 @@ export class DrizzleProgramRepository extends ProgramRepository {
       const current = toProgram(row)
       if (!current.ok) throw new Error(`Active program row ${row.id} violated domain rules`)
 
-      const [cards] = await tx.select({ count: count() }).from(loyaltyCards).where(eq(loyaltyCards.shopId, shop.id))
-      const decision = decide(current.value, Number(cards?.count ?? 0))
-      if (!decision.ok) return decision
-
-      const saved = decision.value.isNewVersion
+      const decision = decide(current.value)
+      const saved = decision.isNewVersion
         ? await this.insertNewVersion(tx, shop.id, row.id, draft, now)
         : await this.updateRewardTitle(tx, shop.id, row.id, draft)
       return ok(saved)

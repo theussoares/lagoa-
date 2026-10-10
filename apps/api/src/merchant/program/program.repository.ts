@@ -28,7 +28,7 @@ export abstract class ProgramRepository {
   abstract updateActiveProgram(
     ownerUserId: string,
     draft: ProgramDraft,
-    decide: (current: Program, cardsCount: number) => Result<{ isNewVersion: boolean }, ErrorOf<'programModeLocked'>>,
+    decide: (current: Program) => { isNewVersion: boolean },
     now: Date,
-  ): Promise<Result<Program, ErrorOf<'notFound' | 'programModeLocked'>>>
+  ): Promise<Result<Program, ErrorOf<'notFound'>>>
 }

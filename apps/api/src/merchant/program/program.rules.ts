@@ -1,21 +1,5 @@
 import { earnRateOf, unitOf } from '#shared/domain/programStrategies'
-import type { Program, ProgramDraft, ProgramMode } from '#shared/schemas/program'
-
-/**
- * Trava de modo: se houver cartões emitidos para a loja, o lojista não pode alterar
- * a modalidade (ex.: carimbos para pontos), pois isso quebraria os saldos existentes.
- * Alterar meta, prêmio ou bônus segue permitido a qualquer momento.
- */
-export function canChangeProgramMode(
-  activeCardsCount: number,
-  currentMode: ProgramMode,
-  targetMode: ProgramMode,
-): boolean {
-  if (currentMode === targetMode) {
-    return true
-  }
-  return activeCardsCount <= 0
-}
+import type { Program, ProgramDraft } from '#shared/schemas/program'
 
 /**
  * Verifica se houve mudanças em regras críticas que demandam criação de nova versão

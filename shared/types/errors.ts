@@ -44,8 +44,6 @@ export type DomainError =
   | { readonly code: 'redemptionExpired' }
   | { readonly code: 'redemptionAlreadyUsed' }
   | { readonly code: 'invalidProgram' }
-  /** Trocar carimbos ↔ pontos com cartões em andamento exige migração; fora do MVP. */
-  | { readonly code: 'programModeLocked' }
   | { readonly code: 'invalidCampaign' }
   /** Ninguém sumido, com avisos aceitos, que ainda não tenha recebido lembrete. */
   | { readonly code: 'noReachableCustomers' }

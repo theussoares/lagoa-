@@ -78,7 +78,6 @@ onBeforeRouteLeave((to) => {
             :unit="options.unit"
             :limits="options.limits"
             :errors="fieldErrors"
-            :mode-locked="editor.modeLocked.value"
             :target-changed="editor.targetChanged.value"
             class="mt-5 border-t border-(--lagoa-rule) pt-5"
             @mode="editor.setMode"

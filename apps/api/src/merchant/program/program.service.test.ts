@@ -21,12 +21,10 @@ class FakeProgramRepository extends ProgramRepository {
   async updateActiveProgram(
     _ownerUserId: string,
     draft: ProgramDraft,
-    decide: (current: Program, cardsCount: number) => Result<{ isNewVersion: boolean }, ErrorOf<'programModeLocked'>>,
-  ): Promise<Result<Program, ErrorOf<'notFound' | 'programModeLocked'>>> {
+    decide: (current: Program) => { isNewVersion: boolean },
+  ): Promise<Result<Program, ErrorOf<'notFound'>>> {
     if (!this.data) return err({ code: 'notFound', entity: 'program' })
-    const decision = decide(this.data.program, this.cardCount)
-    if (!decision.ok) return decision
-    const { isNewVersion } = decision.value
+    const { isNewVersion } = decide(this.data.program)
     this.savedDrafts.push({ draft, isNewVersion })
     const updated: Program = {
       id: isNewVersion ? '018f98a2-7b2a-7182-9f33-6d004bbbb999' as any : this.data.program.id,
@@ -108,26 +106,10 @@ describe('ProgramService', () => {
     expect(result).toEqual({ ok: false, error: { code: 'notFound', entity: 'shop' } })
   })
 
-  it('updateProgram refuses mode change with programModeLocked when cards > 0', async () => {
+  it('updateProgram allows a mode change even with cards (it becomes a new version; cards in progress keep theirs)', async () => {
     const repo = new FakeProgramRepository()
     repo.data = { shopId: baseProgram.shopId, program: baseProgram }
     repo.cardCount = 5
-    const service = new ProgramService(repo, { now: () => new Date('2026-10-09T12:00:00Z') })
-
-    const draftWithModeChange: ProgramDraft = {
-      ...baseDraft,
-      rules: { mode: 'pointsPerVisit', pointsPerVisit: 10, target: 100 },
-    }
-
-    const result = await service.updateProgram('user-1', draftWithModeChange)
-    expect(result).toEqual({ ok: false, error: { code: 'programModeLocked' } })
-    expect(repo.savedDrafts).toHaveLength(0)
-  })
-
-  it('updateProgram allows mode change when cards == 0', async () => {
-    const repo = new FakeProgramRepository()
-    repo.data = { shopId: baseProgram.shopId, program: baseProgram }
-    repo.cardCount = 0
     const service = new ProgramService(repo, { now: () => new Date('2026-10-09T12:00:00Z') })
 
     const draftWithModeChange: ProgramDraft = {

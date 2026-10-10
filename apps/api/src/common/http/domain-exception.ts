@@ -30,7 +30,6 @@ const STATUS_BY_CODE: Record<DomainErrorCode, number> = {
   redemptionExpired: 410,
   redemptionAlreadyUsed: 409,
   invalidProgram: 400,
-  programModeLocked: 409,
   invalidCampaign: 400,
   noReachableCustomers: 409,
   reachChanged: 409,

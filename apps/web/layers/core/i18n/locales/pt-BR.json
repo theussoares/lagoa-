@@ -150,7 +150,6 @@
     "redemptionExpired": "Esse código venceu. Peça para o cliente gerar outro.",
     "redemptionAlreadyUsed": "Esse prêmio já foi entregue.",
     "invalidProgram": "Não deu para salvar o clube. Confira os campos destacados.",
-    "programModeLocked": "Não dá para trocar entre carimbos e pontos enquanto houver clientes com cartão. A meta e o prêmio podem mudar.",
     "invalidCampaign": "Confira a mensagem e o presente antes de mandar.",
     "noReachableCustomers": "Ninguém para receber agora: quem sumiu não aceitou avisos ou já recebeu um lembrete.",
     "reachChanged": "O número de clientes mudou desde que você confirmou. Nada foi enviado: confira o novo número e mande de novo.",
@@ -358,13 +357,12 @@
           "description": "Cada visita vale uma quantidade fixa de pontos."
         }
       },
-      "modeLocked": "O tipo de cartão fica travado enquanto houver clientes com cartão. A meta e o prêmio podem mudar.",
       "target": {
         "stamp": "Carimbos para o prêmio",
         "point": "Pontos para o prêmio"
       },
       "targetHint": "De {min} a {max}",
-      "targetChangeNote": "A nova meta vale também para os cartões em andamento. Ninguém perde o que já juntou.",
+      "targetChangeNote": "A nova meta vale para os cartões novos. Quem já está com cartão termina na meta de antes, sem perder o que juntou. QRs da visita abertos serão cancelados.",
       "pointsPerReal": "Pontos por real gasto",
       "pointsPerVisit": "Pontos por visita"
     },

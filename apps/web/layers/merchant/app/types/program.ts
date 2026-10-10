@@ -61,7 +61,6 @@ export interface ProgramEditor {
   state: ComputedRef<AsyncResultState<ProgramSnapshot, TransportError>>
   /** Rascunho editável; `null` até o programa carregar. */
   draft: Ref<ProgramDraft | null>
-  modeLocked: ComputedRef<boolean>
   /** Meta diferente da salva com cartões em andamento: a tela avisa que vale para eles. */
   targetChanged: ComputedRef<boolean>
   isDirty: ComputedRef<boolean>
