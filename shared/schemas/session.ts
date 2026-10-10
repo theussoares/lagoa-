@@ -27,18 +27,22 @@ export const MerchantSessionSchema = z.object({
   shopName: z.string().min(1),
   /** Lida no login. Loja nova fica `pending` até a rede aprovar; o servidor é quem barra o Balcão. */
   shopStatus: ShopStatusSchema,
+  /** A loja aceitou a versão atual do termo do lojista (`MERCHANT_TERMS_VERSION`). Falso = o Início pede o aceite. */
+  // Tolerante enquanto a API publicada não manda o campo: sem ele, o Início pede o aceite.
+  termsAccepted: z.boolean().default(false),
 })
 export type MerchantSession = z.infer<typeof MerchantSessionSchema>
 
 export const SessionSchema = z.discriminatedUnion('role', [CustomerSessionSchema, MerchantSessionSchema])
 export type Session = z.infer<typeof SessionSchema>
 
-/** Celular confirmado, mas sem loja: vale só para criar o clube, por pouco tempo. O celular fica no servidor. */
+/** Celular confirmado, mas sem loja: vale só para criar o clube, por pouco tempo. O celular fica no servidor. Só o mock usa. */
 export const SignUpTicketSchema = z.string().min(1).brand<'SignUpTicket'>()
 export type SignUpTicket = z.infer<typeof SignUpTicketSchema>
 
 export const MerchantSignInResultSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('session'), session: MerchantSessionSchema }),
-  z.object({ kind: z.literal('signUp'), ticket: SignUpTicketSchema, expiresAt: IsoDateTimeSchema }),
+  /** Celular confirmado, sem loja: quem sabe quem é o dono é o cookie da sessão, não um ticket. */
+  z.object({ kind: z.literal('signUp') }),
 ])
 export type MerchantSignInResult = z.infer<typeof MerchantSignInResultSchema>

@@ -21,13 +21,13 @@ describe('mock ProgramService', () => {
     expect(result.ok && result.value).toBeGreaterThan(0)
   })
 
-  it('refuses to switch stamps to points while customers hold cards', async () => {
+  it('lets the merchant switch stamps to points even with customers holding cards (no mode lock)', async () => {
     const services = setup()
     const current = await services.program.getProgram()
     if (!current.ok) throw new Error(current.error.code)
     const draft = { ...toProgramDraft(current.value), rules: { mode: 'pointsPerVisit' as const, pointsPerVisit: 10, target: 100 } }
     const result = await services.program.updateProgram(draft)
-    expect(result).toEqual({ ok: false, error: { code: 'programModeLocked' } })
+    expect(result).toMatchObject({ ok: true, value: { rules: { mode: 'pointsPerVisit' } } })
   })
 
   it('applies a new target to cards in progress', async () => {

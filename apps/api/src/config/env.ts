@@ -20,6 +20,8 @@ const EnvSchema = z
     BFF_SHARED_SECRET: z.string().min(32).optional(),
     /** Liga `POST /merchant/shop/test-approve` (auto-aprovação para teste). Desligado por padrão; proibido em production. */
     ENABLE_TEST_APPROVE: z.enum(['0', '1']).default('0'),
+    /** Liga o gate do termo do lojista (`merchantTermsNotAccepted`). Desligado até o texto do jurídico existir (P-M7). */
+    MERCHANT_TERMS_REQUIRED: z.enum(['0', '1']).default('0'),
     CORS_ORIGIN: z.string().default('http://localhost:3000'),
   })
   .superRefine((env, context) => {

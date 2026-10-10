@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { AMOUNT_MAX_CENTS } from '#shared/constants/domain'
+import { AMOUNT_MAX_CENTS, VISIT_QR_ACTIVE_MAX_PER_SHOP } from '#shared/constants/domain'
 import type { VisitQrCredential } from '#shared/schemas/visitQr'
 import type { Result } from '#shared/types/result'
 import { visitQrLink } from '#shared/utils/checkInCode'
@@ -35,6 +35,21 @@ export function describeVisitQrServiceContract(name: string, setup: () => VisitQ
       expect(result.value.token).toMatch(/^[A-Za-z0-9_-]{43}$/)
       expect(result.value.visitCode).toHaveLength(5)
       expect(Date.parse(result.value.expiresAt) - Date.parse(result.value.createdAt)).toBe(5 * 60_000)
+    })
+
+    it('CA-08 stops at the limit of live QRs and frees a slot when one is cancelled', async () => {
+      const { visitQr } = setup()
+      const issued = []
+      for (let i = 0; i < VISIT_QR_ACTIVE_MAX_PER_SHOP; i += 1) {
+        const result = await visitQr.issueVisitQr({})
+        if (!result.ok) throw new Error(`${i}: ${result.error.code}`)
+        issued.push(result.value)
+      }
+      expect(await visitQr.issueVisitQr({})).toEqual({ ok: false, error: { code: 'visitQrLimitReached' } })
+      const first = issued[0]
+      if (first === undefined) throw new Error('expected a QR')
+      await visitQr.cancelVisitQr(first.id)
+      expect(await visitQr.issueVisitQr({})).toMatchObject({ ok: true })
     })
 
     it('CA-25 puts the token in the link fragment, never in the query', async () => {

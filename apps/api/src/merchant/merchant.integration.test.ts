@@ -1,3 +1,4 @@
+import { PhoneNumberSchema } from '#shared/schemas/phone'
 import { and, count, eq } from 'drizzle-orm'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { Clock } from '../common/clock'
@@ -81,8 +82,8 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
     const customersRepo = new DrizzleCustomersRepository(data.db)
     const homeRepo = new DrizzleHomeRepository(data.db)
 
-    clubSetupService = new ClubSetupService(clubSetupRepo)
-    programService = new ProgramService(new DrizzleProgramRepository(data.db))
+    clubSetupService = new ClubSetupService(clubSetupRepo, pii, clock)
+    programService = new ProgramService(new DrizzleProgramRepository(data.db), clock)
     visitQrsService = new VisitQrsService(visitQrsRepo, sessionRepo, new VisitQrsRules(), clock)
     counterRedemptionsService = new CounterRedemptionsService(counterRepo, clock)
     customersService = new CustomersService(sessionRepo, customersRepo, pii, clock)
@@ -125,12 +126,12 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
       },
     }
 
-    const clubResult = await clubSetupService.createClub(merchantUserId, setupDraft)
+    const clubResult = await clubSetupService.createClub({ id: merchantUserId, email: undefined, phone: PhoneNumberSchema.parse('67900000099') }, setupDraft)
     expect(clubResult.ok).toBe(true)
     if (!clubResult.ok) throw new Error('Failed to create club')
-    const shopId = clubResult.value.shopId
+    const shopId = clubResult.value.session.shopId
     data.trackShop(shopId)
-    expect(clubResult.value.shopStatus).toBe('pending')
+    expect(clubResult.value.session.shopStatus).toBe('pending')
 
     // 2. Aprovação da loja via test-approve
     vi.stubEnv('ENABLE_TEST_APPROVE', '1')
@@ -284,7 +285,8 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
       ...draft,
       rules: { mode: 'pointsPerVisit', pointsPerVisit: 10, target: 100 },
     })
-    expect(modeChange).toEqual({ ok: false, error: { code: 'programModeLocked' } })
+    // Sem trava de modo (P-M1): vira uma versão nova; só uma segue ativa e os cartões em andamento ficam na antiga.
+    expect(modeChange).toMatchObject({ ok: true, value: { rules: { mode: 'pointsPerVisit' } } })
     const [activePrograms] = await data.db.select({ n: count() }).from(programs).where(and(eq(programs.shopId, shopId), eq(programs.active, true)))
     expect(activePrograms?.n).toBe(1)
   }, SLOW)

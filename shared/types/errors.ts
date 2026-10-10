@@ -17,6 +17,8 @@ export type DomainError =
   | { readonly code: 'invalidPhone' }
   /** Cadastro com celular de outra conta: o celular é único por cliente. */
   | { readonly code: 'phoneAlreadyUsed' }
+  /** Quem é dono de loja não apaga a conta pelo app do cliente: a loja ficaria sem login. Encerrar loja é com a rede. */
+  | { readonly code: 'accountOwnsShop' }
   /** E-mail já ligado a outra conta (ex.: conta de login recriada): precisa de atendimento, não de nova tentativa. */
   | { readonly code: 'emailAlreadyUsed' }
   | { readonly code: 'invalidLoginCode' }
@@ -28,6 +30,8 @@ export type DomainError =
   | { readonly code: 'checkInDisabled' }
   /** QR da visita inexistente, cancelado pelo lojista, de outra loja ou de loja não aprovada. */
   | { readonly code: 'invalidVisitQr' }
+  /** A loja já tem o máximo de QRs da visita abertos (`VISIT_QR_ACTIVE_MAX_PER_SHOP`): cancelar um ou esperar vencer. */
+  | { readonly code: 'visitQrLimitReached' }
   | { readonly code: 'visitQrExpired' }
   | { readonly code: 'visitQrAlreadyUsed' }
   /** Programa da loja mudou desde a emissão (ou o cartão é de uma versão que não aceita esse QR, P-04). */
@@ -40,8 +44,6 @@ export type DomainError =
   | { readonly code: 'redemptionExpired' }
   | { readonly code: 'redemptionAlreadyUsed' }
   | { readonly code: 'invalidProgram' }
-  /** Trocar carimbos ↔ pontos com cartões em andamento exige migração; fora do MVP. */
-  | { readonly code: 'programModeLocked' }
   | { readonly code: 'invalidCampaign' }
   /** Ninguém sumido, com avisos aceitos, que ainda não tenha recebido lembrete. */
   | { readonly code: 'noReachableCustomers' }
@@ -56,6 +58,8 @@ export type DomainError =
   | { readonly code: 'shopSuspended' }
   /** O servidor só grava visita, resgate e convite de quem aceitou a versão atual dos termos (LGPD). */
   | { readonly code: 'termsNotAccepted' }
+  /** O lojista ainda não aceitou a versão atual do termo do lojista: emitir QR, validar/confirmar resgate e campanha esperam o aceite. */
+  | { readonly code: 'merchantTermsNotAccepted' }
   /** Aniversário trocado há menos de `BIRTHDAY_CHANGE_COOLDOWN_DAYS`: a data nova só a partir de `changeableAt`. */
   | { readonly code: 'birthdayLocked'; readonly changeableAt: IsoDateTime }
 

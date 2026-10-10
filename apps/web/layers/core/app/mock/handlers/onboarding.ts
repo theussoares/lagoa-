@@ -4,7 +4,7 @@ import { MerchantIdSchema, ProgramIdSchema, ShopIdSchema } from '#shared/schemas
 import type { ShopId } from '#shared/schemas/ids'
 import { ClubSetupDraftSchema } from '#shared/schemas/onboarding'
 import type { ClubSetupDraft } from '#shared/schemas/onboarding'
-import type { MerchantSession, SignUpTicket } from '#shared/schemas/session'
+import type { MerchantSession } from '#shared/schemas/session'
 import { CheckInCodeSchema } from '#shared/schemas/shop'
 import type { CheckInCode, ShopPoster, ShopStatus } from '#shared/schemas/shop'
 import type { ErrorOf } from '#shared/types/errors'
@@ -29,12 +29,13 @@ function newCheckInCode(ctx: MockContext): CheckInCode {
  * Loja, clube e lojista nascem juntos, a partir do ticket do celular
  * confirmado. A loja entra `pending`: a rede aprova antes de valer no balcão.
  */
-export function createClub(ctx: MockContext, ticket: SignUpTicket, draft: ClubSetupDraft): Result<MerchantSession, CreateClubError> {
-  const record = ctx.state.signUpTickets.find((item) => item.ticket === ticket)
+export function createClub(ctx: MockContext, draft: ClubSetupDraft): Result<MerchantSession, CreateClubError> {
+  // Sem cookie no mock: vale o último celular confirmado sem loja (a API real usa o dono da sessão).
+  const record = ctx.state.signUpTickets.at(-1)
   if (record === undefined || new Date(record.expiresAt) <= ctx.now) return err({ code: 'signUpExpired' })
   // Outra aba já criou a loja com este celular: o ticket não vale mais.
   if (ctx.state.merchants.some((merchant) => merchant.phone === record.phone)) {
-    ctx.state.signUpTickets = ctx.state.signUpTickets.filter((item) => item.ticket !== ticket)
+    ctx.state.signUpTickets = ctx.state.signUpTickets.filter((item) => item.ticket !== record.ticket)
     return err({ code: 'signUpExpired' })
   }
   const parsed = ClubSetupDraftSchema.safeParse(draft)
@@ -46,8 +47,8 @@ export function createClub(ctx: MockContext, ticket: SignUpTicket, draft: ClubSe
   ctx.state.shops.push(shop)
   ctx.state.programs.push({ id: ProgramIdSchema.parse(ctx.ids.next('prog')), shopId, ...parsed.data.program })
   ctx.state.merchants.push({ id: merchantId, phone: record.phone, shopId })
-  ctx.state.signUpTickets = ctx.state.signUpTickets.filter((item) => item.ticket !== ticket)
-  return ok({ role: 'merchant', merchantId, shopId, shopName: shop.name, shopStatus: shop.status })
+  ctx.state.signUpTickets = ctx.state.signUpTickets.filter((item) => item.ticket !== record.ticket)
+  return ok({ role: 'merchant', merchantId, shopId, shopName: shop.name, shopStatus: shop.status, termsAccepted: true })
 }
 
 export function shopPoster(ctx: MockContext, shopId: ShopId): Result<ShopPoster, ErrorOf<'unauthorized' | 'notFound'>> {

@@ -10,6 +10,7 @@ const STATUS_BY_CODE: Record<DomainErrorCode, number> = {
   notFound: 404,
   invalidPhone: 400,
   phoneAlreadyUsed: 409,
+  accountOwnsShop: 409,
   emailAlreadyUsed: 409,
   invalidLoginCode: 400,
   loginCodeExpired: 400,
@@ -19,6 +20,7 @@ const STATUS_BY_CODE: Record<DomainErrorCode, number> = {
   checkInDisabled: 403,
   checkInCooldown: 429,
   invalidVisitQr: 404,
+  visitQrLimitReached: 409,
   visitQrExpired: 410,
   visitQrAlreadyUsed: 409,
   visitQrStale: 409,
@@ -28,7 +30,6 @@ const STATUS_BY_CODE: Record<DomainErrorCode, number> = {
   redemptionExpired: 410,
   redemptionAlreadyUsed: 409,
   invalidProgram: 400,
-  programModeLocked: 409,
   invalidCampaign: 400,
   noReachableCustomers: 409,
   reachChanged: 409,
@@ -38,6 +39,7 @@ const STATUS_BY_CODE: Record<DomainErrorCode, number> = {
   shopSuspended: 403,
   birthdayLocked: 409,
   termsNotAccepted: 403,
+  merchantTermsNotAccepted: 403,
 }
 
 /** O corpo da resposta é o próprio `DomainError`, que a UI traduz por `code`. Nunca carrega dado pessoal. */

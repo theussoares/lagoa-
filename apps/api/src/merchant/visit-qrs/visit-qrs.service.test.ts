@@ -1,12 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { AMOUNT_MAX_CENTS } from '#shared/constants/domain'
+import { AMOUNT_MAX_CENTS, VISIT_QR_ACTIVE_MAX_PER_SHOP } from '#shared/constants/domain'
 import type { ProgramRules } from '#shared/schemas/program'
 import type { VisitQr, VisitQrCancelReason, VisitQrStatus } from '#shared/schemas/visitQr'
 import { Clock } from '../../common/clock'
 import type { MerchantShopRecord } from '../session/session.repository'
 import { SessionRepository } from '../session/session.repository'
-import type { ActiveProgramRules, InsertVisitQrParams } from './visit-qrs.repository'
-import { VisitQrsRepository } from './visit-qrs.repository'
+import { FakeVisitQrsRepository } from './visit-qrs.fakes'
 import { VisitQrsRules } from './visit-qrs.rules'
 import { VisitQrsService } from './visit-qrs.service'
 
@@ -32,49 +31,12 @@ class FakeSessionRepository extends SessionRepository {
   }
 }
 
-class FakeVisitQrsRepository extends VisitQrsRepository {
-  activeProgram: ActiveProgramRules | null = null
-  qrs = new Map<string, VisitQr>()
-  lastCreatedParams: InsertVisitQrParams | null = null
-
-  async findActiveProgram(_shopId: string): Promise<ActiveProgramRules | null> {
-    return this.activeProgram
-  }
-
-  async createVisitQr(params: InsertVisitQrParams): Promise<string> {
-    this.lastCreatedParams = params
-    const id = '018f98a2-7b2a-7182-9f33-6d004bbbb099'
-    const qr: VisitQr = {
-      id: id as any,
-      visitCode: params.visitCode as any,
-      status: 'active',
-      earn: params.earn,
-      createdAt: params.createdAt.toISOString() as any,
-      expiresAt: params.expiresAt.toISOString() as any,
-      claim: null,
-      refusal: null,
-    }
-    this.qrs.set(id, qr)
-    return id
-  }
-
-  async findById(_shopId: string, id: string): Promise<VisitQr | null> {
-    return this.qrs.get(id) ?? null
-  }
-
-  async cancel(_shopId: string, id: string, _reason: VisitQrCancelReason): Promise<VisitQr | null> {
-    const existing = this.qrs.get(id)
-    if (!existing) return null
-    const updated: VisitQr = { ...existing, status: 'cancelled' }
-    this.qrs.set(id, updated)
-    return updated
-  }
-}
-
 describe('VisitQrsService', () => {
   const clock = new FakeClock(new Date('2026-10-07T14:00:00Z'))
   const sessionRepo = new FakeSessionRepository()
   const visitQrsRepo = new FakeVisitQrsRepository()
+  // A "transação" trava a loja que o teste configurou na sessão.
+  visitQrsRepo.shopStatus = () => sessionRepo.shop?.status ?? 'approved'
   const rules = new VisitQrsRules()
   const service = new VisitQrsService(visitQrsRepo, sessionRepo, rules, clock)
 
@@ -91,13 +53,15 @@ describe('VisitQrsService', () => {
       ownerUserId,
       name: 'Café do Lago',
       status: 'approved',
+      merchantTermsVersion: null,
     }
     visitQrsRepo.activeProgram = {
       id: '018f98a2-7b2a-7182-9f33-6d004bbbb003',
       rules: stampsRules,
     }
     visitQrsRepo.qrs.clear()
-    visitQrsRepo.lastCreatedParams = null
+    visitQrsRepo.lastIssued = null
+    visitQrsRepo.activeCount = 0
   })
 
   describe('issueVisitQr', () => {
@@ -115,6 +79,18 @@ describe('VisitQrsService', () => {
       expect(result.value.token).toMatch(/^[A-Za-z0-9_-]{43}$/)
       expect(result.value.visitCode).toHaveLength(5)
       expect(Date.parse(result.value.expiresAt) - Date.parse(result.value.createdAt)).toBe(5 * 60_000)
+    })
+
+    it('answers visitQrLimitReached when the shop already has the maximum of live QRs', async () => {
+      visitQrsRepo.activeCount = VISIT_QR_ACTIVE_MAX_PER_SHOP
+      expect(await service.issueVisitQr(ownerUserId, {})).toEqual({ ok: false, error: { code: 'visitQrLimitReached' } })
+    })
+
+    it('decides on the status the transaction locked, not on the one read before it', async () => {
+      // A sessão lida antes ainda diz aprovada; a loja travada na transação já foi suspensa.
+      visitQrsRepo.shopStatus = () => 'suspended'
+      expect(await service.issueVisitQr(ownerUserId, {})).toEqual({ ok: false, error: { code: 'shopSuspended' } })
+      visitQrsRepo.shopStatus = () => sessionRepo.shop?.status ?? 'approved'
     })
 
     it('issues a points-per-real visit QR with amount', async () => {

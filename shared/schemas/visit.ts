@@ -12,7 +12,8 @@ export type LedgerKind = z.infer<typeof LedgerKindSchema>
 export const CounterEntrySchema = z.object({
   id: VisitIdSchema,
   shopId: ShopIdSchema,
-  maskedPhone: MaskedPhoneSchema,
+  /** `null` = conta apagada ("cliente removido"): o celular dela não existe mais e nunca é decifrado. */
+  maskedPhone: MaskedPhoneSchema.nullable(),
   kind: LedgerKindSchema,
   unit: ProgramUnitSchema,
   /** Unidades ganhas (0 no resgate). */
@@ -23,6 +24,13 @@ export const CounterEntrySchema = z.object({
   createdAt: IsoDateTimeSchema,
 })
 export type CounterEntry = z.infer<typeof CounterEntrySchema>
+
+/** "Hoje" no Balcão: as mais novas primeiro; `truncated` avisa que o dia teve mais lançamentos do que o teto devolve. */
+export const CounterTodaySchema = z.object({
+  entries: z.array(CounterEntrySchema),
+  truncated: z.boolean(),
+})
+export type CounterToday = z.infer<typeof CounterTodaySchema>
 
 /** Situação do cartão logo depois de um lançamento, para o Balcão confirmar. */
 export const CardProgressSchema = z.object({

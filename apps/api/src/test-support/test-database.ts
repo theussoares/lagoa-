@@ -238,6 +238,11 @@ export class TestDatabase {
     })
   }
 
+  /** Para o usuário criado pelo próprio serviço sob teste: entra na limpeza do fim. */
+  trackUser(userId: string): void {
+    this.userIds.push(userId)
+  }
+
   /** Para a loja criada pelo próprio serviço sob teste (não por `createShop`): entra na limpeza do fim. */
   trackShop(shopId: string): void {
     this.shopIds.push(shopId)
@@ -257,6 +262,7 @@ export class TestDatabase {
     if (this.shopIds.length > 0) {
       await this.db.delete(schema.referrals).where(inArray(schema.referrals.shopId, this.shopIds))
       await this.db.delete(schema.programs).where(inArray(schema.programs.shopId, this.shopIds))
+      await this.db.delete(schema.shopStatusEvents).where(inArray(schema.shopStatusEvents.shopId, this.shopIds))
       await this.db.delete(schema.shops).where(inArray(schema.shops.id, this.shopIds))
     }
     if (this.userIds.length > 0) {

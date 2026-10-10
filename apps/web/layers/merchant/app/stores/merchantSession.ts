@@ -1,31 +1,44 @@
 import type { MerchantSession } from '#shared/schemas/session'
 import type { ShopStatus } from '#shared/schemas/shop'
-import { readStoredMerchantSession, writeStoredMerchantSession } from '../utils/merchantSessionPersistence'
 
-/** Sessão do lojista (painel só no navegador, com o mock até a API existir): vive no localStorage, nunca no SSR. */
+/**
+ * Sessão do lojista. Não persiste em lugar nenhum do navegador: quem vale é o cookie httpOnly do BFF.
+ * `checked` diz se já perguntamos ao servidor (`GET /api/merchant/session`); `withoutShop` é o celular confirmado
+ * que ainda não criou o clube.
+ */
 export const useMerchantSessionStore = defineStore('merchantSession', () => {
-  const merchant = ref<MerchantSession | null>(import.meta.client ? readStoredMerchantSession(window.localStorage) : null)
-
-  function persist(): void {
-    if (import.meta.client) writeStoredMerchantSession(window.localStorage, merchant.value)
-  }
+  const merchant = ref<MerchantSession | null>(null)
+  const checked = ref(false)
+  const withoutShop = ref(false)
 
   function startMerchant(session: MerchantSession): void {
     merchant.value = session
-    persist()
+    withoutShop.value = false
+    checked.value = true
+  }
+
+  function startWithoutShop(): void {
+    merchant.value = null
+    withoutShop.value = true
+    checked.value = true
   }
 
   /** A rede aprova ou suspende a loja com o lojista logado: a sessão acompanha o servidor. */
   function updateMerchantShopStatus(status: ShopStatus): void {
     if (merchant.value === null || merchant.value.shopStatus === status) return
     merchant.value = { ...merchant.value, shopStatus: status }
-    persist()
+  }
+
+  function markTermsAccepted(): void {
+    if (merchant.value === null || merchant.value.termsAccepted) return
+    merchant.value = { ...merchant.value, termsAccepted: true }
   }
 
   function endMerchant(): void {
     merchant.value = null
-    persist()
+    withoutShop.value = false
+    checked.value = true
   }
 
-  return { merchant, startMerchant, updateMerchantShopStatus, endMerchant }
+  return { merchant, checked, withoutShop, startMerchant, startWithoutShop, updateMerchantShopStatus, markTermsAccepted, endMerchant }
 })

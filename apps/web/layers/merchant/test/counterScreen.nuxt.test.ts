@@ -364,6 +364,7 @@ function fakeProgram(rules: Program['rules'] | 'error'): AsyncResult<Program, Tr
 
 const fakeLedger = (): CounterLedger => ({
   state: computed(() => ({ status: 'success', value: [] })),
+  truncated: ref(false),
   freshIds: ref(new Set<string>()),
   reload: vi.fn(() => Promise.resolve()),
   prepend: vi.fn(),
@@ -666,6 +667,7 @@ describe('useCounterRedemptionView', () => {
 
   const ledgerStub = (): CounterLedger => ({
     state: computed(() => ({ status: 'loading' })),
+    truncated: ref(false),
     freshIds: ref(new Set<string>()),
     reload: vi.fn(() => Promise.resolve()),
     prepend: vi.fn(),
@@ -739,9 +741,9 @@ describe('useCounterLedgerView', () => {
     })
     const state = shallowRef<AsyncResultState<CounterEntry[], TransportError>>({ status: 'loading' })
     const reload = vi.fn(() => Promise.resolve())
-    const ledger: CounterLedger = { state: computed(() => state.value), freshIds: ref(new Set(['visit_1'])), reload, prepend: vi.fn() }
+    const ledger: CounterLedger = { state: computed(() => state.value), truncated: ref(true), freshIds: ref(new Set(['visit_1'])), reload, prepend: vi.fn() }
     const { result } = await mountComposable(() => useCounterLedgerView(ledger))
-    expect(result).toMatchObject({ status: 'loading', errorCode: null, rows: [] })
+    expect(result).toMatchObject({ status: 'loading', errorCode: null, rows: [], truncated: true })
 
     state.value = { status: 'success', value: [entry] }
     expect(result.rows).toHaveLength(1)

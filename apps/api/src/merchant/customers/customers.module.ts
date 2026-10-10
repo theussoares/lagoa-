@@ -4,9 +4,10 @@ import { CustomersController } from './customers.controller'
 import { CustomersRepository } from './customers.repository'
 import { CustomersService } from './customers.service'
 import { DrizzleCustomersRepository } from './drizzle-customers.repository'
+import { AccessModule } from '../access/access.module'
 
 @Module({
-  imports: [SessionModule],
+  imports: [AccessModule, SessionModule],
   controllers: [CustomersController],
   providers: [
     CustomersService,

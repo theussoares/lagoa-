@@ -11,8 +11,9 @@ import {
   type ShopWithProgram,
 } from './counter.repository'
 import { CounterService } from './counter.service'
-import type { CounterEntry } from '#shared/schemas/visit'
+import type { CounterEntry, CounterToday } from '#shared/schemas/visit'
 import { Clock } from '../../common/clock'
+import { MerchantShopGuard } from '../access/merchant-shop.guard'
 
 class TestCounterRepository extends CounterRepository {
   shop: ShopWithProgram | null = {
@@ -41,8 +42,10 @@ class TestCounterRepository extends CounterRepository {
     return this.shop
   }
 
-  async listTodayEntries(): Promise<CounterEntry[]> {
-    return [
+  async listTodayEntries(): Promise<CounterToday> {
+    return {
+      truncated: false,
+      entries: [
       {
         id: '018f98a2-7b2a-7182-9f33-6d004bbbb333' as any,
         shopId: this.shop?.shopId as any,
@@ -55,10 +58,11 @@ class TestCounterRepository extends CounterRepository {
         isNewCustomer: false,
         createdAt: new Date().toISOString(),
       },
-    ]
+      ],
+    }
   }
 
-  async findActiveRedemption(): Promise<any> {
+  async findRedemption(): Promise<any> {
     throw new Error('Not implemented')
   }
 
@@ -81,7 +85,11 @@ describe('merchant counter HTTP', () => {
         { provide: APP_GUARD, useClass: FakeAuthGuard },
         { provide: APP_FILTER, useClass: AllExceptionsFilter },
       ],
-    }).compile()
+    })
+      // O guard da loja tem teste próprio (access/merchant-shop.guard.http.test.ts); aqui a loja vem do repositório de teste.
+      .overrideGuard(MerchantShopGuard)
+      .useValue({ canActivate: () => true })
+      .compile()
     app = moduleRef.createNestApplication()
     await app.init()
   })
@@ -93,8 +101,9 @@ describe('merchant counter HTTP', () => {
       .get('/merchant/counter/entries/today')
       .expect(200)
 
-    expect(response.body).toHaveLength(1)
-    expect(response.body[0]).toMatchObject({
+    expect(response.body.truncated).toBe(false)
+    expect(response.body.entries).toHaveLength(1)
+    expect(response.body.entries[0]).toMatchObject({
       kind: 'visit',
       unit: 'stamp',
       units: 1,

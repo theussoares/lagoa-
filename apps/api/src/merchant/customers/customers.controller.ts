@@ -5,9 +5,11 @@ import { CurrentUser } from '../../auth/current-user.decorator'
 import { unwrap } from '../../common/http/domain-exception'
 import { ZodValidationPipe } from '../../common/http/zod-validation.pipe'
 import { CustomersService } from './customers.service'
+import { MerchantSurface } from '../access/merchant-surface.decorator'
 
 const CustomerFilterQuery = new ZodValidationPipe(CustomerFilterSchema.default('all'))
 
+@MerchantSurface()
 @Controller('merchant/customers')
 export class CustomersController {
   constructor(private readonly customers: CustomersService) {}

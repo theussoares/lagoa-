@@ -77,17 +77,18 @@ Prefixo `/v1` (menos `/health`). Todas exigem `Authorization: Bearer <JWT do Sup
 | Método e rota | O que faz |
 |---|---|
 | `GET /merchant/session` | `MerchantSession` da loja do lojista. |
-| `POST /merchant/club-setup` | Cria loja e programa do clube de fidelidade (`pending`). |
+| `POST /merchant/club-setup` | Cria o `app_users` do dono (celular do token), a loja e o programa (`pending`). 201; repetir devolve 200 com a loja existente. `409 phoneAlreadyUsed` se o celular é de outra conta. |
 | `GET /merchant/poster` | Dados para impressão do cartaz com QR code da loja. |
 | `GET /merchant/shop/status` | Situação da loja (`pending`, `approved`, `suspended`). |
+| `GET /merchant/shop/poster-reprint` · `POST …/printed` | Aviso do Início "imprima o cartaz novo" (`{ pending }`); loja nova já nasce impressa. |
 | `POST /merchant/shop/test-approve` | Aprovação rápida de loja em ambiente de teste/dev. |
-| `POST /merchant/visit-qrs` `{ amountCents? }` | Emite QR dinâmico de visita (token opaco de uso único). |
+| `POST /merchant/visit-qrs` `{ amountCents? }` | Emite QR dinâmico de visita (token opaco de uso único). Numa transação: trava a loja (`FOR SHARE`, pareia com o `PUT /program`), serializa as emissões da loja (advisory lock), vence os QRs passados do prazo e confere o teto de 20 vivos (`409 visitQrLimitReached`). |
 | `GET /merchant/visit-qrs/:id` | Consulta estado, claim e dados do cliente mascarados. |
 | `POST /merchant/visit-qrs/:id/cancel` | Cancela QR dinâmico ativo de forma idempotente. |
 | `GET /merchant/program` | Consulta o programa de fidelidade ativo da loja. |
 | `PUT /merchant/program` | Altera programa ou cria nova versão ativa (invalida QRs abertos). |
-| `GET /merchant/counter/entries/today` | Caderneta de movimentações e resgates de hoje no balcão. |
-| `POST /merchant/counter/redemptions/validate` `{ code }` | Valida código de resgate de 6 caracteres no balcão. |
+| `GET /merchant/counter/entries/today` | Caderneta de hoje: `{ entries, truncated }` (dia no fuso do piloto, até 300 linhas, as mais novas primeiro; `truncated` quando havia mais). Conta apagada vem com `maskedPhone: null` ("cliente removido"). |
+| `POST /merchant/counter/redemptions/validate` `{ code }` | Valida código de resgate de 6 caracteres no balcão. O ativo vale; sem ativo, a linha mais nova da loja nas últimas 24 h explica (`redemptionAlreadyUsed` / `redemptionExpired`), senão `redemptionInvalid`. Limite por usuário e por IP, recusa se o contador cair. |
 | `POST /merchant/counter/redemptions/:id/confirm` | Confirma entrega do prêmio e debita saldo do cartão. |
 | `GET /merchant/customers?filter=all|lapsed|rewardReady` | Diretório de clientes da loja (dados pessoais mascarados). |
 | `GET /merchant/home/summary` (ou `/week-summary`) | Resumo de métricas agregadas dos últimos 7 dias. |
@@ -160,4 +161,13 @@ Organizado em módulos focados em `src/merchant/*`:
 - `counter`: consulta da caderneta de hoje e validação/entrega atômica de resgates.
 - `customers`: diretório de clientes da loja com mascaramento obrigatório LGPD (`(XX) X••••-XXXX`) e filtros.
 - `home`: métricas agregadas da semana via função de domínio `summarizeWeek`.
+- `access`: o único caminho até a loja. Todo controller do painel leva `@MerchantSurface()` (guard que resolve a loja do
+  dono pelo JWT em `request.merchantShop`; `{ shopRequired: false }` só em sessão e Criar o clube). `@CurrentShop()` lê o
+  contexto e lança se o guard não rodou; um teste varre os controllers e falha se algum esquecer o decorator. Nenhuma rota
+  recebe `shopId`. **Hoje os services ainda resolvem a loja por `user.id`** (o guard barra rota sem loja); trocar por
+  `@CurrentShop()` é da M2. `requireOperational(status)` (regra pura) diz se a loja pode mexer com cliente.
+
+Scripts de operação (nunca em CI): `pnpm --filter @lagoa/api shop:status --shop <id> --actor <apelido> [--status approved|suspended|pending] [--plan founder|founderPro] [--reason "..."] [--dry-run]`
+(exige `ALLOW_SHOP_ADMIN=1`; grava `shop_status_events`) e `db:backfill-visits` (recalcula `visits_count`/`first_visit_at` do ledger;
+rodar depois do deploy que mantém os contadores). `DELETE /customer/account` de dono de loja responde 409 `accountOwnsShop`.
 

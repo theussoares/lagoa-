@@ -7,9 +7,9 @@ interface Props {
   unit: ProgramUnit
   limits: ProgramFieldLimits
   errors: ProgramFieldErrors
-  modeLocked: boolean
   /** Meta mudou e já há cartões: avisa que vale para quem está no meio. */
   targetChanged: boolean
+  pointsToStampsChanged?: boolean
 }
 
 interface Emits {
@@ -28,7 +28,6 @@ const modeItems = computed<RadioGroupItem[]>(() =>
     label: t(`program.earn.modes.${mode}.label`),
     description: t(`program.earn.modes.${mode}.description`),
     value: mode,
-    disabled: props.modeLocked && mode !== rules.value.mode,
   })),
 )
 
@@ -50,19 +49,7 @@ function setRate(value: number | null | undefined): void {
 
 <template>
   <div class="flex flex-col gap-5">
-    <!-- Travado não é rádio apagado: é o tipo escolhido, com a etiqueta dizendo que não muda mais. -->
-    <div v-if="modeLocked" class="flex flex-col gap-1.5">
-      <p class="text-sm font-medium text-default">{{ $t('program.earn.mode') }}</p>
-      <div class="flex items-start justify-between gap-4 rounded-(--ui-radius) border border-(--lagoa-rule) px-4 py-3">
-        <span class="flex min-w-0 flex-col">
-          <span class="font-semibold text-highlighted">{{ $t(`program.earn.modes.${rules.mode}.label`) }}</span>
-          <span class="text-[0.9375rem] text-muted">{{ $t(`program.earn.modes.${rules.mode}.description`) }}</span>
-        </span>
-        <StampTag :label="$t('program.card.locked')" icon="i-ph-lock-simple" />
-      </div>
-      <p class="text-[0.9375rem] text-muted">{{ $t('program.earn.modeLocked') }}</p>
-    </div>
-    <UFormField v-else :label="$t('program.earn.mode')" name="mode">
+    <UFormField :label="$t('program.earn.mode')" name="mode">
       <URadioGroup
         :model-value="rules.mode"
         :items="modeItems"
@@ -103,6 +90,9 @@ function setRate(value: number | null | undefined): void {
 
     <p v-if="targetChanged" class="flex items-start gap-1.5 text-[0.9375rem] text-toned">
       <UIcon name="i-ph-info" class="mt-0.5 size-4 shrink-0" aria-hidden="true" />{{ $t('program.earn.targetChangeNote') }}
+    </p>
+    <p v-if="pointsToStampsChanged" class="flex items-start gap-1.5 text-[0.9375rem] text-toned">
+      <UIcon name="i-ph-warning" class="mt-0.5 size-4 shrink-0" aria-hidden="true" />{{ $t('program.earn.pointsToStampsNote') }}
     </p>
   </div>
 </template>

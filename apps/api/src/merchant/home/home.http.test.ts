@@ -12,6 +12,7 @@ import { SessionRepository } from '../session/session.repository'
 import { HomeController } from './home.controller'
 import { HomeRepository } from './home.repository'
 import { HomeService } from './home.service'
+import { MerchantShopGuard } from '../access/merchant-shop.guard'
 
 class TestSessionRepository extends SessionRepository {
   shop: MerchantShopRecord | null = {
@@ -19,6 +20,7 @@ class TestSessionRepository extends SessionRepository {
     ownerUserId: TEST_USER.id,
     name: 'Padaria Central',
     status: 'approved',
+    merchantTermsVersion: null,
   }
 
   async findByOwnerUserId(userId: string): Promise<MerchantShopRecord | null> {
@@ -53,7 +55,11 @@ describe('merchant home HTTP', () => {
         { provide: APP_GUARD, useClass: FakeAuthGuard },
         { provide: APP_FILTER, useClass: AllExceptionsFilter },
       ],
-    }).compile()
+    })
+      // O guard da loja tem teste próprio (access/merchant-shop.guard.http.test.ts); aqui a loja vem do repositório de teste.
+      .overrideGuard(MerchantShopGuard)
+      .useValue({ canActivate: () => true })
+      .compile()
 
     app = moduleRef.createNestApplication()
     await app.init()
@@ -69,6 +75,7 @@ describe('merchant home HTTP', () => {
       ownerUserId: TEST_USER.id,
       name: 'Padaria Central',
       status: 'approved',
+      merchantTermsVersion: null,
     }
     const cust1 = '018f98a2-7b2a-7182-9f33-6d004bbbb011' as any
     homeRepo.records = [

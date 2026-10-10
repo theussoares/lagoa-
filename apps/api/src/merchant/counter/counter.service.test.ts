@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { TEST_USER } from '../../test-support/fake-auth.guard'
-import type { CounterEntry } from '#shared/schemas/visit'
+import type { CounterEntry, CounterToday } from '#shared/schemas/visit'
 import {
   CounterRepository,
   type ShopWithProgram,
@@ -10,16 +10,17 @@ import { CounterService } from './counter.service'
 class FakeCounterRepository extends CounterRepository {
   shop: ShopWithProgram | null = null
   entries: CounterEntry[] = []
+  truncated = false
 
   async findShopAndProgramByOwner(_ownerUserId: string): Promise<ShopWithProgram | null> {
     return this.shop
   }
 
-  async listTodayEntries(_shopId: string, _startOfDay: Date): Promise<CounterEntry[]> {
-    return this.entries
+  async listTodayEntries(_shopId: string, _startOfDay: Date): Promise<CounterToday> {
+    return { entries: this.entries, truncated: this.truncated }
   }
 
-  async findActiveRedemption(): Promise<any> {
+  async findRedemption(): Promise<any> {
     throw new Error('Not used in counter.service')
   }
 
@@ -80,7 +81,16 @@ describe('CounterService', () => {
     const result = await service.listTodayEntries(TEST_USER.id)
     expect(result.ok).toBe(true)
     if (result.ok) {
-      expect(result.value).toEqual(repo.entries)
+      expect(result.value).toEqual({ entries: repo.entries, truncated: false })
     }
+  })
+
+  it('passes the truncation flag through', async () => {
+    const previous = { shop: repo.shop, truncated: repo.truncated }
+    repo.shop = repo.shop ?? ({ shopId: '018f98a2-7b2a-7182-9f33-6d004bbbb001' } as ShopWithProgram)
+    repo.truncated = true
+    const result = await service.listTodayEntries(TEST_USER.id)
+    expect(result).toMatchObject({ ok: true, value: { truncated: true } })
+    Object.assign(repo, previous)
   })
 })

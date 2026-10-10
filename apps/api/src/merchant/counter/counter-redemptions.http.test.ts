@@ -13,11 +13,13 @@ import {
   type SettleRedemptionError,
   type ShopWithProgram,
 } from './counter.repository'
-import type { CounterEntry } from '#shared/schemas/visit'
+import type { CounterEntry, CounterToday } from '#shared/schemas/visit'
 import { Clock } from '../../common/clock'
 import { err, ok } from '#shared/types/result'
 import { ShopIdSchema, VisitIdSchema } from '#shared/schemas/ids'
 import { MaskedPhoneSchema } from '#shared/schemas/phone'
+import { MerchantShopGuard } from '../access/merchant-shop.guard'
+import { ENV } from '../../config/config.module'
 
 class FakeClock {
   now(): Date {
@@ -64,11 +66,11 @@ class TestCounterRepository extends CounterRepository {
 
 
 
-  async listTodayEntries(): Promise<CounterEntry[]> {
-    return []
+  async listTodayEntries(): Promise<CounterToday> {
+    return { entries: [], truncated: false }
   }
 
-  async findActiveRedemption(): Promise<any> {
+  async findRedemption(): Promise<any> {
     if (this.lookupError) return err({ code: this.lookupError })
     if (!this.activeRedemption) return err({ code: 'redemptionInvalid' })
     return ok(this.activeRedemption)
@@ -106,13 +108,18 @@ describe('CounterRedemptions HTTP', () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [CounterRedemptionsController],
       providers: [
+        { provide: ENV, useValue: { MERCHANT_TERMS_REQUIRED: '0' } },
         CounterRedemptionsService,
         { provide: CounterRepository, useValue: repo },
         { provide: Clock, useClass: FakeClock },
         { provide: APP_GUARD, useClass: FakeAuthGuard },
         { provide: APP_FILTER, useClass: AllExceptionsFilter },
       ],
-    }).compile()
+    })
+      // O guard da loja tem teste próprio (access/merchant-shop.guard.http.test.ts); aqui a loja vem do repositório de teste.
+      .overrideGuard(MerchantShopGuard)
+      .useValue({ canActivate: () => true })
+      .compile()
 
     app = moduleRef.createNestApplication()
     app.setGlobalPrefix('v1')

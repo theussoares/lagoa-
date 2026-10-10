@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common'
-import { and, count, eq } from 'drizzle-orm'
+import { and, count, eq, gt, lte } from 'drizzle-orm'
 import type { Program, ProgramDraft } from '#shared/schemas/program'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
@@ -64,8 +64,9 @@ export class DrizzleProgramRepository extends ProgramRepository {
   async updateActiveProgram(
     ownerUserId: string,
     draft: ProgramDraft,
-    decide: (current: Program, cardsCount: number) => Result<{ isNewVersion: boolean }, ErrorOf<'programModeLocked'>>,
-  ): Promise<Result<Program, ErrorOf<'notFound' | 'programModeLocked'>>> {
+    decide: (current: Program) => { isNewVersion: boolean },
+    now: Date,
+  ): Promise<Result<Program, ErrorOf<'notFound'>>> {
     return this.db.transaction(async (tx) => {
       // O FK de loyalty_cards pede KEY SHARE nesta linha: cartão novo espera a troca terminar.
       const [shop] = await tx
@@ -85,27 +86,30 @@ export class DrizzleProgramRepository extends ProgramRepository {
       const current = toProgram(row)
       if (!current.ok) throw new Error(`Active program row ${row.id} violated domain rules`)
 
-      const [cards] = await tx.select({ count: count() }).from(loyaltyCards).where(eq(loyaltyCards.shopId, shop.id))
-      const decision = decide(current.value, Number(cards?.count ?? 0))
-      if (!decision.ok) return decision
-
-      const saved = decision.value.isNewVersion
-        ? await this.insertNewVersion(tx, shop.id, row.id, draft)
+      const decision = decide(current.value)
+      const saved = decision.isNewVersion
+        ? await this.insertNewVersion(tx, shop.id, row.id, draft, now)
         : await this.updateRewardTitle(tx, shop.id, row.id, draft)
       return ok(saved)
     })
   }
 
-  private async insertNewVersion(tx: Tx, shopId: string, currentProgramId: string, draft: ProgramDraft): Promise<Program> {
+  private async insertNewVersion(tx: Tx, shopId: string, currentProgramId: string, draft: ProgramDraft, now: Date): Promise<Program> {
     await tx
       .update(programs)
       .set({ active: false })
       .where(and(eq(programs.shopId, shopId), eq(programs.id, currentProgramId)))
 
+    // Só o que ainda está vivo vira `programChanged` (o cliente com ele na mão ouve "tire outro"); o que já passou
+    // do prazo apenas vence, sem inventar um cancelamento que ninguém fez.
     await tx
       .update(visitQrs)
       .set({ status: 'cancelled', cancelReason: 'programChanged' })
-      .where(and(eq(visitQrs.shopId, shopId), eq(visitQrs.status, 'active')))
+      .where(and(eq(visitQrs.shopId, shopId), eq(visitQrs.status, 'active'), gt(visitQrs.expiresAt, now)))
+    await tx
+      .update(visitQrs)
+      .set({ status: 'expired' })
+      .where(and(eq(visitQrs.shopId, shopId), eq(visitQrs.status, 'active'), lte(visitQrs.expiresAt, now)))
 
     const [inserted] = await tx.insert(programs).values(mapDraftToProgramInsert(shopId, draft)).returning()
     if (!inserted) throw new Error('Failed to insert new program version')

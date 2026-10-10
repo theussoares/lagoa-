@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { HOME_LAPSED_PREVIEW_LIMIT, LAPSED_AFTER_DAYS, WEEK_SUMMARY_DAYS } from '#shared/constants/domain'
+import { HOME_LAPSED_PREVIEW_LIMIT, LAPSED_AFTER_DAYS, MERCHANT_TERMS_VERSION, WEEK_SUMMARY_DAYS } from '#shared/constants/domain'
 import { CUSTOMER_FILTER_QUERY, customerFilterSlug } from '../utils/customerFilterQuery'
 import { toCustomerRowModel } from '../utils/customerModels'
 import { toWeekDayRows, toWeekHeadline } from '../utils/homeModels'
@@ -9,13 +9,16 @@ definePageMeta({ path: '/painel', layout: 'merchant', middleware: 'merchant-auth
 
 const { t } = useI18n()
 const translate = useTranslate()
-const { signOut } = useMerchantSession()
+const { expire } = useMerchantSession()
 useHead({ title: () => `${t('home.title')} · ${t('app.name')}` })
 
 const { state, reload, posterReprint } = useMerchantHome()
+const terms = useMerchantTerms(reload)
+const termsError = computed(() => (terms.state.value.status === 'error' ? terms.state.value.code : null))
+const campaignsEnabled = useCampaignsEnabled()
 
 watch(state, (current) => {
-  if (current.status === 'error' && current.error.code === 'unauthorized') void signOut()
+  if (current.status === 'error' && current.error.code === 'unauthorized') void expire()
 })
 
 const snapshot = computed(() => (state.value.status === 'success' ? state.value.value : null))
@@ -56,6 +59,14 @@ const lapsedLabels = computed<LapsedPreviewLabels>(() => ({ caption: t('home.lap
       </template>
     </PageTitle>
 
+    <HomeTermsAcceptance
+      v-if="terms.needed.value"
+      :version="MERCHANT_TERMS_VERSION"
+      :accepting="terms.state.value.status === 'accepting'"
+      :error-code="termsError"
+      @accept="terms.accept"
+    />
+
     <HomePosterReprintNotice
       v-if="snapshot?.posterReprintPending"
       @print="posterReprint.print"
@@ -94,7 +105,7 @@ const lapsedLabels = computed<LapsedPreviewLabels>(() => ({ caption: t('home.lap
         <div v-else class="flex flex-col gap-4">
           <p class="tabular text-highlighted">{{ t('home.lapsed.count', { count: lapsedTotal, days: LAPSED_AFTER_DAYS }, lapsedTotal) }}</p>
           <HomeLapsedPreview :rows="lapsedRows" :labels="lapsedLabels" />
-          <div class="flex flex-col gap-2">
+          <div v-if="campaignsEnabled" class="flex flex-col gap-2">
             <UButton
               to="/campanhas"
               size="lg"

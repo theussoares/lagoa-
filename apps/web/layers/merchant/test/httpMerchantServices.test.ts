@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { ApiClient } from '#layers/core/app/services/http/ApiClient'
 import { RedemptionCodeSchema } from '#shared/schemas/redemption'
 import { RedemptionIdSchema } from '#shared/schemas/ids'
+import { emptyClubSetupForm, toClubSetupDraft } from '../app/utils/clubSetupForm'
 import { createHttpMerchantServices } from '../app/services/http/createHttpMerchantServices'
 
 const json = (status: number, body: unknown): Response => new Response(JSON.stringify(body), { status })
@@ -42,10 +43,10 @@ describe('http merchant services', () => {
   })
 
   it('counter listTodayEntries reads GET /merchant/counter/entries/today', async () => {
-    const fetcher = vi.fn<typeof fetch>(async () => json(200, []))
+    const fetcher = vi.fn<typeof fetch>(async () => json(200, { entries: [], truncated: true }))
     const { counter } = servicesWith(fetcher)
     const result = await counter.listTodayEntries()
-    expect(result).toEqual({ ok: true, value: [] })
+    expect(result).toEqual({ ok: true, value: { entries: [], truncated: true } })
     expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/merchant/counter/entries/today')
   })
 
@@ -83,12 +84,65 @@ describe('http merchant services', () => {
     expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/merchant/shop/status')
   })
 
-  it('shopApprovalTesting posts to /merchant/shop/test-approve', async () => {
-    const fetcher = vi.fn<typeof fetch>(async () => json(200, { status: 'approved' }))
-    const { shopApprovalTesting } = servicesWith(fetcher)
-    expect(shopApprovalTesting).not.toBeNull()
-    const result = await shopApprovalTesting!.approveCurrentShop()
-    expect(result).toEqual({ ok: true, value: 'approved' })
-    expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/merchant/shop/test-approve')
+  it('has no approval shortcut over http: approving a shop is the network\'s job', () => {
+    const { shopApprovalTesting } = servicesWith(vi.fn<typeof fetch>())
+    expect(shopApprovalTesting).toBeNull()
+  })
+
+  it('terms accept posts the shown version and passes a stale version through', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(json(200, { version: '2026-10-pilot' }))
+      .mockResolvedValueOnce(json(403, { code: 'merchantTermsNotAccepted' }))
+    const { terms } = servicesWith(fetcher)
+    expect(await terms.accept('2026-10-pilot')).toEqual({ ok: true, value: undefined })
+    expect(await terms.accept('old')).toEqual({ ok: false, error: { code: 'merchantTermsNotAccepted' } })
+    const [url, init] = fetcher.mock.calls[0] ?? []
+    expect(url).toBe('https://api.test/v1/merchant/shop/terms/accept')
+    expect(JSON.parse(String(init?.body))).toEqual({ version: '2026-10-pilot' })
+  })
+
+  it('counter and visit QR pass the terms gate refusal through (not internal)', async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => json(403, { code: 'merchantTermsNotAccepted' }))
+    const { counter, visitQr } = servicesWith(fetcher)
+    const refused = { ok: false, error: { code: 'merchantTermsNotAccepted' } }
+    expect(await visitQr.issueVisitQr({})).toEqual(refused)
+    expect(await counter.validateRedemption(RedemptionCodeSchema.parse('ACDEFG'))).toEqual(refused)
+    expect(await counter.confirmRedemption(RedemptionIdSchema.parse('01925b44-9000-7000-8000-000000000009'))).toEqual(refused)
+  })
+
+  it('posterReprint reads and marks the notice through the API', async () => {
+    const fetcher = vi.fn<typeof fetch>(async (_input, init) => json(200, { pending: init?.method !== 'POST' }))
+    const { posterReprint } = servicesWith(fetcher)
+    expect(await posterReprint.isPending()).toEqual({ ok: true, value: true })
+    expect(await posterReprint.markPrinted()).toEqual({ ok: true, value: false })
+    expect(fetcher.mock.calls.map(([url]) => url)).toEqual([
+      'https://api.test/v1/merchant/shop/poster-reprint',
+      'https://api.test/v1/merchant/shop/poster-reprint/printed',
+    ])
+  })
+
+  it('clubSetup maps a phone that belongs to another account', async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => json(409, { code: 'phoneAlreadyUsed' }))
+    const { clubSetup } = servicesWith(fetcher)
+    const form = emptyClubSetupForm()
+    form.shop = { name: 'Café', category: 'cafe', neighborhood: 'Centro', addressLine: 'Rua A, 1' }
+    form.program.reward.title = 'Café grátis'
+    const draft = toClubSetupDraft(form)
+    if (draft === null) throw new Error('invalid draft')
+    expect(await clubSetup.createClub(draft)).toEqual({ ok: false, error: { code: 'phoneAlreadyUsed' } })
+  })
+
+  it('visitQr maps the live QR limit', async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => json(409, { code: 'visitQrLimitReached' }))
+    const { visitQr } = servicesWith(fetcher)
+    expect(await visitQr.issueVisitQr({})).toEqual({ ok: false, error: { code: 'visitQrLimitReached' } })
+  })
+
+  it('counter confirm keeps rewardNotReady (the code stops being valid on the server)', async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => json(409, { code: 'rewardNotReady', remaining: 1 }))
+    const { counter } = servicesWith(fetcher)
+    const result = await counter.confirmRedemption(RedemptionIdSchema.parse('01925b44-9000-7000-8000-000000000001'))
+    expect(result).toEqual({ ok: false, error: { code: 'rewardNotReady', remaining: 1 } })
   })
 })

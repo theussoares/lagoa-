@@ -2,7 +2,7 @@ import { sql } from 'drizzle-orm'
 import { boolean, char, check, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
 import type { BonusRules } from '#shared/schemas/program'
 import { createdAt, primaryId } from './columns'
-import { earnPer, expirationKind, programMode, programUnit, shopCategory, shopStatus } from './enums'
+import { earnPer, expirationKind, programMode, programUnit, shopCategory, shopPlan, shopStatus } from './enums'
 import { appUsers } from './users'
 
 export const shops = pgTable(
@@ -19,9 +19,34 @@ export const shops = pgTable(
     checkInCode: char('check_in_code', { length: 6 }).notNull().unique(),
     logoPath: text('logo_path'),
     status: shopStatus('status').notNull().default('pending'),
+    plan: shopPlan('plan').notNull().default('founder'),
+    /** Cartaz novo impresso? `null` = ainda não (aviso no Início); o Criar o clube já grava `now()`. */
+    posterReprintedAt: timestamp('poster_reprinted_at', { withTimezone: true }),
+    /** Versão do termo do lojista aceita (`MERCHANT_TERMS_VERSION`) e quando: prova do que foi lido. */
+    merchantTermsVersion: text('merchant_terms_version'),
+    merchantTermsAcceptedAt: timestamp('merchant_terms_accepted_at', { withTimezone: true }),
     createdAt: createdAt(),
   },
-  (t) => [index('shops_status_idx').on(t.status), index('shops_owner_idx').on(t.ownerUserId)],
+  // Um dono, uma loja (RN-02); trocar por `shop_members` mexe aqui e no resolver, não nos services.
+  (t) => [index('shops_status_idx').on(t.status), uniqueIndex('shops_owner_uq').on(t.ownerUserId)],
+)
+
+/** Quem mudou a situação ou o plano de uma loja, por script da rede. `actor` é um apelido de operador, nunca e-mail. */
+export const shopStatusEvents = pgTable(
+  'shop_status_events',
+  {
+    id: primaryId(),
+    shopId: uuid('shop_id')
+      .notNull()
+      .references(() => shops.id),
+    fromStatus: shopStatus('from_status').notNull(),
+    toStatus: shopStatus('to_status').notNull(),
+    plan: shopPlan('plan').notNull(),
+    actor: text('actor').notNull(),
+    reason: text('reason'),
+    createdAt: createdAt(),
+  },
+  (t) => [index('shop_status_events_shop_idx').on(t.shopId, t.createdAt.desc())],
 )
 
 export const programs = pgTable(

@@ -11,12 +11,16 @@ import { CurrentUser } from '../../auth/current-user.decorator'
 import { unwrap } from '../../common/http/domain-exception'
 import { ZodValidationPipe } from '../../common/http/zod-validation.pipe'
 import { VisitQrsService } from './visit-qrs.service'
+import { RequiresMerchantTerms } from '../terms/merchant-terms.guard'
+import { MerchantSurface } from '../access/merchant-surface.decorator'
 
+@MerchantSurface()
 @Controller('merchant/visit-qrs')
 export class VisitQrsController {
   constructor(private readonly visitQrs: VisitQrsService) {}
 
   @Post()
+  @RequiresMerchantTerms()
   async issue(
     @CurrentUser() user: AuthUser,
     @Body(new ZodValidationPipe(VisitQrIssueRequestSchema)) body: VisitQrIssueRequest,

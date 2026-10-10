@@ -20,6 +20,9 @@ export const loyaltyCards = pgTable(
       .references(() => programs.id),
     /** Cache do ledger, atualizado na mesma transação da inserção. */
     balance: integer('balance').notNull().default(0),
+    /** Vitalício (não zera no resgate nem no vencimento): mantido pelo `LedgerStore.credit`, sob o lock do cartão. */
+    visitsCount: integer('visits_count').notNull().default(0),
+    firstVisitAt: timestamp('first_visit_at', { withTimezone: true }),
     lastVisitAt: timestamp('last_visit_at', { withTimezone: true }),
     /** Última vez que o cartão ganhou unidades (visita ou bônus): a inatividade conta daqui; o antifraude, só de `lastVisitAt`. */
     lastActivityAt: timestamp('last_activity_at', { withTimezone: true }),
@@ -59,6 +62,8 @@ export const redemptions = pgTable(
     uniqueIndex('redemptions_active_card_uq')
       .on(t.cardId)
       .where(sql`${t.status} = 'active'`),
+    // O Balcão explica o código que já não está ativo (usado/vencido) pela linha mais nova da janela de 24 h.
+    index('redemptions_shop_code_created_idx').on(t.shopId, t.code, t.createdAt.desc()),
   ],
 )
 

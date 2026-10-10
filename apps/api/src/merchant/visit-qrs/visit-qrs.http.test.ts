@@ -11,10 +11,12 @@ import { FakeAuthGuard, TEST_USER } from '../../test-support/fake-auth.guard'
 import type { MerchantShopRecord } from '../session/session.repository'
 import { SessionRepository } from '../session/session.repository'
 import { VisitQrsController } from './visit-qrs.controller'
-import type { ActiveProgramRules, InsertVisitQrParams } from './visit-qrs.repository'
+import { FakeVisitQrsRepository } from './visit-qrs.fakes'
 import { VisitQrsRepository } from './visit-qrs.repository'
 import { VisitQrsRules } from './visit-qrs.rules'
 import { VisitQrsService } from './visit-qrs.service'
+import { MerchantShopGuard } from '../access/merchant-shop.guard'
+import { ENV } from '../../config/config.module'
 
 class FakeClock extends Clock {
   currentTime = new Date('2026-10-07T14:00:00Z')
@@ -32,48 +34,13 @@ class FakeSessionRepository extends SessionRepository {
   }
 }
 
-class FakeVisitQrsRepository extends VisitQrsRepository {
-  activeProgram: ActiveProgramRules | null = null
-  qrs = new Map<string, VisitQr>()
-
-  async findActiveProgram(_shopId: string): Promise<ActiveProgramRules | null> {
-    return this.activeProgram
-  }
-
-  async createVisitQr(params: InsertVisitQrParams): Promise<string> {
-    const id = '018f98a2-7b2a-7182-9f33-6d004bbbb077'
-    const qr: VisitQr = {
-      id: id as any,
-      visitCode: params.visitCode as any,
-      status: 'active',
-      earn: params.earn,
-      createdAt: params.createdAt.toISOString() as any,
-      expiresAt: params.expiresAt.toISOString() as any,
-      claim: null,
-      refusal: null,
-    }
-    this.qrs.set(id, qr)
-    return id
-  }
-
-  async findById(_shopId: string, id: string): Promise<VisitQr | null> {
-    return this.qrs.get(id) ?? null
-  }
-
-  async cancel(_shopId: string, id: string, _reason: VisitQrCancelReason): Promise<VisitQr | null> {
-    const existing = this.qrs.get(id)
-    if (!existing) return null
-    const updated: VisitQr = { ...existing, status: 'cancelled' }
-    this.qrs.set(id, updated)
-    return updated
-  }
-}
-
 describe('merchant visit-qrs HTTP', () => {
   let app: INestApplication
   const clock = new FakeClock()
   const sessionRepo = new FakeSessionRepository()
   const visitQrsRepo = new FakeVisitQrsRepository()
+  // A "transação" trava a loja que o teste configurou na sessão.
+  visitQrsRepo.shopStatus = () => sessionRepo.shop?.status ?? 'approved'
 
   const shopId = '018f98a2-7b2a-7182-9f33-6d004bbbb001'
 
@@ -81,6 +48,7 @@ describe('merchant visit-qrs HTTP', () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [VisitQrsController],
       providers: [
+        { provide: ENV, useValue: { MERCHANT_TERMS_REQUIRED: '0' } },
         VisitQrsService,
         VisitQrsRules,
         { provide: VisitQrsRepository, useValue: visitQrsRepo },
@@ -89,7 +57,11 @@ describe('merchant visit-qrs HTTP', () => {
         { provide: APP_GUARD, useClass: FakeAuthGuard },
         { provide: APP_FILTER, useClass: AllExceptionsFilter },
       ],
-    }).compile()
+    })
+      // O guard da loja tem teste próprio (access/merchant-shop.guard.http.test.ts); aqui a loja vem do repositório de teste.
+      .overrideGuard(MerchantShopGuard)
+      .useValue({ canActivate: () => true })
+      .compile()
 
     app = moduleRef.createNestApplication()
     await app.init()
@@ -106,6 +78,7 @@ describe('merchant visit-qrs HTTP', () => {
       ownerUserId: TEST_USER.id,
       name: 'Padaria Central',
       status: 'approved',
+      merchantTermsVersion: null,
     }
     visitQrsRepo.activeProgram = {
       id: '018f98a2-7b2a-7182-9f33-6d004bbbb002',

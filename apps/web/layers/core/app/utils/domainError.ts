@@ -3,14 +3,14 @@ import { IsoDateTimeSchema } from '#shared/schemas/common'
 
 const ENTITIES = ['shop', 'program', 'customer', 'merchant', 'card', 'redemption', 'visitQr'] as const
 const SIMPLE_CODES = [
-  'unauthorized', 'rateLimited', 'invalidPhone', 'phoneAlreadyUsed', 'emailAlreadyUsed', 'invalidLoginCode', 'loginCodeExpired',
+  'unauthorized', 'rateLimited', 'invalidPhone', 'phoneAlreadyUsed', 'accountOwnsShop', 'merchantTermsNotAccepted', 'emailAlreadyUsed', 'invalidLoginCode', 'loginCodeExpired',
   'invalidAmount', 'amountNotAccepted', 'invalidShopQr', 'checkInDisabled', 'redemptionInvalid', 'redemptionExpired',
-  'redemptionAlreadyUsed', 'invalidProgram', 'programModeLocked', 'invalidCampaign', 'noReachableCustomers', 'reachChanged',
+  'redemptionAlreadyUsed', 'invalidProgram', 'invalidCampaign', 'noReachableCustomers', 'reachChanged',
   'invalidClubSetup', 'signUpExpired', 'shopPendingApproval', 'shopSuspended', 'termsNotAccepted',
 ] as const
 
 /** Em lista própria: uma união de literais com mais de 25 membros o TypeScript não consegue correlacionar com `DomainError`. */
-const VISIT_QR_CODES = ['invalidVisitQr', 'visitQrExpired', 'visitQrAlreadyUsed', 'visitQrStale', 'shopQrJoinOnly'] as const
+const VISIT_QR_CODES = ['invalidVisitQr', 'visitQrLimitReached', 'visitQrExpired', 'visitQrAlreadyUsed', 'visitQrStale', 'shopQrJoinOnly'] as const
 
 type VisitQrCode = (typeof VISIT_QR_CODES)[number]
 type SimpleCode = (typeof SIMPLE_CODES)[number]

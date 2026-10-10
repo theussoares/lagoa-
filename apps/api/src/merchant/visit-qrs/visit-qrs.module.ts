@@ -5,9 +5,11 @@ import { VisitQrsController } from './visit-qrs.controller'
 import { VisitQrsRepository } from './visit-qrs.repository'
 import { VisitQrsRules } from './visit-qrs.rules'
 import { VisitQrsService } from './visit-qrs.service'
+import { MerchantTermsModule } from '../terms/terms.module'
+import { AccessModule } from '../access/access.module'
 
 @Module({
-  imports: [SessionModule],
+  imports: [AccessModule, MerchantTermsModule, SessionModule],
   controllers: [VisitQrsController],
   providers: [
     VisitQrsService,

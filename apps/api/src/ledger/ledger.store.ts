@@ -189,7 +189,15 @@ export class LedgerStore {
 
     await tx
       .update(loyaltyCards)
-      .set({ balance: plan.balanceAfter, lastVisitAt: now, lastActivityAt: now, rewardExpiresAt: plan.rewardExpiresAt })
+      .set({
+        balance: plan.balanceAfter,
+        lastVisitAt: now,
+        lastActivityAt: now,
+        rewardExpiresAt: plan.rewardExpiresAt,
+        // Contadores do painel (Clientes, "novos na semana"): toda chamada de `credit` é uma visita.
+        visitsCount: sql`${loyaltyCards.visitsCount} + 1`,
+        firstVisitAt: sql`coalesce(${loyaltyCards.firstVisitAt}, ${now.toISOString()}::timestamptz)`,
+      })
       .where(eq(loyaltyCards.id, card.id))
     return { entryId: visit.id, recordedAt: now }
   }

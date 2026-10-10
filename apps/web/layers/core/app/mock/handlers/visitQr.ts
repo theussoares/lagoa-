@@ -1,5 +1,5 @@
 import { visitQrExpiresAt, visitQrStatusAt, planVisitQrIssue } from '#shared/domain/visitQr'
-import { VISIT_CODE_LENGTH } from '#shared/constants/domain'
+import { VISIT_CODE_LENGTH, VISIT_QR_ACTIVE_MAX_PER_SHOP } from '#shared/constants/domain'
 import { VisitCodeSchema } from '#shared/schemas/visitQr'
 import { VisitQrIdSchema } from '#shared/schemas/ids'
 import type { MerchantId, ShopId, VisitQrId } from '#shared/schemas/ids'
@@ -17,7 +17,7 @@ import { findProgram } from './queries'
 import { requireOperationalShop } from './shopAccess'
 import type { ShopAccessError } from './shopAccess'
 
-export type IssueError = ErrorOf<'invalidAmount' | 'amountNotAccepted'> | ShopAccessError
+export type IssueError = ErrorOf<'invalidAmount' | 'amountNotAccepted' | 'visitQrLimitReached'> | ShopAccessError
 /** `VisitQr` de outra loja responde como inexistente (`notFound` com `entity: 'visitQr'`). */
 export type LookupError = ErrorOf<'notFound'> | ShopAccessError
 
@@ -77,6 +77,9 @@ export function issueVisitQr(
   if (program === undefined) return err({ code: 'unauthorized' })
   const earn = planVisitQrIssue(program.rules, request.amountCents)
   if (!earn.ok) return earn
+  // Mesmo teto da API: só contam os QRs ainda vivos (os vencidos saem da conta).
+  const live = ctx.state.visitQrs.filter((record) => record.shopId === shopId && statusOf(ctx, record) === 'active')
+  if (live.length >= VISIT_QR_ACTIVE_MAX_PER_SHOP) return err({ code: 'visitQrLimitReached' })
 
   const record: VisitQrRecord = {
     id: VisitQrIdSchema.parse(ctx.ids.next('vqr')),

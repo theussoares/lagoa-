@@ -1,5 +1,5 @@
 import type { PhoneNumber } from '#shared/schemas/phone'
-import type { CustomerSession, LoginChallenge, LoginCode, MerchantSignInResult } from '#shared/schemas/session'
+import type { CustomerSession, LoginChallenge, LoginCode, MerchantSession, MerchantSignInResult } from '#shared/schemas/session'
 import type { ErrorOf, TransportError } from '#shared/types/errors'
 import type { Result } from '#shared/types/result'
 import type { CustomerSignInResult, CustomerSignUp } from '../types/signIn'
@@ -19,10 +19,15 @@ export interface AuthService {
   signOut(): Promise<void>
 }
 
-/** Login do lojista (mock até a API do painel existir). */
+export type MerchantSessionError = ErrorOf<'notFound' | 'unauthorized'> | TransportError
+
+/** Login do lojista por celular + código. */
 export interface MerchantAuthService {
   requestLoginCode(phone: PhoneNumber): Promise<Result<LoginChallenge, TransportError>>
-  /** Celular sem loja não é erro: devolve um ticket para o Criar o clube. */
+  /** Celular sem loja não é erro: devolve `signUp` e o app leva ao Criar o clube. */
   signInMerchant(phone: PhoneNumber, code: LoginCode): Promise<Result<MerchantSignInResult, MerchantSignInError>>
-  signOut(): Promise<void>
+  /** Pergunta ao servidor quem está logado: `notFound` = celular confirmado sem loja, `unauthorized` = sem sessão. */
+  currentSession(): Promise<Result<MerchantSession, MerchantSessionError>>
+  /** `err` = o servidor não confirmou: a sessão pode ainda estar de pé, então o app não deve fingir que saiu. */
+  signOut(): Promise<Result<true, TransportError>>
 }

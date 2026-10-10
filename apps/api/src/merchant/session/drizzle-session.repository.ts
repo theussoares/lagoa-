@@ -17,6 +17,7 @@ export class DrizzleSessionRepository extends SessionRepository {
         ownerUserId: shops.ownerUserId,
         name: shops.name,
         status: shops.status,
+        merchantTermsVersion: shops.merchantTermsVersion,
       })
       .from(shops)
       .where(eq(shops.ownerUserId, userId))

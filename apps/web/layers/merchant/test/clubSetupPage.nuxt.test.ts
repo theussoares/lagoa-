@@ -26,7 +26,7 @@ async function beginSignUp(): Promise<void> {
   await $merchantAuth.requestLoginCode(phone)
   const result = await $merchantAuth.signInMerchant(phone, $mockBackend.loginCode)
   if (!result.ok || result.value.kind !== 'signUp') throw new Error('expected a sign-up ticket')
-  useClubSetupStore().begin(result.value.ticket, result.value.expiresAt)
+  useMerchantSessionStore().startWithoutShop()
 }
 
 async function mountSetup(): Promise<VueWrapper> {
@@ -154,11 +154,13 @@ describe('club setup page: creating the club', () => {
     expect(useMerchantSessionStore().merchant).toMatchObject({ shopName: 'Lava-jato Brilho', shopStatus: 'pending' })
   })
 
-  it('shows the sign-up expired error when the ticket is gone', async () => {
+  it('shows the sign-up expired error when the mock forgot the confirmed phone', async () => {
     const page = await mountSetup()
     await advanceToReward(page)
     await typeInto(field(page, 'rewardTitle'), 'Lavagem simples grátis')
-    useClubSetupStore().ticket = null
+    await useNuxtApp().$mockBackend.run((ctx) => {
+      ctx.state.signUpTickets = []
+    })
     await submit(page)
     await vi.waitFor(() => expect(visibleText(page)).toContain(t('errors.signUpExpired')))
   })

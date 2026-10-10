@@ -64,10 +64,16 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
   `GET /api/session` uma vez (`useCustomerSession().restore()`) e o estado vai no payload. Dados de tela do cliente
   usam `useAsyncQuery(key, load)` (SSR); `useAsyncResult` (só no cliente) segue no lojista. `watch` com `immediate`
   não roda no SSR: estado derivado de dado assíncrono é `computed`.
-- **Lojista (transitório):** ainda não há API `merchant/*`. O painel (`/painel`, `/balcao/**`, `/programa`, `/clientes`,
-  `/campanhas`, `/configuracoes`) é SPA (`routeRules` `ssr: false`) com o mock do navegador (`layers/core/app/mock`,
-  plugin `mockBackend.client.ts`, `localStorage`, código de login `246810`). Sessão do lojista em `useMerchantSessionStore`.
-  Quando a API do lojista existir, o mock e as exceções de browser somem. Dados de exemplo em `seed.example.ts`.
+- **Lojista (painel):** SPA (`routeRules` `ssr: false`: `/painel`, `/balcao/**`, `/programa`, `/clientes`, `/campanhas`,
+  `/configuracoes`) sobre a API `merchant/*` pelo mesmo BFF (`server/api/merchant/**`, uma rota por rota da API). Login
+  pelo mesmo SMS do cliente (`/api/auth`); depois do código, `GET /api/merchant/session` diz se já há loja (`session`) ou
+  se falta o Criar o clube (`signUp`, sem ticket: o cookie identifica o dono). A sessão (`useMerchantSessionStore`) fica só
+  na memória e é conferida no servidor pelos middlewares (`useMerchantSession().check()`). `runtimeConfig.public.merchantBackend`
+  (`NUXT_PUBLIC_MERCHANT_BACKEND`) é `http` por padrão; `mock` (navegador, `localStorage`, código `246810`) só para testes e
+  demonstração offline, e some na M6.
+  **Cookie compartilhado com o app do cliente** (mesma conta Supabase): entrar ou sair pelo painel zera o cache do cliente
+  (`resetCustomer`) e o logout é `scope: 'local'`; outra aba aberta só descobre a troca na próxima navegação (risco aceito).
+  Sair só deixa o painel depois que o servidor confirma (`signOut`); `expire()` é o logout só local, para `unauthorized`. **Ainda sem API:** Campanhas (M5); no `http` a tela fica escondida (`useCampaignsEnabled`, `NUXT_PUBLIC_CAMPAIGNS_ENABLED`). Termo do lojista: a sessão traz `termsAccepted` e o Início pede o aceite (`HomeTermsAcceptance`). Plano: `docs/specs/api-merchant/`.
 - **Monorepo (pnpm workspace):** o front vive em `apps/web` (Nuxt + `layers/`);
   `shared/` fica na raiz (alias `#shared`) para o futuro `apps/api` reusar
   os contratos. Caminhos `layers/...` neste documento são relativos a `apps/web/`.
@@ -281,7 +287,9 @@ composables  → stores (Pinia, estado)
   trocar quando quiser. A troca cria uma nova versão do programa (`programs.active`):
   cartões com saldo terminam na versão em que começaram; cartão novo, zerado ou
   recém-resgatado já pega a versão ativa. Sobra de pontos só atravessa a troca se a
-  unidade for a mesma.
+  unidade for a mesma. Exceção: cartão em pontos por real sem prêmio ganhado, quando a loja sai
+  desse modo mantendo a unidade (ponto), passa para a versão ativa na próxima visita (senão nunca mais renderia: o QR
+  por visita não leva valor); cartão por real que muda para carimbo fica na versão antiga (decisão: o saldo em pontos não vira carimbo) e o painel avisa o lojista antes de salvar.
 - **Expiração:** carimbos vencem após X meses sem visita (ou nunca).
 - **Resgate:** cliente gera um código de uso único (6 caracteres, ~10 min de
   validade); o lojista valida no Balcão e confirma a entrega. Prêmio não

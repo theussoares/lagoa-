@@ -9,7 +9,7 @@ import type { MerchantSignInStep, MerchantSignInOutcome, MerchantSignIn } from '
 /** Entrar no painel com o celular da loja + código. O celular fica só em memória. */
 export function useMerchantSignIn(): MerchantSignIn {
   const auth = useMerchantAuthService()
-  const { start } = useMerchantSession()
+  const { start, startWithoutShop } = useMerchantSession()
   const clubSetup = useClubSetupStore()
 
   const step = ref<MerchantSignInStep>({ name: 'phone' })
@@ -60,7 +60,7 @@ export function useMerchantSignIn(): MerchantSignIn {
       return 'failed'
     }
     if (result.value.kind === 'signUp') {
-      clubSetup.begin(result.value.ticket, result.value.expiresAt)
+      startWithoutShop()
       return 'signUp'
     }
     clubSetup.finish()

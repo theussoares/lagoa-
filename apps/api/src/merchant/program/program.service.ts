@@ -2,16 +2,20 @@ import { Injectable, Logger } from '@nestjs/common'
 import type { Program, ProgramDraft } from '#shared/schemas/program'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
+import { Clock } from '../../common/clock'
 import { ProgramRepository } from './program.repository'
-import { canChangeProgramMode, hasCriticalChanges } from './program.rules'
+import { isSameProgram } from '#shared/domain/program'
 
-export type ProgramServiceError = ErrorOf<'notFound' | 'programModeLocked' | 'invalidProgram'>
+export type ProgramServiceError = ErrorOf<'notFound' | 'invalidProgram'>
 
 @Injectable()
 export class ProgramService {
   private readonly logger = new Logger(ProgramService.name)
 
-  constructor(private readonly repo: ProgramRepository) {}
+  constructor(
+    private readonly repo: ProgramRepository,
+    private readonly clock: Clock,
+  ) {}
 
   async getProgram(ownerUserId: string): Promise<Result<Program, ErrorOf<'notFound'>>> {
     const data = await this.repo.findActiveProgramByOwner(ownerUserId)
@@ -34,13 +38,7 @@ export class ProgramService {
     ownerUserId: string,
     draft: ProgramDraft,
   ): Promise<Result<Program, ProgramServiceError>> {
-    const saved = await this.repo.updateActiveProgram(ownerUserId, draft, (current, cardsCount) => {
-      if (!canChangeProgramMode(cardsCount, current.rules.mode, draft.rules.mode)) {
-        this.logger.warn(`Program mode change locked: ${cardsCount} cards exist`)
-        return err({ code: 'programModeLocked' })
-      }
-      return ok({ isNewVersion: hasCriticalChanges(current, draft) })
-    })
-    return saved
+    // Sem trava de modo: mudar regra cria uma versão nova do programa; cartão com saldo termina na versão em que nasceu.
+    return this.repo.updateActiveProgram(ownerUserId, draft, (current) => ({ isNewVersion: !isSameProgram(current, draft) }), this.clock.now())
   }
 }

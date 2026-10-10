@@ -44,7 +44,9 @@ export function toCounterLedgerModel(entry: CounterEntry, t: Translate, fresh: b
   return {
     id: entry.id,
     time: formatTime(entry.createdAt),
+    // Conta apagada: o servidor manda `null` e o Balcão mostra "Cliente removido" no lugar do celular.
     phone: entry.maskedPhone,
+    customerLabel: entry.maskedPhone ?? t('counter.ledger.removedCustomer'),
     badge: entry.isNewCustomer ? t('counter.ledger.newCustomer') : null,
     action: ledgerAction(entry, t),
     tone: entry.kind === 'redemption' ? 'reward' : 'ink',
@@ -85,7 +87,8 @@ function receiptBody(result: VisitRegistered, t: Translate): StampCardBody {
 /** O recibo do uso do QR da visita: quem ganhou, quanto, e como ficou o cartão. */
 export function toLaunchReceipt(result: VisitRegistered, rewardTitle: string, t: Translate): LaunchReceiptModel {
   const { card, entry, unitsEarned, welcomeUnits } = result
-  const phone = entry.maskedPhone
+  // Conta apagada enquanto o Balcão ainda consulta o QR: o recibo diz "Cliente removido", nunca uma frase sem nome.
+  const phone = entry.maskedPhone ?? t('counter.ledger.removedCustomer')
   const remaining = Math.max(0, card.target - card.balance)
   const progress = t('counter.receipt.progress', { balance: card.balance, target: card.target })
   // Cliente antigo também pode estrear cartão nesta loja: as boas-vindas denunciam o cartão novo.

@@ -13,7 +13,7 @@ export function useMerchantSessionGuard(
   source: () => readonly ErrorCarrier[],
   options: MerchantSessionGuardOptions = {},
 ): void {
-  const { signOut } = useMerchantSession()
+  const { expire } = useMerchantSession()
   const shopStatus = useShopStatus()
 
   watch(
@@ -21,7 +21,7 @@ export function useMerchantSessionGuard(
     () => [...source()],
     (states) => {
       if (hasErrorCode(states, ['unauthorized'])) {
-        void signOut()
+        void expire()
         return
       }
       if (options.refreshShopStatus !== true) return

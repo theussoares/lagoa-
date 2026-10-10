@@ -1,6 +1,5 @@
 import type { ReminderDraft } from '#shared/schemas/campaign'
 import type { ClubSetupDraft } from '#shared/schemas/onboarding'
-import type { SignUpTicket } from '#shared/schemas/session'
 import type { CustomerFilter } from '#shared/schemas/customer'
 import type { RedemptionId, VisitQrId } from '#shared/schemas/ids'
 import type { ProgramDraft } from '#shared/schemas/program'
@@ -48,11 +47,15 @@ export function createMockMerchantServices(backend: MockBackend, sessions: Merch
       sendReminder: (draft: ReminderDraft, expectedRecipients: number) =>
         asMerchant(backend, sessions, (ctx, shopId) => sendReminder(ctx, shopId, draft, expectedRecipients)),
     },
+    // O mock não guarda o termo: toda loja já nasce com ele aceito (`termsAccepted: true` na sessão).
+    terms: {
+      accept: () => Promise.resolve(ok(undefined)),
+    },
     home: {
       getWeekSummary: () => asMerchant(backend, sessions, (ctx, shopId) => ok(weekSummary(ctx, shopId))),
     },
     clubSetup: {
-      createClub: (ticket: SignUpTicket, draft: ClubSetupDraft) => backend.run((ctx) => createClub(ctx, ticket, draft)),
+      createClub: (draft: ClubSetupDraft) => backend.run((ctx) => createClub(ctx, draft)),
     },
     poster: {
       getPoster: () => asMerchant(backend, sessions, shopPoster),

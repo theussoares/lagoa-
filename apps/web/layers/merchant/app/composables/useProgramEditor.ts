@@ -28,13 +28,22 @@ export function useProgramEditor(): ProgramEditor {
     triedToSave.value = false
   })
 
-  const modeLocked = computed(() => state.value.status === 'success' && state.value.value.activeCards > 0)
+  // Cartão em andamento termina na versão em que nasceu: com clientes, mudar a meta só vale para os cartões novos.
+  const hasActiveCards = computed(() => state.value.status === 'success' && state.value.value.activeCards > 0)
   const targetChanged = computed(
     () =>
-      modeLocked.value &&
+      hasActiveCards.value &&
       draft.value !== null &&
       saved.value !== null &&
       draft.value.rules.target !== saved.value.rules.target,
+  )
+  const pointsToStampsChanged = computed(
+    () =>
+      hasActiveCards.value &&
+      draft.value !== null &&
+      saved.value !== null &&
+      saved.value.rules.mode === 'pointsPerCurrency' &&
+      draft.value.rules.mode === 'stamps',
   )
   const isDirty = computed(() => draft.value !== null && saved.value !== null && !isSameDraft(draft.value, saved.value))
   const fieldErrors = computed<ProgramFieldErrors>(() =>
@@ -47,7 +56,7 @@ export function useProgramEditor(): ProgramEditor {
   })
 
   function setMode(mode: ProgramMode): void {
-    if (draft.value === null || modeLocked.value) return
+    if (draft.value === null) return
     draft.value.rules = switchMode(draft.value.rules, mode)
   }
 
@@ -63,8 +72,6 @@ export function useProgramEditor(): ProgramEditor {
     const result = await programService.updateProgram(draft.value)
     if (!result.ok) {
       saveState.value = { status: 'error', code: result.error.code }
-      // O Balcão pode ter criado cartões depois que a tela abriu: trava o modo já.
-      if (result.error.code === 'programModeLocked') await refreshActiveCards(program)
       return
     }
     set({ program: result.value, activeCards })
@@ -82,5 +89,5 @@ export function useProgramEditor(): ProgramEditor {
     triedToSave.value = false
   }
 
-  return { state, draft, modeLocked, targetChanged, isDirty, fieldErrors, saveState, reload, setMode, save, discard }
+  return { state, draft, targetChanged, pointsToStampsChanged, isDirty, fieldErrors, saveState, reload, setMode, save, discard }
 }

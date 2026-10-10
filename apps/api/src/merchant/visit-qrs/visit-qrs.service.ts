@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { VISIT_CODE_LENGTH } from '#shared/constants/domain'
 import { visitQrExpiresAt } from '#shared/domain/visitQr'
 import {
@@ -16,25 +16,18 @@ import { Clock } from '../../common/clock'
 import { generateReadableCode } from '../../common/readable-code'
 import { generateVisitToken, hashVisitToken } from '../../common/visit-token'
 import { SessionRepository } from '../session/session.repository'
-import { VisitQrsRepository } from './visit-qrs.repository'
+import { requireOperational } from '../access/shop-access.rules'
+import { type IssueError, VisitQrsRepository } from './visit-qrs.repository'
 import { VisitQrsRules } from './visit-qrs.rules'
 
-export type IssueVisitQrError = ErrorOf<
-  'notFound' | 'shopPendingApproval' | 'shopSuspended' | 'invalidAmount' | 'amountNotAccepted'
->
+export type IssueVisitQrError = IssueError
 
-export type GetVisitQrError = ErrorOf<
-  'notFound' | 'shopPendingApproval' | 'shopSuspended'
->
+export type GetVisitQrError = ErrorOf<'notFound' | 'shopPendingApproval' | 'shopSuspended'>
 
-export type CancelVisitQrError = ErrorOf<
-  'notFound' | 'shopPendingApproval' | 'shopSuspended'
->
+export type CancelVisitQrError = ErrorOf<'notFound' | 'shopPendingApproval' | 'shopSuspended'>
 
 @Injectable()
 export class VisitQrsService {
-  private readonly logger = new Logger(VisitQrsService.name)
-
   constructor(
     private readonly repository: VisitQrsRepository,
     private readonly sessionRepo: SessionRepository,
@@ -48,46 +41,40 @@ export class VisitQrsService {
   ): Promise<Result<IssuedVisitQr, IssueVisitQrError>> {
     const shop = await this.sessionRepo.findByOwnerUserId(ownerUserId)
     if (!shop) return err({ code: 'notFound', entity: 'merchant' })
-    if (shop.status === 'pending') return err({ code: 'shopPendingApproval' })
-    if (shop.status === 'suspended') return err({ code: 'shopSuspended' })
-
-    const activeProgram = await this.repository.findActiveProgram(shop.id)
-    if (!activeProgram) return err({ code: 'notFound', entity: 'program' })
-
-    const plannedEarn = this.rules.planIssue(activeProgram.rules, request.amountCents)
-    if (!plannedEarn.ok) return plannedEarn
 
     const token = generateVisitToken()
-    const tokenHash = hashVisitToken(token)
-    const visitCode = generateReadableCode(VISIT_CODE_LENGTH)
-
     const now = this.clock.now()
     const expiresAt = visitQrExpiresAt(now)
 
-    const id = await this.repository.createVisitQr({
+    const issued = await this.repository.issue({
       shopId: shop.id,
-      programId: activeProgram.id,
       issuedBy: ownerUserId,
-      tokenHash,
-      visitCode,
-      earn: plannedEarn.value,
-      createdAt: now,
+      now,
       expiresAt,
+      tokenHash: hashVisitToken(token),
+      newVisitCode: () => generateReadableCode(VISIT_CODE_LENGTH),
+      // Roda com a loja travada: a situação lida aqui é a mesma até o commit (suspensão no meio não passa).
+      plan: (locked) => {
+        const operational = requireOperational(locked.status)
+        if (!operational.ok) return operational
+        return this.rules.planIssue(locked.rules, request.amountCents)
+      },
     })
+    if (!issued.ok) return issued
 
-    const issued: IssuedVisitQr = IssuedVisitQrSchema.parse({
-      id,
-      token,
-      visitCode,
-      status: 'active',
-      earn: plannedEarn.value,
-      createdAt: toIso(now),
-      expiresAt: toIso(expiresAt),
-      claim: null,
-      refusal: null,
-    })
-
-    return ok(issued)
+    return ok(
+      IssuedVisitQrSchema.parse({
+        id: issued.value.id,
+        token,
+        visitCode: issued.value.visitCode,
+        status: 'active',
+        earn: issued.value.earn,
+        createdAt: toIso(now),
+        expiresAt: toIso(expiresAt),
+        claim: null,
+        refusal: null,
+      }),
+    )
   }
 
   async getVisitQr(
@@ -135,7 +122,7 @@ export class VisitQrsService {
       return ok(VisitQrSchema.parse({ ...existing, status: derivedStatus }))
     }
 
-    const cancelled = await this.repository.cancel(shop.id, id, reason)
+    const cancelled = await this.repository.cancel(shop.id, id, reason, this.clock.now())
     if (!cancelled) return err({ code: 'notFound', entity: 'visitQr' })
 
     return ok(VisitQrSchema.parse(cancelled))

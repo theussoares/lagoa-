@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ path: '/balcao', layout: 'merchant', middleware: 'merchant-auth' })
+definePageMeta({ path: '/balcao', layout: 'merchant', middleware: ['merchant-auth', 'merchant-terms'] })
 
 usePageTitle('counter.title')
 const screen = useCounterScreen()
@@ -55,6 +55,7 @@ const screen = useCounterScreen()
           :status="screen.ledger.status"
           :error-code="screen.ledger.errorCode"
           :rows="screen.ledger.rows"
+          :truncated="screen.ledger.truncated"
           @reload="screen.ledger.reload"
         />
       </div>

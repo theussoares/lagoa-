@@ -1,7 +1,7 @@
-import type { MaskedPhone } from '#shared/schemas/phone'
 import type { StampCardBody } from '#layers/ui/app/types/wallet'
 import type { ProgramUnit } from '#shared/schemas/program'
 import type { CounterEntry } from '#shared/schemas/visit'
+import type { MaskedPhone } from '#shared/schemas/phone'
 import type { DomainErrorCode, TransportError } from '#shared/types/errors'
 import type { ComputedRef, Ref } from 'vue'
 import type { AsyncResultState } from '#layers/core/app/types/asyncResult'
@@ -15,8 +15,10 @@ export interface CounterLedgerEntryModel {
   readonly id: string
   /** "14:32" */
   readonly time: string
-  /** `(67) 9••••-0374` — nunca o número completo. */
-  readonly phone: MaskedPhone
+  /** `(67) 9••••-0374` — nunca o número completo; `null` quando a conta foi apagada. */
+  readonly phone: MaskedPhone | null
+  /** O que a linha mostra: o celular mascarado ou "Cliente removido". */
+  readonly customerLabel: string
   /** "Cliente novo" quando o cartão nasceu neste lançamento. */
   readonly badge: string | null
   /** "+1 carimbo", "+24 pontos · R$ 24,00", "Prêmio entregue: Corte grátis". */
@@ -47,6 +49,8 @@ export type CounterAction =
 
 export interface CounterLedger {
   state: ComputedRef<AsyncResultState<CounterEntry[], TransportError>>
+  /** O dia teve mais lançamentos do que o servidor devolve: a lista mostra só os mais novos. */
+  truncated: Readonly<Ref<boolean>>
   /** Linhas lançadas nesta tela: entram com a batida do carimbo. */
   freshIds: Readonly<Ref<ReadonlySet<string>>>
   reload: () => Promise<void>
@@ -95,6 +99,7 @@ export interface CounterLedgerView {
   readonly status: 'loading' | 'error' | 'success'
   readonly errorCode: TransportError['code'] | null
   readonly rows: readonly CounterLedgerEntryModel[]
+  readonly truncated: boolean
   readonly reload: () => Promise<void>
 }
 

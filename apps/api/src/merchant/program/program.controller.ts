@@ -9,7 +9,9 @@ import { CurrentUser } from '../../auth/current-user.decorator'
 import { unwrap } from '../../common/http/domain-exception'
 import { ZodValidationPipe } from '../../common/http/zod-validation.pipe'
 import { ProgramService } from './program.service'
+import { MerchantSurface } from '../access/merchant-surface.decorator'
 
+@MerchantSurface()
 @Controller('merchant/program')
 export class ProgramController {
   constructor(private readonly programService: ProgramService) {}

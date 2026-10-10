@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { LoyaltyCardIdSchema, RedemptionIdSchema, ShopIdSchema, VisitIdSchema } from '#shared/schemas/ids'
 import { MaskedPhoneSchema } from '#shared/schemas/phone'
-import type { CounterEntry } from '#shared/schemas/visit'
+import type { CounterEntry, CounterToday } from '#shared/schemas/visit'
 import { err, ok } from '#shared/types/result'
 import {
   CounterRepository,
@@ -55,11 +55,11 @@ class FakeCounterRepository extends CounterRepository {
     return this.shop
   }
 
-  async listTodayEntries(): Promise<CounterEntry[]> {
-    return []
+  async listTodayEntries(): Promise<CounterToday> {
+    return { entries: [], truncated: false }
   }
 
-  async findActiveRedemption(
+  async findRedemption(
     _shopId: string,
     _rawCode: string,
     _now: Date,

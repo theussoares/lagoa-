@@ -3,6 +3,7 @@ import type { ClubSetupService, ShopApprovalTestingService, ShopPosterService, S
 import type { CounterService } from './CounterService'
 import type { MerchantCustomersService } from './MerchantCustomersService'
 import type { MerchantHomeService } from './MerchantHomeService'
+import type { MerchantTermsService } from './MerchantTermsService'
 import type { PosterReprintService } from './PosterReprintService'
 import type { ProgramService } from './ProgramService'
 import type { VisitQrService, VisitQrTestingService } from './VisitQrService'
@@ -15,6 +16,7 @@ export interface MerchantServices {
   readonly program: ProgramService
   readonly campaigns: CampaignService
   readonly home: MerchantHomeService
+  readonly terms: MerchantTermsService
   readonly clubSetup: ClubSetupService
   readonly poster: ShopPosterService
   readonly posterReprint: PosterReprintService

@@ -8,6 +8,7 @@ import { FakeAuthGuard, TEST_USER } from '../../test-support/fake-auth.guard'
 import { SessionController } from './session.controller'
 import { type MerchantShopRecord, SessionRepository } from './session.repository'
 import { SessionService } from './session.service'
+import { MerchantShopGuard } from '../access/merchant-shop.guard'
 
 class TestSessionRepository extends SessionRepository {
   shop: MerchantShopRecord | null = null
@@ -30,7 +31,11 @@ describe('merchant session HTTP', () => {
         { provide: APP_GUARD, useClass: FakeAuthGuard },
         { provide: APP_FILTER, useClass: AllExceptionsFilter },
       ],
-    }).compile()
+    })
+      // O guard da loja tem teste próprio (access/merchant-shop.guard.http.test.ts); aqui a loja vem do repositório de teste.
+      .overrideGuard(MerchantShopGuard)
+      .useValue({ canActivate: () => true })
+      .compile()
     app = moduleRef.createNestApplication()
     await app.init()
   })
@@ -52,6 +57,7 @@ describe('merchant session HTTP', () => {
       ownerUserId: TEST_USER.id,
       name: 'Padaria Central',
       status: 'approved',
+      merchantTermsVersion: null,
     }
 
     const response = await request(app.getHttpServer()).get('/merchant/session').expect(200)
@@ -61,6 +67,7 @@ describe('merchant session HTTP', () => {
       shopId: repository.shop.id,
       shopName: 'Padaria Central',
       shopStatus: 'approved',
+      termsAccepted: false,
     })
   })
 })

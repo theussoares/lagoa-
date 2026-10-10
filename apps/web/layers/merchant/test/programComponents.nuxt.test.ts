@@ -83,7 +83,7 @@ describe('program components: RewardTitleField', () => {
 })
 
 describe('program components: EarnFields', () => {
-  const earnProps = { unit: 'stamp', limits, errors: {}, modeLocked: false, targetChanged: false, rules: stampRules }
+  const earnProps = { unit: 'stamp', limits, errors: {}, targetChanged: false, pointsToStampsChanged: false, rules: stampRules }
 
   it('offers the three modes as radios and emits the picked one', async () => {
     const page = await mountIt(EarnFields, earnProps)
@@ -92,14 +92,6 @@ describe('program components: EarnFields', () => {
     expect(radios[0]?.attributes('aria-checked')).toBe('true')
     await radios[2]?.trigger('click')
     expect(page.emitted('mode')?.[0]).toEqual(['pointsPerVisit'])
-  })
-
-  it('shows the chosen mode with a lock label, and no radios, when the mode cannot change', async () => {
-    const page = await mountIt(EarnFields, { ...earnProps, modeLocked: true })
-    expect(page.findAll('[role="radio"]')).toHaveLength(0)
-    expect(page.text()).toContain(t('program.earn.modes.stamps.label'))
-    expect(page.text()).toContain(t('program.card.locked'))
-    expect(page.text()).toContain(t('program.earn.modeLocked'))
   })
 
   it('names the target field after the unit and shows the range error', async () => {
@@ -147,6 +139,11 @@ describe('program components: EarnFields', () => {
     quiet.unmount()
     const warned = await mountIt(EarnFields, { ...earnProps, targetChanged: true })
     expect(warned.text()).toContain(t('program.earn.targetChangeNote'))
+  })
+
+  it('warns that points holders are not converted when leaving points per real for stamps', async () => {
+    const warned = await mountIt(EarnFields, { ...earnProps, pointsToStampsChanged: true })
+    expect(warned.text()).toContain(t('program.earn.pointsToStampsNote'))
   })
 })
 

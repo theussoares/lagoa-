@@ -2,9 +2,12 @@ import type { BonusRules, ProgramMode } from '#shared/schemas/program'
 import type { ShopCategory, ShopStatus } from '#shared/schemas/shop'
 
 /** Dados fictícios de desenvolvimento. Celular na faixa de teste 67 90000-00xx; ids fixos para o reset achar. */
-export const SEED_OWNER_ID = '0190ae00-0000-7000-8000-00000000f001'
-export const SEED_OWNER_PHONE = '67900000010'
-export const SEED_OWNER_EMAIL = 'dono.seed@lagoamais.test'
+/** Cada loja tem o seu dono (`shops_owner_uq`: um dono, uma loja); o dono n tem o celular 67 90000-001n. */
+export interface SeedOwner {
+  readonly id: string
+  readonly phone: string
+  readonly email: string
+}
 
 const BONUS_ON: BonusRules = {
   welcomeBonus: { enabled: true, units: 2 },
@@ -22,6 +25,7 @@ const BONUS_OFF: BonusRules = {
 export interface SeedShop {
   readonly id: string
   readonly programId: string
+  readonly owner: SeedOwner
   readonly name: string
   readonly category: ShopCategory
   readonly neighborhood: string
@@ -38,9 +42,10 @@ export interface SeedShop {
   }
 }
 
-const shop = (n: number, rest: Omit<SeedShop, 'id' | 'programId'>): SeedShop => ({
+const shop = (n: number, rest: Omit<SeedShop, 'id' | 'programId' | 'owner'>): SeedShop => ({
   id: `0190ae00-0000-7000-8000-0000000000a${n}`,
   programId: `0190ae00-0000-7000-8000-0000000000b${n}`,
+  owner: { id: `0190ae00-0000-7000-8000-00000000f00${n}`, phone: `6790000001${n}`, email: `dono${n}.seed@lagoamais.test` },
   ...rest,
 })
 

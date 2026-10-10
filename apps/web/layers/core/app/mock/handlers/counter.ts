@@ -4,7 +4,8 @@ import { welcomeUnits } from '#shared/domain/bonusRules'
 import { addUnits } from '#shared/domain/loyaltyCard'
 import type { RedemptionId, ShopId } from '#shared/schemas/ids'
 import type { RedemptionCode, RedemptionPreview } from '#shared/schemas/redemption'
-import type { CounterEntry } from '#shared/schemas/visit'
+import type { CounterEntry, CounterToday } from '#shared/schemas/visit'
+import { COUNTER_TODAY_LIMIT } from '#shared/constants/domain'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok } from '#shared/types/result'
 import type { Result } from '#shared/types/result'
@@ -86,9 +87,9 @@ export function confirmRedemption(
   return entry.ok ? entry : err({ code: 'redemptionInvalid' })
 }
 
-export function todayEntries(ctx: MockContext, shopId: ShopId): CounterEntry[] {
+export function todayEntries(ctx: MockContext, shopId: ShopId): CounterToday {
   const today = localDateParts(ctx.now).isoDate
-  return ctx.state.ledger
+  const entries = ctx.state.ledger
     .filter(
       (record) =>
         record.shopId === shopId && isCounterKind(record.kind) && localDateParts(new Date(record.createdAt)).isoDate === today,
@@ -100,4 +101,5 @@ export function todayEntries(ctx: MockContext, shopId: ShopId): CounterEntry[] {
       const entry = toCounterEntry(ctx, record)
       return entry.ok ? [entry.value] : []
     })
+  return { entries: entries.slice(0, COUNTER_TODAY_LIMIT), truncated: entries.length > COUNTER_TODAY_LIMIT }
 }
