@@ -18,6 +18,8 @@ export async function createApp(): Promise<NestExpressApplication> {
   app.set('trust proxy', env.TRUST_PROXY_HOPS ?? 0)
   app.use(bffClientIpMiddleware(env.BFF_SHARED_SECRET))
   app.use(helmet())
+  // Foto da loja vai em base64 no JSON (até 1 MB de imagem, ~1,4 MB de texto); o padrão do Express é 100 kB.
+  app.useBodyParser('json', { limit: '2mb' })
   app.setGlobalPrefix('v1', { exclude: ['health'] })
   app.enableCors({ origin: corsOrigins(env) })
   return app

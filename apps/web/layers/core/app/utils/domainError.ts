@@ -12,11 +12,16 @@ const SIMPLE_CODES = [
 /** Em lista própria: uma união de literais com mais de 25 membros o TypeScript não consegue correlacionar com `DomainError`. */
 const VISIT_QR_CODES = ['invalidVisitQr', 'visitQrLimitReached', 'visitQrExpired', 'visitQrAlreadyUsed', 'visitQrStale', 'shopQrJoinOnly'] as const
 
+/** Painel do lojista: mesma razão da lista acima. */
+const MERCHANT_PANEL_CODES = ['invalidShopPhoto'] as const
+
 type VisitQrCode = (typeof VISIT_QR_CODES)[number]
+type MerchantPanelCode = (typeof MERCHANT_PANEL_CODES)[number]
 type SimpleCode = (typeof SIMPLE_CODES)[number]
 
 const isSimple = (code: string): code is SimpleCode => SIMPLE_CODES.some((simple) => simple === code)
 const isVisitQrCode = (code: string): code is VisitQrCode => VISIT_QR_CODES.some((visitQr) => visitQr === code)
+const isMerchantPanelCode = (code: string): code is MerchantPanelCode => MERCHANT_PANEL_CODES.some((panel) => panel === code)
 const isEntity = (value: unknown): value is (typeof ENTITIES)[number] => ENTITIES.some((entity) => entity === value)
 
 function field(body: Record<string, unknown>, key: string): unknown {
@@ -31,6 +36,7 @@ export function parseDomainError(body: unknown): DomainError {
   if (typeof code !== 'string') return { code: 'internal' }
   if (isSimple(code)) return { code }
   if (isVisitQrCode(code)) return { code }
+  if (isMerchantPanelCode(code)) return { code }
   if (code === 'notFound') {
     const entity = field(fields, 'entity')
     return isEntity(entity) ? { code, entity } : { code: 'internal' }

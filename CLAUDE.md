@@ -221,7 +221,7 @@ composables  → stores (Pinia, estado)
   recebe texto pronto (props ou `labels`).
 - **Browser API** (`window`, `document`, `navigator`, foco, vibração, câmera,
   impressão, `beforeunload`) só em composable dedicado (`useFocusRequest`,
-  `useHaptics`, `useQrScanner`, `usePrint`, `useLeaveGuard`, `useFileDownload`). Exceções
+  `useHaptics`, `useQrScanner`, `usePrint`, `useLeaveGuard`, `useFileDownload`, `useImageResize`). Exceções
   nomeadas: persistência da sessão (`core/app/stores/session.ts`) e o mock
   (`core/app/plugins/backend.ts`, `core/app/mock/**`).
 - **Pastas.** `components/<arquivo-da-página>/<Bloco>.vue` nas superfícies

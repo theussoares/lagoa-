@@ -158,7 +158,8 @@
     "invalidClubSetup": "Confira os dados da loja e do clube antes de criar.",
     "signUpExpired": "O tempo para criar o clube acabou ou o celular já tem uma loja. Confirme o celular de novo para continuar.",
     "shopPendingApproval": "Sua loja ainda está aguardando aprovação da rede. O Balcão passa a valer quando a rede aprovar.",
-    "shopSuspended": "Sua loja está suspensa pela rede. Fale com a rede Lagoa+ para voltar a usar o painel."
+    "shopSuspended": "Sua loja está suspensa pela rede. Fale com a rede Lagoa+ para voltar a usar o painel.",
+    "invalidShopPhoto": "Essa imagem não serve. Use uma foto JPG, PNG ou WebP de até 1 MB."
   },
   "ledger": {
     "yesterday": "Ontem",
@@ -401,14 +402,14 @@
         "description": "O cliente escaneia o QR do cartaz e entra no clube sozinho. O carimbo só vem do QR da visita."
       },
       "cooldown": "Intervalo mínimo entre visitas do mesmo cliente",
-      "cooldownHint": "Antifraude: o mesmo cliente não ganha duas visitas dentro desse intervalo, contando também as lançadas no Balcão.",
+      "cooldownHint": "Antifraude: o mesmo cliente não ganha duas visitas dentro desse intervalo, contando também as lançadas no Balcão. Em “1 vez por dia”, o dia vira à meia-noite: 23h e 3h do dia seguinte contam como duas visitas.",
       "cooldownHours": "{count} hora | {count} hora | {count} horas",
       "cooldownDays": "{count} dia | 1 dia | {count} dias",
       "expiration": "Validade dos carimbos e pontos",
       "expirationHint": "Contada a partir da última visita do cliente.",
       "expirationNever": "Nunca vencem",
       "expirationMonths": "{count} mês sem visita | 1 mês sem visita | {count} meses sem visita",
-      "cooldownCalendarDay": "1 vez por dia (vira à meia-noite)"
+      "cooldownCalendarDay": "1 vez por dia"
     },
     "summary": {
       "noBonus": "Nenhuma regra ligada",
@@ -681,8 +682,19 @@
   },
   "merchantSettings": {
     "title": "Configurações",
-    "lead": "Ajustes deste computador ou tablet do balcão.",
-    "appearance": "Aparência"
+    "lead": "Foto da loja e ajustes deste computador ou tablet do balcão.",
+    "appearance": "Aparência",
+    "photo": {
+      "title": "Foto da loja",
+      "lead": "Aparece no card da sua loja no Descobrir. Prefira a fachada ou o balcão, na horizontal.",
+      "choose": "Escolher foto",
+      "change": "Trocar foto",
+      "uploading": "Enviando a foto…",
+      "saved": "Foto salva. Ela já aparece no Descobrir.",
+      "empty": "Sua loja ainda não tem foto.",
+      "alt": "Foto atual da loja",
+      "unreadable": "Não deu para abrir essa imagem. Tente outra foto."
+    }
   },
   "clubSetup": {
     "pageTitle": "Criar o clube",
