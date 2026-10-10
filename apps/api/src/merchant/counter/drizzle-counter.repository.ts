@@ -3,7 +3,7 @@ import { COUNTER_TODAY_LIMIT } from '#shared/constants/domain'
 import { and, eq, gte, inArray, sql } from 'drizzle-orm'
 import { ShopIdSchema } from '#shared/schemas/ids'
 import type { PhoneNumber } from '#shared/schemas/phone'
-import { CounterEntrySchema, type CounterEntry } from '#shared/schemas/visit'
+import { CounterEntrySchema, type CounterEntry, type CounterToday } from '#shared/schemas/visit'
 import { maskPhone } from '#shared/utils/phone'
 import { toIso } from '#shared/utils/time'
 import { PiiService } from '../../common/pii.service'
@@ -58,7 +58,7 @@ export class DrizzleCounterRepository extends CounterRepository {
     return row ?? null
   }
 
-  async listTodayEntries(shopId: string, startOfDay: Date): Promise<CounterEntry[]> {
+  async listTodayEntries(shopId: string, startOfDay: Date): Promise<CounterToday> {
     const rows = await this.db
       .select({
         id: ledgerEntries.id,
@@ -87,9 +87,9 @@ export class DrizzleCounterRepository extends CounterRepository {
         ),
       )
       .orderBy(sql`${ledgerEntries.occurredAt} desc nulls last`, sql`${ledgerEntries.id} desc nulls last`)
-      .limit(COUNTER_TODAY_LIMIT)
+      .limit(COUNTER_TODAY_LIMIT + 1)
 
-    return rows.map((row) =>
+    const entries = rows.slice(0, COUNTER_TODAY_LIMIT).map((row) =>
       CounterEntrySchema.parse({
         id: row.id,
         shopId: row.shopId,
@@ -104,6 +104,7 @@ export class DrizzleCounterRepository extends CounterRepository {
         createdAt: toIso(row.occurredAt),
       }),
     )
+    return { entries, truncated: rows.length > COUNTER_TODAY_LIMIT }
   }
 
   /** `null` = conta apagada ("cliente removido"): o celular dela é um buffer vazio e não se decifra. Falha de cifra é erro do servidor. */

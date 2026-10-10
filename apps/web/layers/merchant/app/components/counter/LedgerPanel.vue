@@ -6,6 +6,8 @@ interface Props {
   status: 'loading' | 'error' | 'success'
   errorCode: TransportError['code'] | null
   rows: readonly CounterLedgerEntryModel[]
+  /** O dia passou do teto: a lista mostra só os mais novos. */
+  truncated: boolean
 }
 
 interface Emits {
@@ -46,5 +48,6 @@ const emit = defineEmits<Emits>()
       class="-mx-4 -mb-4 max-h-[min(28rem,50dvh)] overflow-y-auto px-4 pb-4 [scrollbar-color:var(--lagoa-slot)_transparent] [scrollbar-width:thin]">
       <CounterLedger :entries="rows" />
     </div>
+    <p v-if="status === 'success' && truncated" class="pt-3 text-sm text-muted">{{ $t('counter.ledger.truncated', { count: rows.length }) }}</p>
   </PanelModule>
 </template>

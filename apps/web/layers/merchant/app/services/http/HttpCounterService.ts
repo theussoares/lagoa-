@@ -3,7 +3,7 @@ import { allowing, transportOnly, type ApiClient } from '#layers/core/app/servic
 import type { RedemptionId } from '#shared/schemas/ids'
 import type { RedemptionCode } from '#shared/schemas/redemption'
 import { RedemptionPreviewSchema } from '#shared/schemas/redemption'
-import { CounterEntrySchema } from '#shared/schemas/visit'
+import { CounterEntrySchema, CounterTodaySchema } from '#shared/schemas/visit'
 import type { CounterService } from '../CounterService'
 
 export class HttpCounterService implements CounterService {
@@ -20,6 +20,6 @@ export class HttpCounterService implements CounterService {
   }
 
   async listTodayEntries() {
-    return transportOnly(await this.api.get('/merchant/counter/entries/today', z.array(CounterEntrySchema)))
+    return transportOnly(await this.api.get('/merchant/counter/entries/today', CounterTodaySchema))
   }
 }

@@ -43,10 +43,10 @@ describe('http merchant services', () => {
   })
 
   it('counter listTodayEntries reads GET /merchant/counter/entries/today', async () => {
-    const fetcher = vi.fn<typeof fetch>(async () => json(200, []))
+    const fetcher = vi.fn<typeof fetch>(async () => json(200, { entries: [], truncated: true }))
     const { counter } = servicesWith(fetcher)
     const result = await counter.listTodayEntries()
-    expect(result).toEqual({ ok: true, value: [] })
+    expect(result).toEqual({ ok: true, value: { entries: [], truncated: true } })
     expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/merchant/counter/entries/today')
   })
 

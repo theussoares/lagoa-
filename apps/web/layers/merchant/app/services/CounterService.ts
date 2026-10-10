@@ -1,6 +1,6 @@
 import type { RedemptionId } from '#shared/schemas/ids'
 import type { RedemptionCode, RedemptionPreview } from '#shared/schemas/redemption'
-import type { CounterEntry } from '#shared/schemas/visit'
+import type { CounterEntry, CounterToday } from '#shared/schemas/visit'
 import type { ErrorOf, TransportError } from '#shared/types/errors'
 import type { Result } from '#shared/types/result'
 
@@ -18,5 +18,5 @@ export type ValidateRedemptionError =
 export interface CounterService {
   validateRedemption(code: RedemptionCode): Promise<Result<RedemptionPreview, ValidateRedemptionError>>
   confirmRedemption(id: RedemptionId): Promise<Result<CounterEntry, ConfirmRedemptionError>>
-  listTodayEntries(): Promise<Result<CounterEntry[], TransportError>>
+  listTodayEntries(): Promise<Result<CounterToday, TransportError>>
 }

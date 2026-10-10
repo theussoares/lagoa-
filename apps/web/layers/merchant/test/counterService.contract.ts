@@ -19,9 +19,10 @@ export function describeCounterServiceContract(
       const maskedPhone = await earnVisit()
       const today = await counter.listTodayEntries()
       if (!today.ok) throw new Error(today.error.code)
-      expect(today.value).toHaveLength(before.value.length + 1)
-      expect(today.value[0]?.maskedPhone).toBe(maskedPhone)
-      expect(JSON.stringify(today.value)).not.toMatch(/\d{10,}/)
+      expect(today.value.truncated).toBe(false)
+      expect(today.value.entries).toHaveLength(before.value.entries.length + 1)
+      expect(today.value.entries[0]?.maskedPhone).toBe(maskedPhone)
+      expect(JSON.stringify(today.value.entries)).not.toMatch(/\d{10,}/)
     })
 
     it('answers an unknown redemption code as invalid', async () => {

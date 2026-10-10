@@ -64,7 +64,7 @@ describe('mock CampaignService', () => {
     const lapsed = await barbershop.customers.listCustomers('lapsed')
     expect(lapsed.ok && lapsed.value.map((row) => row.firstName)).toEqual(['João', 'Lucas'])
     const counter = await barbershop.counter.listTodayEntries()
-    expect(counter.ok && counter.value.some((entry) => entry.kind === 'campaignBonus')).toBe(false)
+    expect(counter.ok && counter.value.entries.some((entry) => entry.kind === 'campaignBonus')).toBe(false)
   })
 
   it('sends nothing when the reach changed since the merchant confirmed', async () => {
