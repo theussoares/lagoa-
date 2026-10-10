@@ -20,6 +20,7 @@ const STATUS_BY_CODE: Record<DomainErrorCode, number> = {
   checkInDisabled: 403,
   checkInCooldown: 429,
   invalidVisitQr: 404,
+  visitQrLimitReached: 409,
   visitQrExpired: 410,
   visitQrAlreadyUsed: 409,
   visitQrStale: 409,

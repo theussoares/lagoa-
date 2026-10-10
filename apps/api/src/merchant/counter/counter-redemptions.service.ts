@@ -7,12 +7,14 @@ import type { CounterEntry } from '#shared/schemas/visit'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
 import { toIso } from '#shared/utils/time'
+import type { RedemptionLookupError } from '../../ledger/redemption-lookup'
 import { CounterRepository, type SettleRedemptionError } from './counter.repository'
 import { assertOperationalShop, type ShopClosedError } from './counter.rules'
 
 export type ValidateRedemptionServiceError =
   | ShopClosedError
-  | ErrorOf<'notFound' | 'redemptionInvalid' | 'redemptionExpired'>
+  | ErrorOf<'notFound'>
+  | RedemptionLookupError
 
 export type ConfirmRedemptionServiceError =
   | ShopClosedError
@@ -36,7 +38,7 @@ export class CounterRedemptionsService {
     const shopOperational = assertOperationalShop(shop.shopStatus)
     if (!shopOperational.ok) return shopOperational
 
-    const result = await this.repo.findActiveRedemption(shop.shopId, rawCode, this.clock.now())
+    const result = await this.repo.findRedemption(shop.shopId, rawCode, this.clock.now())
     if (!result.ok) return result
 
     return ok({

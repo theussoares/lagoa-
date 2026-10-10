@@ -1,0 +1,1 @@
+CREATE INDEX "redemptions_shop_code_created_idx" ON "redemptions" USING btree ("shop_id","code","created_at" DESC NULLS LAST);

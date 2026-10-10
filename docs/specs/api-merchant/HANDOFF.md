@@ -31,8 +31,15 @@ O handoff original ("Nenhum código", abaixo) estava defasado: a `develop` já t
   idempotente (201/200), `phoneAlreadyUsed`, retry do código de check-in, limite de 5/h, e-mail do token nunca gravado,
   recusa de conta apagada; `0020_poster_reprinted_at` e o aviso do cartaz ponta a ponta.
 
-**Fica para a M2 em diante (achados do code-reviewer):**
-- Balcão "Hoje" com conta apagada: `CounterEntry.maskedPhone` nulo (R8; hoje o decifrar lança e dá 500).
+**M2 (PR `feat/merchant-m2-counter`):** emissão do QR da visita em uma transação (R2: `FOR SHARE` na loja, versão ativa lida depois
+do lock, advisory lock por loja, faxina dos vencidos, teto de 20 com o `Clock`, código curto em savepoint), `PUT /program` cancela só
+os QRs vivos como `programChanged` e vence os demais, cancelar nunca transforma vencido em cancelado, o emissor/dono da loja não ganha
+no próprio QR (R12, `decideVisitQrUse`), recibo e "Hoje" com conta apagada (`maskedPhone` nulo, "Cliente removido"), `findByCode` do
+resgate (R11, índice `0021`), `validate` com `FailClosedThrottle`, "Hoje" pelo dia local do piloto (`startOfLocalDay`) com
+`isNewCustomer` por `first_visit_at`, `rewardNotReady` na confirmação (front). Testes de integração de CA-03/08/09/10/11/12.
+**Fica da M2:** e2e Playwright (2.7), rodar o contrato `visitQrService.contract` também contra o `HttpVisitQrService`, `@CurrentShop()` nos services.
+
+**Fica para depois (achados do code-reviewer):**
 - `@CurrentShop()` nos services (hoje seguem por `user.id`; o guard já barra rota sem loja).
 - `from_plan` em `shop_status_events` (exige migration nova).
 - Gate do termo do lojista (3.6), índices de Clientes e de resgate, campanhas (M5), corte do mock (M6).

@@ -62,6 +62,8 @@ export const redemptions = pgTable(
     uniqueIndex('redemptions_active_card_uq')
       .on(t.cardId)
       .where(sql`${t.status} = 'active'`),
+    // O Balcão explica o código que já não está ativo (usado/vencido) pela linha mais nova da janela de 24 h.
+    index('redemptions_shop_code_created_idx').on(t.shopId, t.code, t.createdAt.desc()),
   ],
 )
 

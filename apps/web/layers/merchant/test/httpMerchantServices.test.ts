@@ -43,10 +43,10 @@ describe('http merchant services', () => {
   })
 
   it('counter listTodayEntries reads GET /merchant/counter/entries/today', async () => {
-    const fetcher = vi.fn<typeof fetch>(async () => json(200, []))
+    const fetcher = vi.fn<typeof fetch>(async () => json(200, { entries: [], truncated: true }))
     const { counter } = servicesWith(fetcher)
     const result = await counter.listTodayEntries()
-    expect(result).toEqual({ ok: true, value: [] })
+    expect(result).toEqual({ ok: true, value: { entries: [], truncated: true } })
     expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/merchant/counter/entries/today')
   })
 
@@ -109,5 +109,18 @@ describe('http merchant services', () => {
     const draft = toClubSetupDraft(form)
     if (draft === null) throw new Error('invalid draft')
     expect(await clubSetup.createClub(draft)).toEqual({ ok: false, error: { code: 'phoneAlreadyUsed' } })
+  })
+
+  it('visitQr maps the live QR limit', async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => json(409, { code: 'visitQrLimitReached' }))
+    const { visitQr } = servicesWith(fetcher)
+    expect(await visitQr.issueVisitQr({})).toEqual({ ok: false, error: { code: 'visitQrLimitReached' } })
+  })
+
+  it('counter confirm keeps rewardNotReady (the code stops being valid on the server)', async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => json(409, { code: 'rewardNotReady', remaining: 1 }))
+    const { counter } = servicesWith(fetcher)
+    const result = await counter.confirmRedemption(RedemptionIdSchema.parse('01925b44-9000-7000-8000-000000000001'))
+    expect(result).toEqual({ ok: false, error: { code: 'rewardNotReady', remaining: 1 } })
   })
 })

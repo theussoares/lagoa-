@@ -12,7 +12,7 @@ export class HttpVisitQrService implements VisitQrService {
 
   async issueVisitQr(request: VisitQrIssueRequest) {
     const res = await this.api.post('/merchant/visit-qrs', IssuedVisitQrSchema, { body: request })
-    return allowing('invalidAmount', 'amountNotAccepted', 'shopPendingApproval', 'shopSuspended')(res)
+    return allowing('invalidAmount', 'amountNotAccepted', 'visitQrLimitReached', 'shopPendingApproval', 'shopSuspended')(res)
   }
 
   async getVisitQr(id: VisitQrId) {

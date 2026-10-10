@@ -210,7 +210,7 @@ Contrato já fixado na seção 4.1/7.6 do [desenho do QR](../dynamic-visit-qr/so
   acrescentar `findByCode` (R11) que prefere o ativo; sem ativo, a linha mais nova da loja com o código criada há no
   máximo `REDEMPTION_LOOKUP_WINDOW_HOURS` dá `redemptionAlreadyUsed`/`redemptionExpired`; senão (e outra loja)
   `redemptionInvalid`. Índice novo `redemptions (shop_id, code, created_at desc)`, consulta com `desc nulls last`.
-  `@FailClosedThrottle()`: 10/min por usuário (= por loja enquanto vale RN-02; o throttler global roda antes do guard
+  `@FailClosedThrottle()`: 20/min por usuário (e 60/min por IP) (= por loja enquanto vale RN-02; o throttler global roda antes do guard
   do lojista e não conhece a loja, R7).
 - `confirm` (`:id`): transação → `LedgerStore.settleRedemption(tx, { redemptionId, shopId, recordedBy, now })`
   → `CounterEntry` montada da linha de débito. `settleRedemption` já trava a linha e recusa a segunda entrega.
@@ -316,7 +316,7 @@ Toda tabela nova com RLS ligado e sem policy (padrão da `0001`); o teste de RLS
 
 | Arquivo | Mudança |
 |---|---|
-| `constants/domain.ts` | `VISIT_QR_ACTIVE_MAX_PER_SHOP = 20`, `MERCHANT_CUSTOMERS_PAGE_SIZE = 50`, `COUNTER_TODAY_LIMIT = 100`, `REDEMPTION_LOOKUP_WINDOW_HOURS = 24`, `MERCHANT_TERMS_VERSION` (M3); remover `SIGN_UP_TICKET_TTL_MINUTES` (M6) |
+| `constants/domain.ts` | `VISIT_QR_ACTIVE_MAX_PER_SHOP = 20`, `MERCHANT_CUSTOMERS_PAGE_SIZE = 50`, `COUNTER_TODAY_LIMIT = 300` (corta as mais antigas), `REDEMPTION_LOOKUP_WINDOW_HOURS = 24`, `MERCHANT_TERMS_VERSION` (M3); remover `SIGN_UP_TICKET_TTL_MINUTES` (M6) |
 | `schemas/customer.ts` | `MerchantCustomerPageSchema`, `MerchantCustomerCursorSchema`; `MerchantCustomerRow.customerId` → `cardId` (R4) |
 | `schemas/visit.ts` | `CounterEntrySchema.maskedPhone` `nullable` = cliente removido (R8) |
 | `schemas/session.ts` | `SignUpTicket*` e `MerchantSignInResult*` saem em M6 |

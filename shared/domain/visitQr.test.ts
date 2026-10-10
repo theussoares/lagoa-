@@ -30,6 +30,8 @@ function snapshot(overrides: Partial<VisitQrSnapshot> = {}): VisitQrSnapshot {
     cancelReason: null,
     expiresAt: visitQrExpiresAt(T0),
     claimedBy: null,
+    issuedBy: 'merchant-1',
+    shopOwnerId: 'merchant-1',
     programId: 'p1',
     activeProgramId: 'p1',
     shopApproved: true,
@@ -55,6 +57,16 @@ describe('visitQrExpiresAt / visitQrStatusAt', () => {
 })
 
 describe('decideVisitQrUse', () => {
+  it('refuses the merchant who issued the QR or owns the shop, with the same answer as a QR that does not exist (R12)', () => {
+    expect(decideVisitQrUse(snapshot(), 'merchant-1', at(1))).toEqual({ ok: false, error: { code: 'invalidVisitQr' } })
+    expect(decideVisitQrUse(snapshot({ issuedBy: 'staff-1' }), 'merchant-1', at(1))).toEqual({ ok: false, error: { code: 'invalidVisitQr' } })
+    expect(decideVisitQrUse(snapshot({ issuedBy: 'merchant-1', shopOwnerId: 'owner-2' }), 'owner-2', at(1))).toEqual({
+      ok: false,
+      error: { code: 'invalidVisitQr' },
+    })
+    expect(decideVisitQrUse(snapshot(), 'customer-9', at(1))).toEqual({ ok: true, value: 'claim' })
+  })
+
   it('claims an active QR inside the validity', () => {
     expect(decideVisitQrUse(snapshot(), 'c1', at(4, 59))).toEqual({ ok: true, value: 'claim' })
   })

@@ -78,6 +78,7 @@
       "tellCustomer": "{phone} completou o cartão. Avise o cliente que o prêmio está liberado."
     },
     "redemption": {
+      "rewardNotReady": "O cartão deste cliente não está mais com o prêmio completo. O código foi cancelado: peça para ele gerar outro.",
       "title": "Validar resgate",
       "hint": "Peça o código de 6 letras e números que aparece no app do cliente.",
       "codeLabel": "Código do cliente",
@@ -93,6 +94,8 @@
       "refresh": "Atualizar caderneta",
       "empty": "Nenhum lançamento hoje. O primeiro carimbo do dia aparece aqui.",
       "newCustomer": "Cliente novo",
+      "removedCustomer": "Cliente removido",
+      "truncated": "Mostrando só os {count} lançamentos mais recentes de hoje.",
       "earned": "+{units}",
       "earnedAmount": "+{units} · {amount}",
       "earnedCheckIn": "+{units} · check-in",
@@ -123,6 +126,7 @@
     "birthdayLocked": "A data do aniversário só pode ser trocada uma vez por ano.",
     "notFound": "Não encontramos o que você procurou.",
     "invalidPhone": "Esse celular não parece certo. Use DDD + 9 dígitos, ex.: (67) 99123-4567.",
+    "visitQrLimitReached": "Esta loja já tem muitos QRs abertos. Espere alguns minutos: eles vencem sozinhos.",
     "accountOwnsShop": "Esta conta é a dona de uma loja no Lagoa+, então não dá para apagá-la por aqui. Fale com a rede para encerrar a loja.",
     "phoneAlreadyUsed": "Esse celular já está em uso em outra conta. Confira o número ou fale com a loja.",
     "termsNotAccepted": "Aceite os termos de uso para continuar.",

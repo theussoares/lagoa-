@@ -13,6 +13,7 @@ export function useCounterLedgerView(ledger: CounterLedger): CounterLedgerView {
         ? ledger.state.value.value.map((entry) => toCounterLedgerModel(entry, translate, ledger.freshIds.value.has(entry.id)))
         : [],
     ),
+    truncated: computed(() => ledger.truncated.value),
     reload: ledger.reload,
   })
 }

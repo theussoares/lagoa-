@@ -48,6 +48,12 @@ export function localDateParts(date: Date): { isoDate: string; monthDay: string 
   return { isoDate, monthDay: isoDate.slice(5) }
 }
 
+/** Meia-noite local do piloto do dia de `now`, em UTC. Fuso fixo sem horário de verão (MS não tem desde 2019). */
+export function startOfLocalDay(now: Date): Date {
+  const { isoDate } = localDateParts(now)
+  return new Date(Date.parse(isoDate) - PILOT_UTC_OFFSET_HOURS * HOUR_MS)
+}
+
 /** Início do mês local do piloto (00:00 UTC−4) e do mês seguinte, em UTC; `month` no formato `AAAA-MM`. */
 export function localMonthBounds(now: Date): { month: string; start: Date; end: Date } {
   const local = addHours(now, PILOT_UTC_OFFSET_HOURS)

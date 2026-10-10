@@ -4,7 +4,7 @@ import type { ErrorOf, TransportError } from '#shared/types/errors'
 import type { Result } from '#shared/types/result'
 import type { ShopClosedError } from './CounterService'
 
-export type IssueVisitQrError = ErrorOf<'invalidAmount' | 'amountNotAccepted'> | ShopClosedError | TransportError
+export type IssueVisitQrError = ErrorOf<'invalidAmount' | 'amountNotAccepted' | 'visitQrLimitReached'> | ShopClosedError | TransportError
 /** QR de outra loja responde como inexistente. */
 export type VisitQrLookupError = ErrorOf<'notFound'> | ShopClosedError | TransportError
 

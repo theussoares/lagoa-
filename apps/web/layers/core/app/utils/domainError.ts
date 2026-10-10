@@ -10,7 +10,7 @@ const SIMPLE_CODES = [
 ] as const
 
 /** Em lista própria: uma união de literais com mais de 25 membros o TypeScript não consegue correlacionar com `DomainError`. */
-const VISIT_QR_CODES = ['invalidVisitQr', 'visitQrExpired', 'visitQrAlreadyUsed', 'visitQrStale', 'shopQrJoinOnly'] as const
+const VISIT_QR_CODES = ['invalidVisitQr', 'visitQrLimitReached', 'visitQrExpired', 'visitQrAlreadyUsed', 'visitQrStale', 'shopQrJoinOnly'] as const
 
 type VisitQrCode = (typeof VISIT_QR_CODES)[number]
 type SimpleCode = (typeof SIMPLE_CODES)[number]

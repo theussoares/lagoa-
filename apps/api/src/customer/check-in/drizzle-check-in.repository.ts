@@ -96,7 +96,9 @@ export class DrizzleCheckInRepository extends CheckInRepository {
     }
     try {
       return await this.db.transaction(async (tx) => {
-        // Ordem de locks: o QR primeiro, o cartão depois (nunca o contrário).
+        // Ordem de locks: loja (KEY SHARE), QR, cartão. O `PUT /program` trava a loja `FOR UPDATE` e depois os QRs; sem travar a
+        // loja primeiro aqui, usar o QR enquanto o lojista salva o programa dava deadlock (um dos dois levava 500).
+        await tx.execute(sql`select id from shops where id = (select shop_id from visit_qrs where id = ${target.visitQrId}) for key share`)
         const qr = await this.lockVisitQr(tx, target.visitQrId)
         const use = decide.qr(qr)
         if (!use.ok) return refuse(use.error)
@@ -168,6 +170,8 @@ export class DrizzleCheckInRepository extends CheckInRepository {
         cancelReason: visitQrs.cancelReason,
         expiresAt: visitQrs.expiresAt,
         claimedBy: visitQrs.claimedBy,
+        issuedBy: visitQrs.issuedBy,
+        shopOwnerId: shops.ownerUserId,
         claimedAt: visitQrs.claimedAt,
         ledgerEntryId: visitQrs.ledgerEntryId,
         programId: visitQrs.programId,

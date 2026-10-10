@@ -24,7 +24,7 @@ const emit = defineEmits<Emits>()
       <UIcon name="i-ph-circle-notch" class="size-4 motion-safe:animate-spin" aria-hidden="true" />{{ $t('counter.redemption.checking') }}
     </p>
     <p v-else-if="status === 'error' && errorCode" class="flex items-start gap-1.5 text-[0.9375rem] text-error">
-      <UIcon name="i-ph-warning-circle" class="mt-0.5 size-4 shrink-0" aria-hidden="true" />{{ $t(`errors.${errorCode}`) }}
+      <UIcon name="i-ph-warning-circle" class="mt-0.5 size-4 shrink-0" aria-hidden="true" />{{ errorCode === 'rewardNotReady' ? $t('counter.redemption.rewardNotReady') : $t(`errors.${errorCode}`) }}
     </p>
     <div v-else-if="preview" class="flex flex-col gap-4">
       <div class="flex flex-col gap-1">

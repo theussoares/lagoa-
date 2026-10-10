@@ -13,7 +13,7 @@ import {
   type SettleRedemptionError,
   type ShopWithProgram,
 } from './counter.repository'
-import type { CounterEntry } from '#shared/schemas/visit'
+import type { CounterEntry, CounterToday } from '#shared/schemas/visit'
 import { Clock } from '../../common/clock'
 import { err, ok } from '#shared/types/result'
 import { ShopIdSchema, VisitIdSchema } from '#shared/schemas/ids'
@@ -65,11 +65,11 @@ class TestCounterRepository extends CounterRepository {
 
 
 
-  async listTodayEntries(): Promise<CounterEntry[]> {
-    return []
+  async listTodayEntries(): Promise<CounterToday> {
+    return { entries: [], truncated: false }
   }
 
-  async findActiveRedemption(): Promise<any> {
+  async findRedemption(): Promise<any> {
     if (this.lookupError) return err({ code: this.lookupError })
     if (!this.activeRedemption) return err({ code: 'redemptionInvalid' })
     return ok(this.activeRedemption)

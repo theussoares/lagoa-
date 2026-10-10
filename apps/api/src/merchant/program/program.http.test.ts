@@ -10,6 +10,7 @@ import { ProgramController } from './program.controller'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
 import { ProgramRepository, type ActiveProgramData } from './program.repository'
+import { Clock } from '../../common/clock'
 import { ProgramService } from './program.service'
 import { MerchantShopGuard } from '../access/merchant-shop.guard'
 
@@ -84,6 +85,7 @@ describe('merchant program HTTP', () => {
       controllers: [ProgramController],
       providers: [
         ProgramService,
+        { provide: Clock, useValue: { now: () => new Date('2026-10-09T12:00:00Z') } },
         { provide: ProgramRepository, useValue: repository },
         { provide: APP_GUARD, useClass: FakeAuthGuard },
         { provide: APP_FILTER, useClass: AllExceptionsFilter },

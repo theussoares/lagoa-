@@ -11,7 +11,7 @@ import { FakeAuthGuard, TEST_USER } from '../../test-support/fake-auth.guard'
 import type { MerchantShopRecord } from '../session/session.repository'
 import { SessionRepository } from '../session/session.repository'
 import { VisitQrsController } from './visit-qrs.controller'
-import type { ActiveProgramRules, InsertVisitQrParams } from './visit-qrs.repository'
+import { FakeVisitQrsRepository } from './visit-qrs.fakes'
 import { VisitQrsRepository } from './visit-qrs.repository'
 import { VisitQrsRules } from './visit-qrs.rules'
 import { VisitQrsService } from './visit-qrs.service'
@@ -33,48 +33,13 @@ class FakeSessionRepository extends SessionRepository {
   }
 }
 
-class FakeVisitQrsRepository extends VisitQrsRepository {
-  activeProgram: ActiveProgramRules | null = null
-  qrs = new Map<string, VisitQr>()
-
-  async findActiveProgram(_shopId: string): Promise<ActiveProgramRules | null> {
-    return this.activeProgram
-  }
-
-  async createVisitQr(params: InsertVisitQrParams): Promise<string> {
-    const id = '018f98a2-7b2a-7182-9f33-6d004bbbb077'
-    const qr: VisitQr = {
-      id: id as any,
-      visitCode: params.visitCode as any,
-      status: 'active',
-      earn: params.earn,
-      createdAt: params.createdAt.toISOString() as any,
-      expiresAt: params.expiresAt.toISOString() as any,
-      claim: null,
-      refusal: null,
-    }
-    this.qrs.set(id, qr)
-    return id
-  }
-
-  async findById(_shopId: string, id: string): Promise<VisitQr | null> {
-    return this.qrs.get(id) ?? null
-  }
-
-  async cancel(_shopId: string, id: string, _reason: VisitQrCancelReason): Promise<VisitQr | null> {
-    const existing = this.qrs.get(id)
-    if (!existing) return null
-    const updated: VisitQr = { ...existing, status: 'cancelled' }
-    this.qrs.set(id, updated)
-    return updated
-  }
-}
-
 describe('merchant visit-qrs HTTP', () => {
   let app: INestApplication
   const clock = new FakeClock()
   const sessionRepo = new FakeSessionRepository()
   const visitQrsRepo = new FakeVisitQrsRepository()
+  // A "transação" trava a loja que o teste configurou na sessão.
+  visitQrsRepo.shopStatus = () => sessionRepo.shop?.status ?? 'approved'
 
   const shopId = '018f98a2-7b2a-7182-9f33-6d004bbbb001'
 
