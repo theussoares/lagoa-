@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { and, eq, sql } from 'drizzle-orm'
 import { DB, type Database } from '../../database/database.module'
-import { programs, shops } from '../../database/schema'
+import { appUsers, programs, shops } from '../../database/schema'
 import type { ClubSetupDraft } from '#shared/schemas/onboarding'
 import type { ShopStatus } from '#shared/schemas/shop'
 import { ensureAppUser, type NewAppUser } from '../../accounts/app-user.writer'
@@ -21,11 +21,11 @@ export class DrizzleClubSetupRepository extends ClubSetupRepository {
     super()
   }
 
-  async createClub(owner: NewAppUser, draft: ClubSetupDraft, newCheckInCode: () => string): Promise<CreateClubOutcome> {
+  async createClub(owner: NewAppUser, draft: ClubSetupDraft, newCheckInCode: () => string, now: Date): Promise<CreateClubOutcome> {
     // A colisão do código de check-in aborta a transação inteira no Postgres: o retry refaz tudo, não só o insert.
     for (let attempt = 0; attempt < CHECK_IN_CODE_ATTEMPTS; attempt++) {
       try {
-        return await this.createOnce(owner, draft, newCheckInCode())
+        return await this.createOnce(owner, draft, newCheckInCode(), now)
       } catch (error) {
         const constraint = uniqueViolationConstraint(error)
         if (constraint === 'app_users_phone_hash_unique') return { kind: 'phoneTaken' }
@@ -35,9 +35,13 @@ export class DrizzleClubSetupRepository extends ClubSetupRepository {
     throw new Error('Could not allocate a unique check-in code')
   }
 
-  private createOnce(owner: NewAppUser, draft: ClubSetupDraft, checkInCode: string): Promise<CreateClubOutcome> {
+  private createOnce(owner: NewAppUser, draft: ClubSetupDraft, checkInCode: string, now: Date): Promise<CreateClubOutcome> {
     return this.db.transaction(async (tx) => {
       await ensureAppUser(tx, owner)
+      // `FOR SHARE` pareia com o `FOR UPDATE` do `erase`: ou a conta é apagada antes (e aqui para) ou a loja nasce antes
+      // (e o `erase` recusa com `ownsShop`). O JWT segue válido depois de apagar a conta, então só `erased_at` barra.
+      const [account] = await tx.select({ erasedAt: appUsers.erasedAt }).from(appUsers).where(eq(appUsers.id, owner.userId)).for('share')
+      if (account?.erasedAt) return { kind: 'accountErased' }
       const [insertedShop] = await tx
         .insert(shops)
         .values({
@@ -49,7 +53,7 @@ export class DrizzleClubSetupRepository extends ClubSetupRepository {
           checkInCode,
           status: 'pending',
           // Loja nova já imprime o cartaz certo: o aviso de "cartaz novo" é só das lojas antigas.
-          posterReprintedAt: new Date(),
+          posterReprintedAt: now,
         })
         .onConflictDoNothing({ target: shops.ownerUserId })
         .returning({ id: shops.id, name: shops.name, status: shops.status })

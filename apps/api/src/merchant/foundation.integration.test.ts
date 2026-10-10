@@ -18,7 +18,6 @@ import { createTestPii } from '../test-support/pii'
 import { ClubSetupService } from './club-setup/club-setup.service'
 import { DrizzleClubSetupRepository } from './club-setup/drizzle-club-setup.repository'
 import { newCheckInCode } from './club-setup/club-setup.rules'
-import { randomUUID } from 'node:crypto'
 import { DrizzleMerchantShopResolver } from './access/drizzle-merchant-shop.resolver'
 
 const SLOW = 30_000
@@ -212,10 +211,32 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant foundation against a real database
         { userId: owner.id, phoneEncrypted: Buffer.from('x'), phoneHash: Buffer.from(`h${owner.id}`), emailEncrypted: null, emailHash: null },
         draft,
         () => codes.shift() ?? newCheckInCode(),
+        new Date(),
       )
       expect(outcome.kind).toBe('created')
       if (outcome.kind === 'created') data.trackShop(outcome.club.shopId)
       expect(codes).toHaveLength(0)
+    }, SLOW)
+
+    it('does not trip on an e-mail already used by a customer: the panel never stores the owner e-mail', async () => {
+      const customer = await data.createCustomer()
+      const [row] = await data.db.select({ emailHash: appUsers.emailHash }).from(appUsers).where(eq(appUsers.id, customer))
+      expect(row?.emailHash).not.toBeNull()
+      const owner = { ...newOwner('67900000075'), email: 'dono@exemplo.com' }
+      const result = await service().createClub(owner, draft)
+      expect(result).toMatchObject({ ok: true, value: { created: true } })
+      if (result.ok) data.trackShop(result.value.session.shopId)
+      expect((await data.db.select({ emailHash: appUsers.emailHash }).from(appUsers).where(eq(appUsers.id, owner.id)))[0]?.emailHash).toBeNull()
+    }, SLOW)
+
+    it('refuses to create a shop for an account that was erased (the JWT is still valid until it expires)', async () => {
+      const owner = newOwner('67900000076')
+      const first = await service().createClub(owner, draft)
+      if (first.ok) data.trackShop(first.value.session.shopId)
+      const erased = newOwner('67900000077')
+      await data.db.insert(appUsers).values({ id: erased.id, phoneEncrypted: Buffer.alloc(0), phoneHash: Buffer.from(`deleted:${erased.id}`), erasedAt: new Date() })
+      expect(await service().createClub(erased, draft)).toEqual({ ok: false, error: { code: 'unauthorized' } })
+      expect(await data.db.select({ id: shops.id }).from(shops).where(eq(shops.ownerUserId, erased.id))).toHaveLength(0)
     }, SLOW)
 
     it('reads and marks the poster reprint notice', async () => {

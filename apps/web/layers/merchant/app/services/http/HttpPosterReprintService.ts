@@ -9,16 +9,12 @@ export class HttpPosterReprintService implements PosterReprintService {
   constructor(private readonly api: ApiClient) {}
 
   async isPending(): Promise<Result<boolean, PosterReprintError>> {
-    return this.pending(await this.api.get('/merchant/shop/poster-reprint', PendingSchema))
+    const res = allowing('unauthorized')(await this.api.get('/merchant/shop/poster-reprint', PendingSchema))
+    return res.ok ? ok(res.value.pending) : res
   }
 
   async markPrinted(): Promise<Result<boolean, PosterReprintError>> {
-    return this.pending(await this.api.post('/merchant/shop/poster-reprint/printed', PendingSchema))
-  }
-
-  private pending(res: Awaited<ReturnType<ApiClient['get']>>): Result<boolean, PosterReprintError> {
-    const checked = allowing('unauthorized')(res)
-    if (!checked.ok) return checked
-    return ok(PendingSchema.parse(checked.value).pending)
+    const res = allowing('unauthorized')(await this.api.post('/merchant/shop/poster-reprint/printed', PendingSchema))
+    return res.ok ? ok(res.value.pending) : res
   }
 }

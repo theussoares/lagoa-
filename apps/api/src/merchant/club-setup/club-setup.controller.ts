@@ -1,4 +1,5 @@
 import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common'
+import { Throttle } from '@nestjs/throttler'
 import type { Response } from 'express'
 import { ClubSetupDraftSchema, type ClubSetupDraft } from '#shared/schemas/onboarding'
 import type { MerchantSession } from '#shared/schemas/session'
@@ -16,7 +17,9 @@ export class ClubSetupController {
   constructor(private readonly setup: ClubSetupService) {}
 
   /** 201 quando cria; 200 com a loja existente quando o dono repete a chamada (o rascunho novo não é aplicado). */
+  /** 5 criações por hora por usuário (e teto por IP): cada chamada pode abrir mais de uma transação no retry do código. */
   @Post('club-setup')
+  @Throttle({ default: { limit: 5, ttl: 3_600_000 }, ip: { limit: 15, ttl: 3_600_000 } })
   async createClub(
     @CurrentUser() user: AuthUser,
     @Body(new ZodValidationPipe(ClubSetupDraftSchema)) draft: ClubSetupDraft,

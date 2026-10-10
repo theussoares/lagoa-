@@ -1,5 +1,5 @@
 import type { CanActivate, ExecutionContext, INestApplication } from '@nestjs/common'
-import type { PhoneNumber } from '#shared/schemas/phone'
+import { PhoneNumberSchema } from '#shared/schemas/phone'
 import { APP_FILTER, APP_GUARD } from '@nestjs/core'
 import { Test } from '@nestjs/testing'
 import request from 'supertest'
@@ -44,7 +44,7 @@ const sampleDraft: ClubSetupDraft = {
   },
 }
 
-const OWNER: AuthUser = { ...TEST_USER, phone: '67991230374' as PhoneNumber }
+const OWNER: AuthUser = { ...TEST_USER, phone: PhoneNumberSchema.parse('67991230374') }
 
 /** Troca o JWT por um lojista que entrou por SMS (o Criar o clube exige o celular do token). */
 class OwnerAuthGuard implements CanActivate {

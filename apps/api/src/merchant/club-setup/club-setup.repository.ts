@@ -12,6 +12,8 @@ export interface CreatedClub {
 export type CreateClubOutcome =
   | { readonly kind: 'created' | 'existing'; readonly club: CreatedClub }
   | { readonly kind: 'phoneTaken' }
+  /** A conta foi apagada enquanto o pedido chegava: não nasce loja de dono sem login. */
+  | { readonly kind: 'accountErased' }
 
 export interface PosterData {
   readonly shopName: string
@@ -27,7 +29,7 @@ export abstract class ClubSetupRepository {
    * Numa transação: garante o `app_users` do dono, cria a loja e o programa. Quem já tem loja recebe a existente
    * (`existing`) sem aplicar o rascunho. `newCheckInCode` é chamado de novo se o código sorteado colidir.
    */
-  abstract createClub(owner: NewAppUser, draft: ClubSetupDraft, newCheckInCode: () => string): Promise<CreateClubOutcome>
+  abstract createClub(owner: NewAppUser, draft: ClubSetupDraft, newCheckInCode: () => string, now: Date): Promise<CreateClubOutcome>
   abstract getPoster(ownerUserId: string): Promise<PosterData | null>
   abstract getStatus(ownerUserId: string): Promise<ShopStatus | null>
   abstract approveShop(ownerUserId: string): Promise<ShopStatus | null>

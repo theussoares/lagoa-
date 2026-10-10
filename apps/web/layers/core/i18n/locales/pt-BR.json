@@ -679,6 +679,7 @@
   },
   "clubSetup": {
     "pageTitle": "Criar o clube",
+    "phoneAlreadyUsed": "O celular que você confirmou já está em outra conta do Lagoa+. Fale com a rede para resolvermos antes de criar o clube.",
     "creating": "Criando o clube da sua loja",
     "creatingFor": "Criando o clube da {shop}",
     "stepsLabel": "Etapas do Criar o clube",

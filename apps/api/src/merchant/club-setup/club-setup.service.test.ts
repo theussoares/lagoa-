@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { ClubSetupDraft } from '#shared/schemas/onboarding'
-import type { PhoneNumber } from '#shared/schemas/phone'
+import { PhoneNumberSchema } from '#shared/schemas/phone'
 import type { ShopStatus } from '#shared/schemas/shop'
 import type { AuthUser } from '../../auth/auth.types'
 import { TEST_USER } from '../../test-support/fake-auth.guard'
@@ -12,7 +12,7 @@ import {
 } from './club-setup.repository'
 import { ClubSetupService } from './club-setup.service'
 
-const OWNER: AuthUser = { ...TEST_USER, phone: '67991230374' as PhoneNumber }
+const OWNER: AuthUser = { ...TEST_USER, phone: PhoneNumberSchema.parse('67991230374') }
 const NOW = new Date('2026-10-09T12:00:00Z')
 
 const sampleDraft: ClubSetupDraft = {
@@ -109,6 +109,8 @@ describe('ClubSetupService', () => {
     await service.createClub(OWNER, sampleDraft)
     expect(repo.lastOwner?.phoneEncrypted.toString('utf8')).not.toContain('67991230374')
     expect(repo.lastOwner?.phoneHash.length).toBeGreaterThan(0)
+    // O e-mail do token nunca é gravado: o painel não o usa e e-mail único faria o Criar o clube falhar.
+    expect(repo.lastOwner).toMatchObject({ emailEncrypted: null, emailHash: null })
   })
 
   it('answers phoneAlreadyUsed when the phone belongs to another account', async () => {

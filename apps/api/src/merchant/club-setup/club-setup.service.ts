@@ -38,13 +38,17 @@ export class ClubSetupService {
         userId: user.id,
         phoneEncrypted: this.pii.encrypt(user.phone),
         phoneHash: this.pii.hashPhone(user.phone),
-        emailEncrypted: user.email === undefined ? null : this.pii.encryptEmail(user.email),
-        emailHash: user.email === undefined ? null : this.pii.hashEmail(user.email),
+        // O painel não usa e-mail, e o do token não é verificado contra o cadastro de ninguém: gravá-lo só faria o
+        // Criar o clube falhar (e-mail único) quando um cliente tivesse informado o mesmo endereço.
+        emailEncrypted: null,
+        emailHash: null,
       },
       draft,
       newCheckInCode,
+      this.clock.now(),
     )
     if (outcome.kind === 'phoneTaken') return err({ code: 'phoneAlreadyUsed' })
+    if (outcome.kind === 'accountErased') return err({ code: 'unauthorized' })
     const { club } = outcome
     return ok({
       created: outcome.kind === 'created',

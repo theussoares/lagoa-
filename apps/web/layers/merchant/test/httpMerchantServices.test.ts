@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { ApiClient } from '#layers/core/app/services/http/ApiClient'
 import { RedemptionCodeSchema } from '#shared/schemas/redemption'
 import { RedemptionIdSchema } from '#shared/schemas/ids'
+import { emptyClubSetupForm, toClubSetupDraft } from '../app/utils/clubSetupForm'
 import { createHttpMerchantServices } from '../app/services/http/createHttpMerchantServices'
 
 const json = (status: number, body: unknown): Response => new Response(JSON.stringify(body), { status })
@@ -102,7 +103,11 @@ describe('http merchant services', () => {
   it('clubSetup maps a phone that belongs to another account', async () => {
     const fetcher = vi.fn<typeof fetch>(async () => json(409, { code: 'phoneAlreadyUsed' }))
     const { clubSetup } = servicesWith(fetcher)
-    const draft = { shop: { name: 'x', category: 'cafe', neighborhood: 'c', addressLine: 'r' } } as never
+    const form = emptyClubSetupForm()
+    form.shop = { name: 'Café', category: 'cafe', neighborhood: 'Centro', addressLine: 'Rua A, 1' }
+    form.program.reward.title = 'Café grátis'
+    const draft = toClubSetupDraft(form)
+    if (draft === null) throw new Error('invalid draft')
     expect(await clubSetup.createClub(draft)).toEqual({ ok: false, error: { code: 'phoneAlreadyUsed' } })
   })
 })
