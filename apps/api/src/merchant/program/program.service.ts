@@ -4,7 +4,7 @@ import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
 import { Clock } from '../../common/clock'
 import { ProgramRepository } from './program.repository'
-import { hasCriticalChanges } from './program.rules'
+import { isSameProgram } from '#shared/domain/program'
 
 export type ProgramServiceError = ErrorOf<'notFound' | 'invalidProgram'>
 
@@ -39,6 +39,6 @@ export class ProgramService {
     draft: ProgramDraft,
   ): Promise<Result<Program, ProgramServiceError>> {
     // Sem trava de modo: mudar regra cria uma versão nova do programa; cartão com saldo termina na versão em que nasceu.
-    return this.repo.updateActiveProgram(ownerUserId, draft, (current) => ({ isNewVersion: hasCriticalChanges(current, draft) }), this.clock.now())
+    return this.repo.updateActiveProgram(ownerUserId, draft, (current) => ({ isNewVersion: !isSameProgram(current, draft) }), this.clock.now())
   }
 }
