@@ -10,3 +10,7 @@ coverage
 .DS_Store
 .impeccable/questions
 .impeccable/config.local.json
+
+# Playwright
+/test-results/
+/playwright-report/
