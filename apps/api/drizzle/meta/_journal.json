@@ -134,6 +134,13 @@
       "when": 1791582576858,
       "tag": "0018_shop_assets_bucket",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1791590359135,
+      "tag": "0019_merchant_foundation",
+      "breakpoints": true
     }
   ]
 }

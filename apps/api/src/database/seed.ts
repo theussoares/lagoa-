@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/postgres-js'
-import { eq, inArray } from 'drizzle-orm'
+import { inArray } from 'drizzle-orm'
 import postgres from 'postgres'
 import { earnRateOf, unitOf } from '#shared/domain/programStrategies'
 import { PhoneNumberSchema } from '#shared/schemas/phone'
@@ -7,7 +7,7 @@ import { PiiService } from '../common/pii.service'
 import { parseEnv } from '../config/env'
 import { toProgramRules } from '../programs/program-rules.mapper'
 import * as schema from './schema'
-import { SEED_OWNER_EMAIL, SEED_OWNER_ID, SEED_OWNER_PHONE, SEED_SHOPS } from './seed-data'
+import { SEED_SHOPS } from './seed-data'
 
 /**
  * `pnpm db:seed` cria os dados de exemplo (idempotente: não atualiza o que já existe);
@@ -25,25 +25,25 @@ async function main(): Promise<void> {
       await db.transaction(async (tx) => {
         await tx.delete(schema.programs).where(inArray(schema.programs.shopId, shopIds))
         await tx.delete(schema.shops).where(inArray(schema.shops.id, shopIds))
-        await tx.delete(schema.appUsers).where(eq(schema.appUsers.id, SEED_OWNER_ID))
+        await tx.delete(schema.appUsers).where(inArray(schema.appUsers.id, SEED_SHOPS.map((shop) => shop.owner.id)))
       })
       console.log('Seed removed')
       return
     }
     const pii = new PiiService(env)
     await db.transaction(async (tx) => {
-      await tx
-        .insert(schema.appUsers)
-        .values({
-          id: SEED_OWNER_ID,
-          emailEncrypted: pii.encryptEmail(SEED_OWNER_EMAIL),
-          emailHash: pii.hashEmail(SEED_OWNER_EMAIL),
-          phoneEncrypted: pii.encrypt(SEED_OWNER_PHONE),
-          phoneHash: pii.hashPhone(PhoneNumberSchema.parse(SEED_OWNER_PHONE)),
-        })
-        .onConflictDoNothing()
-      for (const { programId, program, ...shop } of SEED_SHOPS) {
-        await tx.insert(schema.shops).values({ ...shop, ownerUserId: SEED_OWNER_ID }).onConflictDoNothing()
+      for (const { programId, program, owner, ...shop } of SEED_SHOPS) {
+        await tx
+          .insert(schema.appUsers)
+          .values({
+            id: owner.id,
+            emailEncrypted: pii.encryptEmail(owner.email),
+            emailHash: pii.hashEmail(owner.email),
+            phoneEncrypted: pii.encrypt(owner.phone),
+            phoneHash: pii.hashPhone(PhoneNumberSchema.parse(owner.phone)),
+          })
+          .onConflictDoNothing()
+        await tx.insert(schema.shops).values({ ...shop, ownerUserId: owner.id }).onConflictDoNothing()
         const rules = toProgramRules(program)
         if (!rules.ok) throw new Error(`Seed shop ${shop.name} has an invalid program`)
         await tx

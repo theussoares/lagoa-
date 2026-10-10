@@ -11,7 +11,9 @@ export class AccountService {
     private readonly clock: Clock,
   ) {}
 
-  async erase(userId: string): Promise<Result<void, ErrorOf<'notFound'>>> {
-    return (await this.repository.erase(userId, this.clock.now())) ? ok(undefined) : err({ code: 'notFound', entity: 'customer' })
+  async erase(userId: string): Promise<Result<void, ErrorOf<'notFound' | 'accountOwnsShop'>>> {
+    const outcome = await this.repository.erase(userId, this.clock.now())
+    if (outcome === 'ownsShop') return err({ code: 'accountOwnsShop' })
+    return outcome === 'erased' ? ok(undefined) : err({ code: 'notFound', entity: 'customer' })
   }
 }

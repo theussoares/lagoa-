@@ -7,6 +7,7 @@ import { CurrentUser } from '../../auth/current-user.decorator'
 import { unwrap } from '../../common/http/domain-exception'
 import { ZodValidationPipe } from '../../common/http/zod-validation.pipe'
 import { CounterRedemptionsService } from './counter-redemptions.service'
+import { MerchantSurface } from '../access/merchant-surface.decorator'
 
 const ValidateRedemptionBodySchema = z.object({
   code: z.string().trim().min(1),
@@ -20,6 +21,7 @@ type ConfirmRedemptionBody = z.infer<typeof ConfirmRedemptionBodySchema>
 
 const RedemptionIdParamSchema = z.string().uuid()
 
+@MerchantSurface()
 @Controller('merchant/counter/redemptions')
 export class CounterRedemptionsController {
   constructor(private readonly service: CounterRedemptionsService) {}

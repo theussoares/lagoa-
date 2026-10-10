@@ -4,8 +4,8 @@ import { and, eq, inArray, or, sql } from 'drizzle-orm'
 import { REFERRAL_CODE_LENGTH } from '#shared/constants/domain'
 import { generateReadableCode } from '../../common/readable-code'
 import { DB, type Database } from '../../database/database.module'
-import { appUsers, customerProfiles, loyaltyCards, redemptions, referrals, visitQrs } from '../../database/schema'
-import { AccountRepository } from './account.repository'
+import { appUsers, customerProfiles, loyaltyCards, redemptions, referrals, shops, visitQrs } from '../../database/schema'
+import { AccountRepository, type EraseOutcome } from './account.repository'
 
 @Injectable()
 export class DrizzleAccountRepository extends AccountRepository {
@@ -18,10 +18,15 @@ export class DrizzleAccountRepository extends AccountRepository {
     return executor.update(visitQrs).set({ claimedBy: null }).where(eq(visitQrs.claimedBy, userId))
   }
 
-  async erase(userId: string, now: Date): Promise<boolean> {
+  async erase(userId: string, now: Date): Promise<EraseOutcome> {
     return this.db.transaction(async (tx) => {
+      // Trava a conta antes de olhar as lojas: o Criar o clube lê esta mesma linha com `FOR SHARE`, então ou a loja nasce
+      // antes (e aqui vale `ownsShop`) ou depois (e lá vale `erased_at`). Sem isso nasceria loja de dono sem login.
+      await tx.select({ id: appUsers.id }).from(appUsers).where(eq(appUsers.id, userId)).for('update')
       const [profile] = await tx.select({ id: customerProfiles.userId }).from(customerProfiles).where(eq(customerProfiles.userId, userId)).for('update').limit(1)
-      if (!profile) return false
+      if (!profile) return 'notFound'
+      const [owned] = await tx.select({ id: shops.id }).from(shops).where(eq(shops.ownerUserId, userId)).limit(1)
+      if (owned) return 'ownsShop'
 
       const cards = tx.select({ id: loyaltyCards.id }).from(loyaltyCards).where(eq(loyaltyCards.customerId, userId))
       await tx.update(redemptions).set({ status: 'expired' }).where(and(inArray(redemptions.cardId, cards), eq(redemptions.status, 'active')))
@@ -47,12 +52,12 @@ export class DrizzleAccountRepository extends AccountRepository {
         .where(eq(customerProfiles.userId, userId))
       await tx
         .update(appUsers)
-        .set({ emailEncrypted: null, emailHash: null, phoneEncrypted: Buffer.alloc(0), phoneHash: createHash('sha256').update(`deleted:${userId}`).digest() })
+        .set({ emailEncrypted: null, emailHash: null, phoneEncrypted: Buffer.alloc(0), phoneHash: createHash('sha256').update(`deleted:${userId}`).digest(), erasedAt: now })
         .where(eq(appUsers.id, userId))
       // O login mora no Supabase Auth: sem essa linha a pessoa não entra mais (a sessão aberta morre quando o token vence).
       const [auth] = await tx.execute<{ present: boolean }>(sql`select to_regclass('auth.users') is not null as present`)
       if (auth?.present) await tx.execute(sql`delete from auth.users where id = ${userId}`)
-      return true
+      return 'erased'
     })
   }
 }

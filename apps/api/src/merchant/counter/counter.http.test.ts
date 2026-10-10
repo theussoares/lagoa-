@@ -13,6 +13,7 @@ import {
 import { CounterService } from './counter.service'
 import type { CounterEntry } from '#shared/schemas/visit'
 import { Clock } from '../../common/clock'
+import { MerchantShopGuard } from '../access/merchant-shop.guard'
 
 class TestCounterRepository extends CounterRepository {
   shop: ShopWithProgram | null = {
@@ -81,7 +82,11 @@ describe('merchant counter HTTP', () => {
         { provide: APP_GUARD, useClass: FakeAuthGuard },
         { provide: APP_FILTER, useClass: AllExceptionsFilter },
       ],
-    }).compile()
+    })
+      // O guard da loja tem teste próprio (access/merchant-shop.guard.http.test.ts); aqui a loja vem do repositório de teste.
+      .overrideGuard(MerchantShopGuard)
+      .useValue({ canActivate: () => true })
+      .compile()
     app = moduleRef.createNestApplication()
     await app.init()
   })

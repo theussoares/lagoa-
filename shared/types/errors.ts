@@ -17,6 +17,8 @@ export type DomainError =
   | { readonly code: 'invalidPhone' }
   /** Cadastro com celular de outra conta: o celular é único por cliente. */
   | { readonly code: 'phoneAlreadyUsed' }
+  /** Quem é dono de loja não apaga a conta pelo app do cliente: a loja ficaria sem login. Encerrar loja é com a rede. */
+  | { readonly code: 'accountOwnsShop' }
   /** E-mail já ligado a outra conta (ex.: conta de login recriada): precisa de atendimento, não de nova tentativa. */
   | { readonly code: 'emailAlreadyUsed' }
   | { readonly code: 'invalidLoginCode' }

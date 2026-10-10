@@ -27,6 +27,10 @@ export type ShopCategory = z.infer<typeof ShopCategorySchema>
 export const ShopStatusSchema = z.enum(['pending', 'approved', 'suspended'])
 export type ShopStatus = z.infer<typeof ShopStatusSchema>
 
+/** Plano da loja (Fundador ou Fundador Pro): decide o que o painel libera (campanhas, destaque no Descobrir). */
+export const ShopPlanSchema = z.enum(['founder', 'founderPro'])
+export type ShopPlan = z.infer<typeof ShopPlanSchema>
+
 /** Identifica a loja para entrar no clube: vai no QR do cartaz e impresso embaixo dele (nome legado, P-01). */
 export const CheckInCodeSchema = readableCodeSchema(CHECK_IN_CODE_LENGTH).brand<'CheckInCode'>()
 export type CheckInCode = z.infer<typeof CheckInCodeSchema>

@@ -18,6 +18,7 @@ import { Clock } from '../../common/clock'
 import { err, ok } from '#shared/types/result'
 import { ShopIdSchema, VisitIdSchema } from '#shared/schemas/ids'
 import { MaskedPhoneSchema } from '#shared/schemas/phone'
+import { MerchantShopGuard } from '../access/merchant-shop.guard'
 
 class FakeClock {
   now(): Date {
@@ -112,7 +113,11 @@ describe('CounterRedemptions HTTP', () => {
         { provide: APP_GUARD, useClass: FakeAuthGuard },
         { provide: APP_FILTER, useClass: AllExceptionsFilter },
       ],
-    }).compile()
+    })
+      // O guard da loja tem teste próprio (access/merchant-shop.guard.http.test.ts); aqui a loja vem do repositório de teste.
+      .overrideGuard(MerchantShopGuard)
+      .useValue({ canActivate: () => true })
+      .compile()
 
     app = moduleRef.createNestApplication()
     app.setGlobalPrefix('v1')

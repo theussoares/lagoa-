@@ -14,6 +14,7 @@ import {
   ClubSetupRepository,
 } from './club-setup.repository'
 import { ClubSetupService } from './club-setup.service'
+import { MerchantShopGuard } from '../access/merchant-shop.guard'
 
 const sampleDraft: ClubSetupDraft = {
   shop: {
@@ -86,7 +87,11 @@ describe('merchant club-setup HTTP', () => {
         { provide: APP_GUARD, useClass: FakeAuthGuard },
         { provide: APP_FILTER, useClass: AllExceptionsFilter },
       ],
-    }).compile()
+    })
+      // O guard da loja tem teste próprio (access/merchant-shop.guard.http.test.ts); aqui a loja vem do repositório de teste.
+      .overrideGuard(MerchantShopGuard)
+      .useValue({ canActivate: () => true })
+      .compile()
     app = moduleRef.createNestApplication()
     await app.init()
   })

@@ -4,9 +4,10 @@ import { DrizzleHomeRepository } from './drizzle-home.repository'
 import { HomeController } from './home.controller'
 import { HomeRepository } from './home.repository'
 import { HomeService } from './home.service'
+import { AccessModule } from '../access/access.module'
 
 @Module({
-  imports: [SessionModule],
+  imports: [AccessModule, SessionModule],
   controllers: [HomeController],
   providers: [
     HomeService,

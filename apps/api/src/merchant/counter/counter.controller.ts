@@ -4,7 +4,9 @@ import type { AuthUser } from '../../auth/auth.types'
 import { CurrentUser } from '../../auth/current-user.decorator'
 import { unwrap } from '../../common/http/domain-exception'
 import { CounterService } from './counter.service'
+import { MerchantSurface } from '../access/merchant-surface.decorator'
 
+@MerchantSurface()
 @Controller('merchant/counter')
 export class CounterController {
   constructor(private readonly counter: CounterService) {}

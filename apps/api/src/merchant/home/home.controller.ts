@@ -4,7 +4,9 @@ import type { AuthUser } from '../../auth/auth.types'
 import { CurrentUser } from '../../auth/current-user.decorator'
 import { unwrap } from '../../common/http/domain-exception'
 import { HomeService } from './home.service'
+import { MerchantSurface } from '../access/merchant-surface.decorator'
 
+@MerchantSurface()
 @Controller('merchant/home')
 export class HomeController {
   constructor(private readonly home: HomeService) {}

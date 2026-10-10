@@ -4,7 +4,9 @@ import type { AuthUser } from '../../auth/auth.types'
 import { CurrentUser } from '../../auth/current-user.decorator'
 import { unwrap } from '../../common/http/domain-exception'
 import { SessionService } from './session.service'
+import { MerchantSurface } from '../access/merchant-surface.decorator'
 
+@MerchantSurface({ shopRequired: false })
 @Controller('merchant/session')
 export class SessionController {
   constructor(private readonly sessions: SessionService) {}

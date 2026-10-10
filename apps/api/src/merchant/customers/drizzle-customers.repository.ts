@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common'
-import { and, desc, eq, sql } from 'drizzle-orm'
+import { and, desc, eq, isNull, sql } from 'drizzle-orm'
 import { DB, type Database } from '../../database/database.module'
-import { ledgerEntries, loyaltyCards } from '../../database/schema/cards'
+import { loyaltyCards } from '../../database/schema/cards'
 import { programs } from '../../database/schema/shops'
 import { appUsers, customerProfiles } from '../../database/schema/users'
 import { CustomersRepository, type RawCustomerCardRow } from './customers.repository'
@@ -13,16 +13,6 @@ export class DrizzleCustomersRepository extends CustomersRepository {
   }
 
   async listShopCustomers(shopId: string): Promise<RawCustomerCardRow[]> {
-    const visitsSubquery = this.db
-      .select({
-        cardId: ledgerEntries.cardId,
-        visitsCount: sql<number>`count(*)::int`.as('visits_count'),
-      })
-      .from(ledgerEntries)
-      .where(and(eq(ledgerEntries.shopId, shopId), eq(ledgerEntries.countsAsVisit, true)))
-      .groupBy(ledgerEntries.cardId)
-      .as('visits_subquery')
-
     const rows = await this.db
       .select({
         customerId: loyaltyCards.customerId,
@@ -31,7 +21,7 @@ export class DrizzleCustomersRepository extends CustomersRepository {
         unit: programs.unit,
         balance: loyaltyCards.balance,
         target: programs.target,
-        visitsCount: sql<number>`coalesce(${visitsSubquery.visitsCount}, 0)::int`,
+        visitsCount: loyaltyCards.visitsCount,
         lastVisitAt: loyaltyCards.lastVisitAt,
         acceptsNotifications: customerProfiles.notificationsConsent,
       })
@@ -39,8 +29,8 @@ export class DrizzleCustomersRepository extends CustomersRepository {
       .innerJoin(programs, eq(programs.id, loyaltyCards.programId))
       .innerJoin(customerProfiles, eq(customerProfiles.userId, loyaltyCards.customerId))
       .innerJoin(appUsers, eq(appUsers.id, customerProfiles.userId))
-      .leftJoin(visitsSubquery, eq(visitsSubquery.cardId, loyaltyCards.id))
-      .where(eq(loyaltyCards.shopId, shopId))
+      // Conta apagada fica fora: o celular dela é um buffer vazio que ninguém decifra (R8).
+      .where(and(eq(loyaltyCards.shopId, shopId), isNull(appUsers.erasedAt)))
       .orderBy(sql`${loyaltyCards.lastVisitAt} desc nulls last`, desc(loyaltyCards.id))
 
     return rows

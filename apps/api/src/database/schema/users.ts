@@ -9,6 +9,8 @@ export const appUsers = pgTable('app_users', {
   emailHash: bytea('email_hash').unique(),
   phoneEncrypted: bytea('phone_encrypted').notNull(),
   phoneHash: bytea('phone_hash').notNull().unique(),
+  /** Conta apagada: o celular vira buffer vazio e o painel nunca tenta decifrá-lo. */
+  erasedAt: timestamp('erased_at', { withTimezone: true }),
   createdAt: createdAt(),
 })
 
