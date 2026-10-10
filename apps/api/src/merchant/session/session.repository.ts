@@ -5,6 +5,7 @@ export interface MerchantShopRecord {
   readonly ownerUserId: string
   readonly name: string
   readonly status: ShopStatus
+  readonly merchantTermsVersion: string | null
 }
 
 export abstract class SessionRepository {

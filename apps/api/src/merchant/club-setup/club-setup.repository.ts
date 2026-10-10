@@ -7,6 +7,7 @@ export interface CreatedClub {
   readonly shopId: string
   readonly shopName: string
   readonly shopStatus: ShopStatus
+  readonly merchantTermsVersion: string | null
 }
 
 export type CreateClubOutcome =

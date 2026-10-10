@@ -43,6 +43,7 @@ export const cafeSession: MerchantSession = {
   shopId: EXAMPLE_IDS.shops.cafe,
   shopName: 'Café da Orla',
   shopStatus: 'approved',
+  termsAccepted: true,
 }
 
 export const barbershopSession: MerchantSession = {
@@ -51,4 +52,5 @@ export const barbershopSession: MerchantSession = {
   shopId: EXAMPLE_IDS.shops.barbershop,
   shopName: 'Barbearia Navalha',
   shopStatus: 'approved',
+  termsAccepted: true,
 }

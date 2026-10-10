@@ -62,10 +62,10 @@ class TestClubSetupRepository extends ClubSetupRepository {
 
   async createClub(_owner: NewAppUser, draft: ClubSetupDraft, newCheckInCode: () => string): Promise<CreateClubOutcome> {
     if (this.phoneTaken) return { kind: 'phoneTaken' }
-    if (this.shop) return { kind: 'existing', club: { shopId: this.shop.id, shopName: this.shop.name, shopStatus: this.shop.status } }
+    if (this.shop) return { kind: 'existing', club: { shopId: this.shop.id, shopName: this.shop.name, shopStatus: this.shop.status, merchantTermsVersion: null } }
     this.shop = { id: '018f98a2-7b2a-7182-9f33-6d004bbbb111', status: 'pending', name: draft.shop.name }
     this.poster = { shopName: draft.shop.name, status: 'pending', checkInCode: newCheckInCode(), rewardTitle: draft.program.reward.title, unit: 'stamp', target: 8 }
-    return { kind: 'created', club: { shopId: this.shop.id, shopName: this.shop.name, shopStatus: 'pending' } }
+    return { kind: 'created', club: { shopId: this.shop.id, shopName: this.shop.name, shopStatus: 'pending', merchantTermsVersion: null } }
   }
 
   async getPoster(): Promise<PosterData | null> {
@@ -139,6 +139,7 @@ describe('merchant club-setup HTTP', () => {
       shopId: '018f98a2-7b2a-7182-9f33-6d004bbbb111',
       shopName: 'Barbearia Retrô',
       shopStatus: 'pending',
+      termsAccepted: false,
     })
   })
 

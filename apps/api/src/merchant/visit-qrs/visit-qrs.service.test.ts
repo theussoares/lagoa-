@@ -53,6 +53,7 @@ describe('VisitQrsService', () => {
       ownerUserId,
       name: 'Café do Lago',
       status: 'approved',
+      merchantTermsVersion: null,
     }
     visitQrsRepo.activeProgram = {
       id: '018f98a2-7b2a-7182-9f33-6d004bbbb003',

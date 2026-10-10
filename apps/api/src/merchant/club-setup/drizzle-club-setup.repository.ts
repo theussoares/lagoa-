@@ -56,16 +56,18 @@ export class DrizzleClubSetupRepository extends ClubSetupRepository {
           posterReprintedAt: now,
         })
         .onConflictDoNothing({ target: shops.ownerUserId })
-        .returning({ id: shops.id, name: shops.name, status: shops.status })
+        .returning({ id: shops.id, name: shops.name, status: shops.status, termsVersion: shops.merchantTermsVersion })
 
       if (!insertedShop) {
-        const [existing] = await tx.select({ id: shops.id, name: shops.name, status: shops.status }).from(shops).where(eq(shops.ownerUserId, owner.userId)).limit(1)
+        const [existing] = await tx
+          .select({ id: shops.id, name: shops.name, status: shops.status, termsVersion: shops.merchantTermsVersion })
+          .from(shops).where(eq(shops.ownerUserId, owner.userId)).limit(1)
         if (!existing) throw new Error('Shop vanished after conflict')
-        return { kind: 'existing', club: { shopId: existing.id, shopName: existing.name, shopStatus: existing.status } }
+        return { kind: 'existing', club: { shopId: existing.id, shopName: existing.name, shopStatus: existing.status, merchantTermsVersion: existing.termsVersion } }
       }
 
       await tx.insert(programs).values(mapDraftToProgramInsert(insertedShop.id, draft.program))
-      return { kind: 'created', club: { shopId: insertedShop.id, shopName: insertedShop.name, shopStatus: insertedShop.status } }
+      return { kind: 'created', club: { shopId: insertedShop.id, shopName: insertedShop.name, shopStatus: insertedShop.status, merchantTermsVersion: insertedShop.termsVersion } }
     })
   }
 

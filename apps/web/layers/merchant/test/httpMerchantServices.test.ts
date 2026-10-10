@@ -89,6 +89,19 @@ describe('http merchant services', () => {
     expect(shopApprovalTesting).toBeNull()
   })
 
+  it('terms accept posts the shown version and passes a stale version through', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(json(200, { version: '2026-10-pilot' }))
+      .mockResolvedValueOnce(json(403, { code: 'merchantTermsNotAccepted' }))
+    const { terms } = servicesWith(fetcher)
+    expect(await terms.accept('2026-10-pilot')).toEqual({ ok: true, value: undefined })
+    expect(await terms.accept('old')).toEqual({ ok: false, error: { code: 'merchantTermsNotAccepted' } })
+    const [url, init] = fetcher.mock.calls[0] ?? []
+    expect(url).toBe('https://api.test/v1/merchant/shop/terms/accept')
+    expect(JSON.parse(String(init?.body))).toEqual({ version: '2026-10-pilot' })
+  })
+
   it('posterReprint reads and marks the notice through the API', async () => {
     const fetcher = vi.fn<typeof fetch>(async (_input, init) => json(200, { pending: init?.method !== 'POST' }))
     const { posterReprint } = servicesWith(fetcher)

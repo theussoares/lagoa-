@@ -16,6 +16,7 @@ const SESSION = {
   shopId: '0190a000-0000-7000-8000-000000000002',
   shopName: 'Barbearia Central',
   shopStatus: 'pending',
+  termsAccepted: true,
 }
 
 const json = (status: number, body: unknown): Response => new Response(JSON.stringify(body), { status })

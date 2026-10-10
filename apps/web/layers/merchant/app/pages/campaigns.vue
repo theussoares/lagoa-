@@ -4,7 +4,7 @@ import { toCampaignHistoryRow, toReachModel, toReminderPreview } from '../utils/
 import { unitsText } from '#layers/core/app/utils/units'
 import type { ReminderFieldLimits, ReminderFieldsLabels } from '../types/campaign'
 
-definePageMeta({ path: '/campanhas', layout: 'merchant', middleware: 'merchant-auth' })
+definePageMeta({ path: '/campanhas', layout: 'merchant', middleware: ['merchant-auth', 'merchant-campaigns'] })
 
 const { t } = useI18n()
 const translate = useTranslate()

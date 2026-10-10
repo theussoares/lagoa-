@@ -15,7 +15,7 @@ import { VisitQrsRules } from './visit-qrs.rules'
 import { VisitQrsService } from './visit-qrs.service'
 import { ENV } from '../../config/config.module'
 
-const SHOP: MerchantShopRecord = { id: '018f98a2-7b2a-7182-9f33-6d004bbbb002', ownerUserId: TEST_USER.id, name: 'Padaria', status: 'approved' }
+const SHOP: MerchantShopRecord = { id: '018f98a2-7b2a-7182-9f33-6d004bbbb002', ownerUserId: TEST_USER.id, name: 'Padaria', status: 'approved', merchantTermsVersion: null }
 const PHONE = '67991230374'
 
 /** O que um driver de banco poderia pôr na mensagem de erro: o hash do token, o código curto, celular e e-mail. */

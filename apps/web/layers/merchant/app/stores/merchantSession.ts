@@ -29,11 +29,16 @@ export const useMerchantSessionStore = defineStore('merchantSession', () => {
     merchant.value = { ...merchant.value, shopStatus: status }
   }
 
+  function markTermsAccepted(): void {
+    if (merchant.value === null || merchant.value.termsAccepted) return
+    merchant.value = { ...merchant.value, termsAccepted: true }
+  }
+
   function endMerchant(): void {
     merchant.value = null
     withoutShop.value = false
     checked.value = true
   }
 
-  return { merchant, checked, withoutShop, startMerchant, startWithoutShop, updateMerchantShopStatus, endMerchant }
+  return { merchant, checked, withoutShop, startMerchant, startWithoutShop, updateMerchantShopStatus, markTermsAccepted, endMerchant }
 })
