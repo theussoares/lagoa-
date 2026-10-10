@@ -7,7 +7,9 @@ import { CurrentUser } from '../../auth/current-user.decorator'
 import { unwrap } from '../../common/http/domain-exception'
 import { ZodValidationPipe } from '../../common/http/zod-validation.pipe'
 import { ClubSetupService } from './club-setup.service'
+import { MerchantSurface } from '../access/merchant-surface.decorator'
 
+@MerchantSurface({ shopRequired: false })
 @Controller('merchant')
 export class ClubSetupController {
   constructor(private readonly setup: ClubSetupService) {}

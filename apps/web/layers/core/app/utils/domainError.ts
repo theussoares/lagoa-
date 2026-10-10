@@ -3,7 +3,7 @@ import { IsoDateTimeSchema } from '#shared/schemas/common'
 
 const ENTITIES = ['shop', 'program', 'customer', 'merchant', 'card', 'redemption', 'visitQr'] as const
 const SIMPLE_CODES = [
-  'unauthorized', 'rateLimited', 'invalidPhone', 'phoneAlreadyUsed', 'emailAlreadyUsed', 'invalidLoginCode', 'loginCodeExpired',
+  'unauthorized', 'rateLimited', 'invalidPhone', 'phoneAlreadyUsed', 'accountOwnsShop', 'emailAlreadyUsed', 'invalidLoginCode', 'loginCodeExpired',
   'invalidAmount', 'amountNotAccepted', 'invalidShopQr', 'checkInDisabled', 'redemptionInvalid', 'redemptionExpired',
   'redemptionAlreadyUsed', 'invalidProgram', 'programModeLocked', 'invalidCampaign', 'noReachableCustomers', 'reachChanged',
   'invalidClubSetup', 'signUpExpired', 'shopPendingApproval', 'shopSuspended', 'termsNotAccepted',

@@ -160,4 +160,12 @@ Organizado em módulos focados em `src/merchant/*`:
 - `counter`: consulta da caderneta de hoje e validação/entrega atômica de resgates.
 - `customers`: diretório de clientes da loja com mascaramento obrigatório LGPD (`(XX) X••••-XXXX`) e filtros.
 - `home`: métricas agregadas da semana via função de domínio `summarizeWeek`.
+- `access`: o único caminho até a loja. Todo controller do painel leva `@MerchantSurface()` (guard que resolve a loja do
+  dono pelo JWT em `request.merchantShop`; `{ shopRequired: false }` só em sessão e Criar o clube). `@CurrentShop()` lê o
+  contexto e lança se o guard não rodou; um teste varre os controllers e falha se algum esquecer o decorator. Nenhuma rota
+  recebe `shopId`. `requireOperational(status)` (regra pura) diz se a loja pode mexer com cliente.
+
+Scripts de operação (nunca em CI): `pnpm --filter @lagoa/api shop:status --shop <id> --actor <apelido> [--status approved|suspended|pending] [--plan founder|founderPro] [--reason "..."]`
+(exige `ALLOW_SHOP_ADMIN=1`; grava `shop_status_events`) e `db:backfill-visits` (recalcula `visits_count`/`first_visit_at` do ledger;
+rodar depois do deploy que mantém os contadores). `DELETE /customer/account` de dono de loja responde 409 `accountOwnsShop`.
 

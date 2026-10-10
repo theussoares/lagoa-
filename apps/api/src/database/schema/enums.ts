@@ -4,6 +4,7 @@ export const shopCategory = pgEnum('shop_category', [
   'barbershop', 'beauty', 'cafe', 'bakery', 'pizzeria', 'restaurant', 'petShop', 'gym', 'other',
 ])
 export const shopStatus = pgEnum('shop_status', ['pending', 'approved', 'suspended'])
+export const shopPlan = pgEnum('shop_plan', ['founder', 'founderPro'])
 export const programMode = pgEnum('program_mode', ['stamps', 'pointsPerCurrency', 'pointsPerVisit'])
 export const programUnit = pgEnum('program_unit', ['stamp', 'point'])
 export const earnPer = pgEnum('earn_per', ['visit', 'real'])

@@ -8,9 +8,10 @@ import { CounterRedemptionsService } from './counter-redemptions.service'
 import { CounterRepository } from './counter.repository'
 import { CounterService } from './counter.service'
 import { DrizzleCounterRepository } from './drizzle-counter.repository'
+import { AccessModule } from '../access/access.module'
 
 @Module({
-  imports: [DatabaseModule, LedgerModule, CommonModule],
+  imports: [AccessModule, DatabaseModule, LedgerModule, CommonModule],
   controllers: [CounterController, CounterRedemptionsController],
   providers: [
     CounterService,

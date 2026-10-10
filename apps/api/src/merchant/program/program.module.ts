@@ -3,6 +3,7 @@ import { DrizzleProgramRepository } from './drizzle-program.repository'
 import { ProgramController } from './program.controller'
 import { ProgramRepository } from './program.repository'
 import { ProgramService } from './program.service'
+import { AccessModule } from '../access/access.module'
 
 @Module({
   controllers: [ProgramController],

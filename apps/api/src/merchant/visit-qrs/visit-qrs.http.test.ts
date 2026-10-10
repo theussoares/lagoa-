@@ -15,6 +15,7 @@ import type { ActiveProgramRules, InsertVisitQrParams } from './visit-qrs.reposi
 import { VisitQrsRepository } from './visit-qrs.repository'
 import { VisitQrsRules } from './visit-qrs.rules'
 import { VisitQrsService } from './visit-qrs.service'
+import { MerchantShopGuard } from '../access/merchant-shop.guard'
 
 class FakeClock extends Clock {
   currentTime = new Date('2026-10-07T14:00:00Z')
@@ -89,7 +90,11 @@ describe('merchant visit-qrs HTTP', () => {
         { provide: APP_GUARD, useClass: FakeAuthGuard },
         { provide: APP_FILTER, useClass: AllExceptionsFilter },
       ],
-    }).compile()
+    })
+      // O guard da loja tem teste próprio (access/merchant-shop.guard.http.test.ts); aqui a loja vem do repositório de teste.
+      .overrideGuard(MerchantShopGuard)
+      .useValue({ canActivate: () => true })
+      .compile()
 
     app = moduleRef.createNestApplication()
     await app.init()
