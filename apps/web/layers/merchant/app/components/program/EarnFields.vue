@@ -9,6 +9,7 @@ interface Props {
   errors: ProgramFieldErrors
   /** Meta mudou e já há cartões: avisa que vale para quem está no meio. */
   targetChanged: boolean
+  pointsToStampsChanged?: boolean
 }
 
 interface Emits {
@@ -89,6 +90,9 @@ function setRate(value: number | null | undefined): void {
 
     <p v-if="targetChanged" class="flex items-start gap-1.5 text-[0.9375rem] text-toned">
       <UIcon name="i-ph-info" class="mt-0.5 size-4 shrink-0" aria-hidden="true" />{{ $t('program.earn.targetChangeNote') }}
+    </p>
+    <p v-if="pointsToStampsChanged" class="flex items-start gap-1.5 text-[0.9375rem] text-toned">
+      <UIcon name="i-ph-warning" class="mt-0.5 size-4 shrink-0" aria-hidden="true" />{{ $t('program.earn.pointsToStampsNote') }}
     </p>
   </div>
 </template>

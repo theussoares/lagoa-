@@ -83,7 +83,7 @@ describe('program components: RewardTitleField', () => {
 })
 
 describe('program components: EarnFields', () => {
-  const earnProps = { unit: 'stamp', limits, errors: {}, targetChanged: false, rules: stampRules }
+  const earnProps = { unit: 'stamp', limits, errors: {}, targetChanged: false, pointsToStampsChanged: false, rules: stampRules }
 
   it('offers the three modes as radios and emits the picked one', async () => {
     const page = await mountIt(EarnFields, earnProps)
@@ -139,6 +139,11 @@ describe('program components: EarnFields', () => {
     quiet.unmount()
     const warned = await mountIt(EarnFields, { ...earnProps, targetChanged: true })
     expect(warned.text()).toContain(t('program.earn.targetChangeNote'))
+  })
+
+  it('warns that points holders are not converted when leaving points per real for stamps', async () => {
+    const warned = await mountIt(EarnFields, { ...earnProps, pointsToStampsChanged: true })
+    expect(warned.text()).toContain(t('program.earn.pointsToStampsNote'))
   })
 })
 

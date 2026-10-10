@@ -37,6 +37,14 @@ export function useProgramEditor(): ProgramEditor {
       saved.value !== null &&
       draft.value.rules.target !== saved.value.rules.target,
   )
+  const pointsToStampsChanged = computed(
+    () =>
+      hasActiveCards.value &&
+      draft.value !== null &&
+      saved.value !== null &&
+      saved.value.rules.mode === 'pointsPerCurrency' &&
+      draft.value.rules.mode === 'stamps',
+  )
   const isDirty = computed(() => draft.value !== null && saved.value !== null && !isSameDraft(draft.value, saved.value))
   const fieldErrors = computed<ProgramFieldErrors>(() =>
     triedToSave.value && draft.value !== null ? programFieldErrors(draft.value) : {},
@@ -81,5 +89,5 @@ export function useProgramEditor(): ProgramEditor {
     triedToSave.value = false
   }
 
-  return { state, draft, targetChanged, isDirty, fieldErrors, saveState, reload, setMode, save, discard }
+  return { state, draft, targetChanged, pointsToStampsChanged, isDirty, fieldErrors, saveState, reload, setMode, save, discard }
 }

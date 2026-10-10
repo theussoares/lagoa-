@@ -79,6 +79,7 @@ onBeforeRouteLeave((to) => {
             :limits="options.limits"
             :errors="fieldErrors"
             :target-changed="editor.targetChanged.value"
+            :points-to-stamps-changed="editor.pointsToStampsChanged.value"
             class="mt-5 border-t border-(--lagoa-rule) pt-5"
             @mode="editor.setMode"
           />

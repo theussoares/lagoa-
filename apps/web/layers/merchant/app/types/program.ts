@@ -63,6 +63,8 @@ export interface ProgramEditor {
   draft: Ref<ProgramDraft | null>
   /** Meta diferente da salva com cartões em andamento: a tela avisa que vale para eles. */
   targetChanged: ComputedRef<boolean>
+  /** Sai de pontos por real para carimbos com cartões em andamento: o saldo em pontos não vira carimbo. */
+  pointsToStampsChanged: ComputedRef<boolean>
   isDirty: ComputedRef<boolean>
   /** Só aparecem depois da primeira tentativa de salvar. */
   fieldErrors: ComputedRef<ProgramFieldErrors>

@@ -364,6 +364,7 @@
         "point": "Pontos para o prêmio"
       },
       "targetHint": "De {min} a {max}",
+      "pointsToStampsNote": "Quem já juntou pontos fica com os pontos e não ganha novos carimbos. Se quiser que todos passem a carimbar, mantenha os pontos por visita e mude só a meta.",
       "targetChangeNote": "A nova meta vale para os cartões novos. Quem já está com cartão termina na meta de antes, sem perder o que juntou. QRs da visita abertos serão cancelados.",
       "pointsPerReal": "Pontos por real gasto",
       "pointsPerVisit": "Pontos por visita"

@@ -289,7 +289,7 @@ composables  → stores (Pinia, estado)
   recém-resgatado já pega a versão ativa. Sobra de pontos só atravessa a troca se a
   unidade for a mesma. Exceção: cartão em pontos por real sem prêmio ganhado, quando a loja sai
   desse modo mantendo a unidade (ponto), passa para a versão ativa na próxima visita (senão nunca mais renderia: o QR
-  por visita não leva valor); cartão por real que muda para carimbo segue preso até a decisão de produto (spec P-04).
+  por visita não leva valor); cartão por real que muda para carimbo fica na versão antiga (decisão: o saldo em pontos não vira carimbo) e o painel avisa o lojista antes de salvar.
 - **Expiração:** carimbos vencem após X meses sem visita (ou nunca).
 - **Resgate:** cliente gera um código de uso único (6 caracteres, ~10 min de
   validade); o lojista valida no Balcão e confirma a entrega. Prêmio não
