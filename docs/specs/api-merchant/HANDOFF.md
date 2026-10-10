@@ -20,7 +20,14 @@ Estado em 2026-10-09. Spec: [spec.md](./spec.md) (aprovada pelo dono). Desenho:
 O estado abaixo ("Nenhum código") estava defasado: a `develop` já tinha os módulos `merchant/*` da API (PR #43) com
 migrations `0017`/`0018` **diferentes** das do plano (a próxima livre é a `0019`). Entregue depois: BFF
 `server/api/merchant/**`, login/sessão do lojista pelo `/api/auth` + `GET /merchant/session` (sem ticket) e o plugin
-escolhendo `http`/`mock` (`merchantBackend`). **Segue pendente:** guard de acesso (`merchant/access`), `erased_at`,
+escolhendo `http`/`mock` (`merchantBackend`). **Fundação do CTO (PR #50) e M1 (PR #51):** migrations `0019_merchant_foundation` (dono único, `shops.plan`, termo do
+lojista, `erased_at`, `visits_count`/`first_visit_at` com backfill, `shop_status_events`) e `0020_poster_reprinted_at`;
+seed com um dono por loja; `LedgerStore.credit` mantendo os contadores; `merchant/access` (guard + `@CurrentShop` +
+varredura); `accountOwnsShop`; `shop:status` e `db:backfill-visits`; `ensureAppUser` extraído (sem ele o Criar o clube
+dava FK violation para quem só tinha login), Criar o clube idempotente com `phoneAlreadyUsed` e retry do código de
+check-in, aviso do cartaz ponta a ponta. **Fica para depois:** gate do termo do lojista (3.6), `@CurrentShop` nos
+services (hoje seguem por `user.id`), `CounterEntry.maskedPhone` nulo (M2), índices de Clientes/resgate (M2/M4).
+**Segue pendente:** guard de acesso (`merchant/access`), `erased_at`,
 `shops.plan`, termo do lojista, `shop_status_events`/`shop:status`, `accountOwnsShop`, campanhas (M5) e o corte do mock (M6).
 O `club-setup` da API devolve `invalidClubSetup` (não é idempotente) quando o dono já tem loja; o plano pede 200 com a loja
 existente (RN-08, CA-06).
