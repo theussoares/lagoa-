@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common'
-import type { CounterEntry } from '#shared/schemas/visit'
+import type { CounterToday } from '#shared/schemas/visit'
 import type { AuthUser } from '../../auth/auth.types'
 import { CurrentUser } from '../../auth/current-user.decorator'
 import { unwrap } from '../../common/http/domain-exception'
@@ -12,7 +12,7 @@ export class CounterController {
   constructor(private readonly counter: CounterService) {}
 
   @Get('entries/today')
-  async listTodayEntries(@CurrentUser() user: AuthUser): Promise<CounterEntry[]> {
+  async listTodayEntries(@CurrentUser() user: AuthUser): Promise<CounterToday> {
     return unwrap(await this.counter.listTodayEntries(user.id))
   }
 }

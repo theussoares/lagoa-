@@ -448,26 +448,33 @@ describe('counter components: LedgerPanel and CounterLedger', () => {
   })
 
   it('shows a skeleton while loading, with no count', async () => {
-    const page = await mountIt(LedgerPanel, { status: 'loading', errorCode: null, rows: [] })
+    const page = await mountIt(LedgerPanel, { status: 'loading', errorCode: null, rows: [], truncated: false })
     expect(page.find('ol').exists()).toBe(false)
     expect(page.text()).not.toContain(t('counter.todayCount', { count: 0 }, 0))
     expect(page.get('button').attributes('disabled')).toBeDefined()
   })
 
   it('shows an alert with retry for an error and emits reload from it', async () => {
-    const page = await mountIt(LedgerPanel, { status: 'error', errorCode: 'network', rows: [] })
+    const page = await mountIt(LedgerPanel, { status: 'error', errorCode: 'network', rows: [], truncated: false })
     expect(page.get('[role="alert"]').text()).toContain(t('errors.network'))
     await button(page, t('common.retry')).trigger('click')
     expect(page.emitted('reload')).toHaveLength(1)
   })
 
   it('says the day is still empty when there are no rows', async () => {
-    const page = await mountIt(LedgerPanel, { status: 'success', errorCode: null, rows: [] })
+    const page = await mountIt(LedgerPanel, { status: 'success', errorCode: null, rows: [], truncated: false })
     expect(page.text()).toContain(t('counter.ledger.empty'))
   })
 
+  it('says the list was cut when the day went past the limit', async () => {
+    const cut = await mountIt(LedgerPanel, { status: 'success', errorCode: null, rows, truncated: true })
+    expect(cut.text()).toContain(t('counter.ledger.truncated', { count: 2 }))
+    const whole = await mountIt(LedgerPanel, { status: 'success', errorCode: null, rows, truncated: false })
+    expect(whole.text()).not.toContain(t('counter.ledger.truncated', { count: 2 }))
+  })
+
   it('lists the rows in a keyboard-focusable named region with the count', async () => {
-    const page = await mountIt(LedgerPanel, { status: 'success', errorCode: null, rows })
+    const page = await mountIt(LedgerPanel, { status: 'success', errorCode: null, rows, truncated: false })
     const region = page.get('[role="region"]')
     expect(region.attributes('tabindex')).toBe('0')
     expect(region.attributes('aria-label')).toBe(t('counter.ledger.title'))

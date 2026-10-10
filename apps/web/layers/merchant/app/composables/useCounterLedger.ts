@@ -1,9 +1,16 @@
 import type { CounterEntry } from '#shared/schemas/visit'
+import { ok } from '#shared/types/result'
 import type { CounterLedger } from '../types/counter'
 
 export function useCounterLedger(): CounterLedger {
   const { counter } = useMerchantServices()
-  const { state, reload, set } = useAsyncResult(() => counter.listTodayEntries())
+  const truncated = shallowRef(false)
+  const { state, reload, set } = useAsyncResult(async () => {
+    const today = await counter.listTodayEntries()
+    if (!today.ok) return today
+    truncated.value = today.value.truncated
+    return ok(today.value.entries)
+  })
   const freshIds = shallowRef<ReadonlySet<string>>(new Set())
 
   function prepend(entry: CounterEntry): void {
@@ -12,5 +19,5 @@ export function useCounterLedger(): CounterLedger {
     set([entry, ...current.filter((item) => item.id !== entry.id)])
   }
 
-  return { state, freshIds, reload, prepend }
+  return { state, truncated, freshIds, reload, prepend }
 }

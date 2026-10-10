@@ -95,6 +95,7 @@
       "empty": "Nenhum lançamento hoje. O primeiro carimbo do dia aparece aqui.",
       "newCustomer": "Cliente novo",
       "removedCustomer": "Cliente removido",
+      "truncated": "Mostrando só os {count} lançamentos mais recentes de hoje.",
       "earned": "+{units}",
       "earnedAmount": "+{units} · {amount}",
       "earnedCheckIn": "+{units} · check-in",

@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { REDEMPTION_CODE_LENGTH } from '#shared/constants/domain'
+import { COUNTER_TODAY_LIMIT, REDEMPTION_CODE_LENGTH } from '#shared/constants/domain'
 import { PhoneNumberSchema } from '#shared/schemas/phone'
 import { generateReadableCode } from '../../common/readable-code'
 import { Clock, SystemClock } from '../../common/clock'
@@ -170,7 +170,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant counter against a real database', 
       await visitAt('2026-10-10T02:00:00Z', `late-${customer}`)
       await visitAt('2026-10-10T04:10:00Z', `early-${customer}`)
       const today = await counter.listTodayEntries(owner)
-      const times = today.ok ? today.value.map((entry) => entry.createdAt) : []
+      const times = today.ok ? today.value.entries.map((entry) => entry.createdAt) : []
       expect(times).toContain('2026-10-10T04:10:00.000Z')
       expect(times).not.toContain('2026-10-10T02:00:00.000Z')
     } finally {
@@ -194,8 +194,31 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant counter against a real database', 
       })
       const today = await counter.listTodayEntries(owner)
       if (!today.ok) throw new Error('entries expected')
-      const mine = today.value.filter((entry) => entry.kind === 'visit')
+      const mine = today.value.entries.filter((entry) => entry.kind === 'visit')
       expect(mine.map((entry) => entry.isNewCustomer).sort()).toEqual([false, true])
+    } finally {
+      clock.current = new Date()
+    }
+  }, SLOW)
+
+  it('"Hoje" caps at the limit, keeps the newest, and says it was truncated', async () => {
+    const shop = await shop3()
+    const { customer, cardId } = await readyCard(shop)
+    const owner = await ownerOf(shop.id)
+    clock.current = new Date('2026-10-09T19:00:00Z')
+    try {
+      const base = new Date('2030-01-01T15:00:00Z').getTime()
+      await data.db.insert(ledgerEntries).values(
+        Array.from({ length: COUNTER_TODAY_LIMIT + 1 }, (_, index) => ({
+          cardId, shopId: shop.id, customerId: customer, kind: 'visit' as const, unitsDelta: 1, countsAsVisit: true,
+          idempotencyKey: `bulk-${customer}-${index}`, occurredAt: new Date(base + index * 1000),
+        })),
+      )
+      const today = await counter.listTodayEntries(owner)
+      if (!today.ok) throw new Error('entries expected')
+      expect(today.value.truncated).toBe(true)
+      expect(today.value.entries).toHaveLength(COUNTER_TODAY_LIMIT)
+      expect(today.value.entries[0]?.createdAt).toBe(new Date(base + COUNTER_TODAY_LIMIT * 1000).toISOString())
     } finally {
       clock.current = new Date()
     }
@@ -207,6 +230,6 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant counter against a real database', 
     const owner = await ownerOf(shop.id)
     await new AccountService(new DrizzleAccountRepository(data.db), new SystemClock()).erase(customer)
     const today = await counter.listTodayEntries(owner)
-    expect(today).toMatchObject({ ok: true, value: [expect.objectContaining({ maskedPhone: null })] })
+    expect(today).toMatchObject({ ok: true, value: { truncated: false, entries: [expect.objectContaining({ maskedPhone: null })] } })
   }, SLOW)
 })

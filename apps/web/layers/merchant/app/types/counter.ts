@@ -49,6 +49,8 @@ export type CounterAction =
 
 export interface CounterLedger {
   state: ComputedRef<AsyncResultState<CounterEntry[], TransportError>>
+  /** O dia teve mais lançamentos do que o servidor devolve: a lista mostra só os mais novos. */
+  truncated: Readonly<Ref<boolean>>
   /** Linhas lançadas nesta tela: entram com a batida do carimbo. */
   freshIds: Readonly<Ref<ReadonlySet<string>>>
   reload: () => Promise<void>
@@ -97,6 +99,7 @@ export interface CounterLedgerView {
   readonly status: 'loading' | 'error' | 'success'
   readonly errorCode: TransportError['code'] | null
   readonly rows: readonly CounterLedgerEntryModel[]
+  readonly truncated: boolean
   readonly reload: () => Promise<void>
 }
 

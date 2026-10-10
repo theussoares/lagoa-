@@ -87,7 +87,7 @@ Prefixo `/v1` (menos `/health`). Todas exigem `Authorization: Bearer <JWT do Sup
 | `POST /merchant/visit-qrs/:id/cancel` | Cancela QR dinâmico ativo de forma idempotente. |
 | `GET /merchant/program` | Consulta o programa de fidelidade ativo da loja. |
 | `PUT /merchant/program` | Altera programa ou cria nova versão ativa (invalida QRs abertos). |
-| `GET /merchant/counter/entries/today` | Caderneta de hoje (dia no fuso do piloto, até 300 linhas, as mais novas primeiro). Conta apagada vem com `maskedPhone: null` ("cliente removido"). |
+| `GET /merchant/counter/entries/today` | Caderneta de hoje: `{ entries, truncated }` (dia no fuso do piloto, até 300 linhas, as mais novas primeiro; `truncated` quando havia mais). Conta apagada vem com `maskedPhone: null` ("cliente removido"). |
 | `POST /merchant/counter/redemptions/validate` `{ code }` | Valida código de resgate de 6 caracteres no balcão. O ativo vale; sem ativo, a linha mais nova da loja nas últimas 24 h explica (`redemptionAlreadyUsed` / `redemptionExpired`), senão `redemptionInvalid`. Limite por usuário e por IP, recusa se o contador cair. |
 | `POST /merchant/counter/redemptions/:id/confirm` | Confirma entrega do prêmio e debita saldo do cartão. |
 | `GET /merchant/customers?filter=all|lapsed|rewardReady` | Diretório de clientes da loja (dados pessoais mascarados). |

@@ -55,6 +55,7 @@ const screen = useCounterScreen()
           :status="screen.ledger.status"
           :error-code="screen.ledger.errorCode"
           :rows="screen.ledger.rows"
+          :truncated="screen.ledger.truncated"
           @reload="screen.ledger.reload"
         />
       </div>
