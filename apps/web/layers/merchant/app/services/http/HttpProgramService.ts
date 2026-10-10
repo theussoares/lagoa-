@@ -21,6 +21,6 @@ export class HttpProgramService implements ProgramService {
 
   async updateProgram(draft: ProgramDraft) {
     const res = await this.api.put('/merchant/program', ProgramSchema, { body: draft })
-    return allowing('invalidProgram', 'programModeLocked')(res)
+    return allowing('invalidProgram')(res)
   }
 }

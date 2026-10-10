@@ -28,6 +28,11 @@ export const CHECK_IN_CODE_INPUT_MAX_LENGTH = 32
 export const CHECK_IN_LINK_PARAM = 'loja'
 /** QR da visita: uso único, gerado na hora da venda. */
 export const VISIT_QR_TTL_MINUTES = 5
+/**
+ * Versão do termo de uso do lojista que o painel pede. O texto é do jurídico (P-M7, pendente): a versão só sobe quando o
+ * texto novo entrar. O gate fica desligado até `MERCHANT_TERMS_REQUIRED=1` (API), para o piloto esperar o texto, não o código.
+ */
+export const MERCHANT_TERMS_VERSION = '2026-10-pilot'
 /** QRs da visita ativos ao mesmo tempo numa loja: sem teto, um lojista (ou um bug) enche o índice parcial e o código curto. */
 export const VISIT_QR_ACTIVE_MAX_PER_SHOP = 20
 /** O Balcão consulta o QR da visita nesse intervalo enquanto ele está ativo (aguardando o cliente). */

@@ -44,8 +44,6 @@ export type DomainError =
   | { readonly code: 'redemptionExpired' }
   | { readonly code: 'redemptionAlreadyUsed' }
   | { readonly code: 'invalidProgram' }
-  /** Trocar carimbos ↔ pontos com cartões em andamento exige migração; fora do MVP. */
-  | { readonly code: 'programModeLocked' }
   | { readonly code: 'invalidCampaign' }
   /** Ninguém sumido, com avisos aceitos, que ainda não tenha recebido lembrete. */
   | { readonly code: 'noReachableCustomers' }
@@ -60,6 +58,8 @@ export type DomainError =
   | { readonly code: 'shopSuspended' }
   /** O servidor só grava visita, resgate e convite de quem aceitou a versão atual dos termos (LGPD). */
   | { readonly code: 'termsNotAccepted' }
+  /** O lojista ainda não aceitou a versão atual do termo do lojista: emitir QR, validar/confirmar resgate e campanha esperam o aceite. */
+  | { readonly code: 'merchantTermsNotAccepted' }
   /** Aniversário trocado há menos de `BIRTHDAY_CHANGE_COOLDOWN_DAYS`: a data nova só a partir de `changeableAt`. */
   | { readonly code: 'birthdayLocked'; readonly changeableAt: IsoDateTime }
 

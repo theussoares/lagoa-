@@ -285,7 +285,8 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
       ...draft,
       rules: { mode: 'pointsPerVisit', pointsPerVisit: 10, target: 100 },
     })
-    expect(modeChange).toEqual({ ok: false, error: { code: 'programModeLocked' } })
+    // Sem trava de modo (P-M1): vira uma versão nova; só uma segue ativa e os cartões em andamento ficam na antiga.
+    expect(modeChange).toMatchObject({ ok: true, value: { rules: { mode: 'pointsPerVisit' } } })
     const [activePrograms] = await data.db.select({ n: count() }).from(programs).where(and(eq(programs.shopId, shopId), eq(programs.active, true)))
     expect(activePrograms?.n).toBe(1)
   }, SLOW)

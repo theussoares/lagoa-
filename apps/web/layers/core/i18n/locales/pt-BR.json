@@ -126,6 +126,7 @@
     "birthdayLocked": "A data do aniversário só pode ser trocada uma vez por ano.",
     "notFound": "Não encontramos o que você procurou.",
     "invalidPhone": "Esse celular não parece certo. Use DDD + 9 dígitos, ex.: (67) 99123-4567.",
+    "merchantTermsNotAccepted": "Falta aceitar o termo de uso do lojista para continuar. Abra o Início do painel e aceite.",
     "visitQrLimitReached": "Esta loja já tem muitos QRs abertos. Espere alguns minutos: eles vencem sozinhos.",
     "accountOwnsShop": "Esta conta é a dona de uma loja no Lagoa+, então não dá para apagá-la por aqui. Fale com a rede para encerrar a loja.",
     "phoneAlreadyUsed": "Esse celular já está em uso em outra conta. Confira o número ou fale com a loja.",
@@ -151,7 +152,6 @@
     "redemptionExpired": "Esse código venceu. Peça para o cliente gerar outro.",
     "redemptionAlreadyUsed": "Esse prêmio já foi entregue.",
     "invalidProgram": "Não deu para salvar o clube. Confira os campos destacados.",
-    "programModeLocked": "Não dá para trocar entre carimbos e pontos enquanto houver clientes com cartão. A meta e o prêmio podem mudar.",
     "invalidCampaign": "Confira a mensagem e o presente antes de mandar.",
     "noReachableCustomers": "Ninguém para receber agora: quem sumiu não aceitou avisos ou já recebeu um lembrete.",
     "reachChanged": "O número de clientes mudou desde que você confirmou. Nada foi enviado: confira o novo número e mande de novo.",
@@ -359,13 +359,13 @@
           "description": "Cada visita vale uma quantidade fixa de pontos."
         }
       },
-      "modeLocked": "O tipo de cartão fica travado enquanto houver clientes com cartão. A meta e o prêmio podem mudar.",
       "target": {
         "stamp": "Carimbos para o prêmio",
         "point": "Pontos para o prêmio"
       },
       "targetHint": "De {min} a {max}",
-      "targetChangeNote": "A nova meta vale também para os cartões em andamento. Ninguém perde o que já juntou.",
+      "pointsToStampsNote": "Quem já juntou pontos fica com os pontos e não ganha novos carimbos. Se quiser que todos passem a carimbar, mantenha os pontos por visita e mude só a meta.",
+      "targetChangeNote": "A nova meta vale para os cartões novos. Quem já está com cartão termina na meta de antes, sem perder o que juntou. QRs da visita abertos serão cancelados.",
       "pointsPerReal": "Pontos por real gasto",
       "pointsPerVisit": "Pontos por visita"
     },

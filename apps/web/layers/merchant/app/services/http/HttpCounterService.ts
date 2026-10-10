@@ -1,4 +1,3 @@
-import { z } from 'zod'
 import { allowing, transportOnly, type ApiClient } from '#layers/core/app/services/http/ApiClient'
 import type { RedemptionId } from '#shared/schemas/ids'
 import type { RedemptionCode } from '#shared/schemas/redemption'

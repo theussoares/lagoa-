@@ -16,6 +16,7 @@ import { VisitQrsRepository } from './visit-qrs.repository'
 import { VisitQrsRules } from './visit-qrs.rules'
 import { VisitQrsService } from './visit-qrs.service'
 import { MerchantShopGuard } from '../access/merchant-shop.guard'
+import { ENV } from '../../config/config.module'
 
 class FakeClock extends Clock {
   currentTime = new Date('2026-10-07T14:00:00Z')
@@ -47,6 +48,7 @@ describe('merchant visit-qrs HTTP', () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [VisitQrsController],
       providers: [
+        { provide: ENV, useValue: { MERCHANT_TERMS_REQUIRED: '0' } },
         VisitQrsService,
         VisitQrsRules,
         { provide: VisitQrsRepository, useValue: visitQrsRepo },

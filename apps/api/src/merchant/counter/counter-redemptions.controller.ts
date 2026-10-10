@@ -10,6 +10,7 @@ import { unwrap } from '../../common/http/domain-exception'
 import { ZodValidationPipe } from '../../common/http/zod-validation.pipe'
 import { CounterRedemptionsService } from './counter-redemptions.service'
 import { FailClosedThrottle } from '../../throttling/fail-closed-throttle'
+import { RequiresMerchantTerms } from '../terms/merchant-terms.guard'
 import { MerchantSurface } from '../access/merchant-surface.decorator'
 
 const ValidateRedemptionBodySchema = z.object({
@@ -24,6 +25,8 @@ type ConfirmRedemptionBody = z.infer<typeof ConfirmRedemptionBodySchema>
 
 const RedemptionIdParamSchema = z.string().uuid()
 
+// Decorador de classe roda de baixo para cima: o guard da loja precisa entrar antes do guard do termo.
+@RequiresMerchantTerms()
 @MerchantSurface()
 @Controller('merchant/counter/redemptions')
 export class CounterRedemptionsController {

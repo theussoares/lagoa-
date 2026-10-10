@@ -1,25 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Program, ProgramDraft } from '#shared/schemas/program'
-import { canChangeProgramMode, hasCriticalChanges, mapDraftToProgramInsert } from './program.rules'
-
-describe('canChangeProgramMode', () => {
-  it('allows keeping the same mode even with active cards', () => {
-    expect(canChangeProgramMode(0, 'stamps', 'stamps')).toBe(true)
-    expect(canChangeProgramMode(5, 'stamps', 'stamps')).toBe(true)
-    expect(canChangeProgramMode(100, 'pointsPerCurrency', 'pointsPerCurrency')).toBe(true)
-  })
-
-  it('allows changing mode when there are 0 active cards', () => {
-    expect(canChangeProgramMode(0, 'stamps', 'pointsPerVisit')).toBe(true)
-    expect(canChangeProgramMode(0, 'pointsPerVisit', 'pointsPerCurrency')).toBe(true)
-  })
-
-  it('locks and refuses changing mode when there are active cards', () => {
-    expect(canChangeProgramMode(1, 'stamps', 'pointsPerVisit')).toBe(false)
-    expect(canChangeProgramMode(10, 'stamps', 'pointsPerCurrency')).toBe(false)
-    expect(canChangeProgramMode(5, 'pointsPerVisit', 'stamps')).toBe(false)
-  })
-})
+import { hasCriticalChanges, mapDraftToProgramInsert } from './program.rules'
 
 describe('hasCriticalChanges', () => {
   const baseProgram: Program = {

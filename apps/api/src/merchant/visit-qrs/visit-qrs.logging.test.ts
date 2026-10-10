@@ -13,6 +13,7 @@ import { FakeVisitQrsRepository } from './visit-qrs.fakes'
 import { VisitQrsRepository } from './visit-qrs.repository'
 import { VisitQrsRules } from './visit-qrs.rules'
 import { VisitQrsService } from './visit-qrs.service'
+import { ENV } from '../../config/config.module'
 
 const SHOP: MerchantShopRecord = { id: '018f98a2-7b2a-7182-9f33-6d004bbbb002', ownerUserId: TEST_USER.id, name: 'Padaria', status: 'approved' }
 const PHONE = '67991230374'
@@ -31,6 +32,7 @@ describe('the merchant visit QR routes leave no credential or personal data in t
     const moduleRef = await Test.createTestingModule({
       controllers: [VisitQrsController],
       providers: [
+        { provide: ENV, useValue: { MERCHANT_TERMS_REQUIRED: '0' } },
         VisitQrsService,
         VisitQrsRules,
         { provide: VisitQrsRepository, useValue: repository },
