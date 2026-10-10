@@ -1,9 +1,11 @@
 import { eq } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/postgres-js'
+import { z } from 'zod'
 import postgres from 'postgres'
 import { ShopPlanSchema, ShopStatusSchema, type ShopPlan, type ShopStatus } from '#shared/schemas/shop'
 import { parseEnv } from '../config/env'
 import type { Database } from './database.module'
+import * as schema from './schema'
 import { shops, shopStatusEvents } from './schema'
 
 export interface ShopStatusChange {
@@ -30,6 +32,7 @@ export async function changeShopStatus(db: Pick<Database, 'transaction'>, change
     if (!shop) return { ok: false, reason: 'shopNotFound' }
     const to = change.status ?? shop.status
     const plan = change.plan ?? shop.plan
+    if (to === shop.status && plan === shop.plan) return { ok: false, reason: 'nothingToChange' }
     await tx.update(shops).set({ status: to, plan }).where(eq(shops.id, change.shopId))
     await tx.insert(shopStatusEvents).values({
       shopId: change.shopId,
@@ -49,7 +52,7 @@ function argument(name: string): string | undefined {
 }
 
 /**
- * `pnpm shop:status --shop <id> [--status approved|suspended|pending] [--plan founder|founderPro] --actor <apelido> [--reason "..."]`.
+ * `pnpm shop:status --shop <id> [--status approved|suspended|pending] [--plan founder|founderPro] --actor <apelido> [--reason "..."] [--dry-run]`.
  * Só roda com `ALLOW_SHOP_ADMIN=1` e nunca em CI: aprovar loja é decisão da rede, não de um endpoint.
  */
 async function main(): Promise<void> {
@@ -61,12 +64,21 @@ async function main(): Promise<void> {
   const parsedPlan = plan === undefined ? undefined : ShopPlanSchema.parse(plan)
   const shopId = argument('shop')
   const actor = argument('actor')
-  if (shopId === undefined || actor === undefined) throw new Error('Usage: --shop <id> --actor <nickname> [--status ...] [--plan ...] [--reason "..."]')
+  if (shopId === undefined || actor === undefined) throw new Error('Usage: --shop <id> --actor <nickname> [--status ...] [--plan ...] [--reason "..."] [--dry-run]')
+  if (!z.uuid().safeParse(shopId).success) throw new Error('--shop must be a shop id (uuid)')
+  const dryRun = process.argv.includes('--dry-run')
 
   const client = postgres(parseEnv(process.env).DATABASE_URL, { prepare: false })
   try {
     const reason = argument('reason')
-    const result = await changeShopStatus(drizzle(client), {
+    const db = drizzle(client, { schema })
+    if (dryRun) {
+      const [shop] = await db.select({ name: shops.name, status: shops.status, plan: shops.plan }).from(shops).where(eq(shops.id, shopId))
+      if (!shop) throw new Error('Not changed: shopNotFound')
+      console.log(`Dry run: "${shop.name}" is ${shop.status} / ${shop.plan}; would apply status=${parsedStatus ?? '-'} plan=${parsedPlan ?? '-'}`)
+      return
+    }
+    const result = await changeShopStatus(db, {
       shopId,
       actor,
       ...(parsedStatus !== undefined && { status: parsedStatus }),
