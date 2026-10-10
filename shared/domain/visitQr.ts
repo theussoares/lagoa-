@@ -18,6 +18,9 @@ export interface VisitQrSnapshot {
   readonly cancelReason: VisitQrCancelReason | null
   readonly expiresAt: Date
   readonly claimedBy: string | null
+  /** Quem atestou a venda e quem é dono da loja: nenhum dos dois ganha no próprio QR (`null` = desconhecido, só no mock). */
+  readonly issuedBy: string | null
+  readonly shopOwnerId: string | null
   readonly programId: string
   /** Versão ativa da loja agora; `null` se a loja não tem programa ativo. */
   readonly activeProgramId: string | null
@@ -37,12 +40,14 @@ export function visitQrStatusAt(snapshot: Pick<VisitQrSnapshot, 'status' | 'expi
 }
 
 /**
- * RN-11, nesta ordem: loja não aprovada → invalid; já usado (mesma pessoa → replay, outra → alreadyUsed); cancelado
+ * RN-11, nesta ordem: loja não aprovada → invalid; emissor ou dono da loja → invalid (R12); já usado (mesma pessoa → replay, outra → alreadyUsed); cancelado
  * (programChanged → stale, merchant → invalid); vencido; versão do programa mudou → stale. "Já usado" vem antes de
  * "vencido": quem perdeu a resposta e reenvia depois da validade recebe o que já ganhou (CA-14), não `visitQrExpired`.
  */
 export function decideVisitQrUse(qr: VisitQrSnapshot, customerId: string, now: Date): Result<'claim' | 'replay', VisitQrUseError> {
   if (!qr.shopApproved || qr.activeProgramId === null) return err({ code: 'invalidVisitQr' })
+  // Mesma resposta de QR inexistente: não conta ao lojista que o bloqueio foi por ser ele o emissor.
+  if (customerId === qr.issuedBy || customerId === qr.shopOwnerId) return err({ code: 'invalidVisitQr' })
   if (qr.status === 'claimed') {
     return qr.claimedBy === customerId ? ok('replay') : err({ code: 'visitQrAlreadyUsed' })
   }

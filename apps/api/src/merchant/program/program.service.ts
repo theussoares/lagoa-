@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import type { Program, ProgramDraft } from '#shared/schemas/program'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
+import { Clock } from '../../common/clock'
 import { ProgramRepository } from './program.repository'
 import { canChangeProgramMode, hasCriticalChanges } from './program.rules'
 
@@ -11,7 +12,10 @@ export type ProgramServiceError = ErrorOf<'notFound' | 'programModeLocked' | 'in
 export class ProgramService {
   private readonly logger = new Logger(ProgramService.name)
 
-  constructor(private readonly repo: ProgramRepository) {}
+  constructor(
+    private readonly repo: ProgramRepository,
+    private readonly clock: Clock,
+  ) {}
 
   async getProgram(ownerUserId: string): Promise<Result<Program, ErrorOf<'notFound'>>> {
     const data = await this.repo.findActiveProgramByOwner(ownerUserId)
@@ -40,7 +44,7 @@ export class ProgramService {
         return err({ code: 'programModeLocked' })
       }
       return ok({ isNewVersion: hasCriticalChanges(current, draft) })
-    })
+    }, this.clock.now())
     return saved
   }
 }

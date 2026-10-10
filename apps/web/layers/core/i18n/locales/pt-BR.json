@@ -123,6 +123,7 @@
     "birthdayLocked": "A data do aniversário só pode ser trocada uma vez por ano.",
     "notFound": "Não encontramos o que você procurou.",
     "invalidPhone": "Esse celular não parece certo. Use DDD + 9 dígitos, ex.: (67) 99123-4567.",
+    "visitQrLimitReached": "Já tem 20 QRs abertos nesta loja. Cancele os que não vão ser usados ou espere vencerem (5 minutos).",
     "accountOwnsShop": "Esta conta é a dona de uma loja no Lagoa+, então não dá para apagá-la por aqui. Fale com a rede para encerrar a loja.",
     "phoneAlreadyUsed": "Esse celular já está em uso em outra conta. Confira o número ou fale com a loja.",
     "termsNotAccepted": "Aceite os termos de uso para continuar.",

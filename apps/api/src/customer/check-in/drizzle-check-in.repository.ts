@@ -168,6 +168,8 @@ export class DrizzleCheckInRepository extends CheckInRepository {
         cancelReason: visitQrs.cancelReason,
         expiresAt: visitQrs.expiresAt,
         claimedBy: visitQrs.claimedBy,
+        issuedBy: visitQrs.issuedBy,
+        shopOwnerId: shops.ownerUserId,
         claimedAt: visitQrs.claimedAt,
         ledgerEntryId: visitQrs.ledgerEntryId,
         programId: visitQrs.programId,

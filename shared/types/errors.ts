@@ -30,6 +30,8 @@ export type DomainError =
   | { readonly code: 'checkInDisabled' }
   /** QR da visita inexistente, cancelado pelo lojista, de outra loja ou de loja não aprovada. */
   | { readonly code: 'invalidVisitQr' }
+  /** A loja já tem o máximo de QRs da visita abertos (`VISIT_QR_ACTIVE_MAX_PER_SHOP`): cancelar um ou esperar vencer. */
+  | { readonly code: 'visitQrLimitReached' }
   | { readonly code: 'visitQrExpired' }
   | { readonly code: 'visitQrAlreadyUsed' }
   /** Programa da loja mudou desde a emissão (ou o cartão é de uma versão que não aceita esse QR, P-04). */

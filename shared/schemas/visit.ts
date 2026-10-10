@@ -12,7 +12,8 @@ export type LedgerKind = z.infer<typeof LedgerKindSchema>
 export const CounterEntrySchema = z.object({
   id: VisitIdSchema,
   shopId: ShopIdSchema,
-  maskedPhone: MaskedPhoneSchema,
+  /** `null` = conta apagada ("cliente removido"): o celular dela não existe mais e nunca é decifrado. */
+  maskedPhone: MaskedPhoneSchema.nullable(),
   kind: LedgerKindSchema,
   unit: ProgramUnitSchema,
   /** Unidades ganhas (0 no resgate). */

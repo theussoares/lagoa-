@@ -1,5 +1,7 @@
 export const REDEMPTION_CODE_LENGTH = 6
 export const REDEMPTION_CODE_TTL_MINUTES = 10
+/** O Balcão só explica "já usado" / "vencido" para um código com até essa idade; mais velho vira `redemptionInvalid` (o código é reaproveitado). */
+export const REDEMPTION_LOOKUP_WINDOW_HOURS = 24
 /**
  * O código é lido em voz alta no balcão e copiado de cartaz: fica de fora quem tem sósia
  * (0/O, 1/I, 8/B, 5/S, 2/Z, U/V).
@@ -22,6 +24,8 @@ export const CHECK_IN_CODE_INPUT_MAX_LENGTH = 32
 export const CHECK_IN_LINK_PARAM = 'loja'
 /** QR da visita: uso único, gerado na hora da venda. */
 export const VISIT_QR_TTL_MINUTES = 5
+/** QRs da visita ativos ao mesmo tempo numa loja: sem teto, um lojista (ou um bug) enche o índice parcial e o código curto. */
+export const VISIT_QR_ACTIVE_MAX_PER_SHOP = 20
 /** O Balcão consulta o QR da visita nesse intervalo enquanto ele está ativo (aguardando o cliente). */
 export const VISIT_QR_STATUS_POLL_MS = 3000
 /**

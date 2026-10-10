@@ -70,6 +70,9 @@ export function claimVisitQr(
       cancelReason: record.cancelReason,
       expiresAt: new Date(record.expiresAt),
       claimedBy: record.claimedBy,
+      // O mock separa lojistas de clientes: um cliente nunca é o emissor.
+      issuedBy: null,
+      shopOwnerId: null,
       programId: record.programId,
       activeProgramId: program?.id ?? null,
       shopApproved: shop?.status === 'approved',

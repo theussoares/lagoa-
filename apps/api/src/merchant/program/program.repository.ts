@@ -23,11 +23,12 @@ export abstract class ProgramRepository {
    * Troca o programa ativo numa transação que trava a loja (`FOR UPDATE`), então a contagem de
    * cartões que `decide` vê vale até o commit: um cliente que entra no clube espera a troca acabar.
    * `decide` devolve se a troca cria nova versão (desativa a ativa e cancela os QRs da visita abertos)
-   * ou só atualiza o prêmio da linha ativa; um erro desfaz tudo. `notFound` se o lojista não tem programa ativo.
+   * ou só atualiza o prêmio da linha ativa (os QRs vivos viram `programChanged`, os vencidos `expired`, na mesma transação); um erro desfaz tudo. `notFound` se o lojista não tem programa ativo.
    */
   abstract updateActiveProgram(
     ownerUserId: string,
     draft: ProgramDraft,
     decide: (current: Program, cardsCount: number) => Result<{ isNewVersion: boolean }, ErrorOf<'programModeLocked'>>,
+    now: Date,
   ): Promise<Result<Program, ErrorOf<'notFound' | 'programModeLocked'>>>
 }

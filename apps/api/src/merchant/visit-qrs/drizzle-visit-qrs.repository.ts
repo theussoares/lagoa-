@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common'
-import { and, eq, lt, sql } from 'drizzle-orm'
-import { VISIT_CODE_LENGTH } from '#shared/constants/domain'
+import { and, eq, gt, lt, lte, sql } from 'drizzle-orm'
+import { VISIT_QR_ACTIVE_MAX_PER_SHOP } from '#shared/constants/domain'
 import type { PhoneNumber } from '#shared/schemas/phone'
 import type {
   VisitQr,
@@ -13,24 +13,26 @@ import { VisitQrSchema } from '#shared/schemas/visitQr'
 import type { CounterEntry } from '#shared/schemas/visit'
 import { CounterEntrySchema, VisitRegisteredSchema } from '#shared/schemas/visit'
 import { maskPhone } from '#shared/utils/phone'
-import { generateReadableCode } from '../../common/readable-code'
 import { toIso } from '#shared/utils/time'
 import { PiiService } from '../../common/pii.service'
-import { DB, type Database } from '../../database/database.module'
+import { err, ok, type Result } from '#shared/types/result'
+import { DB, type Database, type Tx } from '../../database/database.module'
+import { uniqueViolationConstraint } from '../../database/unique-violation'
 import {
   appUsers,
   ledgerEntries,
   loyaltyCards,
   programs,
   redemptions,
+  shops,
   visitQrs,
 } from '../../database/schema'
 import { toProgramRules } from '../../programs/program-rules.mapper'
-import {
-  type ActiveProgramRules,
-  type InsertVisitQrParams,
-  VisitQrsRepository,
-} from './visit-qrs.repository'
+import { type IssueError, type IssuedRow, type IssueVisitQrCommand, VisitQrsRepository } from './visit-qrs.repository'
+
+/** Primeiro inteiro da chave do advisory lock das emissões (o segundo é o hash da loja); só a variante de transação. */
+const ISSUE_LOCK_NAMESPACE = 0x51
+const VISIT_CODE_INSERT_ATTEMPTS = 8
 
 @Injectable()
 export class DrizzleVisitQrsRepository extends VisitQrsRepository {
@@ -43,83 +45,83 @@ export class DrizzleVisitQrsRepository extends VisitQrsRepository {
     super()
   }
 
-  async findActiveProgram(shopId: string): Promise<ActiveProgramRules | null> {
-    const [row] = await this.db
-      .select({
-        id: programs.id,
-        mode: programs.mode,
-        earnUnits: programs.earnUnits,
-        target: programs.target,
-      })
-      .from(programs)
-      .where(and(eq(programs.shopId, shopId), eq(programs.active, true)))
-      .limit(1)
+  async issue(command: IssueVisitQrCommand): Promise<Result<IssuedRow, IssueError>> {
+    return this.db.transaction(async (tx) => {
+      // 1. A loja primeiro, sozinha: `FOR SHARE` espera um `PUT /program` em andamento terminar. Lida em outro comando,
+      // a versão ativa já é a nova (um join travado reavaliaria a linha antiga e devolveria nada).
+      const [shop] = await tx.select({ status: shops.status }).from(shops).where(eq(shops.id, command.shopId)).for('share')
+      if (!shop) return err({ code: 'notFound', entity: 'shop' })
+      const [program] = await tx
+        .select({ id: programs.id, mode: programs.mode, earnUnits: programs.earnUnits, target: programs.target })
+        .from(programs)
+        .where(and(eq(programs.shopId, command.shopId), eq(programs.active, true)))
+        .limit(1)
+        .for('share')
+      const rules = program ? toProgramRules(program) : null
+      if (!program || rules === null || !rules.ok) return err({ code: 'notFound', entity: 'program' })
 
-    if (!row) return null
+      const planned = command.plan({ status: shop.status, programId: program.id, rules: rules.value })
+      if (!planned.ok) return planned
 
-    const rulesResult = toProgramRules({
-      mode: row.mode,
-      earnUnits: row.earnUnits,
-      target: row.target,
+      // 2. Emissões da mesma loja entram em fila: sem isso duas contam 19 ao mesmo tempo e gravam 21.
+      await tx.execute(sql`select pg_advisory_xact_lock(${ISSUE_LOCK_NAMESPACE}, hashtext(${command.shopId}))`)
+      // 3. O que já passou do prazo sai da conta (e libera o código curto) antes de contar.
+      await tx
+        .update(visitQrs)
+        .set({ status: 'expired' })
+        .where(and(eq(visitQrs.shopId, command.shopId), eq(visitQrs.status, 'active'), lte(visitQrs.expiresAt, command.now)))
+      const [active] = await tx
+        .select({ n: sql<number>`count(*)::int` })
+        .from(visitQrs)
+        .where(and(eq(visitQrs.shopId, command.shopId), eq(visitQrs.status, 'active')))
+      if ((active?.n ?? 0) >= VISIT_QR_ACTIVE_MAX_PER_SHOP) return err({ code: 'visitQrLimitReached' })
+
+      const inserted = await this.insertWithFreeCode(tx, command, program.id, planned.value)
+      return ok({ ...inserted, earn: planned.value })
     })
-    if (!rulesResult.ok) return null
-
-    return {
-      id: row.id,
-      rules: rulesResult.value,
-    }
   }
 
-  async createVisitQr(params: InsertVisitQrParams): Promise<string> {
-    let visitCode = params.visitCode
-
-    for (let attempt = 0; attempt < 5; attempt++) {
+  /**
+   * O código curto é único entre os QRs vivos da rede. A colisão aborta o comando no Postgres, então o insert roda num
+   * savepoint (transação aninhada): perder a corrida não derruba a emissão. Linha vencida que ainda segura o código é
+   * baixada para `expired`; as vivas de outras lojas só obrigam a sortear outro.
+   */
+  private async insertWithFreeCode(
+    tx: Tx,
+    command: IssueVisitQrCommand,
+    programId: string,
+    earn: VisitQrEarn,
+  ): Promise<{ id: string; visitCode: string }> {
+    for (let attempt = 0; attempt < VISIT_CODE_INSERT_ATTEMPTS; attempt++) {
+      const visitCode = command.newVisitCode()
       try {
-        const [inserted] = await this.db
-          .insert(visitQrs)
-          .values({
-            shopId: params.shopId,
-            programId: params.programId,
-            issuedBy: params.issuedBy,
-            tokenHash: params.tokenHash,
-            visitCode,
-            earnKind: params.earn.kind,
-            amountCents: params.earn.kind === 'amount' ? params.earn.amountCents : null,
-            status: 'active',
-            createdAt: params.createdAt,
-            expiresAt: params.expiresAt,
-          })
-          .returning({ id: visitQrs.id })
-
-        if (inserted) return inserted.id
-      } catch (err: unknown) {
-        // Colisão com visit_qrs_active_code_uq:
-        // Se a linha ativa anterior já expirou (expires_at <= now), desativa para 'expired' e tenta de novo.
-        const pgError = err as { code?: string; constraint?: string }
-        if (
-          pgError.code === '23505' &&
-          (pgError.constraint === 'visit_qrs_active_code_uq' ||
-            String(err).includes('visit_qrs_active_code_uq'))
-        ) {
-          // Marca linhas vencidas como expired para liberar o código
-          await this.db
-            .update(visitQrs)
-            .set({ status: 'expired' })
-            .where(
-              and(
-                eq(visitQrs.visitCode, visitCode),
-                eq(visitQrs.status, 'active'),
-                sql`${visitQrs.expiresAt} <= ${params.createdAt}`,
-              ),
-            )
-          visitCode = generateReadableCode(VISIT_CODE_LENGTH)
-          continue
-        }
-        throw err
+        const [row] = await tx.transaction((savepoint) =>
+          savepoint
+            .insert(visitQrs)
+            .values({
+              shopId: command.shopId,
+              programId,
+              issuedBy: command.issuedBy,
+              tokenHash: command.tokenHash,
+              visitCode,
+              earnKind: earn.kind,
+              amountCents: earn.kind === 'amount' ? earn.amountCents : null,
+              status: 'active',
+              createdAt: command.now,
+              expiresAt: command.expiresAt,
+            })
+            .returning({ id: visitQrs.id }),
+        )
+        if (row) return { id: row.id, visitCode }
+      } catch (error) {
+        if (uniqueViolationConstraint(error) !== 'visit_qrs_active_code_uq') throw error
+        await tx
+          .update(visitQrs)
+          .set({ status: 'expired' })
+          .where(and(eq(visitQrs.visitCode, visitCode), eq(visitQrs.status, 'active'), lte(visitQrs.expiresAt, command.now)))
       }
     }
-
-    throw new Error('Could not generate unique active visit code after retries')
+    throw new Error('Could not allocate a free visit code')
   }
 
   async findById(shopId: string, id: string): Promise<VisitQr | null> {
@@ -174,24 +176,12 @@ export class DrizzleVisitQrsRepository extends VisitQrsRepository {
     })
   }
 
-  async cancel(
-    shopId: string,
-    id: string,
-    reason: VisitQrCancelReason,
-  ): Promise<VisitQr | null> {
+  async cancel(shopId: string, id: string, reason: VisitQrCancelReason, now: Date): Promise<VisitQr | null> {
+    // Só o que ainda está vivo: vencido não vira `cancelled` (a situação seria falsa) e repetir não muda nada.
     await this.db
       .update(visitQrs)
-      .set({
-        status: 'cancelled',
-        cancelReason: reason,
-      })
-      .where(
-        and(
-          eq(visitQrs.id, id),
-          eq(visitQrs.shopId, shopId),
-          eq(visitQrs.status, 'active'),
-        ),
-      )
+      .set({ status: 'cancelled', cancelReason: reason })
+      .where(and(eq(visitQrs.id, id), eq(visitQrs.shopId, shopId), eq(visitQrs.status, 'active'), gt(visitQrs.expiresAt, now)))
 
     return this.findById(shopId, id)
   }
@@ -210,6 +200,7 @@ export class DrizzleVisitQrsRepository extends VisitQrsRepository {
         amountCents: ledgerEntries.amountCents,
         occurredAt: ledgerEntries.occurredAt,
         phoneEncrypted: appUsers.phoneEncrypted,
+        erasedAt: appUsers.erasedAt,
         rewardTitle: redemptions.rewardTitle,
         programUnit: programs.unit,
         cardBalance: loyaltyCards.balance,
@@ -225,7 +216,8 @@ export class DrizzleVisitQrsRepository extends VisitQrsRepository {
 
     if (!entryRow) return null
 
-    const maskedPhone = this.maskedPhoneOf(entryRow.id, entryRow.phoneEncrypted)
+    // Conta apagada: "cliente removido". O celular dela é um buffer vazio e nunca chega a ser decifrado.
+    const maskedPhone = entryRow.erasedAt === null ? this.maskedPhoneOf(entryRow.id, entryRow.phoneEncrypted) : null
     const [welcome] = await this.db
       .select({ unitsDelta: ledgerEntries.unitsDelta })
       .from(ledgerEntries)

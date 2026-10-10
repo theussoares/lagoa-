@@ -41,6 +41,8 @@ export function lockedVisitQr(overrides: Partial<LockedVisitQr> = {}): LockedVis
     cancelReason: null,
     expiresAt: new Date('2026-10-03T12:03:00Z'),
     claimedBy: null,
+    issuedBy: ISSUER_ID,
+    shopOwnerId: ISSUER_ID,
     claimedAt: null,
     ledgerEntryId: null,
     programId: PROGRAM_ID,

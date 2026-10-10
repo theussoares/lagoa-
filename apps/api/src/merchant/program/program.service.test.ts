@@ -74,7 +74,7 @@ describe('ProgramService', () => {
   it('getProgram returns active program for existing shop', async () => {
     const repo = new FakeProgramRepository()
     repo.data = { shopId: baseProgram.shopId, program: baseProgram }
-    const service = new ProgramService(repo)
+    const service = new ProgramService(repo, { now: () => new Date('2026-10-09T12:00:00Z') })
 
     const result = await service.getProgram('user-1')
     expect(result).toEqual({ ok: true, value: baseProgram })
@@ -83,7 +83,7 @@ describe('ProgramService', () => {
   it('getProgram returns notFound when shop or program does not exist', async () => {
     const repo = new FakeProgramRepository()
     repo.data = null
-    const service = new ProgramService(repo)
+    const service = new ProgramService(repo, { now: () => new Date('2026-10-09T12:00:00Z') })
 
     const result = await service.getProgram('user-1')
     expect(result).toEqual({ ok: false, error: { code: 'notFound', entity: 'program' } })
@@ -93,7 +93,7 @@ describe('ProgramService', () => {
     const repo = new FakeProgramRepository()
     repo.data = { shopId: baseProgram.shopId, program: baseProgram }
     repo.cardCount = 42
-    const service = new ProgramService(repo)
+    const service = new ProgramService(repo, { now: () => new Date('2026-10-09T12:00:00Z') })
 
     const result = await service.countActiveCards('user-1')
     expect(result).toEqual({ ok: true, value: { count: 42 } })
@@ -102,7 +102,7 @@ describe('ProgramService', () => {
   it('countActiveCards returns notFound if shop does not exist', async () => {
     const repo = new FakeProgramRepository()
     repo.data = null
-    const service = new ProgramService(repo)
+    const service = new ProgramService(repo, { now: () => new Date('2026-10-09T12:00:00Z') })
 
     const result = await service.countActiveCards('user-1')
     expect(result).toEqual({ ok: false, error: { code: 'notFound', entity: 'shop' } })
@@ -112,7 +112,7 @@ describe('ProgramService', () => {
     const repo = new FakeProgramRepository()
     repo.data = { shopId: baseProgram.shopId, program: baseProgram }
     repo.cardCount = 5
-    const service = new ProgramService(repo)
+    const service = new ProgramService(repo, { now: () => new Date('2026-10-09T12:00:00Z') })
 
     const draftWithModeChange: ProgramDraft = {
       ...baseDraft,
@@ -128,7 +128,7 @@ describe('ProgramService', () => {
     const repo = new FakeProgramRepository()
     repo.data = { shopId: baseProgram.shopId, program: baseProgram }
     repo.cardCount = 0
-    const service = new ProgramService(repo)
+    const service = new ProgramService(repo, { now: () => new Date('2026-10-09T12:00:00Z') })
 
     const draftWithModeChange: ProgramDraft = {
       ...baseDraft,
@@ -147,7 +147,7 @@ describe('ProgramService', () => {
     const repo = new FakeProgramRepository()
     repo.data = { shopId: baseProgram.shopId, program: baseProgram }
     repo.cardCount = 15
-    const service = new ProgramService(repo)
+    const service = new ProgramService(repo, { now: () => new Date('2026-10-09T12:00:00Z') })
 
     const draftWithNewTarget: ProgramDraft = {
       ...baseDraft,
@@ -166,7 +166,7 @@ describe('ProgramService', () => {
     const repo = new FakeProgramRepository()
     repo.data = { shopId: baseProgram.shopId, program: baseProgram }
     repo.cardCount = 8
-    const service = new ProgramService(repo)
+    const service = new ProgramService(repo, { now: () => new Date('2026-10-09T12:00:00Z') })
 
     const draftWithTitleOnly: ProgramDraft = {
       ...baseDraft,
@@ -184,7 +184,7 @@ describe('ProgramService', () => {
   it('updateProgram returns notFound if merchant has no active program', async () => {
     const repo = new FakeProgramRepository()
     repo.data = null
-    const service = new ProgramService(repo)
+    const service = new ProgramService(repo, { now: () => new Date('2026-10-09T12:00:00Z') })
 
     const result = await service.updateProgram('user-1', baseDraft)
     expect(result).toEqual({ ok: false, error: { code: 'notFound', entity: 'program' } })
