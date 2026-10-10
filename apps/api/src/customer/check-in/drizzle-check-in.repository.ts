@@ -8,6 +8,8 @@ import { DB, type Database } from '../../database/database.module'
 import type { Tx } from '../../database/database.module'
 import { customerProfiles, ledgerEntries, loyaltyCards, programs, shops, visitQrs } from '../../database/schema'
 import { type LockedCard, LedgerStore } from '../../ledger/ledger.store'
+import { carriesOverFromPerReal } from '../../ledger/per-real-carry-over'
+import { toExpirationPolicy } from '../../programs/program-rules.mapper'
 import { CATALOG_COLUMNS, toCatalogShop } from '../../shops/catalog-row'
 import {
   CheckInRepository,
@@ -69,11 +71,12 @@ export class DrizzleCheckInRepository extends CheckInRepository {
 
     // Cartão com saldo segue na versão do programa em que nasceu; sem cartão (ou zerado) vale a versão ativa.
     const [card] = await this.db
-      .select({ programId: loyaltyCards.programId, balance: loyaltyCards.balance })
+      .select({ programId: loyaltyCards.programId, balance: loyaltyCards.balance, earnPer: programs.earnPer, unit: programs.unit, target: programs.target })
       .from(loyaltyCards)
+      .innerJoin(programs, eq(programs.id, loyaltyCards.programId))
       .where(and(eq(loyaltyCards.shopId, row.shopId), eq(loyaltyCards.customerId, customerId)))
       .limit(1)
-    const programId = card && card.balance > 0 ? card.programId : row.activeProgramId
+    const programId = card && card.balance > 0 && !(await this.carriesOver(card, row.activeProgramId)) ? card.programId : row.activeProgramId
     const [catalog] = await this.db
       .select(CATALOG_COLUMNS)
       .from(shops)
@@ -111,12 +114,12 @@ export class DrizzleCheckInRepository extends CheckInRepository {
           .limit(1)
         if (!profile) return refuse({ code: 'unauthorized' })
 
-        const { card } = await this.ledger.lockOrCreateCard(
+        const locked = await this.ledger.lockOrCreateCard(
           tx,
           { shopId: target.shop.id, customerId, programId: target.programId },
           { policy: target.shop.program.expiration, target: target.shop.program.rules.target, now },
         )
-        await this.alignProgramVersion(tx, card, target.programId)
+        const card = await this.alignProgramVersion(tx, locked.card, target.programId, now)
 
         const decision = decide.earning({
           card: { balance: card.balance, rewardExpiresAt: card.rewardExpiresAt, lastVisitAt: card.lastVisitAt },
@@ -228,11 +231,32 @@ export class DrizzleCheckInRepository extends CheckInRepository {
    * `findVisitQr` leu a versão do programa antes do lock. Cartão zerado pode mudar para a versão ativa;
    * com saldo, uma versão diferente da lida significa que o programa mudou no meio do caminho.
    */
-  private async alignProgramVersion(tx: Tx, card: LockedCard, expectedProgramId: string): Promise<void> {
-    const [current] = await tx.select({ programId: loyaltyCards.programId }).from(loyaltyCards).where(eq(loyaltyCards.id, card.id)).limit(1)
-    if (!current || current.programId === expectedProgramId) return
-    const [expected] = await tx.select({ active: programs.active }).from(programs).where(eq(programs.id, expectedProgramId)).limit(1)
-    if (card.balance > 0 || !expected?.active) throw new ProgramVersionChanged()
-    await tx.update(loyaltyCards).set({ programId: expectedProgramId }).where(eq(loyaltyCards.id, card.id))
+  private async carriesOver(card: { balance: number; earnPer: string; unit: string; target: number }, activeProgramId: string): Promise<boolean> {
+    const [active] = await this.db.select({ earnPer: programs.earnPer, unit: programs.unit, target: programs.target }).from(programs).where(eq(programs.id, activeProgramId)).limit(1)
+    return active !== undefined && carriesOverFromPerReal(card.balance, card, active)
+  }
+
+  /**
+   * Cartão zerado vai para a versão ativa; cartão por real sem prêmio ganho também (`carriesOverFromPerReal`), com o
+   * vencimento da versão em que ele estava aplicado antes de mudar de versão. Outro caso é troca no meio do caminho.
+   */
+  private async alignProgramVersion(tx: Tx, card: LockedCard, expectedProgramId: string, now: Date): Promise<LockedCard> {
+    const [current] = await tx
+      .select({ programId: loyaltyCards.programId, earnPer: programs.earnPer, unit: programs.unit, target: programs.target, expirationKind: programs.expirationKind, expirationMonths: programs.expirationMonths })
+      .from(loyaltyCards)
+      .innerJoin(programs, eq(programs.id, loyaltyCards.programId))
+      .where(eq(loyaltyCards.id, card.id))
+      .limit(1)
+    if (!current || current.programId === expectedProgramId) return card
+    const [expected] = await tx.select({ active: programs.active, earnPer: programs.earnPer, unit: programs.unit, target: programs.target }).from(programs).where(eq(programs.id, expectedProgramId)).limit(1)
+    if (!expected?.active) throw new ProgramVersionChanged()
+    let aligned = card
+    if (card.balance > 0) {
+      if (!carriesOverFromPerReal(card.balance, current, expected)) throw new ProgramVersionChanged()
+      const policy = toExpirationPolicy(current)
+      if (policy.ok) aligned = await this.ledger.expireIfDue(tx, card, { policy: policy.value, target: current.target, now })
+    }
+    await tx.update(loyaltyCards).set({ programId: expectedProgramId, ...(aligned.balance > 0 && { rewardExpiresAt: null }) }).where(eq(loyaltyCards.id, card.id))
+    return aligned.balance > 0 ? { ...aligned, rewardExpiresAt: null } : aligned
   }
 }

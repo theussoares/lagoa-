@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common'
-import { and, count, eq, gt, lt, lte } from 'drizzle-orm'
+import { and, count, eq, gt, lte } from 'drizzle-orm'
 import type { Program, ProgramDraft } from '#shared/schemas/program'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
@@ -88,14 +88,13 @@ export class DrizzleProgramRepository extends ProgramRepository {
 
       const decision = decide(current.value)
       const saved = decision.isNewVersion
-        ? await this.insertNewVersion(tx, shop.id, row, draft, now)
+        ? await this.insertNewVersion(tx, shop.id, row.id, draft, now)
         : await this.updateRewardTitle(tx, shop.id, row.id, draft)
       return ok(saved)
     })
   }
 
-  private async insertNewVersion(tx: Tx, shopId: string, previous: typeof programs.$inferSelect, draft: ProgramDraft, now: Date): Promise<Program> {
-    const currentProgramId = previous.id
+  private async insertNewVersion(tx: Tx, shopId: string, currentProgramId: string, draft: ProgramDraft, now: Date): Promise<Program> {
     await tx
       .update(programs)
       .set({ active: false })
@@ -114,25 +113,10 @@ export class DrizzleProgramRepository extends ProgramRepository {
 
     const [inserted] = await tx.insert(programs).values(mapDraftToProgramInsert(shopId, draft)).returning()
     if (!inserted) throw new Error('Failed to insert new program version')
-    await this.carryPointsOutOfPerRealMode(tx, shopId, previous, inserted)
 
     const mapped = toProgram(inserted)
     if (!mapped.ok) throw new Error('Inserted program row violated domain rules')
     return mapped.value
-  }
-
-  /**
-   * Cartão em pontos por real não rende com QR sem valor, e o QR de um modo por visita nunca tem valor: se o cartão
-   * ficasse na versão antiga, nunca mais andaria (nem chegaria ao resgate, onde trocaria de versão). Quando a unidade
-   * é a mesma (ponto), o saldo atravessa a troca. Cartão que já bate a meta nova fica de fora: o prêmio dele segue
-   * valendo na versão em que foi ganho.
-   */
-  private async carryPointsOutOfPerRealMode(tx: Tx, shopId: string, previous: typeof programs.$inferSelect, next: typeof programs.$inferSelect): Promise<void> {
-    if (previous.earnPer !== 'real' || next.earnPer === 'real' || previous.unit !== next.unit) return
-    await tx
-      .update(loyaltyCards)
-      .set({ programId: next.id, rewardExpiresAt: null })
-      .where(and(eq(loyaltyCards.shopId, shopId), eq(loyaltyCards.programId, previous.id), gt(loyaltyCards.balance, 0), lt(loyaltyCards.balance, next.target)))
   }
 
   private async updateRewardTitle(tx: Tx, shopId: string, currentProgramId: string, draft: ProgramDraft): Promise<Program> {

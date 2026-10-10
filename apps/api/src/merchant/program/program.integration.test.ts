@@ -72,19 +72,35 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant program against a real database', 
     expect((await data.db.select().from(loyaltyCards).where(eq(loyaltyCards.customerId, newcomer)))[0]?.programId).toBe(newVersion)
   }, SLOW)
 
-  it('a points-per-real card with balance moves to the new version when the shop leaves per-real mode, and keeps earning', async () => {
+  it('a points-per-real card with balance follows the shop out of per-real mode on its next visit, and keeps earning', async () => {
     const shop = await data.createShop({ rules: { mode: 'pointsPerCurrency', pointsPerReal: 1, target: 100 }, bonusRules: NO_BONUS_RULES })
     const owner = await ownerOf(shop.id)
     const customer = await data.createCustomer()
     expect(await claimVisit(data, checkIn, customer, shop, { earn: { kind: 'amount', amountCents: 4000 } })).toMatchObject({ ok: true })
     const [before] = await data.db.select().from(loyaltyCards).where(eq(loyaltyCards.customerId, customer))
     expect(before?.balance).toBe(40)
+    // Passa a janela do antifraude para a segunda visita ser a que conta.
+    await data.db.update(loyaltyCards).set({ lastVisitAt: new Date(Date.now() - 3 * 86_400_000) }).where(eq(loyaltyCards.customerId, customer))
 
-    await service.updateProgram(owner, await draftFor(owner, { mode: 'pointsPerVisit', pointsPerVisit: 10, target: 100 }))
+    await service.updateProgram(owner, await draftFor(owner, { mode: 'pointsPerVisit', pointsPerVisit: 10, target: 30 }))
     const [newVersion] = await activeProgramIds(shop.id)
-    const [moved] = await data.db.select().from(loyaltyCards).where(eq(loyaltyCards.customerId, customer))
-    expect(moved).toMatchObject({ balance: 40, programId: newVersion })
-    expect(before?.programId).not.toBe(newVersion)
+    expect((await data.db.select().from(loyaltyCards).where(eq(loyaltyCards.customerId, customer)))[0]?.programId).toBe(before?.programId)
+
+    expect(await claimVisit(data, checkIn, customer, shop)).toMatchObject({ ok: true })
+    const [after] = await data.db.select().from(loyaltyCards).where(eq(loyaltyCards.customerId, customer))
+    expect(after).toMatchObject({ balance: 50, programId: newVersion })
+  }, SLOW)
+
+  it('a points-per-real card that already earned its prize stays on its version (it moves when the prize is redeemed)', async () => {
+    const shop = await data.createShop({ rules: { mode: 'pointsPerCurrency', pointsPerReal: 1, target: 100 }, bonusRules: NO_BONUS_RULES })
+    const owner = await ownerOf(shop.id)
+    const customer = await data.createCustomer()
+    expect(await claimVisit(data, checkIn, customer, shop, { earn: { kind: 'amount', amountCents: 12000 } })).toMatchObject({ ok: true })
+    await service.updateProgram(owner, await draftFor(owner, { mode: 'pointsPerVisit', pointsPerVisit: 10, target: 150 }))
+    const [card] = await data.db.select().from(loyaltyCards).where(eq(loyaltyCards.customerId, customer))
+    expect(card?.balance).toBe(120)
+    expect(await claimVisit(data, checkIn, customer, shop)).toMatchObject({ ok: false, error: { code: 'visitQrStale' } })
+    expect((await data.db.select().from(loyaltyCards).where(eq(loyaltyCards.customerId, customer)))[0]).toMatchObject({ balance: 120, programId: card?.programId })
   }, SLOW)
 
   it('a QR issued before the change answers visitQrStale to the customer (it was cancelled as programChanged)', async () => {
