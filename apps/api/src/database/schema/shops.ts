@@ -17,7 +17,9 @@ export const shops = pgTable(
     neighborhood: text('neighborhood').notNull(),
     addressLine: text('address_line').notNull(),
     checkInCode: char('check_in_code', { length: 6 }).notNull().unique(),
+    /** Caminhos no bucket `shop-assets` (nunca a URL): logo quadrado e banner, a capa do card no Descobrir. */
     logoPath: text('logo_path'),
+    bannerPath: text('banner_path'),
     status: shopStatus('status').notNull().default('pending'),
     plan: shopPlan('plan').notNull().default('founder'),
     /** Cartaz novo impresso? `null` = ainda não (aviso no Início); o Criar o clube já grava `now()`. */

@@ -61,7 +61,8 @@ class Shop {
   +text neighborhood
   +text addressLine
   +char6 checkInCode  «unique»
-  +text logoPath?  «bucket shop-assets»
+  +text logoPath?  «bucket shop-assets, logo quadrado»
+  +text bannerPath?  «bucket shop-assets, capa do card»
   +enum status  «pending | approved | suspended»
   +timestamptz createdAt
 }
@@ -167,7 +168,9 @@ VisitQr "1" --> "0..1" LedgerEntry : ganho
 ## Storage (bucket)
 
 - Bucket `shop-assets`, leitura pública, escrita só pelo Nest (service role).
-- Caminho: `shops/<shopId>/logo.<ext>`; `Shop.logoPath` guarda só o caminho, nunca a URL.
+- Caminho: `<shopId>/logo-<uuid>.<ext>` e `<shopId>/banner-<uuid>.<ext>` (nome novo a cada troca, sem cache velho; o
+  arquivo anterior é apagado). `logoPath`/`bannerPath` guardam só o caminho, nunca a URL. Envio por
+  `POST /v1/merchant/shop/photo/:kind` (base64, até 1 MB, tipo e dimensões conferidos pelos bytes).
 - Limites no Nest: imagens PNG/JPEG/WebP, até 2 MB.
 - Nada pessoal vai para o bucket (sem foto de cliente).
 - O MVP do front ainda não tem upload de logo; o campo e o bucket ficam prontos e

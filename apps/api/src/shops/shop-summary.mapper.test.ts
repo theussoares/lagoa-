@@ -37,10 +37,14 @@ describe('toShopSummary', () => {
     expect(summaryOf(shop).program).toMatchObject({ unit: 'point', target: 200, earnRate: { per: 'real', units: 2 } })
   })
 
-  it('builds the logo URL from the stored path, never storing a URL', () => {
-    expect(summaryOf(catalogShop({ logoPath: 'shops/abc/logo.png' })).showcase?.imageUrl).toBe(
-      'https://project.supabase.co/storage/v1/object/public/shop-assets/shops/abc/logo.png',
-    )
+  it('builds the banner and logo URLs from the stored paths, never storing a URL', () => {
+    const showcase = summaryOf(catalogShop({ logoPath: 'abc/logo.png', bannerPath: 'abc/banner.webp' })).showcase
+    expect(showcase?.imageUrl).toBe('https://project.supabase.co/storage/v1/object/public/shop-assets/abc/banner.webp')
+    expect(showcase?.logoUrl).toBe('https://project.supabase.co/storage/v1/object/public/shop-assets/abc/logo.png')
+  })
+
+  it('leaves the showcase out without images', () => {
+    expect(summaryOf(catalogShop()).showcase).toBeUndefined()
   })
 
   it('drops fields the app must never see even if the row carries them', () => {
