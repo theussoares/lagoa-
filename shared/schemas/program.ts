@@ -70,11 +70,23 @@ export const ExpirationPolicySchema = z.discriminatedUnion('kind', [
 ])
 export type ExpirationPolicy = z.infer<typeof ExpirationPolicySchema>
 
+/**
+ * Como a janela antifraude conta: `rolling` = `cooldownHours` corridas desde a última visita; `calendarDay` = uma
+ * visita por dia local do piloto, que vira à meia-noite (23h e 3h do dia seguinte valem duas). No `calendarDay` as horas
+ * ficam guardadas, mas não contam.
+ */
+export const CheckInCooldownModeSchema = z.enum(['rolling', 'calendarDay'])
+export type CheckInCooldownMode = z.infer<typeof CheckInCooldownModeSchema>
+
 export const CheckInPolicySchema = z.object({
   enabled: z.boolean(),
   cooldownHours: z.number().int().min(1).max(CHECK_IN_COOLDOWN_MAX_HOURS),
+  // Padrão `rolling`: resposta de uma API que ainda não manda o campo continua valendo como antes.
+  cooldownMode: CheckInCooldownModeSchema.default('rolling'),
 })
 export type CheckInPolicy = z.infer<typeof CheckInPolicySchema>
+/** O que a regra antifraude precisa saber da política. */
+export type CheckInCooldown = Pick<CheckInPolicy, 'cooldownHours' | 'cooldownMode'>
 
 export const RewardSchema = z.object({
   title: z.string().trim().min(1).max(REWARD_TITLE_MAX_LENGTH),

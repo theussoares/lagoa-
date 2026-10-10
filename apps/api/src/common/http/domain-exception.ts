@@ -15,6 +15,7 @@ const STATUS_BY_CODE: Record<DomainErrorCode, number> = {
   invalidLoginCode: 400,
   loginCodeExpired: 400,
   invalidAmount: 400,
+  invalidShopPhoto: 400,
   amountNotAccepted: 422,
   invalidShopQr: 404,
   checkInDisabled: 403,

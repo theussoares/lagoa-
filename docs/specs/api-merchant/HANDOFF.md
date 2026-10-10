@@ -21,7 +21,8 @@ Estado em **2026-10-10**. Spec: [spec.md](./spec.md) (aprovada pelo dono). Desen
 | M2 Balcão (QR da visita, resgate, `0021`) | Feito | `develop` (#52) |
 | M3 Programa + mecanismo do termo | Feito, gate desligado | `develop` (#53) |
 | Pendências do piloto (`isSameProgram`, rascunho do termo, Playwright de fumaça) | Feito | `develop` (#54) |
-| Tela de aceite do termo + Campanhas escondida | Feito | `feat/mvp-pilot-ready` |
+| Tela de aceite do termo + Campanhas escondida | Feito | `develop` (#56) |
+| Release `develop` → `main` + produção | **No ar (2026-10-10)** | `main` (#57) |
 | M4 Início e Clientes | API e BFF existem (do #43), **sem o endurecimento da 4.2/4.3** | `develop` |
 | M5 Campanhas | Não existe na API nem no BFF; **escondida no piloto** (decisão do dono, 2026-10-10) | — |
 | M6 Corte do mock | Não começou (não bloqueia) | — |
@@ -30,9 +31,10 @@ Estado em **2026-10-10**. Spec: [spec.md](./spec.md) (aprovada pelo dono). Desen
   `NUXT_PUBLIC_MERCHANT_BACKEND=mock`.
 - **Testes de integração rodam no CI** contra Postgres 17 (`.github/workflows/ci.yml`: migrations, paridade `--exact`,
   `TEST_DATABASE_URL`). O bloqueio antigo "sem Postgres" acabou.
-- `main` está no release #45 (até a `0018`). **Os PRs #49 a #53 (42 commits) estão só na `develop`.**
-- **Produção (Supabase `lagoa-`, sa-east-1):** 19 migrations aplicadas, a última é `0018_shop_assets_bucket`.
-  Faltam `0019`, `0020` e `0021`. Nenhuma loja cadastrada (checado em 2026-10-10).
+- **Produção (2026-10-10):** `main` em #57, deploy de API, web e site prontos. Supabase com 22/22 migrations (`db:migrate:prod`,
+  620 testes de integração passando antes), `db:backfill-visits` rodado (0 cartões). API com `MERCHANT_TERMS_REQUIRED=1` e
+  `CORS_ORIGIN` vazio. Nenhuma loja cadastrada ainda.
+- Variáveis da Vercel só existem em `production`: os deploys da `develop` (preview) sobem sem env.
 
 ## O que falta para começar os testes do piloto
 
@@ -48,8 +50,8 @@ Teste do piloto = lojistas e clientes de verdade em Três Lagoas, no ambiente de
    ligar `MERCHANT_TERMS_REQUIRED=1` na API. **Decisão do dono:** o piloto usa o rascunho sem revisão jurídica; o texto
    revisado entra com versão nova (todo lojista aceita de novo). Ficaram de fora do texto as lacunas do rascunho
    (encarregado/DPO, canal de atendimento, prazos de cancelamento e aviso). Junto: revisar o termo do cliente (P-17).
-4. **Release `develop` → `main`** com CI verde.
-5. **Banco de produção:** `pnpm --filter @lagoa/api db:migrate:prod` (aplica `0019`–`0021`; exige o banco de teste
+4. ~~Release `develop` → `main`~~ feito (#57).
+5. ~~Banco de produção~~ feito: `pnpm --filter @lagoa/api db:migrate:prod` (aplica `0019`–`0021`; exige o banco de teste
    igual ao repo e os testes passando nele). Logo depois do deploy da API: `db:backfill-visits` (zero lojas hoje, mas
    roda por garantia). Nada de MCP nem SQL à mão.
 6. **Deploy e variáveis** (API e web na Vercel), conferir uma a uma:
@@ -103,6 +105,6 @@ Teste do piloto = lojistas e clientes de verdade em Três Lagoas, no ambiente de
 
 ## Próximo passo (nova sessão)
 
-1. Merge de `feat/mvp-pilot-ready` na `develop`, release → `main`.
-2. `db:migrate:prod`, `db:backfill-visits`, variáveis e deploy.
-3. Ensaio do roteiro acima, incluindo o aceite do termo no Início antes de gerar o primeiro QR.
+1. Conferir na Supabase o hook Auth > Send SMS e o saldo da Comtele (não dá para ver pelo repo).
+2. Ensaio do roteiro acima em celular real, incluindo o aceite do termo no Início antes de gerar o primeiro QR.
+3. Aprovar as lojas do piloto com `shop:status` e começar.

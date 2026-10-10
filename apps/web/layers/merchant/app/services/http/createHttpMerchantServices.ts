@@ -8,6 +8,7 @@ import { HttpMerchantHomeService } from './HttpMerchantHomeService'
 import { HttpMerchantTermsService } from './HttpMerchantTermsService'
 import { HttpPosterReprintService } from './HttpPosterReprintService'
 import { HttpProgramService } from './HttpProgramService'
+import { HttpShopPhotoService } from './HttpShopPhotoService'
 import { HttpVisitQrService } from './HttpVisitQrService'
 
 export function createHttpMerchantServices(api: ApiClient): MerchantServices {
@@ -23,6 +24,7 @@ export function createHttpMerchantServices(api: ApiClient): MerchantServices {
     clubSetup,
     poster: clubSetup,
     posterReprint: new HttpPosterReprintService(api),
+    shopPhoto: new HttpShopPhotoService(api),
     shopStatus: clubSetup,
     shopApprovalTesting: null,
     visitQrTesting: null,

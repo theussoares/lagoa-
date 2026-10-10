@@ -50,6 +50,8 @@ export type DomainError =
   /** O alcance mudou entre a confirmação do lojista e o envio; nada foi enviado. */
   | { readonly code: 'reachChanged' }
   | { readonly code: 'invalidClubSetup' }
+  /** Foto da loja grande demais, vazia ou que não é JPEG/PNG/WebP de verdade (conferido pelos bytes). */
+  | { readonly code: 'invalidShopPhoto' }
   /** Ticket do Criar o clube vencido, já usado ou de outro celular: confirmar o celular de novo. */
   | { readonly code: 'signUpExpired' }
   /** Loja aguardando aprovação da rede: Balcão e check-in ainda não valem. */
