@@ -37,6 +37,7 @@ function showcaseModel(shop: ShopSummary, t: Translate): ShopShowcaseModel {
   const showcase = shop.showcase
   return {
     image: showcase?.imageUrl ?? null,
+    logo: showcase?.logoUrl ?? null,
     rating: showcase?.rating === undefined ? null : decimal.format(showcase.rating),
     distance: showcase?.distanceKm === undefined ? null : t('discover.showcase.distance', { distance: decimal.format(showcase.distanceKm) }),
     openLabel: showcase?.openNow === true ? t('discover.showcase.openNow') : null,

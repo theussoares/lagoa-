@@ -19,7 +19,7 @@ const PNG = pngHeader(1200, 800).toString('base64')
 
 describe('merchant shop photo HTTP', () => {
   let app: INestApplication
-  let savedPath: string | null = null
+  let paths: { logo: string | null; banner: string | null } = { logo: null, banner: null }
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -29,11 +29,11 @@ describe('merchant shop photo HTTP', () => {
         {
           provide: ShopPhotoRepository,
           useValue: {
-            findPhotoPath: async () => savedPath,
-            replacePhotoPath: async (_shopId: string, path: string) => {
-              const previous = savedPath
-              savedPath = path
-              return previous
+            findPhotoPaths: async () => paths,
+            replacePhotoPath: async (_shopId: string, kind: 'logo' | 'banner', path: string) => {
+              const previous = paths[kind]
+              paths = { ...paths, [kind]: path }
+              return { paths, previous }
             },
           },
         },
@@ -58,18 +58,24 @@ describe('merchant shop photo HTTP', () => {
     await app.close()
   })
 
-  it('starts without a photo', async () => {
-    await request(app.getHttpServer()).get('/merchant/shop/photo').expect(200, { imageUrl: null })
+  it('starts without images', async () => {
+    await request(app.getHttpServer()).get('/merchant/shop/photo').expect(200, { logoUrl: null, bannerUrl: null })
   })
 
-  it('saves a valid photo even while the shop waits for approval', async () => {
-    const response = await request(app.getHttpServer()).post('/merchant/shop/photo').send({ contentType: 'image/png', dataBase64: PNG }).expect(200)
-    expect(response.body.imageUrl).toMatch(new RegExp(`/storage/v1/object/public/shop-assets/${SHOP.shopId}/.+\\.png$`))
+  it('saves a logo and a banner even while the shop waits for approval', async () => {
+    const logo = await request(app.getHttpServer()).post('/merchant/shop/photo/logo').send({ contentType: 'image/png', dataBase64: PNG }).expect(200)
+    expect(logo.body.logoUrl).toMatch(new RegExp(`/storage/v1/object/public/shop-assets/${SHOP.shopId}/logo-.+\\.png$`))
+    const banner = await request(app.getHttpServer()).post('/merchant/shop/photo/banner').send({ contentType: 'image/png', dataBase64: PNG }).expect(200)
+    expect(banner.body).toEqual({ logoUrl: logo.body.logoUrl, bannerUrl: expect.stringContaining(`${SHOP.shopId}/banner-`) })
+  })
+
+  it('refuses an unknown image kind', async () => {
+    await request(app.getHttpServer()).post('/merchant/shop/photo/avatar').send({ contentType: 'image/png', dataBase64: PNG }).expect(400)
   })
 
   it('refuses a body outside the schema and bytes that are not the declared image', async () => {
-    await request(app.getHttpServer()).post('/merchant/shop/photo').send({ contentType: 'image/svg+xml', dataBase64: PNG }).expect(400)
+    await request(app.getHttpServer()).post('/merchant/shop/photo/banner').send({ contentType: 'image/svg+xml', dataBase64: PNG }).expect(400)
     const svg = Buffer.from('<svg/>').toString('base64')
-    await request(app.getHttpServer()).post('/merchant/shop/photo').send({ contentType: 'image/png', dataBase64: svg }).expect(400, { code: 'invalidShopPhoto' })
+    await request(app.getHttpServer()).post('/merchant/shop/photo/banner').send({ contentType: 'image/png', dataBase64: svg }).expect(400, { code: 'invalidShopPhoto' })
   })
 })

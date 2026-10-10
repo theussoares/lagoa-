@@ -1,6 +1,10 @@
+import type { ShopPhotoKind } from '#shared/schemas/shop'
+
+/** Caminhos das imagens no bucket; `null` sem a imagem. */
+export type ShopPhotoPaths = Readonly<Record<ShopPhotoKind, string | null>>
+
 export abstract class ShopPhotoRepository {
-  /** Caminho da foto atual no bucket; `null` sem foto. */
-  abstract findPhotoPath(shopId: string): Promise<string | null>
-  /** Grava o caminho novo e devolve o anterior (para apagar o arquivo antigo). */
-  abstract replacePhotoPath(shopId: string, path: string): Promise<string | null>
+  abstract findPhotoPaths(shopId: string): Promise<ShopPhotoPaths>
+  /** Grava o caminho novo da imagem `kind` e devolve os caminhos de agora e o que foi substituído (para apagar o arquivo). */
+  abstract replacePhotoPath(shopId: string, kind: ShopPhotoKind, path: string): Promise<{ readonly paths: ShopPhotoPaths; readonly previous: string | null }>
 }
