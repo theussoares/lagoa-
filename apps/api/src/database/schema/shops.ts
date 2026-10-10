@@ -21,6 +21,8 @@ export const shops = pgTable(
     status: shopStatus('status').notNull().default('pending'),
     plan: shopPlan('plan').notNull().default('founder'),
     /** Versão do termo do lojista aceita (`MERCHANT_TERMS_VERSION`) e quando: prova do que foi lido. */
+    /** Cartaz novo impresso? `null` = ainda não (aviso no Início); o Criar o clube já grava `now()`. */
+    posterReprintedAt: timestamp('poster_reprinted_at', { withTimezone: true }),
     merchantTermsVersion: text('merchant_terms_version'),
     merchantTermsAcceptedAt: timestamp('merchant_terms_accepted_at', { withTimezone: true }),
     createdAt: createdAt(),

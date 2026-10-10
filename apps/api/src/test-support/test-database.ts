@@ -238,6 +238,11 @@ export class TestDatabase {
     })
   }
 
+  /** Para o usuário criado pelo próprio serviço sob teste: entra na limpeza do fim. */
+  trackUser(userId: string): void {
+    this.userIds.push(userId)
+  }
+
   /** Para a loja criada pelo próprio serviço sob teste (não por `createShop`): entra na limpeza do fim. */
   trackShop(shopId: string): void {
     this.shopIds.push(shopId)

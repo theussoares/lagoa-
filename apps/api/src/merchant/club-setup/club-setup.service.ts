@@ -5,30 +5,67 @@ import type { MerchantSession } from '#shared/schemas/session'
 import { CheckInCodeSchema, type ShopPoster, type ShopStatus } from '#shared/schemas/shop'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
+import type { AuthUser } from '../../auth/auth.types'
+import { Clock } from '../../common/clock'
+import { PiiService } from '../../common/pii.service'
 import { ClubSetupRepository } from './club-setup.repository'
 import { newCheckInCode } from './club-setup.rules'
 
-export type CreateClubError = ErrorOf<'invalidClubSetup'> | ErrorOf<'unauthorized'>
+export type CreateClubError = ErrorOf<'unauthorized' | 'phoneAlreadyUsed'>
+
+export interface ClubCreation {
+  readonly session: MerchantSession
+  /** `false` quando o dono já tinha loja: devolve a existente, sem aplicar o rascunho (idempotente). */
+  readonly created: boolean
+}
 
 @Injectable()
 export class ClubSetupService {
-  constructor(private readonly repo: ClubSetupRepository) {}
+  constructor(
+    private readonly repo: ClubSetupRepository,
+    private readonly pii: PiiService,
+    private readonly clock: Clock,
+  ) {}
 
-  async createClub(ownerUserId: string, draft: ClubSetupDraft): Promise<Result<MerchantSession, CreateClubError>> {
-    const existing = await this.repo.findShopByOwner(ownerUserId)
-    if (existing !== null) {
-      return err({ code: 'invalidClubSetup' })
-    }
-
-    const code = newCheckInCode()
-    const created = await this.repo.createClub(ownerUserId, draft, code)
+  /**
+   * O celular vem do token (confirmado por SMS), nunca do corpo. Repetir a chamada, ou duas abas ao mesmo tempo,
+   * não cria uma segunda loja: a segunda recebe a primeira.
+   */
+  async createClub(user: AuthUser, draft: ClubSetupDraft): Promise<Result<ClubCreation, CreateClubError>> {
+    if (user.phone === undefined) return err({ code: 'unauthorized' })
+    const outcome = await this.repo.createClub(
+      {
+        userId: user.id,
+        phoneEncrypted: this.pii.encrypt(user.phone),
+        phoneHash: this.pii.hashPhone(user.phone),
+        emailEncrypted: user.email === undefined ? null : this.pii.encryptEmail(user.email),
+        emailHash: user.email === undefined ? null : this.pii.hashEmail(user.email),
+      },
+      draft,
+      newCheckInCode,
+    )
+    if (outcome.kind === 'phoneTaken') return err({ code: 'phoneAlreadyUsed' })
+    const { club } = outcome
     return ok({
-      role: 'merchant',
-      merchantId: MerchantIdSchema.parse(ownerUserId),
-      shopId: ShopIdSchema.parse(created.shopId),
-      shopName: created.shopName,
-      shopStatus: created.shopStatus,
+      created: outcome.kind === 'created',
+      session: {
+        role: 'merchant',
+        merchantId: MerchantIdSchema.parse(user.id),
+        shopId: ShopIdSchema.parse(club.shopId),
+        shopName: club.shopName,
+        shopStatus: club.shopStatus,
+      },
     })
+  }
+
+  async isPosterReprintPending(ownerUserId: string): Promise<Result<boolean, ErrorOf<'notFound'>>> {
+    const pending = await this.repo.isPosterReprintPending(ownerUserId)
+    return pending === null ? err({ code: 'notFound', entity: 'shop' }) : ok(pending)
+  }
+
+  async markPosterReprinted(ownerUserId: string): Promise<Result<boolean, ErrorOf<'notFound'>>> {
+    const pending = await this.repo.markPosterReprinted(ownerUserId, this.clock.now())
+    return pending === null ? err({ code: 'notFound', entity: 'shop' }) : ok(pending)
   }
 
   async getPoster(ownerUserId: string): Promise<Result<ShopPoster, ErrorOf<'notFound'>>> {

@@ -12,6 +12,12 @@ import { DrizzleReferralSettlement } from '../ledger/drizzle-referral-settlement
 import { LedgerStore } from '../ledger/ledger.store'
 import { claimVisit } from '../test-support/claim-visit'
 import { TEST_DATABASE_URL, TestDatabase } from '../test-support/test-database'
+import { PhoneNumberSchema } from '#shared/schemas/phone'
+import { createTestPii } from '../test-support/pii'
+import { ClubSetupService } from './club-setup/club-setup.service'
+import { DrizzleClubSetupRepository } from './club-setup/drizzle-club-setup.repository'
+import { newCheckInCode } from './club-setup/club-setup.rules'
+import { randomUUID } from 'node:crypto'
 import { DrizzleMerchantShopResolver } from './access/drizzle-merchant-shop.resolver'
 
 const SLOW = 30_000
@@ -110,4 +116,83 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant foundation against a real database
     expect(kept?.phone.length).toBeGreaterThan(0)
     expect((await data.db.select({ firstName: customerProfiles.firstName }).from(customerProfiles).where(eq(customerProfiles.userId, owner)))[0]?.firstName).toBe('Dona')
   }, SLOW)
+
+  describe('Criar o clube', () => {
+    const draft = {
+      shop: { name: 'Padaria Nova', category: 'bakery' as const, neighborhood: 'Centro', addressLine: 'Rua A, 1' },
+      program: {
+        reward: { title: 'Pão grátis' },
+        rules: { mode: 'stamps' as const, target: 8 },
+        bonusRules: {
+          welcomeBonus: { enabled: false, units: 1 },
+          birthdayMultiplier: { enabled: false, multiplier: 2 as const },
+          referralBonus: { enabled: false, units: 1 },
+          surpriseDay: { enabled: false, multiplier: 2 as const, date: null },
+        },
+        expirationPolicy: { kind: 'never' as const },
+        checkIn: { enabled: true, cooldownHours: 4 },
+      },
+    }
+    const service = () => new ClubSetupService(new DrizzleClubSetupRepository(data.db), createTestPii(), new SystemClock())
+    const newOwner = (phone: string) => {
+      const id = randomUUID()
+      data.trackUser(id)
+      return { id, email: undefined, phone: PhoneNumberSchema.parse(phone) }
+    }
+
+    it('creates the app user, the shop and the program for someone who only has a Supabase login', async () => {
+      const owner = newOwner('67900000071')
+      const result = await service().createClub(owner, draft)
+      expect(result).toMatchObject({ ok: true, value: { created: true, session: { shopName: 'Padaria Nova', shopStatus: 'pending' } } })
+      if (!result.ok) return
+      data.trackShop(result.value.session.shopId)
+      expect((await data.db.select({ at: shops.posterReprintedAt }).from(shops).where(eq(shops.id, result.value.session.shopId)))[0]?.at).toBeInstanceOf(Date)
+      expect(await new DrizzleMerchantShopResolver(data.db).resolveForUser(owner.id)).toMatchObject({ shopId: result.value.session.shopId, status: 'pending' })
+    }, SLOW)
+
+    it('is idempotent, even with two tabs submitting at once: one shop, the other call gets it back', async () => {
+      const owner = newOwner('67900000072')
+      const [a, b] = await Promise.all([service().createClub(owner, draft), service().createClub(owner, { ...draft, shop: { ...draft.shop, name: 'Outro' } })])
+      if (!a.ok || !b.ok) throw new Error('both calls should succeed')
+      data.trackShop(a.value.session.shopId)
+      expect(b.value.session.shopId).toBe(a.value.session.shopId)
+      expect([a.value.created, b.value.created].sort()).toEqual([false, true])
+      expect(await data.db.select({ id: shops.id }).from(shops).where(eq(shops.ownerUserId, owner.id))).toHaveLength(1)
+    }, SLOW)
+
+    it('answers phoneAlreadyUsed when the phone is already on another account, and leaves nothing behind', async () => {
+      const first = newOwner('67900000073')
+      const created = await service().createClub(first, draft)
+      if (created.ok) data.trackShop(created.value.session.shopId)
+      const other = { ...newOwner('67900000073') }
+      expect(await service().createClub(other, draft)).toEqual({ ok: false, error: { code: 'phoneAlreadyUsed' } })
+      expect(await data.db.select({ id: shops.id }).from(shops).where(eq(shops.ownerUserId, other.id))).toHaveLength(0)
+    }, SLOW)
+
+    it('retries the whole transaction when the check-in code collides with another shop', async () => {
+      const taken = await data.createShop()
+      const [row] = await data.db.select({ code: shops.checkInCode }).from(shops).where(eq(shops.id, taken.id))
+      const codes = [row?.code ?? '', row?.code ?? '', newCheckInCode()]
+      const repo = new DrizzleClubSetupRepository(data.db)
+      const owner = newOwner('67900000074')
+      const outcome = await repo.createClub(
+        { userId: owner.id, phoneEncrypted: Buffer.from('x'), phoneHash: Buffer.from(`h${owner.id}`), emailEncrypted: null, emailHash: null },
+        draft,
+        () => codes.shift() ?? newCheckInCode(),
+      )
+      expect(outcome.kind).toBe('created')
+      if (outcome.kind === 'created') data.trackShop(outcome.club.shopId)
+      expect(codes).toHaveLength(0)
+    }, SLOW)
+
+    it('reads and marks the poster reprint notice', async () => {
+      const shop = await data.createShop()
+      const [row] = await data.db.select({ owner: shops.ownerUserId }).from(shops).where(eq(shops.id, shop.id))
+      const repo = new DrizzleClubSetupRepository(data.db)
+      expect(await repo.isPosterReprintPending(row?.owner ?? '')).toBe(true)
+      expect(await repo.markPosterReprinted(row?.owner ?? '', new Date())).toBe(false)
+      expect(await repo.isPosterReprintPending(row?.owner ?? '')).toBe(false)
+      expect(await repo.isPosterReprintPending(randomUUID())).toBeNull()
+    }, SLOW)
+  })
 })

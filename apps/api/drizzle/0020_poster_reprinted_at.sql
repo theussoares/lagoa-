@@ -1,0 +1,1 @@
+ALTER TABLE "shops" ADD COLUMN "poster_reprinted_at" timestamp with time zone;
