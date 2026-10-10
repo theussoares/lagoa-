@@ -1,7 +1,6 @@
 import { buildExampleSeed, MOCK_LOGIN_CODE, MockBackend, webStorageMockStore } from '../mock'
-import { MockAuthService } from '../services/MockAuthService'
 
-/** Mock só do painel do lojista (a API dele ainda não existe): vive no navegador, nunca no SSR. */
+/** Mock do painel do lojista (`merchantBackend = mock`): vive no navegador, nunca no SSR. Com `http` fica parado: só carrega e semeia o estado na primeira chamada. */
 export default defineNuxtPlugin({
   name: 'lagoa:mock-backend',
   setup() {
@@ -12,6 +11,6 @@ export default defineNuxtPlugin({
       loginCode: MOCK_LOGIN_CODE,
       latencyMs: Number(config.public.mockLatencyMs),
     })
-    return { provide: { mockBackend, merchantAuth: new MockAuthService(mockBackend) } }
+    return { provide: { mockBackend } }
   },
 })

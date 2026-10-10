@@ -83,12 +83,8 @@ describe('http merchant services', () => {
     expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/merchant/shop/status')
   })
 
-  it('shopApprovalTesting posts to /merchant/shop/test-approve', async () => {
-    const fetcher = vi.fn<typeof fetch>(async () => json(200, { status: 'approved' }))
-    const { shopApprovalTesting } = servicesWith(fetcher)
-    expect(shopApprovalTesting).not.toBeNull()
-    const result = await shopApprovalTesting!.approveCurrentShop()
-    expect(result).toEqual({ ok: true, value: 'approved' })
-    expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/merchant/shop/test-approve')
+  it('has no approval shortcut over http: approving a shop is the network\'s job', () => {
+    const { shopApprovalTesting } = servicesWith(vi.fn<typeof fetch>())
+    expect(shopApprovalTesting).toBeNull()
   })
 })

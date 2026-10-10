@@ -15,7 +15,17 @@ Estado em 2026-10-09. Spec: [spec.md](./spec.md) (aprovada pelo dono). Desenho:
   entra só para ler, 20 QRs ativos por loja, lembrete = aviso no app + presente no cartão, campanha só para
   Fundador Pro (`shops.plan`), aprovação por script.
 
-## O que está feito
+## Atualização (2026-10-09, PR do BFF do lojista)
+
+O estado abaixo ("Nenhum código") estava defasado: a `develop` já tinha os módulos `merchant/*` da API (PR #43) com
+migrations `0017`/`0018` **diferentes** das do plano (a próxima livre é a `0019`). Entregue depois: BFF
+`server/api/merchant/**`, login/sessão do lojista pelo `/api/auth` + `GET /merchant/session` (sem ticket) e o plugin
+escolhendo `http`/`mock` (`merchantBackend`). **Segue pendente:** guard de acesso (`merchant/access`), `erased_at`,
+`shops.plan`, termo do lojista, `shop_status_events`/`shop:status`, `accountOwnsShop`, campanhas (M5) e o corte do mock (M6).
+O `club-setup` da API devolve `invalidClubSetup` (não é idempotente) quando o dono já tem loja; o plano pede 200 com a loja
+existente (RN-08, CA-06).
+
+## O que está feito (versão original do handoff)
 
 - Spec, solution design (com ajustes do CTO R1–R15) e plano M1–M6. **Nenhum código.** Nada commitado.
 

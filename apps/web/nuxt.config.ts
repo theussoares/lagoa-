@@ -28,6 +28,8 @@ export default defineNuxtConfig({
     public: {
       /** URL do projeto Supabase (não é segredo): login no servidor e fotos do bucket público. */
       supabaseUrl: '',
+      /** Painel do lojista: `http` (BFF + API, padrão) ou `mock` (navegador; só testes e demonstração offline). Env: NUXT_PUBLIC_MERCHANT_BACKEND. */
+      merchantBackend: 'http',
       /** Atraso artificial do mock para a UI exercitar carregamento. */
       mockLatencyMs: 250,
     },
