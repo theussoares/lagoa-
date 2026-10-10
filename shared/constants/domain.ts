@@ -1,8 +1,8 @@
 export const REDEMPTION_CODE_LENGTH = 6
 export const REDEMPTION_CODE_TTL_MINUTES = 10
-/** O Balcão só explica "já usado" / "vencido" para um código com até essa idade; mais velho vira `redemptionInvalid` (o código é reaproveitado). */
 /** Folga do que o lojista digita (espaço, hífen) antes de o servidor normalizar o código. */
 export const REDEMPTION_CODE_INPUT_MAX_LENGTH = 16
+/** O Balcão só explica "já usado" / "vencido" para um código com até essa idade; mais velho vira `redemptionInvalid` (o código é reaproveitado). */
 export const REDEMPTION_LOOKUP_WINDOW_HOURS = 24
 /** Teto das linhas de "Hoje" no Balcão: uma loja de piloto não passa disso num dia, e a lista nunca é sem limite. */
 export const COUNTER_TODAY_LIMIT = 300

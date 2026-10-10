@@ -163,14 +163,17 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant counter against a real database', 
     const owner = await ownerOf(shop.id)
     // 00:30 local de 10/10 = 04:30Z. Uma visita às 22:00 locais de 9/10 (02:00Z de 10/10) é do dia anterior, mesmo já sendo 10/10 em UTC.
     clock.current = new Date('2026-10-10T04:30:00Z')
-    const visitAt = async (iso: string, key: string) => {
-      await data.db.insert(ledgerEntries).values({ cardId, shopId: shop.id, customerId: customer, kind: 'visit', unitsDelta: 1, countsAsVisit: true, idempotencyKey: key, occurredAt: new Date(iso) })
+    try {
+      const visitAt = async (iso: string, key: string) => {
+        await data.db.insert(ledgerEntries).values({ cardId, shopId: shop.id, customerId: customer, kind: 'visit', unitsDelta: 1, countsAsVisit: true, idempotencyKey: key, occurredAt: new Date(iso) })
+      }
+      await visitAt('2026-10-10T02:00:00Z', `late-${customer}`)
+      await visitAt('2026-10-10T04:10:00Z', `early-${customer}`)
+      const today = await counter.listTodayEntries(owner)
+      expect(today.ok && today.value.map((entry) => entry.createdAt)).toEqual(['2026-10-10T04:10:00.000Z'])
+    } finally {
+      clock.current = new Date()
     }
-    await visitAt('2026-10-10T02:00:00Z', `late-${customer}`)
-    await visitAt('2026-10-10T04:10:00Z', `early-${customer}`)
-    const today = await counter.listTodayEntries(owner)
-    expect(today.ok && today.value.map((entry) => entry.createdAt)).toEqual(['2026-10-10T04:10:00.000Z'])
-    clock.current = new Date()
   }, SLOW)
 
   it('flags the first visit of a person in the shop as new, and only that one', async () => {
@@ -178,6 +181,8 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant counter against a real database', 
     const customer = await data.createCustomer()
     await data.setPhone(customer, pii.encrypt(PhoneNumberSchema.parse('67991230375')))
     const owner = await ownerOf(shop.id)
+    // Relógio fixo no meio da tarde local: "uma hora atrás" nunca cruza a meia-noite, seja a hora em que o teste rode.
+    clock.current = new Date('2026-10-09T19:00:00Z')
     const first = new Date(clock.now().getTime() - 3_600_000)
     await data.db.transaction(async (tx) => {
       const { card } = await ledger.lockOrCreateCard(tx, { shopId: shop.id, customerId: customer, programId: shop.programId }, neverExpires(3))
@@ -188,6 +193,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant counter against a real database', 
     if (!today.ok) throw new Error('entries expected')
     const mine = today.value.filter((entry) => entry.kind === 'visit')
     expect(mine.map((entry) => entry.isNewCustomer).sort()).toEqual([false, true])
+    clock.current = new Date()
   }, SLOW)
 
   it('CA-12: "Hoje" shows a customer whose account was erased as "removed", without decrypting and without a 500', async () => {

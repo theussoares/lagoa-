@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { and, eq } from 'drizzle-orm'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { VISIT_QR_ACTIVE_MAX_PER_SHOP } from '#shared/constants/domain'
@@ -95,18 +96,29 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant visit QRs against a real database'
     expect(codes).toHaveLength(0)
   }, SLOW)
 
-  it('CA-11: issuing while the program changes never leaves a live QR on the old version', async () => {
+  it('CA-11: an emission that waits for a program change in progress is issued on the NEW version, never the old one', async () => {
     const shop = await data.createShop({ rules: { mode: 'stamps', target: 10 } })
     const owner = await ownerOf(shop.id)
-    for (let round = 0; round < 6; round++) {
-      const current = await programService.getProgram(owner)
-      if (!current.ok) throw new Error('program expected')
-      const draft = { reward: current.value.reward, rules: { mode: 'stamps' as const, target: current.value.rules.target + 1 }, bonusRules: current.value.bonusRules, expirationPolicy: current.value.expirationPolicy, checkIn: current.value.checkIn }
-      await Promise.all([service.issueVisitQr(owner, {}), service.issueVisitQr(owner, {}), programService.updateProgram(owner, draft), service.issueVisitQr(owner, {})])
-      const [active] = await data.db.select({ id: programs.id }).from(programs).where(and(eq(programs.shopId, shop.id), eq(programs.active, true)))
-      const stale = (await data.db.select({ programId: visitQrs.programId }).from(visitQrs).where(and(eq(visitQrs.shopId, shop.id), eq(visitQrs.status, 'active')))).filter((row) => row.programId !== active?.id)
-      expect(stale, `round ${round}`).toHaveLength(0)
-    }
+    const [oldProgram] = await data.db.select().from(programs).where(and(eq(programs.shopId, shop.id), eq(programs.active, true)))
+    if (!oldProgram) throw new Error('program expected')
+    const newId = randomUUID()
+    const pending: { issue: ReturnType<VisitQrsService['issueVisitQr']> | null } = { issue: null }
+
+    // O que o `PUT /program` faz: trava a loja `FOR UPDATE`, troca a versão ativa e só então confirma.
+    await data.db.transaction(async (tx) => {
+      await tx.select({ id: shops.id }).from(shops).where(eq(shops.id, shop.id)).for('update')
+      const issuing = service.issueVisitQr(owner, {})
+      pending.issue = issuing
+      const state = await Promise.race([issuing.then(() => 'done'), new Promise((resolve) => setTimeout(() => resolve('waiting'), 400))])
+      expect(state, 'the emission must wait for the shop lock').toBe('waiting')
+      await tx.update(programs).set({ active: false }).where(eq(programs.id, oldProgram.id))
+      await tx.insert(programs).values({ ...oldProgram, id: newId, active: true, target: 11 })
+    })
+
+    const issued = await pending.issue
+    if (!issued?.ok) throw new Error('issue expected')
+    const [row] = await data.db.select({ programId: visitQrs.programId }).from(visitQrs).where(eq(visitQrs.id, issued.value.id))
+    expect(row?.programId).toBe(newId)
   }, SLOW)
 
   it('a program change cancels live QRs as programChanged and only expires the ones already past their time', async () => {

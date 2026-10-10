@@ -40,7 +40,6 @@ resgate (R11, índice `0021`), `validate` com `FailClosedThrottle`, "Hoje" pelo 
 **Fica da M2:** e2e Playwright (2.7), rodar o contrato `visitQrService.contract` também contra o `HttpVisitQrService`, `@CurrentShop()` nos services.
 
 **Fica para depois (achados do code-reviewer):**
-- Balcão "Hoje" com conta apagada: `CounterEntry.maskedPhone` nulo (R8; hoje o decifrar lança e dá 500).
 - `@CurrentShop()` nos services (hoje seguem por `user.id`; o guard já barra rota sem loja).
 - `from_plan` em `shop_status_events` (exige migration nova).
 - Gate do termo do lojista (3.6), índices de Clientes e de resgate, campanhas (M5), corte do mock (M6).
