@@ -59,7 +59,7 @@ class FakeCounterRepository extends CounterRepository {
     return []
   }
 
-  async findActiveRedemption(
+  async findRedemption(
     _shopId: string,
     _rawCode: string,
     _now: Date,

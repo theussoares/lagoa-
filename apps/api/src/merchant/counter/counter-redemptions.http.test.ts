@@ -69,7 +69,7 @@ class TestCounterRepository extends CounterRepository {
     return []
   }
 
-  async findActiveRedemption(): Promise<any> {
+  async findRedemption(): Promise<any> {
     if (this.lookupError) return err({ code: this.lookupError })
     if (!this.activeRedemption) return err({ code: 'redemptionInvalid' })
     return ok(this.activeRedemption)

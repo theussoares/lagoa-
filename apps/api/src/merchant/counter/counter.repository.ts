@@ -3,6 +3,7 @@ import type { ShopStatus } from '#shared/schemas/shop'
 import type { CounterEntry } from '#shared/schemas/visit'
 import type { ErrorOf } from '#shared/types/errors'
 import type { Result } from '#shared/types/result'
+import type { RedemptionLookupError } from '../../ledger/redemption-lookup'
 
 export interface ShopWithProgram {
   readonly shopId: string
@@ -39,12 +40,9 @@ export type SettleRedemptionError = ErrorOf<
 
 export abstract class CounterRepository {
   abstract findShopAndProgramByOwner(ownerUserId: string): Promise<ShopWithProgram | null>
+  /** As mais novas primeiro, no máximo `COUNTER_TODAY_LIMIT`; conta apagada sai com `maskedPhone: null`. */
   abstract listTodayEntries(shopId: string, startOfDay: Date): Promise<CounterEntry[]>
-  abstract findActiveRedemption(
-    shopId: string,
-    rawCode: string,
-    now: Date,
-  ): Promise<Result<ActiveRedemptionPreview, ErrorOf<'redemptionInvalid' | 'redemptionExpired'>>>
+  abstract findRedemption(shopId: string, rawCode: string, now: Date): Promise<Result<ActiveRedemptionPreview, RedemptionLookupError>>
   abstract settleRedemption(
     shop: ShopWithProgram,
     redemptionId: string,

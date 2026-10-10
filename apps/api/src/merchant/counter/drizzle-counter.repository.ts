@@ -1,5 +1,6 @@
-import { Inject, Injectable } from '@nestjs/common'
-import { and, desc, eq, gte, inArray } from 'drizzle-orm'
+import { Inject, Injectable, Logger } from '@nestjs/common'
+import { COUNTER_TODAY_LIMIT } from '#shared/constants/domain'
+import { and, eq, gte, inArray, sql } from 'drizzle-orm'
 import { ShopIdSchema } from '#shared/schemas/ids'
 import type { PhoneNumber } from '#shared/schemas/phone'
 import { CounterEntrySchema, type CounterEntry } from '#shared/schemas/visit'
@@ -9,9 +10,8 @@ import { PiiService } from '../../common/pii.service'
 import { DB, type Database } from '../../database/database.module'
 import { appUsers, ledgerEntries, loyaltyCards, programs, redemptions, shops } from '../../database/schema'
 import { LedgerStore } from '../../ledger/ledger.store'
-import { RedemptionLookup } from '../../ledger/redemption-lookup'
+import { RedemptionLookup, type RedemptionLookupError } from '../../ledger/redemption-lookup'
 import { err, ok, type Result } from '#shared/types/result'
-import type { ErrorOf } from '#shared/types/errors'
 import {
   CounterRepository,
   type ActiveRedemptionPreview,
@@ -21,6 +21,8 @@ import {
 
 @Injectable()
 export class DrizzleCounterRepository extends CounterRepository {
+  private readonly logger = new Logger(DrizzleCounterRepository.name)
+
   constructor(
     @Inject(DB) private readonly db: Database,
     private readonly ledger: LedgerStore,
@@ -64,10 +66,13 @@ export class DrizzleCounterRepository extends CounterRepository {
         kind: ledgerEntries.kind,
         unitsDelta: ledgerEntries.unitsDelta,
         amountCents: ledgerEntries.amountCents,
+        countsAsVisit: ledgerEntries.countsAsVisit,
         occurredAt: ledgerEntries.occurredAt,
         phoneEncrypted: appUsers.phoneEncrypted,
+        erasedAt: appUsers.erasedAt,
         rewardTitle: redemptions.rewardTitle,
         programUnit: programs.unit,
+        firstVisitAt: loyaltyCards.firstVisitAt,
       })
       .from(ledgerEntries)
       .innerJoin(appUsers, eq(appUsers.id, ledgerEntries.customerId))
@@ -81,49 +86,57 @@ export class DrizzleCounterRepository extends CounterRepository {
           inArray(ledgerEntries.kind, ['visit', 'amount', 'checkIn', 'redemption']),
         ),
       )
-      .orderBy(desc(ledgerEntries.occurredAt), desc(ledgerEntries.id))
+      .orderBy(sql`${ledgerEntries.occurredAt} desc nulls last`, sql`${ledgerEntries.id} desc nulls last`)
+      .limit(COUNTER_TODAY_LIMIT)
 
-    return rows.map((row) => {
-      const decryptedPhone = this.pii.decrypt(row.phoneEncrypted)
-      return CounterEntrySchema.parse({
+    return rows.map((row) =>
+      CounterEntrySchema.parse({
         id: row.id,
         shopId: row.shopId,
-        maskedPhone: maskPhone(decryptedPhone as PhoneNumber),
+        maskedPhone: this.maskedPhoneOf(row.id, row.phoneEncrypted, row.erasedAt),
         kind: row.kind,
         unit: row.programUnit,
         units: row.unitsDelta > 0 ? row.unitsDelta : 0,
         amountCents: row.amountCents,
         rewardTitle: row.rewardTitle,
-        isNewCustomer: false,
-        createdAt: toIso(row.occurredAt ?? new Date()),
-      })
-    })
+        // Primeira visita da pessoa nesta loja: a linha É a que gravou `first_visit_at` (mesmo instante).
+        isNewCustomer: row.countsAsVisit && row.firstVisitAt !== null && row.occurredAt.getTime() === row.firstVisitAt.getTime(),
+        createdAt: toIso(row.occurredAt),
+      }),
+    )
   }
 
-  async findActiveRedemption(
-    shopId: string,
-    rawCode: string,
-    now: Date,
-  ): Promise<Result<ActiveRedemptionPreview, ErrorOf<'redemptionInvalid' | 'redemptionExpired'>>> {
-    const active = await this.redemptionLookup.findActive(shopId, rawCode, now)
-    if (!active.ok) return active
+  /** `null` = conta apagada ("cliente removido"): o celular dela é um buffer vazio e não se decifra. Falha de cifra é erro do servidor. */
+  private maskedPhoneOf(entryId: string, phoneEncrypted: Buffer, erasedAt: Date | null): ReturnType<typeof maskPhone> | null {
+    return erasedAt !== null ? null : this.maskedPhone(entryId, phoneEncrypted)
+  }
+
+  private maskedPhone(entryId: string, phoneEncrypted: Buffer): ReturnType<typeof maskPhone> {
+    try {
+      return maskPhone(this.pii.decrypt(phoneEncrypted) as PhoneNumber)
+    } catch (error) {
+      this.logger.error(`Could not decrypt customer phone for ledger entry ${entryId}`)
+      throw error
+    }
+  }
+
+  async findRedemption(shopId: string, rawCode: string, now: Date): Promise<Result<ActiveRedemptionPreview, RedemptionLookupError>> {
+    const found = await this.redemptionLookup.findByCode(shopId, rawCode, now)
+    if (!found.ok) return found
 
     const [user] = await this.db
-      .select({ phoneEncrypted: appUsers.phoneEncrypted })
+      .select({ phoneEncrypted: appUsers.phoneEncrypted, erasedAt: appUsers.erasedAt })
       .from(appUsers)
-      .where(eq(appUsers.id, active.value.customerId))
+      .where(eq(appUsers.id, found.value.customerId))
       .limit(1)
-
-    if (!user) return err({ code: 'redemptionInvalid' })
-
-    const phone = this.pii.decrypt(user.phoneEncrypted)
-    const maskedPhone = maskPhone(phone as PhoneNumber)
+    // O `erase` expira os códigos ativos; se ainda assim chegar aqui, trata como código que não vale.
+    if (!user || user.erasedAt !== null) return err({ code: 'redemptionInvalid' })
 
     return ok({
-      redemptionId: active.value.redemptionId,
-      rewardTitle: active.value.rewardTitle,
-      maskedPhone,
-      expiresAt: active.value.expiresAt,
+      redemptionId: found.value.redemptionId,
+      rewardTitle: found.value.rewardTitle,
+      maskedPhone: this.maskedPhone(found.value.redemptionId, user.phoneEncrypted),
+      expiresAt: found.value.expiresAt,
     })
   }
 
@@ -148,6 +161,7 @@ export class DrizzleCounterRepository extends CounterRepository {
           occurredAt: ledgerEntries.occurredAt,
           rewardTitle: redemptions.rewardTitle,
           phoneEncrypted: appUsers.phoneEncrypted,
+          erasedAt: appUsers.erasedAt,
         })
         .from(ledgerEntries)
         .innerJoin(redemptions, eq(redemptions.id, ledgerEntries.redemptionId))
@@ -159,8 +173,7 @@ export class DrizzleCounterRepository extends CounterRepository {
         throw new Error(`Redemption ledger entry not found for redemption ${redemptionId}`)
       }
 
-      const phone = this.pii.decrypt(entry.phoneEncrypted)
-      const maskedPhone = maskPhone(phone as PhoneNumber)
+      const maskedPhone = this.maskedPhoneOf(entry.id, entry.phoneEncrypted, entry.erasedAt)
 
       return ok(
         CounterEntrySchema.parse({

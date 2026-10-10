@@ -59,7 +59,7 @@ class TestCounterRepository extends CounterRepository {
     ]
   }
 
-  async findActiveRedemption(): Promise<any> {
+  async findRedemption(): Promise<any> {
     throw new Error('Not implemented')
   }
 

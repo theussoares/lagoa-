@@ -19,7 +19,7 @@ class FakeCounterRepository extends CounterRepository {
     return this.entries
   }
 
-  async findActiveRedemption(): Promise<any> {
+  async findRedemption(): Promise<any> {
     throw new Error('Not used in counter.service')
   }
 
