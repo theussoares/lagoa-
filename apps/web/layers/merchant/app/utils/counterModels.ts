@@ -45,7 +45,8 @@ export function toCounterLedgerModel(entry: CounterEntry, t: Translate, fresh: b
     id: entry.id,
     time: formatTime(entry.createdAt),
     // Conta apagada: o servidor manda `null` e o Balcão mostra "Cliente removido" no lugar do celular.
-    phone: entry.maskedPhone ?? t('counter.ledger.removedCustomer'),
+    phone: entry.maskedPhone,
+    customerLabel: entry.maskedPhone ?? t('counter.ledger.removedCustomer'),
     badge: entry.isNewCustomer ? t('counter.ledger.newCustomer') : null,
     action: ledgerAction(entry, t),
     tone: entry.kind === 'redemption' ? 'reward' : 'ink',

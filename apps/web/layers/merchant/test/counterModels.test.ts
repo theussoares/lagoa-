@@ -60,12 +60,14 @@ describe('amountDigits', () => {
 describe('toCounterLedgerModel', () => {
   it('shows "removed customer" instead of a phone when the account was erased', () => {
     const model = toCounterLedgerModel(entry({ maskedPhone: null }), t, false)
-    expect(model.phone).toBe('counter.ledger.removedCustomer')
+    expect(model.phone).toBeNull()
+    expect(model.customerLabel).toBe('counter.ledger.removedCustomer')
   })
 
   it('shows only the masked phone and the earned units', () => {
     const model = toCounterLedgerModel(entry({}), t, false)
     expect(model.phone).toBe('(67) 9••••-0374')
+    expect(model.customerLabel).toBe('(67) 9••••-0374')
     expect(model.action).toBe('counter.ledger.earned units=units.stamp count=1 #1')
     expect(model.tone).toBe('ink')
     expect(model.time).toBe('13:32')
