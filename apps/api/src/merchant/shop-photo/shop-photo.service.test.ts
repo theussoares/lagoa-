@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest'
+import { pngHeader } from './image-fixtures'
 import { ShopPhotoRepository } from './shop-photo.repository'
 import { ShopPhotoService } from './shop-photo.service'
 import { ShopPhotoStorage } from './shop-photo.storage'
 
 const SHOP_ID = '018f98a2-7b2a-7182-9f33-6d004bbbb002'
-const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0]).toString('base64')
+const PNG = pngHeader(1200, 800).toString('base64')
 const env = { SUPABASE_URL: 'https://project.supabase.co' }
 
 class MemoryPhotos extends ShopPhotoRepository {

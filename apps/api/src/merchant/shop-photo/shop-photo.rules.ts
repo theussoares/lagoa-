@@ -1,7 +1,14 @@
-import { SHOP_PHOTO_MAX_BYTES } from '#shared/constants/domain'
+import { SHOP_PHOTO_MAX_BYTES, SHOP_PHOTO_MAX_DIMENSION } from '#shared/constants/domain'
 import type { ShopPhotoContentType, ShopPhotoUpload } from '#shared/schemas/shop'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
+import { readImageSize } from './image-header'
+
+/**
+ * Maior lado aceito no servidor. O app já manda no máximo `SHOP_PHOTO_MAX_DIMENSION`; a folga cobre outro cliente, e o
+ * teto barra a imagem pequena em bytes que declara milhares de pixels e trava o celular de quem abre o Descobrir.
+ */
+const SERVER_MAX_DIMENSION = 2 * SHOP_PHOTO_MAX_DIMENSION
 
 export interface CheckedShopPhoto {
   readonly bytes: Buffer
@@ -27,10 +34,13 @@ export function detectPhotoType(bytes: Buffer): ShopPhotoContentType | null {
   return null
 }
 
-/** Foto aceita: não vazia, até `SHOP_PHOTO_MAX_BYTES` e com os bytes do formato que diz ser. */
+/** Foto aceita: não vazia, até `SHOP_PHOTO_MAX_BYTES`, com os bytes do formato que diz ser e tamanho legível dentro do teto. */
 export function checkShopPhoto(upload: ShopPhotoUpload): Result<CheckedShopPhoto, ErrorOf<'invalidShopPhoto'>> {
   const bytes = Buffer.from(upload.dataBase64, 'base64')
   if (bytes.length === 0 || bytes.length > SHOP_PHOTO_MAX_BYTES) return err({ code: 'invalidShopPhoto' })
   if (detectPhotoType(bytes) !== upload.contentType) return err({ code: 'invalidShopPhoto' })
+  const size = readImageSize(bytes, upload.contentType)
+  if (size === null || size.width < 1 || size.height < 1) return err({ code: 'invalidShopPhoto' })
+  if (size.width > SERVER_MAX_DIMENSION || size.height > SERVER_MAX_DIMENSION) return err({ code: 'invalidShopPhoto' })
   return ok({ bytes, contentType: upload.contentType, extension: EXTENSION[upload.contentType] })
 }

@@ -29,7 +29,15 @@ export function useImageResize(): { toPhotoUpload: (file: File) => Promise<ShopP
     const canvas = document.createElement('canvas')
     canvas.width = Math.round(bitmap.width * scale)
     canvas.height = Math.round(bitmap.height * scale)
-    canvas.getContext('2d')?.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+    const context = canvas.getContext('2d')
+    if (context === null) {
+      bitmap.close()
+      return null
+    }
+    // Fundo branco: PNG transparente que vira JPEG ficaria com fundo preto.
+    context.fillStyle = '#ffffff'
+    context.fillRect(0, 0, canvas.width, canvas.height)
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
     bitmap.close()
 
     for (const quality of QUALITY_STEPS) {

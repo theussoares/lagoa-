@@ -9,12 +9,13 @@ import { FakeAuthGuard } from '../../test-support/fake-auth.guard'
 import type { MerchantShopContext } from '../access/merchant-shop.context'
 import { MerchantShopGuard } from '../access/merchant-shop.guard'
 import { ShopPhotoController } from './shop-photo.controller'
+import { pngHeader } from './image-fixtures'
 import { ShopPhotoRepository } from './shop-photo.repository'
 import { ShopPhotoService } from './shop-photo.service'
 import { ShopPhotoStorage } from './shop-photo.storage'
 
 const SHOP: MerchantShopContext = { shopId: '018f98a2-7b2a-7182-9f33-6d004bbbb002', status: 'pending', plan: 'founder', role: 'owner', termsVersion: null }
-const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0]).toString('base64')
+const PNG = pngHeader(1200, 800).toString('base64')
 
 describe('merchant shop photo HTTP', () => {
   let app: INestApplication

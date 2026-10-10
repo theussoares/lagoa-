@@ -33,6 +33,9 @@ importers:
       drizzle-orm:
         specifier: ^0.45.3
         version: 0.45.3(postgres@3.4.9)
+      express:
+        specifier: ^5.2.1
+        version: 5.2.1(supports-color@10.2.2)
       helmet:
         specifier: ^8.3.0
         version: 8.3.0

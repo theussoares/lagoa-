@@ -44,10 +44,12 @@ export class SupabaseShopPhotoStorage extends ShopPhotoStorage {
   async remove(path: string): Promise<void> {
     const key = this.env.SUPABASE_SERVICE_ROLE_KEY
     if (key === undefined) return
-    await fetch(this.objectUrl(path), {
+    const response = await fetch(this.objectUrl(path), {
       method: 'DELETE',
       headers: { authorization: `Bearer ${key}`, apikey: key },
       signal: AbortSignal.timeout(STORAGE_TIMEOUT_MS),
-    }).catch(() => undefined)
+    }).catch(() => null)
+    // A foto antiga que sobrar não aparece em lugar nenhum; o aviso é para a limpeza do bucket.
+    if (response === null || !response.ok) this.logger.warn(`Old shop photo was not removed (status ${response?.status ?? 'network'})`)
   }
 }
