@@ -12,6 +12,8 @@ overrides:
 
 patchedDependencies:
   '@nuxt/devtools@3.4.2': f5f6b99ade191fa056e35c03f247ad65922604b135187e8c55b034335bd97705
+  braces@3.0.3: 67dbf57d50ccce17d05bc7fcef8595a4a1fda2e15b52068df164d823819f31e3
+  node-forge@1.4.0: 77a8f76743da205249fb4588877e3134f8138c96a27330c992a5b73706211e46
 
 importers:
 
@@ -11518,7 +11520,7 @@ snapshots:
     dependencies:
       balanced-match: 4.0.4
 
-  braces@3.0.3:
+  braces@3.0.3(patch_hash=67dbf57d50ccce17d05bc7fcef8595a4a1fda2e15b52068df164d823819f31e3):
     dependencies:
       fill-range: 7.1.1
 
@@ -13262,7 +13264,7 @@ snapshots:
       h3: 1.15.11
       http-shutdown: 1.2.2
       jiti: 2.7.0
-      node-forge: 1.4.0
+      node-forge: 1.4.0(patch_hash=77a8f76743da205249fb4588877e3134f8138c96a27330c992a5b73706211e46)
       pathe: 2.0.3
       std-env: 4.3.0
       tinyclip: 0.1.15
@@ -13358,7 +13360,7 @@ snapshots:
 
   micromatch@4.0.8:
     dependencies:
-      braces: 3.0.3
+      braces: 3.0.3(patch_hash=67dbf57d50ccce17d05bc7fcef8595a4a1fda2e15b52068df164d823819f31e3)
       picomatch: 2.3.2
 
   mime-db@1.52.0: {}
@@ -13567,7 +13569,7 @@ snapshots:
     dependencies:
       whatwg-url: 5.0.0
 
-  node-forge@1.4.0: {}
+  node-forge@1.4.0(patch_hash=77a8f76743da205249fb4588877e3134f8138c96a27330c992a5b73706211e46): {}
 
   node-gyp-build@4.8.4: {}
 

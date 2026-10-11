@@ -14,6 +14,17 @@ overrides:
   '@esbuild-kit/core-utils>esbuild': ^0.25.4
   simple-git@<4.0.1: ^4.0.2
   http-cache-semantics@<4.3.0: ^4.3.0
-# Troca `import Git from 'simple-git'` pelo export nomeado (vale para a v3 e a v4). Sai junto com o override do simple-git.
+# - devtools: troca `import Git from 'simple-git'` pelo export nomeado (vale para a v3 e a v4). Sai junto com o override
+#   do simple-git.
+# - braces e node-forge: sem versão corrigida publicada, então a correção é nossa. braces recusa padrão com mais de 100
+#   níveis de aninhamento (GHSA-vfj7-8cjw-p6xm); node-forge exige que o DigestAlgorithm tenha só OID + NULL opcional
+#   (GHSA-86w9-cpqp-85rv). Cada patch sai quando sair a versão corrigida, junto com a linha dele em `ignoreGhsas`.
 patchedDependencies:
   '@nuxt/devtools@3.4.2': patches/@nuxt__devtools@3.4.2.patch
+  braces@3.0.3: patches/braces@3.0.3.patch
+  node-forge@1.4.0: patches/node-forge@1.4.0.patch
+# O `pnpm audit` só olha a versão: estes dois estão corrigidos pelos patches acima.
+auditConfig:
+  ignoreGhsas:
+    - GHSA-vfj7-8cjw-p6xm
+    - GHSA-86w9-cpqp-85rv
