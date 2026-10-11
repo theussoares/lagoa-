@@ -4,7 +4,16 @@ allowBuilds:
   '@swc/core': true
   esbuild: true
   vue-demi: false
-# Correção de segurança em ferramenta de build que o Nuxt ainda puxa vulnerável
-# (docs/security/mvp-audit-2026-10-10.md, item 5). Tirar quando o @nuxt/fonts trouxer o esbuild corrigido.
+# Correções de segurança em ferramentas de dev/build que as dependências ainda puxam vulneráveis
+# (docs/security/mvp-audit-2026-10-10.md, item 5). Cada linha sai quando o pacote de cima trouxer a versão corrigida:
+# - esbuild 0.27: @nuxt/fonts. esbuild 0.18 (@esbuild-kit/core-utils): drizzle-kit.
+# - simple-git 3: @nuxt/devtools 3.x. A v4 só exporta `simpleGit` nomeado, então o devtools leva o patch abaixo.
+# - http-cache-semantics: @swc/cli (download do binário).
 overrides:
   esbuild@>=0.27.3 <0.28.1: ^0.28.1
+  '@esbuild-kit/core-utils>esbuild': ^0.25.4
+  simple-git@<4.0.1: ^4.0.2
+  http-cache-semantics@<4.3.0: ^4.3.0
+# Troca `import Git from 'simple-git'` pelo export nomeado (vale para a v3 e a v4). Sai junto com o override do simple-git.
+patchedDependencies:
+  '@nuxt/devtools@3.4.2': patches/@nuxt__devtools@3.4.2.patch
