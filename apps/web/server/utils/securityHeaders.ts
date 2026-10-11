@@ -1,12 +1,13 @@
+import { BASE_CSP } from './contentSecurityPolicy'
+
 /**
  * Headers de segurança de toda resposta do app e da LP (`routeRules['/**']` nos dois `nuxt.config`).
  *
- * A CSP fecha o que não depende de nonce: ninguém emoldura o site (`frame-ancestors`, clickjacking), nem troca a base
- * dos links, nem injeta plugin ou envia formulário para fora. `script-src` fica de fora de propósito: o SSR do Nuxt
- * põe o payload em `<script>` inline, e liberar isso sem nonce não protegeria nada.
+ * A CSP daqui é a parte fixa. O `script-src` depende do HTML: no app, o plugin `scriptNonce` troca este header por um
+ * com o nonce do pedido; na LP pré-renderizada, o `scriptHashes` põe os hashes numa `<meta>`.
  */
 export const SECURITY_HEADERS: Readonly<Record<string, string>> = {
-  'Content-Security-Policy': "frame-ancestors 'self'; base-uri 'self'; object-src 'none'; form-action 'self'",
+  'Content-Security-Policy': BASE_CSP,
   'X-Frame-Options': 'SAMEORIGIN',
   'Strict-Transport-Security': 'max-age=63072000; includeSubDomains',
   'X-Content-Type-Options': 'nosniff',

@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
+import { BASE_CSP } from '../utils/contentSecurityPolicy'
 import { assertMerchantBackendAllowed } from '../utils/merchantBackend'
 import { SECURITY_HEADERS } from '../utils/securityHeaders'
 
 describe('SECURITY_HEADERS', () => {
   it('keeps third-party sites from framing the app (clickjacking on the Balcão)', () => {
+    expect(SECURITY_HEADERS['Content-Security-Policy']).toBe(BASE_CSP)
     expect(SECURITY_HEADERS['Content-Security-Policy']).toContain("frame-ancestors 'self'")
     expect(SECURITY_HEADERS['X-Frame-Options']).toBe('SAMEORIGIN')
   })
