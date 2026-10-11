@@ -79,6 +79,12 @@ export const CUSTOMER_FIRST_NAME_MAX_LENGTH = 40
 export const EMAIL_MAX_LENGTH = 254
 export const LOGIN_CODE_LENGTH = 6
 export const LOGIN_CODE_TTL_MINUTES = 5
+/**
+ * Tentativas de código de login por celular na janela. O limite do Supabase é por IP e lá chega o IP do BFF (que muda a
+ * cada chamada): sem este teto, 10⁶ códigos ficariam ao alcance de quem martela o BFF.
+ */
+export const LOGIN_VERIFY_ATTEMPTS_MAX = 5
+export const LOGIN_VERIFY_WINDOW_MINUTES = 15
 export const FOUNDER_PLAN_PRICE_CENTS = 7900
 
 export const PROGRAM_TARGET_MIN = 3

@@ -60,7 +60,7 @@ Onde ele fala em "CLAUDE.md", leia este arquivo de regras.
   o schema do `shared`) que troca o cookie por `Bearer` via `callApi` (`NUXT_API_BASE_URL`, só no servidor); não há
   proxy genérico: rota que não existe lá devolve 404 e os caminhos reais da API nunca aparecem no navegador. Escrita em `/api/**` exige `Origin` do próprio host ou de `NUXT_ALLOWED_ORIGINS`. Peças puras
   em `server/utils/*` com testes em `server/test`; as rotas só compõem. Headers de segurança (CSP sem `script-src`,
-  HSTS, `frame-ancestors`) valem para app e LP via `server/utils/securityHeaders.ts`. Evento de segurança (login, logout,
+  HSTS, `frame-ancestors`) valem para app e LP via `server/utils/securityHeaders.ts`. Antes de mandar o código de login ao Supabase, o BFF reserva a tentativa na API (`POST /v1/auth/login-attempts`, só com o `BFF_SHARED_SECRET`): teto por celular, fail-closed, porque o limite do Supabase é por IP e lá chega o IP do BFF. Evento de segurança (login, logout,
   401/403/429 da API) é uma linha `securityLogLine` (`shared/utils/securityEvent.ts`), sem celular, token, IP nem URL real.
 - **SSR e sessão do cliente:** `ssr: true`. O cliente não tem mock nem `localStorage`: o plugin `lagoa:backend`
   monta o `ApiClient` sobre `/api` (BFF). No servidor o fetcher chama o próprio `/api` em memória com o cookie do
