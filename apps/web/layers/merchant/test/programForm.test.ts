@@ -22,7 +22,7 @@ function draft(overrides: Partial<ProgramDraft> = {}): ProgramDraft {
       surpriseDay: { enabled: false, multiplier: 2, date: null },
     },
     expirationPolicy: { kind: 'afterInactivity', months: 6 },
-    checkIn: { enabled: true, cooldownHours: 4 },
+    checkIn: { enabled: true, cooldownHours: 4, cooldownMode: 'rolling' },
     ...overrides,
   })
 }

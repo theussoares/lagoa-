@@ -122,7 +122,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
           surpriseDay: { enabled: false, multiplier: 2 as const, date: null },
         },
         expirationPolicy: { kind: 'never' as const },
-        checkIn: { enabled: true, cooldownHours: 1 },
+        checkIn: { enabled: true, cooldownHours: 1, cooldownMode: 'rolling' as const },
       },
     }
 

@@ -29,7 +29,11 @@ export function isSameProgram(current: Program, draft: ProgramDraft): boolean {
     return false
   }
 
-  if (current.checkIn.enabled !== draft.checkIn.enabled || current.checkIn.cooldownHours !== draft.checkIn.cooldownHours) {
+  if (
+    current.checkIn.enabled !== draft.checkIn.enabled ||
+    current.checkIn.cooldownHours !== draft.checkIn.cooldownHours ||
+    current.checkIn.cooldownMode !== draft.checkIn.cooldownMode
+  ) {
     return false
   }
 

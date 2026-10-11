@@ -130,6 +130,7 @@ Onde ele fala em "CLAUDE.md", leia este arquivo de regras.
 | Validade do QR da visita  | `VISIT_QR_TTL_MINUTES`         |
 | Link do QR da visita      | `VISIT_QR_LINK_PARAM` (fragmento `/check-in#visita=<token>`, nunca query) |
 | Antifraude (janela)       | `checkInCooldown`              |
+| Uma vez por dia (vira à meia-noite) | `calendarDay` (`cooldownMode`; o outro modo é `rolling`, horas corridas) |
 | Regras bônus              | `bonusRules` (`welcomeBonus`, `birthdayMultiplier`, `referralBonus`, `surpriseDay`) |
 | Expiração                 | `expirationPolicy`             |
 | Prêmio                    | `reward`                       |
@@ -148,6 +149,7 @@ Onde ele fala em "CLAUDE.md", leia este arquivo de regras.
 | Criar o clube (cadastro)  | `clubSetup`                    |
 | Ticket do cadastro (celular confirmado sem loja) | `signUpTicket` |
 | Cartaz do balcão (QR)     | `poster` (`checkInPoster`)     |
+| Logo / banner da loja (Descobrir) | `logo` / `banner` (`ShopPhotoKind`, `shopPhoto`) |
 | Cabeçalho de tela / card herói | `screenHeader` / `heroCard` |
 | Situação da loja          | `shopStatus` (`pending` \| `approved` \| `suspended`) |
 | Plano / cobrança          | `plan` / `billing`             |
@@ -225,7 +227,7 @@ composables  → stores (Pinia, estado)
   recebe texto pronto (props ou `labels`).
 - **Browser API** (`window`, `document`, `navigator`, foco, vibração, câmera,
   impressão, `beforeunload`) só em composable dedicado (`useFocusRequest`,
-  `useHaptics`, `useQrScanner`, `usePrint`, `useLeaveGuard`, `useFileDownload`). Exceções
+  `useHaptics`, `useQrScanner`, `usePrint`, `useLeaveGuard`, `useFileDownload`, `useImageResize`). Exceções
   nomeadas: persistência da sessão (`core/app/stores/session.ts`) e o mock
   (`core/app/plugins/backend.ts`, `core/app/mock/**`).
 - **Pastas.** `components/<arquivo-da-página>/<Bloco>.vue` nas superfícies
@@ -280,7 +282,8 @@ composables  → stores (Pinia, estado)
   digita o código curto) para ganhar. Sem cartão, o QR da visita já cria. Não há
   mais lançamento por celular no Balcão.
 - **Antifraude:** no máximo 1 visita que rende por cliente/loja a cada janela
-  configurável (ex.: 4 h, 1 dia). A recusa não consome o QR da visita.
+  configurável: horas corridas (4 h, 12 h, 24 h, 2 dias, 7 dias) ou **1 vez por dia**, que vira à
+  meia-noite local (23h e 3h do dia seguinte valem duas). A recusa não consome o QR da visita.
 - **Regras bônus:** boas-vindas (cartão começa com 2 carimbos), aniversário em
   dobro, traga um amigo (+1 quando o amigo faz a 1ª visita), dia surpresa em dobro.
   Multiplicadores não se somam: vale o maior (aniversário no dia surpresa = 2×,

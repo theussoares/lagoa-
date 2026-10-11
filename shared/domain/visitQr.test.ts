@@ -158,7 +158,7 @@ describe('decideVisitEarning', () => {
     return {
       rules: STAMPS,
       bonusRules: NO_BONUS,
-      cooldownHours: 4,
+      cooldown: { cooldownHours: 4, cooldownMode: 'rolling' },
       card: { balance: 3, rewardExpiresAt: null, lastVisitAt: new Date('2026-09-01T12:00:00Z') },
       birthday: null,
       earn: { kind: 'visit' },

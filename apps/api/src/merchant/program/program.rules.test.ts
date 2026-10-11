@@ -15,7 +15,7 @@ describe('mapDraftToProgramInsert', () => {
         surpriseDay: { enabled: false, multiplier: 2, date: null },
       },
       expirationPolicy: { kind: 'never' },
-      checkIn: { enabled: true, cooldownHours: 12 },
+      checkIn: { enabled: true, cooldownHours: 12, cooldownMode: 'rolling' },
     }
 
     const inserted = mapDraftToProgramInsert('shop-uuid-1', draft)
@@ -34,6 +34,7 @@ describe('mapDraftToProgramInsert', () => {
       expirationMonths: null,
       checkInEnabled: true,
       checkInCooldownHours: 12,
+      checkInCooldownMode: 'rolling',
     })
   })
 
@@ -48,7 +49,7 @@ describe('mapDraftToProgramInsert', () => {
         surpriseDay: { enabled: false, multiplier: 2, date: null },
       },
       expirationPolicy: { kind: 'afterInactivity', months: 6 },
-      checkIn: { enabled: false, cooldownHours: 24 },
+      checkIn: { enabled: false, cooldownHours: 24, cooldownMode: 'rolling' },
     }
 
     const inserted = mapDraftToProgramInsert('shop-uuid-2', draft)
@@ -67,6 +68,7 @@ describe('mapDraftToProgramInsert', () => {
       expirationMonths: 6,
       checkInEnabled: false,
       checkInCooldownHours: 24,
+      checkInCooldownMode: 'rolling',
     })
   })
 
@@ -84,7 +86,7 @@ describe('mapDraftToProgramInsert', () => {
           surpriseDay: { enabled: true, multiplier: 2, date: '2026-12-25' },
         },
         expirationPolicy: { kind: 'afterInactivity', months: 12 },
-        checkIn: { enabled: true, cooldownHours: 4 },
+        checkIn: { enabled: true, cooldownHours: 4, cooldownMode: 'rolling' },
       },
     ],
     [
@@ -99,7 +101,7 @@ describe('mapDraftToProgramInsert', () => {
           surpriseDay: { enabled: false, multiplier: 2, date: null },
         },
         expirationPolicy: { kind: 'never' },
-        checkIn: { enabled: false, cooldownHours: 24 },
+        checkIn: { enabled: false, cooldownHours: 24, cooldownMode: 'rolling' },
       },
     ],
     [
@@ -114,7 +116,7 @@ describe('mapDraftToProgramInsert', () => {
           surpriseDay: { enabled: false, multiplier: 2, date: null },
         },
         expirationPolicy: { kind: 'never' },
-        checkIn: { enabled: true, cooldownHours: 24 },
+        checkIn: { enabled: true, cooldownHours: 24, cooldownMode: 'rolling' },
       },
     ],
   ])('reads back the same program for %s', (_mode, draft) => {

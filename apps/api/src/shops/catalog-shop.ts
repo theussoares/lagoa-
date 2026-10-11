@@ -9,6 +9,7 @@ export interface CatalogShop {
   readonly neighborhood: string
   readonly addressLine: string
   readonly logoPath: string | null
+  readonly bannerPath: string | null
   readonly program: {
     readonly rules: ProgramRules
     readonly rewardTitle: string

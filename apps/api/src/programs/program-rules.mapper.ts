@@ -53,6 +53,7 @@ export interface ProgramDatabaseColumns extends ProgramColumns, ExpirationColumn
   readonly bonusRules: BonusRules
   readonly checkInEnabled: boolean
   readonly checkInCooldownHours: number
+  readonly checkInCooldownMode: string
 }
 
 /** Mapeia colunas do banco diretamente para o schema de domínio `Program`. */
@@ -73,6 +74,7 @@ export function toProgram(columns: ProgramDatabaseColumns): Result<Program, Erro
     checkIn: {
       enabled: columns.checkInEnabled,
       cooldownHours: columns.checkInCooldownHours,
+      cooldownMode: columns.checkInCooldownMode,
     },
   })
 

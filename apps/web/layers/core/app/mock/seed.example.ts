@@ -103,7 +103,7 @@ function program(shopId: ShopId, rewardTitle: string, rules: ProgramRules, coold
     rules,
     bonusRules,
     expirationPolicy: { kind: 'afterInactivity', months: 6 },
-    checkIn: { enabled: true, cooldownHours },
+    checkIn: { enabled: true, cooldownHours, cooldownMode: 'rolling' },
   }
 }
 

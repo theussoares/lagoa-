@@ -27,7 +27,7 @@ const sampleDraft: ClubSetupDraft = {
       surpriseDay: { enabled: false, multiplier: 2, date: null },
     },
     expirationPolicy: { kind: 'never' },
-    checkIn: { enabled: true, cooldownHours: 4 },
+    checkIn: { enabled: true, cooldownHours: 4, cooldownMode: 'rolling' },
   },
 }
 

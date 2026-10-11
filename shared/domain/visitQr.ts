@@ -1,6 +1,6 @@
 import { VISIT_QR_TTL_MINUTES } from '../constants/domain'
 import type { Birthday } from '../schemas/common'
-import type { BonusRules, ProgramRules } from '../schemas/program'
+import type { BonusRules, CheckInCooldown, ProgramRules } from '../schemas/program'
 import type { VisitQrCancelReason, VisitQrEarn, VisitQrStatus } from '../schemas/visitQr'
 import type { ErrorOf } from '../types/errors'
 import { err, ok } from '../types/result'
@@ -83,7 +83,7 @@ export interface VisitEarningRequest {
   readonly rules: ProgramRules
   readonly bonusRules: BonusRules
   /** Da versão ativa: a política vigente da loja é a que vale com o lojista atestando a venda. */
-  readonly cooldownHours: number
+  readonly cooldown: CheckInCooldown
   readonly card: EarningCard
   readonly birthday: Birthday | null
   readonly earn: VisitQrEarn
@@ -97,7 +97,7 @@ export function decideVisitEarning(
   const input = resolveVisitEarnInput(request.rules, request.earn)
   if (!input.ok) return input
 
-  const availableAt = checkInAvailableAt(request.card.lastVisitAt, request.cooldownHours, request.now)
+  const availableAt = checkInAvailableAt(request.card.lastVisitAt, request.cooldown, request.now)
   if (availableAt !== null) return err({ code: 'checkInCooldown', availableAt: toIso(availableAt) })
 
   const plan = planEarning({

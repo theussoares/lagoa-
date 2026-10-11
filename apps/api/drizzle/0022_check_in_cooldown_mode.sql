@@ -1,0 +1,2 @@
+ALTER TABLE "programs" ADD COLUMN "check_in_cooldown_mode" text DEFAULT 'rolling' NOT NULL;--> statement-breakpoint
+ALTER TABLE "programs" ADD CONSTRAINT "programs_check_in_cooldown_mode_check" CHECK ("programs"."check_in_cooldown_mode" IN ('rolling', 'calendarDay'));

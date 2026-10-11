@@ -90,7 +90,7 @@ describe('CheckInService.claimVisitQr', () => {
 
   describe('the answer', () => {
     it('answers the contract of a visit earned by a stamp QR', async () => {
-      const { service } = serviceFor(visitQrTarget({ cooldownHours: 4 }), (r) => (r.state = stateOf({ balance: 4 })))
+      const { service } = serviceFor(visitQrTarget({ cooldown: { cooldownHours: 4, cooldownMode: 'rolling' } }), (r) => (r.state = stateOf({ balance: 4 })))
       expect(await service.claimVisitQr(TEST_USER.id, { token: TOKEN })).toEqual({
         ok: true,
         value: {
@@ -121,7 +121,7 @@ describe('CheckInService.claimVisitQr', () => {
     })
 
     it('answers a replay with the recorded visit, at its own time', async () => {
-      const { service } = serviceFor(visitQrTarget({ cooldownHours: 4 }), (r) => (r.qr = lockedVisitQr({ status: 'claimed', claimedBy: TEST_USER.id })))
+      const { service } = serviceFor(visitQrTarget({ cooldown: { cooldownHours: 4, cooldownMode: 'rolling' } }), (r) => (r.qr = lockedVisitQr({ status: 'claimed', claimedBy: TEST_USER.id })))
       expect(await service.claimVisitQr(TEST_USER.id, { token: TOKEN })).toMatchObject({
         ok: true,
         value: { activity: { id: ENTRY_ID, units: 1, createdAt: '2026-10-03T11:00:00.000Z' }, card: { balance: 5 }, nextCheckInAt: '2026-10-03T15:00:00.000Z' },

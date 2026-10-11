@@ -3,7 +3,8 @@ import { BONUS_UNITS_MAX, POINTS_RATE_MAX, PROGRAM_TARGET_MAX, PROGRAM_TARGET_MI
 import { unitOf } from '#shared/domain/programStrategies'
 import type { ProgramDraft } from '#shared/schemas/program'
 import type { SelectOption } from '#layers/ui/app/types/form'
-import { COOLDOWN_HOUR_OPTIONS, EXPIRATION_MONTH_OPTIONS } from '../utils/programForm'
+import type { Translate } from '#layers/core/app/types/i18n'
+import { CALENDAR_DAY_COOLDOWN_VALUE, COOLDOWN_HOUR_OPTIONS, EXPIRATION_MONTH_OPTIONS } from '../utils/programForm'
 import { cooldownLabel, toProgramSummaries } from '../utils/programSummary'
 import type { ProgramFieldLimits, ProgramFieldOptions } from '../types/program'
 
@@ -13,6 +14,20 @@ const BONUS_UNITS_MIN = 1
 // Um valor salvo fora da lista (vindo do backend) continua aparecendo no seletor.
 function withCurrent(options: readonly number[], current: number | null): number[] {
   return current === null || options.includes(current) ? [...options] : [...options, current].sort((a, b) => a - b)
+}
+
+const HOURS_PER_DAY = 24
+
+/** Horas corridas em ordem, com "1 vez por dia (vira à meia-noite)" logo depois das 24 h. */
+function cooldownOptionsOf(draft: ProgramDraft | null, translate: Translate): SelectOption[] {
+  const rollingHours = draft?.checkIn.cooldownMode === 'rolling' ? draft.checkIn.cooldownHours : null
+  const hours = withCurrent(COOLDOWN_HOUR_OPTIONS, rollingHours).map((value) => ({
+    label: cooldownLabel({ cooldownHours: value, cooldownMode: 'rolling' }, translate),
+    value: String(value),
+  }))
+  const calendarDay = { label: cooldownLabel({ cooldownHours: HOURS_PER_DAY, cooldownMode: 'calendarDay' }, translate), value: CALENDAR_DAY_COOLDOWN_VALUE }
+  const afterDay = hours.findIndex((option) => Number(option.value) > HOURS_PER_DAY)
+  return afterDay === -1 ? [...hours, calendarDay] : [...hours.slice(0, afterDay), calendarDay, ...hours.slice(afterDay)]
 }
 
 function limitsOf(draft: ProgramDraft | null): ProgramFieldLimits {
@@ -45,10 +60,7 @@ export function useProgramFieldOptions(draft: Readonly<Ref<ProgramDraft | null>>
     return {
       unit: current === null ? 'stamp' : unitOf(current.rules),
       limits: limitsOf(current),
-      cooldownOptions: withCurrent(COOLDOWN_HOUR_OPTIONS, current?.checkIn.cooldownHours ?? null).map((value) => ({
-        label: cooldownLabel(value, translate),
-        value: String(value),
-      })),
+      cooldownOptions: cooldownOptionsOf(current, translate),
       expirationOptions,
       summaries: current === null ? null : toProgramSummaries(current, translate),
     }

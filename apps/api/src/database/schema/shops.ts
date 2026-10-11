@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm'
 import { boolean, char, check, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
-import type { BonusRules } from '#shared/schemas/program'
+import type { BonusRules, CheckInCooldownMode } from '#shared/schemas/program'
 import { createdAt, primaryId } from './columns'
 import { earnPer, expirationKind, programMode, programUnit, shopCategory, shopPlan, shopStatus } from './enums'
 import { appUsers } from './users'
@@ -17,7 +17,9 @@ export const shops = pgTable(
     neighborhood: text('neighborhood').notNull(),
     addressLine: text('address_line').notNull(),
     checkInCode: char('check_in_code', { length: 6 }).notNull().unique(),
+    /** Caminhos no bucket `shop-assets` (nunca a URL): logo quadrado e banner, a capa do card no Descobrir. */
     logoPath: text('logo_path'),
+    bannerPath: text('banner_path'),
     status: shopStatus('status').notNull().default('pending'),
     plan: shopPlan('plan').notNull().default('founder'),
     /** Cartaz novo impresso? `null` = ainda não (aviso no Início); o Criar o clube já grava `now()`. */
@@ -72,6 +74,8 @@ export const programs = pgTable(
   expirationMonths: integer('expiration_months'),
   checkInEnabled: boolean('check_in_enabled').notNull().default(true),
   checkInCooldownHours: integer('check_in_cooldown_hours').notNull(),
+  /** `CheckInCooldownMode`: `rolling` (horas corridas) ou `calendarDay` (uma visita por dia local, vira à meia-noite). */
+  checkInCooldownMode: text('check_in_cooldown_mode').$type<CheckInCooldownMode>().notNull().default('rolling'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
@@ -80,6 +84,7 @@ export const programs = pgTable(
     // `IS NOT NULL` é necessário: CHECK que resulta em NULL passa no Postgres.
     // Janela de check-in de 1 a 168 h (CHECK_IN_COOLDOWN_MAX_HOURS): 0 ou negativo liberaria check-in ilimitado.
     check('programs_check_in_cooldown_check', sql`${t.checkInCooldownHours} BETWEEN 1 AND 168`),
+    check('programs_check_in_cooldown_mode_check', sql`${t.checkInCooldownMode} IN ('rolling', 'calendarDay')`),
     check('programs_expiration_check', sql`${t.expirationKind} = 'never' OR (${t.expirationMonths} IS NOT NULL AND ${t.expirationMonths} BETWEEN 1 AND 24)`),
   ],
 )

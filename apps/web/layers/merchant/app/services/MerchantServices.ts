@@ -6,6 +6,7 @@ import type { MerchantHomeService } from './MerchantHomeService'
 import type { MerchantTermsService } from './MerchantTermsService'
 import type { PosterReprintService } from './PosterReprintService'
 import type { ProgramService } from './ProgramService'
+import type { ShopPhotoService } from './ShopPhotoService'
 import type { VisitQrService, VisitQrTestingService } from './VisitQrService'
 
 /** Tudo que a superfície consome; a implementação (mock ou http) é escolhida no plugin. */
@@ -20,6 +21,7 @@ export interface MerchantServices {
   readonly clubSetup: ClubSetupService
   readonly poster: ShopPosterService
   readonly posterReprint: PosterReprintService
+  readonly shopPhoto: ShopPhotoService
   readonly shopStatus: ShopStatusService
   /** `null` fora do mock. */
   readonly shopApprovalTesting: ShopApprovalTestingService | null

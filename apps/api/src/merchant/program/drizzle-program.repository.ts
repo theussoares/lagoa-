@@ -31,6 +31,7 @@ export class DrizzleProgramRepository extends ProgramRepository {
         expirationMonths: programs.expirationMonths,
         checkInEnabled: programs.checkInEnabled,
         checkInCooldownHours: programs.checkInCooldownHours,
+        checkInCooldownMode: programs.checkInCooldownMode,
       })
       .from(shops)
       .innerJoin(programs, and(eq(programs.shopId, shops.id), eq(programs.active, true)))

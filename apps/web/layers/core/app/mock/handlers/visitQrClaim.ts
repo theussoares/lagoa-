@@ -1,15 +1,15 @@
-import { checkInAvailableAt } from '#shared/domain/antifraud'
+import { checkInAvailableAt, cooldownEndsAt } from '#shared/domain/antifraud'
 import { toCardProgress } from '#shared/domain/loyaltyCard'
 import { decideVisitEarning, decideVisitQrUse } from '#shared/domain/visitQr'
 import type { EarningCard } from '#shared/domain/earning'
 import type { CustomerId, ShopId, VisitQrId } from '#shared/schemas/ids'
-import type { Program } from '#shared/schemas/program'
+import type { CheckInCooldown, Program } from '#shared/schemas/program'
 import type { CheckInResult } from '#shared/schemas/visit'
 import type { VisitQr, VisitQrCredential } from '#shared/schemas/visitQr'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok } from '#shared/types/result'
 import type { Result } from '#shared/types/result'
-import { addHours, toIso } from '#shared/utils/time'
+import { toIso } from '#shared/utils/time'
 import type { VisitQrRecord } from '../state'
 import type { MockContext } from './context'
 import { appendLedger, applyEarningPlan, toWalletActivity } from './earning'
@@ -47,7 +47,7 @@ function replayResult(ctx: MockContext, record: VisitQrRecord, program: Program)
   return ok({
     activity: toWalletActivity(ctx, ledgerRecord),
     card: record.cardAfter,
-    nextCheckInAt: toIso(addHours(new Date(record.claimedAt), program.checkIn.cooldownHours)),
+    nextCheckInAt: toIso(cooldownEndsAt(new Date(record.claimedAt), program.checkIn)),
   })
 }
 
@@ -88,7 +88,7 @@ export function claimVisitQr(
   const plan = decideVisitEarning({
     rules: program.rules,
     bonusRules: program.bonusRules,
-    cooldownHours: program.checkIn.cooldownHours,
+    cooldown: program.checkIn,
     card,
     birthday: customer.birthday,
     earn: record.earn,
@@ -128,7 +128,7 @@ export function claimVisitQr(
   return ok({
     activity: toWalletActivity(ctx, ledgerRecord),
     card: cardAfter,
-    nextCheckInAt: toIso(addHours(ctx.now, program.checkIn.cooldownHours)),
+    nextCheckInAt: toIso(cooldownEndsAt(ctx.now, program.checkIn)),
   })
 }
 
@@ -136,10 +136,10 @@ export function claimVisitQr(
 export function simulateVisitQrClaim(ctx: MockContext, shopId: ShopId, id: VisitQrId): Result<VisitQr, LookupError> {
   const found = findShopVisitQr(ctx, shopId, id)
   if (!found.ok) return found
-  const cooldownHours = findProgram(ctx, shopId)?.checkIn.cooldownHours ?? 0
+  const cooldown: CheckInCooldown = findProgram(ctx, shopId)?.checkIn ?? { cooldownHours: 0, cooldownMode: 'rolling' }
   const canEarn = (customerId: CustomerId): boolean => {
     const lastVisitAt = findCard(ctx, customerId, shopId)?.lastVisitAt ?? null
-    return checkInAvailableAt(lastVisitAt === null ? null : new Date(lastVisitAt), cooldownHours, ctx.now) === null
+    return checkInAvailableAt(lastVisitAt === null ? null : new Date(lastVisitAt), cooldown, ctx.now) === null
   }
   const customer = ctx.state.customers.find((item) => canEarn(item.id)) ?? ctx.state.customers[0]
   if (customer !== undefined) claimVisitQr(ctx, customer.id, { kind: 'token', token: found.value.token })

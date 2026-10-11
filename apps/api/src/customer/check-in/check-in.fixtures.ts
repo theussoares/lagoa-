@@ -27,7 +27,7 @@ export function visitQrTarget(overrides: Partial<VisitQrTarget> = {}): VisitQrTa
     visitQrId: VISIT_QR_ID,
     shop: catalogShop(),
     programId: PROGRAM_ID,
-    cooldownHours: 24,
+    cooldown: { cooldownHours: 24, cooldownMode: 'rolling' },
     issuedBy: ISSUER_ID,
     earn: { kind: 'visit' },
     ...overrides,

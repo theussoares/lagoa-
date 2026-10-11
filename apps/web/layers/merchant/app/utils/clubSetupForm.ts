@@ -33,7 +33,7 @@ export function emptyClubSetupForm(): ClubSetupForm {
         surpriseDay: { enabled: false, multiplier: STARTER_MULTIPLIER, date: null },
       },
       expirationPolicy: { kind: 'afterInactivity', months: STARTER_EXPIRATION_MONTHS },
-      checkIn: { enabled: true, cooldownHours: STARTER_COOLDOWN_HOURS },
+      checkIn: { enabled: true, cooldownHours: STARTER_COOLDOWN_HOURS, cooldownMode: 'rolling' },
     },
   }
 }

@@ -15,7 +15,7 @@ describe('isSameProgram', () => {
       surpriseDay: { enabled: false, multiplier: 2, date: null },
     },
     expirationPolicy: { kind: 'never' },
-    checkIn: { enabled: true, cooldownHours: 24 },
+    checkIn: { enabled: true, cooldownHours: 24, cooldownMode: 'rolling' },
   }
 
   const baseDraft: ProgramDraft = {
@@ -28,7 +28,7 @@ describe('isSameProgram', () => {
       surpriseDay: { enabled: false, multiplier: 2, date: null },
     },
     expirationPolicy: { kind: 'never' },
-    checkIn: { enabled: true, cooldownHours: 24 },
+    checkIn: { enabled: true, cooldownHours: 24, cooldownMode: 'rolling' },
   }
 
   it('is the same when the draft is identical', () => {
@@ -78,6 +78,7 @@ describe('isSameProgram', () => {
   })
 
   it('is not the same when the check-in cooldown changed', () => {
-    expect(isSameProgram(baseProgram, { ...baseDraft, checkIn: { enabled: true, cooldownHours: 48 } })).toBe(false)
+    expect(isSameProgram(baseProgram, { ...baseDraft, checkIn: { enabled: true, cooldownHours: 48, cooldownMode: 'rolling' } })).toBe(false)
+    expect(isSameProgram(baseProgram, { ...baseDraft, checkIn: { enabled: true, cooldownHours: 24, cooldownMode: 'calendarDay' } })).toBe(false)
   })
 })

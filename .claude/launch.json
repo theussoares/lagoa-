@@ -18,6 +18,19 @@
         "dev:site"
       ],
       "port": 3001
+    },
+    {
+      "name": "lagoa-dev-mock",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "dev",
+        "--port",
+        "3010"
+      ],
+      "port": 3010,
+      "env": {
+        "NUXT_PUBLIC_MERCHANT_BACKEND": "mock"
+      }
     }
   ]
 }

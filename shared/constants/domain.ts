@@ -115,5 +115,11 @@ export const HOME_LAPSED_PREVIEW_LIMIT = 5
 export const SHOP_NAME_MAX_LENGTH = 60
 export const SHOP_NEIGHBORHOOD_MAX_LENGTH = 40
 export const SHOP_ADDRESS_MAX_LENGTH = 100
+/** Foto da loja (vitrine do Descobrir): o app reduz antes de enviar; o servidor recusa acima disto (o bucket aceita 2 MB). */
+export const SHOP_PHOTO_MAX_BYTES = 1_000_000
+/** Maior lado do banner depois da redução no navegador, em pixels. */
+export const SHOP_PHOTO_MAX_DIMENSION = 1200
+/** Lado do logo (quadrado, recortado no centro) depois da redução no navegador, em pixels. */
+export const SHOP_LOGO_DIMENSION = 512
 /** Tempo para terminar o "Criar o clube" depois de confirmar o celular. */
 export const SIGN_UP_TICKET_TTL_MINUTES = 60

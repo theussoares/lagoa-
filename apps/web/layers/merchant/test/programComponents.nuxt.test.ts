@@ -149,7 +149,7 @@ describe('program components: EarnFields', () => {
 
 describe('program components: VisitRulesFields', () => {
   const visitProps = {
-    checkIn: { enabled: true, cooldownHours: 4 },
+    checkIn: { enabled: true, cooldownHours: 4, cooldownMode: 'rolling' },
     expiration: { kind: 'never' },
     cooldownOptions: [
       { label: '4 horas', value: '4' },
@@ -167,7 +167,7 @@ describe('program components: VisitRulesFields', () => {
     const toggle = switchByLabel(page, t('program.visitRules.checkIn.label'))
     expect(toggle.attributes('aria-checked')).toBe('true')
     await toggle.trigger('click')
-    expect(page.emitted('update:checkIn')?.at(-1)).toEqual([{ enabled: false, cooldownHours: 4 }])
+    expect(page.emitted('update:checkIn')?.at(-1)).toEqual([{ enabled: false, cooldownHours: 4, cooldownMode: 'rolling' }])
   })
 
   it('writes a valid cooldown back and ignores values that are not positive whole hours', async () => {
@@ -176,7 +176,9 @@ describe('program components: VisitRulesFields', () => {
     if (!cooldown) throw new Error('cooldown select missing')
     cooldown.vm.$emit('update:modelValue', '24')
     await flushPromises()
-    expect(page.emitted('update:checkIn')?.at(-1)).toEqual([{ enabled: true, cooldownHours: 24 }])
+    expect(page.emitted('update:checkIn')?.at(-1)).toEqual([{ enabled: true, cooldownHours: 24, cooldownMode: 'rolling' }])
+    cooldown.vm.$emit('update:modelValue', 'calendarDay')
+    expect(page.emitted('update:checkIn')?.at(-1)).toEqual([{ enabled: true, cooldownHours: 24, cooldownMode: 'calendarDay' }])
     const count = page.emitted('update:checkIn')?.length
     for (const invalid of ['0', '-3', '1.5', 'abc']) cooldown.vm.$emit('update:modelValue', invalid)
     await flushPromises()

@@ -1,6 +1,7 @@
 import type { EarningCard, EarningPlan } from '#shared/domain/earning'
 import type { VisitQrSnapshot } from '#shared/domain/visitQr'
 import type { Birthday } from '#shared/schemas/common'
+import type { CheckInCooldown } from '#shared/schemas/program'
 import type { VisitCode, VisitQrEarn } from '#shared/schemas/visitQr'
 import type { ErrorOf } from '#shared/types/errors'
 import type { Result } from '#shared/types/result'
@@ -21,7 +22,7 @@ export interface VisitQrTarget {
   /** Versão cujas regras estão em `shop`; é a que o cartão passa a ter se estiver zerado. */
   readonly programId: string
   /** Da versão ativa: a política vigente da loja vale, não a do cartão. */
-  readonly cooldownHours: number
+  readonly cooldown: CheckInCooldown
   /** Quem atestou a venda; vira `recordedBy` no ledger. */
   readonly issuedBy: string
   readonly earn: VisitQrEarn

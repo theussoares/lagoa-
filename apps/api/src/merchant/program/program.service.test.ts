@@ -53,7 +53,7 @@ describe('ProgramService', () => {
       surpriseDay: { enabled: false, multiplier: 2, date: null },
     },
     expirationPolicy: { kind: 'never' },
-    checkIn: { enabled: true, cooldownHours: 24 },
+    checkIn: { enabled: true, cooldownHours: 24, cooldownMode: 'rolling' },
   }
 
   const baseDraft: ProgramDraft = {
@@ -66,7 +66,7 @@ describe('ProgramService', () => {
       surpriseDay: { enabled: false, multiplier: 2, date: null },
     },
     expirationPolicy: { kind: 'never' },
-    checkIn: { enabled: true, cooldownHours: 24 },
+    checkIn: { enabled: true, cooldownHours: 24, cooldownMode: 'rolling' },
   }
 
   it('getProgram returns active program for existing shop', async () => {

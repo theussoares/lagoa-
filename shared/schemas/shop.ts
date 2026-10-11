@@ -9,6 +9,7 @@ import {
   SHOP_ADDRESS_MAX_LENGTH,
   SHOP_NAME_MAX_LENGTH,
   SHOP_NEIGHBORHOOD_MAX_LENGTH,
+  SHOP_PHOTO_MAX_BYTES,
 } from '../constants/domain'
 
 export const ShopCategorySchema = z.enum([
@@ -35,9 +36,30 @@ export type ShopPlan = z.infer<typeof ShopPlanSchema>
 export const CheckInCodeSchema = readableCodeSchema(CHECK_IN_CODE_LENGTH).brand<'CheckInCode'>()
 export type CheckInCode = z.infer<typeof CheckInCodeSchema>
 
+/** Formatos que o bucket `shop-assets` aceita. */
+export const ShopPhotoContentTypeSchema = z.enum(['image/jpeg', 'image/png', 'image/webp'])
+export type ShopPhotoContentType = z.infer<typeof ShopPhotoContentTypeSchema>
+
+/** Foto enviada pelo painel: bytes em base64 (o corpo é JSON como o resto da API). O servidor confere o tipo pelos bytes. */
+export const ShopPhotoUploadSchema = z.strictObject({
+  contentType: ShopPhotoContentTypeSchema,
+  dataBase64: z.base64().max(Math.ceil(SHOP_PHOTO_MAX_BYTES / 3) * 4),
+})
+export type ShopPhotoUpload = z.infer<typeof ShopPhotoUploadSchema>
+
+/** Imagens da loja: `logo` (quadrado, no círculo do card) e `banner` (capa do card no Descobrir). */
+export const ShopPhotoKindSchema = z.enum(['logo', 'banner'])
+export type ShopPhotoKind = z.infer<typeof ShopPhotoKindSchema>
+
+/** Imagens atuais da loja; `null` sem a imagem (o Descobrir usa o carimbo e o fundo da categoria). */
+export const ShopPhotosSchema = z.object({ logoUrl: z.string().url().nullable(), bannerUrl: z.string().url().nullable() })
+export type ShopPhotos = z.infer<typeof ShopPhotosSchema>
+
 /** Vitrine da loja no Descobrir. Tudo opcional: o card só mostra o que existe. */
 export const ShopShowcaseSchema = z.object({
+  /** Banner (capa do card). */
   imageUrl: z.string().min(1).optional(),
+  logoUrl: z.string().min(1).optional(),
   rating: z.number().min(0).max(5).optional(),
   distanceKm: z.number().nonnegative().optional(),
   openNow: z.boolean().optional(),

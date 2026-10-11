@@ -111,6 +111,17 @@ describe('http merchant services', () => {
     expect(await counter.confirmRedemption(RedemptionIdSchema.parse('01925b44-9000-7000-8000-000000000009'))).toEqual(refused)
   })
 
+  it('shopPhoto reads both images and posts each kind to its own path', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(json(200, { logoUrl: null, bannerUrl: null }))
+      .mockResolvedValueOnce(json(400, { code: 'invalidShopPhoto' }))
+    const { shopPhoto } = servicesWith(fetcher)
+    expect(await shopPhoto.getPhotos()).toEqual({ ok: true, value: { logoUrl: null, bannerUrl: null } })
+    expect(await shopPhoto.uploadPhoto('logo', { contentType: 'image/webp', dataBase64: 'AAAA' })).toEqual({ ok: false, error: { code: 'invalidShopPhoto' } })
+    expect(fetcher.mock.calls.map(([url]) => url)).toEqual(['https://api.test/v1/merchant/shop/photo', 'https://api.test/v1/merchant/shop/photo/logo'])
+  })
+
   it('posterReprint reads and marks the notice through the API', async () => {
     const fetcher = vi.fn<typeof fetch>(async (_input, init) => json(200, { pending: init?.method !== 'POST' }))
     const { posterReprint } = servicesWith(fetcher)

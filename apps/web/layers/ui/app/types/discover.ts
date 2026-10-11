@@ -27,7 +27,10 @@ export interface ChallengeModel {
 export type ShopPreview = { readonly kind: 'slots'; readonly total: number; readonly welcome: number } | RulerProgress
 
 export interface ShopShowcaseModel {
+  /** Banner, a capa do card. */
   readonly image: string | null
+  /** Logo no círculo; sem ele, o carimbo da categoria. */
+  readonly logo: string | null
   /** "4,8" */
   readonly rating: string | null
   /** "0,8 km" */

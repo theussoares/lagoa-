@@ -51,7 +51,7 @@ const TRANSITIONAL_PAGE_TEMPLATE: readonly string[] = [
 ]
 
 /** Composables dedicados a API de navegador (CLAUDE.md, "Browser API"). */
-const BROWSER_COMPOSABLES: readonly string[] = ['useFocus', 'useHaptics', 'useFileDownload', 'useInputCaret', 'useLeaveGuard', 'usePrint', 'useQrScanner']
+const BROWSER_COMPOSABLES: readonly string[] = ['useFocus', 'useHaptics', 'useFileDownload', 'useImageResize', 'useInputCaret', 'useLeaveGuard', 'usePrint', 'useQrScanner']
 
 const PAGE_SCRIPT_MAX_LINES = 30
 const PAGE_TEMPLATE_MAX_LINES = 60

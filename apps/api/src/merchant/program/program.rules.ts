@@ -20,5 +20,6 @@ export function mapDraftToProgramInsert(shopId: string, draft: ProgramDraft) {
     expirationMonths: draft.expirationPolicy.kind === 'afterInactivity' ? draft.expirationPolicy.months : null,
     checkInEnabled: draft.checkIn.enabled,
     checkInCooldownHours: draft.checkIn.cooldownHours,
+    checkInCooldownMode: draft.checkIn.cooldownMode,
   }
 }

@@ -4,6 +4,7 @@ import type { CustomerFilter } from '#shared/schemas/customer'
 import type { CustomerId, RedemptionId, VisitQrId } from '#shared/schemas/ids'
 import type { ProgramDraft } from '#shared/schemas/program'
 import type { RedemptionCode } from '#shared/schemas/redemption'
+import type { ShopPhotoKind, ShopPhotos, ShopPhotoUpload } from '#shared/schemas/shop'
 import type { VisitQrIssueRequest } from '#shared/schemas/visitQr'
 import { ok } from '#shared/types/result'
 import { asMerchant } from '#layers/core/app/mock/withSession'
@@ -18,6 +19,8 @@ import { countActiveCards, getProgram, merchantCustomerPage, updateProgram, week
 import type { MerchantSessionProvider } from '#layers/core/app/services/SessionProvider'
 
 export function createMockMerchantServices(backend: MockBackend, sessions: MerchantSessionProvider): MerchantServices {
+  // As imagens do mock ficam só na memória da aba (data URL): servem para ver a tela, não vão ao Descobrir do mock.
+  let photos: ShopPhotos = { logoUrl: null, bannerUrl: null }
   return {
     counter: {
       validateRedemption: (code: RedemptionCode) =>
@@ -63,6 +66,14 @@ export function createMockMerchantServices(backend: MockBackend, sessions: Merch
     posterReprint: {
       isPending: () => asMerchant(backend, sessions, posterReprintPending),
       markPrinted: () => asMerchant(backend, sessions, markPosterReprinted),
+    },
+    shopPhoto: {
+      getPhotos: () => Promise.resolve(ok(photos)),
+      uploadPhoto: (kind: ShopPhotoKind, upload: ShopPhotoUpload) => {
+        const url = `data:${upload.contentType};base64,${upload.dataBase64}`
+        photos = kind === 'logo' ? { ...photos, logoUrl: url } : { ...photos, bannerUrl: url }
+        return Promise.resolve(ok(photos))
+      },
     },
     shopStatus: {
       getStatus: () => asMerchant(backend, sessions, shopStatus),

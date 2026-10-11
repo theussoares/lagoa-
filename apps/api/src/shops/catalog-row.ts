@@ -13,6 +13,7 @@ export const CATALOG_COLUMNS = {
   neighborhood: shops.neighborhood,
   addressLine: shops.addressLine,
   logoPath: shops.logoPath,
+  bannerPath: shops.bannerPath,
   mode: programs.mode,
   earnUnits: programs.earnUnits,
   target: programs.target,
@@ -29,6 +30,7 @@ export interface CatalogRow {
   readonly neighborhood: string
   readonly addressLine: string
   readonly logoPath: string | null
+  readonly bannerPath: string | null
   readonly mode: ProgramMode
   readonly earnUnits: number
   readonly target: number
@@ -59,6 +61,7 @@ export function toCatalogShop(row: CatalogRow): CatalogShop | null {
     neighborhood: row.neighborhood,
     addressLine: row.addressLine,
     logoPath: row.logoPath,
+    bannerPath: row.bannerPath,
     program: { rules: rules.value, rewardTitle: row.rewardTitle, bonusRules: bonusRules.data, expiration: expiration.value },
   }
 }

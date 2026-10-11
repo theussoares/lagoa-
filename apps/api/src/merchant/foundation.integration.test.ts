@@ -163,7 +163,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant foundation against a real database
           surpriseDay: { enabled: false, multiplier: 2 as const, date: null },
         },
         expirationPolicy: { kind: 'never' as const },
-        checkIn: { enabled: true, cooldownHours: 4 },
+        checkIn: { enabled: true, cooldownHours: 4, cooldownMode: 'rolling' as const },
       },
     }
     const service = () => new ClubSetupService(new DrizzleClubSetupRepository(data.db), createTestPii(), new SystemClock())

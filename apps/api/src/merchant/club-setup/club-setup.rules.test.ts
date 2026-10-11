@@ -20,7 +20,7 @@ describe('club-setup rules', () => {
         surpriseDay: { enabled: false, multiplier: 2, date: null },
       },
       expirationPolicy: { kind: 'never' },
-      checkIn: { enabled: true, cooldownHours: 4 },
+      checkIn: { enabled: true, cooldownHours: 4, cooldownMode: 'rolling' },
     }
 
     const row = mapDraftToProgramInsert('shop-123', draft)
@@ -38,6 +38,7 @@ describe('club-setup rules', () => {
       expirationMonths: null,
       checkInEnabled: true,
       checkInCooldownHours: 4,
+      checkInCooldownMode: 'rolling',
     })
   })
 
@@ -52,7 +53,7 @@ describe('club-setup rules', () => {
         surpriseDay: { enabled: false, multiplier: 2, date: null },
       },
       expirationPolicy: { kind: 'afterInactivity', months: 6 },
-      checkIn: { enabled: true, cooldownHours: 2 },
+      checkIn: { enabled: true, cooldownHours: 2, cooldownMode: 'rolling' },
     }
 
     const row = mapDraftToProgramInsert('shop-456', draft)
