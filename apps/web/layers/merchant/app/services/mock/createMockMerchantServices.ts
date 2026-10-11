@@ -1,7 +1,7 @@
 import type { ReminderDraft } from '#shared/schemas/campaign'
 import type { ClubSetupDraft } from '#shared/schemas/onboarding'
 import type { CustomerFilter } from '#shared/schemas/customer'
-import type { RedemptionId, VisitQrId } from '#shared/schemas/ids'
+import type { CustomerId, RedemptionId, VisitQrId } from '#shared/schemas/ids'
 import type { ProgramDraft } from '#shared/schemas/program'
 import type { RedemptionCode } from '#shared/schemas/redemption'
 import type { VisitQrIssueRequest } from '#shared/schemas/visitQr'
@@ -14,7 +14,7 @@ import { approveShop, createClub, markPosterReprinted, posterReprintPending, sho
 import { confirmRedemption, todayEntries, validateRedemption } from '#layers/core/app/mock/handlers/counter'
 import { cancelVisitQr, getVisitQr, issueVisitQr } from '#layers/core/app/mock/handlers/visitQr'
 import { simulateVisitQrClaim } from '#layers/core/app/mock/handlers/visitQrClaim'
-import { countActiveCards, getProgram, merchantCustomers, updateProgram, weekSummary } from '#layers/core/app/mock/handlers/merchant'
+import { countActiveCards, getProgram, merchantCustomerPage, updateProgram, weekSummary } from '#layers/core/app/mock/handlers/merchant'
 import type { MerchantSessionProvider } from '#layers/core/app/services/SessionProvider'
 
 export function createMockMerchantServices(backend: MockBackend, sessions: MerchantSessionProvider): MerchantServices {
@@ -33,8 +33,8 @@ export function createMockMerchantServices(backend: MockBackend, sessions: Merch
       cancelVisitQr: (id: VisitQrId) => asMerchant(backend, sessions, (ctx, shopId) => cancelVisitQr(ctx, shopId, id)),
     },
     customers: {
-      listCustomers: (filter: CustomerFilter) =>
-        asMerchant(backend, sessions, (ctx, shopId) => ok(merchantCustomers(ctx, shopId, filter))),
+      listCustomers: (filter: CustomerFilter, cursor: CustomerId | null = null) =>
+        asMerchant(backend, sessions, (ctx, shopId) => ok(merchantCustomerPage(ctx, shopId, filter, cursor))),
     },
     program: {
       getProgram: () => asMerchant(backend, sessions, getProgram),

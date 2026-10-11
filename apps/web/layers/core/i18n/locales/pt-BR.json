@@ -331,7 +331,9 @@
     "lapsedHint": "{count} de {total} aceitaram avisos.",
     "refresh": "Atualizar lista",
     "listTitle": "Cartões da loja",
-    "lapsedHintLink": "Ver quem recebe o lembrete em Campanhas"
+    "lapsedHintLink": "Ver quem recebe o lembrete em Campanhas",
+    "loadMore": "Carregar mais clientes",
+    "showing": "Mostrando {shown} de {total}"
   },
   "program": {
     "title": "Programa e prêmios",

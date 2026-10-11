@@ -12,6 +12,9 @@ Design system: [`design-system/lagoa/MASTER.md`](./design-system/lagoa/MASTER.md
 Design de referência antigo (vale só como evidência de conteúdo e fluxo, não
 como identidade visual): https://claude.ai/artifact/BkmsXbbcBXZTe9GStye6Ui
 Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
+Regras de segurança (obrigatórias em toda mudança; tiers Grave/Médio/Moderado e
+política de bloqueio): [`docs/security/SECURITY_RULES.md`](./docs/security/SECURITY_RULES.md).
+Onde ele fala em "CLAUDE.md", leia este arquivo de regras.
 
 ## Estado do projeto
 

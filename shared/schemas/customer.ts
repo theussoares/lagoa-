@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { CUSTOMER_FIRST_NAME_MAX_LENGTH, EMAIL_MAX_LENGTH, PHONE_INPUT_MAX_LENGTH } from '../constants/domain'
+import { CUSTOMER_FIRST_NAME_MAX_LENGTH, EMAIL_MAX_LENGTH, MERCHANT_CUSTOMERS_PAGE_SIZE, PHONE_INPUT_MAX_LENGTH } from '../constants/domain'
 import { BirthdaySchema, IsoDateTimeSchema } from './common'
 import { CustomerIdSchema } from './ids'
 import { MaskedPhoneSchema } from './phone'
@@ -61,3 +61,14 @@ export type MerchantCustomerRow = z.infer<typeof MerchantCustomerRowSchema>
 
 export const CustomerFilterSchema = z.enum(['all', 'lapsed', 'rewardReady'])
 export type CustomerFilter = z.infer<typeof CustomerFilterSchema>
+
+/** Uma página da tela Clientes. O cursor é o último cliente da página (um cartão por cliente e loja). */
+export const MerchantCustomerPageSchema = z.object({
+  items: z.array(MerchantCustomerRowSchema).max(MERCHANT_CUSTOMERS_PAGE_SIZE),
+  nextCursor: CustomerIdSchema.nullable(),
+  /** Quantos clientes cabem no filtro, somando todas as páginas. */
+  total: z.number().int().nonnegative(),
+  /** Desses, quantos aceitaram avisos. */
+  acceptingNotifications: z.number().int().nonnegative(),
+})
+export type MerchantCustomerPage = z.infer<typeof MerchantCustomerPageSchema>

@@ -251,8 +251,8 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
     const customersResult = await customersService.listCustomers(merchantUserId, 'all')
     expect(customersResult.ok).toBe(true)
     if (!customersResult.ok) throw new Error('Failed to list customers')
-    expect(customersResult.value.length).toBeGreaterThanOrEqual(1)
-    for (const cust of customersResult.value) {
+    expect(customersResult.value.items.length).toBeGreaterThanOrEqual(1)
+    for (const cust of customersResult.value.items) {
       expect(cust.maskedPhone).toMatch(/^\(\d{2}\)\s\d••••-\d{4}$/)
       expect(JSON.stringify(cust)).not.toContain('67999887766')
     }

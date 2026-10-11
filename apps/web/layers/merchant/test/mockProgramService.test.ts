@@ -72,14 +72,14 @@ describe('mock ProgramService target changes', () => {
     await editProgram(services, (draft) => ({ ...draft, rules: { mode: 'stamps', target: 8 } }))
     const unlocked = await services.customers.listCustomers('rewardReady')
     if (!unlocked.ok) throw new Error(unlocked.error.code)
-    expect(unlocked.value.length).toBeGreaterThan(0)
+    expect(unlocked.value.items.length).toBeGreaterThan(0)
 
     await editProgram(services, (draft) => ({ ...draft, rules: { mode: 'stamps', target: 20 } }))
 
     const after = await services.customers.listCustomers('rewardReady')
     if (!after.ok) throw new Error(after.error.code)
-    expect(after.value.map((row) => row.customerId).sort()).toEqual(unlocked.value.map((row) => row.customerId).sort())
-    expect(after.value.every((row) => row.target === 8)).toBe(true)
+    expect(after.value.items.map((row) => row.customerId).sort()).toEqual(unlocked.value.items.map((row) => row.customerId).sort())
+    expect(after.value.items.every((row) => row.target === 8)).toBe(true)
   })
 
   it('unlocks the reward with a fresh hold when the target drops below the balance', async () => {
@@ -88,7 +88,7 @@ describe('mock ProgramService target changes', () => {
     const ready = await services.customers.listCustomers('rewardReady')
     const all = await services.customers.listCustomers('all')
     if (!ready.ok || !all.ok) throw new Error('list failed')
-    expect(ready.value.length).toBe(all.value.filter((row) => row.balance >= 3).length)
-    expect(ready.value.length).toBeGreaterThan(0)
+    expect(ready.value.items.length).toBe(all.value.items.filter((row) => row.balance >= 3).length)
+    expect(ready.value.items.length).toBeGreaterThan(0)
   })
 })

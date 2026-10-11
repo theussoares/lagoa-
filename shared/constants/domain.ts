@@ -20,6 +20,8 @@ export const BIRTHDAY_CHANGE_COOLDOWN_DAYS = 365
 /** Cidade do piloto: completa o endereço da loja na busca do mapa. */
 export const PILOT_CITY = 'Três Lagoas, MS'
 export const LAPSED_AFTER_DAYS = 30
+/** Página da tela Clientes do lojista: a lista cresce com a loja e nunca sai inteira (nem decifra todos os celulares). */
+export const MERCHANT_CUSTOMERS_PAGE_SIZE = 50
 /** Código impresso embaixo do QR da loja (entrar no clube), para quem prefere digitar. */
 export const CHECK_IN_CODE_LENGTH = 6
 /** Folga para espaços e hífens de quem digita o código impresso embaixo do QR. */
