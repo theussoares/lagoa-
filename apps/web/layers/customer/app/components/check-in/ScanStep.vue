@@ -27,5 +27,5 @@ onBeforeUnmount(() => emit('video', null))
 
 <template>
   <QrViewfinder ref="viewfinder" :label="$t('checkIn.viewfinderLabel')" :status="status === 'joining' ? 'busy' : status" :status-text="$t(VIEWFINDER_TEXT[status])" />
-  <UButton variant="outline" color="neutral" size="xl" block icon="i-ph-keyboard" :label="$t('checkIn.typeVisitCode')" @click="emit('typeCode')" />
+  <ActionButton role="secondary" size="xl" block icon="i-ph-keyboard" :label="$t('checkIn.typeVisitCode')" @click="emit('typeCode')" />
 </template>

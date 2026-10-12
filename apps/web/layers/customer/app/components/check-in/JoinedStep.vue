@@ -36,7 +36,7 @@ useFocusTarget(() => props.focusRequest, 'joinedHeading', () => heading.value?.f
         <p>{{ joined.text.next }}</p>
       </div>
 
-      <UButton to="/carteira" size="xl" block :label="$t('checkIn.joined.toWallet')" />
+      <ActionButton role="primary" to="/carteira" block :label="$t('checkIn.joined.toWallet')" />
     </div>
   </section>
 </template>

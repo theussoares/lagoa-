@@ -54,6 +54,12 @@ describe('check-in components: Notice', () => {
     expect(page.emitted('typeCode')).toHaveLength(1)
   })
 
+  it('makes the recovery the primary action and typing the code the secondary one', async () => {
+    const page = await mountIt(Notice, { notice: notice({}) })
+    expect(button(page, t('checkIn.scanAgain')).classes()).toContain('bg-primary')
+    expect(button(page, t('checkIn.typeVisitCode')).classes()).toContain('ring-accented')
+  })
+
   it('offers retry instead of scan again for a network failure', async () => {
     const page = await mountIt(Notice, { notice: notice({ recovery: 'retry', icon: 'i-ph-wifi-slash' }) })
     await button(page, t('common.retry')).trigger('click')
@@ -112,6 +118,13 @@ describe('check-in components: ScanStep joining', () => {
 
 describe('check-in components: CodeForm', () => {
   const formProps = { kind: 'visit', length: 5, cameraIssue: null, invalid: false, typing: false, focusRequest: null, code: [] } as const
+
+  it('ranks the actions: claim primary, switch code secondary, camera quiet', async () => {
+    const page = await mountIt(CodeForm, formProps)
+    expect(page.get('button[type="submit"]').classes()).toContain('bg-primary')
+    expect(button(page, t('checkIn.typeShopCode')).classes()).toContain('ring-accented')
+    expect(button(page, t('checkIn.useCamera')).classes()).toContain('hover:bg-elevated')
+  })
 
   it('has a labelled group of cells as long as the visit code and a claim button', async () => {
     const page = await mountIt(CodeForm, formProps)
@@ -321,5 +334,17 @@ describe('check-in components: EarnedStep', () => {
     expect(links[0]?.text()).toBe(t('checkIn.earned.redeem'))
     expect(links[0]?.attributes('href')).toBe('/premios/card_1')
     expect(button(page, t('checkIn.toWallet')).attributes('href')).toBe('/carteira')
+  })
+
+  it('gives the reward the reward look and demotes the wallet link; alone, the wallet link is the primary', async () => {
+    const withReward = await mountIt(EarnedStep, {
+      earned: earned({ rewardCardId: 'card_1' as CheckInEarnedView['rewardCardId'] }),
+      image: IMAGE,
+      focusRequest: null,
+    })
+    expect(button(withReward, t('checkIn.earned.redeem')).classes()).toContain('bg-secondary')
+    expect(button(withReward, t('checkIn.toWallet')).classes()).toContain('ring-accented')
+    const alone = await mountIt(EarnedStep, { earned: earned(), image: IMAGE, focusRequest: null })
+    expect(button(alone, t('checkIn.toWallet')).classes()).toContain('bg-primary')
   })
 })

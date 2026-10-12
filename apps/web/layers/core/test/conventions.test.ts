@@ -46,24 +46,17 @@ const TRANSITIONAL_PAGE_TEMPLATE: readonly string[] = [
 
 /** Tela do cliente com `<UButton>` cru: use `ActionButton` (papéis em layers/ui). */
 const TRANSITIONAL_RAW_BUTTON: readonly string[] = [
-  'layers/customer/app/components/check-in/CodeForm.vue',
-  'layers/customer/app/components/check-in/EarnedStep.vue',
-  'layers/customer/app/components/check-in/JoinedStep.vue',
-  'layers/customer/app/components/check-in/Notice.vue',
-  'layers/customer/app/components/check-in/ScanStep.vue',
   'layers/customer/app/components/discover/KnownShops.vue',
   'layers/customer/app/components/profile/BirthdayForm.vue',
   'layers/customer/app/components/profile/EraseAccount.vue',
   'layers/customer/app/components/profile/PrivacySection.vue',
   'layers/customer/app/components/ranking/JoinForm.vue',
   'layers/customer/app/components/rewards/HistorySection.vue',
-  'layers/customer/app/components/sign-in/ProfileStep.vue',
   'layers/customer/app/components/wallet/Empty.vue',
   'layers/customer/app/components/wallet/Problem.vue',
   'layers/customer/app/pages/profile.vue',
   'layers/customer/app/pages/ranking.vue',
   'layers/customer/app/pages/reward-redemption.vue',
-  'layers/customer/app/pages/sign-in.vue',
   'layers/customer/app/pages/wallet.vue',
 ]
 

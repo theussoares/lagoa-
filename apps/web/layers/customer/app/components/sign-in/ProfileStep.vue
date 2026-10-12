@@ -44,7 +44,7 @@ const consent = defineModel<boolean>('consent', { required: true })
 
     <div class="mt-auto flex flex-col gap-3">
       <p class="text-base text-muted">{{ $t('signIn.termsSignUp') }}</p>
-      <UButton type="submit" size="xl" block :loading="pending" :label="$t('signIn.signUpSubmit')" />
+      <ActionButton role="primary" type="submit" block :loading="pending" :label="$t('signIn.signUpSubmit')" />
     </div>
   </form>
 </template>

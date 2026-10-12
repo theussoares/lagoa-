@@ -50,21 +50,19 @@ useFocusTarget(() => props.focusRequest, 'earnedHeading', () => heading.value?.f
       <p class="text-base text-muted">{{ earned.text.next }}</p>
 
       <div class="flex flex-col gap-3">
-        <UButton
+        <ActionButton
           v-if="earned.rewardCardId"
+          role="reward"
           :to="`/premios/${earned.rewardCardId}`"
-          color="secondary"
-          size="xl"
           block
           icon="i-ph-gift"
           :label="$t('checkIn.earned.redeem')"
         />
-        <UButton
+        <ActionButton
+          :role="earned.rewardCardId ? 'secondary' : 'primary'"
           to="/carteira"
           size="xl"
           block
-          :variant="earned.rewardCardId ? 'outline' : 'solid'"
-          :color="earned.rewardCardId ? 'neutral' : 'primary'"
           :label="$t('checkIn.toWallet')"
         />
       </div>
