@@ -44,6 +44,29 @@ const TRANSITIONAL_PAGE_TEMPLATE: readonly string[] = [
   'layers/merchant/app/pages/program.vue',
 ]
 
+/** Tela do cliente com `<UButton>` cru: use `ActionButton` (papéis em layers/ui). */
+const TRANSITIONAL_RAW_BUTTON: readonly string[] = [
+  'layers/customer/app/components/check-in/CodeForm.vue',
+  'layers/customer/app/components/check-in/EarnedStep.vue',
+  'layers/customer/app/components/check-in/JoinedStep.vue',
+  'layers/customer/app/components/check-in/Notice.vue',
+  'layers/customer/app/components/check-in/ScanStep.vue',
+  'layers/customer/app/components/discover/KnownShops.vue',
+  'layers/customer/app/components/profile/BirthdayForm.vue',
+  'layers/customer/app/components/profile/EraseAccount.vue',
+  'layers/customer/app/components/profile/PrivacySection.vue',
+  'layers/customer/app/components/ranking/JoinForm.vue',
+  'layers/customer/app/components/rewards/HistorySection.vue',
+  'layers/customer/app/components/sign-in/ProfileStep.vue',
+  'layers/customer/app/components/wallet/Empty.vue',
+  'layers/customer/app/components/wallet/Problem.vue',
+  'layers/customer/app/pages/profile.vue',
+  'layers/customer/app/pages/ranking.vue',
+  'layers/customer/app/pages/reward-redemption.vue',
+  'layers/customer/app/pages/sign-in.vue',
+  'layers/customer/app/pages/wallet.vue',
+]
+
 /** Composables dedicados a API de navegador (CLAUDE.md, "Browser API"). */
 const BROWSER_COMPOSABLES: readonly string[] = ['useFocus', 'useHaptics', 'useFileDownload', 'useImageResize', 'useInputCaret', 'useLeaveGuard', 'usePrint', 'useQrScanner']
 
@@ -195,6 +218,11 @@ describe('layer layout', () => {
 
 describeRule('exported types live in types/', TRANSITIONAL_EXPORTED_TYPES, hasExportedType, 'export interface/type only in types/ and services/')
 describeRule('browser APIs live in browser composables', TRANSITIONAL_BROWSER_API, usesBrowserApi, 'window/navigator/document only in browser composables')
+function usesRawButton(path: string): boolean {
+  return path.startsWith('layers/customer/app/') && /<UButton\b/.test(stripComments(read(path)))
+}
+
+describeRule('customer screens use ActionButton', TRANSITIONAL_RAW_BUTTON, usesRawButton, 'no <UButton> in layers/customer; pick an ActionButton role')
 
 describe('page size limits', () => {
   const pages = appFiles().filter(isPage)
