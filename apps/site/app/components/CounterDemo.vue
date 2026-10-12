@@ -8,7 +8,7 @@ const demo = reactive(useCounterDemo())
   <div v-reveal class="rounded-(--radius-card) bg-default shadow-(--lagoa-shadow-card) [&_button]:touch-manipulation">
     <header class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-(--lagoa-rule) px-4 py-4 sm:px-6">
       <p class="letreiro text-lg text-highlighted">{{ t('counter.panelTitle') }}</p>
-      <p class="text-[0.9375rem] text-(--color-lima-200)">{{ t('counter.tryIt') }}</p>
+      <p class="text-[0.9375rem] text-(--color-sol-200)">{{ t('counter.tryIt') }}</p>
     </header>
 
     <div class="grid gap-8 p-4 sm:p-6 md:grid-cols-2 lg:gap-12 lg:p-8">

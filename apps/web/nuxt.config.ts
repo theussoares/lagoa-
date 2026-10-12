@@ -47,7 +47,7 @@ export default defineNuxtConfig({
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
         { name: 'theme-color', content: '#FFFFFF', media: '(prefers-color-scheme: light)' },
-        { name: 'theme-color', content: '#08201F', media: '(prefers-color-scheme: dark)' },
+        { name: 'theme-color', content: '#061C24', media: '(prefers-color-scheme: dark)' },
       ],
     },
   },
@@ -66,8 +66,8 @@ export default defineNuxtConfig({
       scope: '/',
       display: 'standalone',
       orientation: 'portrait',
-      background_color: '#08201F',
-      theme_color: '#08201F',
+      background_color: '#061C24',
+      theme_color: '#061C24',
       // Ícones entram quando existir logo (PRODUCT.md: nada de marca inventada).
       icons: [],
     },

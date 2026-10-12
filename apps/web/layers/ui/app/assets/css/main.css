@@ -9,18 +9,18 @@
   --font-sans: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Bricolage Grotesque Variable", "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
 
-  /* tinta: almofada de carimbo verde-petróleo (ação, carimbos) */
-  --color-tinta-50: #EFFBF3;
-  --color-tinta-100: #D9F6E4;
-  --color-tinta-200: #B4EBC9;
-  --color-tinta-300: #82DBA8;
-  --color-tinta-400: #52CC87;
-  --color-tinta-500: #2FB66C;
-  --color-tinta-600: #1F9558;
-  --color-tinta-700: #167A48;
-  --color-tinta-800: #0F5E3D;
-  --color-tinta-900: #0A4440;
-  --color-tinta-950: #0B3538;
+  /* tinta: almofada de carimbo azul-lago (ação, carimbos) */
+  --color-tinta-50: #EBF8FC;
+  --color-tinta-100: #D2EFF7;
+  --color-tinta-200: #A6DFEF;
+  --color-tinta-300: #74CBE3;
+  --color-tinta-400: #45B3D1;
+  --color-tinta-500: #2397B8;
+  --color-tinta-600: #187A9A;
+  --color-tinta-700: #0F6381;
+  --color-tinta-800: #0B4D66;
+  --color-tinta-900: #083B4F;
+  --color-tinta-950: #062B3A;
 
   /* carimbo: tinta vermelha, só prêmio e resgate */
   --color-carimbo-50: #FFEEE8;
@@ -48,24 +48,17 @@
   --color-folha-900: #00391C;
   --color-folha-950: #00220E;
 
-  /* lima: acento vivo (progresso, "aberta agora", destaque positivo). Teste 2: verde-limão */
-  --color-lima-50: #F7FDE6;
-  --color-lima-100: #EBFBC3;
-  --color-lima-200: #D7F68C;
-  --color-lima-400: #BEEB4B;
-  --color-lima-500: #A4DE28;
-  --color-lima-600: #80B616;
-  --color-lima-700: #4D7C0F;
-  --color-lima-900: #2A4306;
-
-  /* sol: acento quente, só selo de destaque (nunca ação) */
-  --color-sol-50: #FFF6EA;
-  --color-sol-100: #FFE9CF;
-  --color-sol-200: #FFD3A1;
-  --color-sol-500: #F28A1E;
-  --color-sol-700: #B4570A;
-  --color-sol-800: #8F4308;
-  --color-sol-900: #5C2B05;
+  /* sol: pôr do sol na lagoa, o acento quente (destaque, "aberta agora", selo; nunca ação) */
+  --color-sol-50: #FFF8EC;
+  --color-sol-100: #FFF0D6;
+  --color-sol-200: #FCD9A0;
+  --color-sol-300: #F9C672;
+  --color-sol-400: #F6B04A;
+  --color-sol-500: #F2A33A;
+  --color-sol-600: #D68518;
+  --color-sol-700: #935408;
+  --color-sol-800: #7F4A08;
+  --color-sol-900: #4F2D05;
 
   /* mesa: neutro frio de papel e balcão */
   --color-mesa-50: #FAFAF8;
@@ -112,11 +105,11 @@
 
   --lagoa-desk: #FFFFFF;
   --lagoa-header: var(--color-tinta-900);
-  --lagoa-scrim: linear-gradient(180deg, rgb(11 53 56 / 0.7), rgb(11 53 56 / 0.85));
+  --lagoa-scrim: linear-gradient(180deg, rgb(6 43 58 / 0.7), rgb(6 43 58 / 0.85));
   --lagoa-rule: var(--color-mesa-200);
   --lagoa-slot: var(--color-mesa-500);
-  --lagoa-shadow-card: 0 0 0 1px rgb(11 53 56 / 0.09), 0 1px 0 rgb(11 53 56 / 0.04), 0 14px 32px -18px rgb(11 53 56 / 0.2);
-  --lagoa-glow: 0 0 22px rgb(164 222 40 / 0.45);
+  --lagoa-shadow-card: 0 0 0 1px rgb(6 43 58 / 0.09), 0 1px 0 rgb(6 43 58 / 0.04), 0 14px 32px -18px rgb(6 43 58 / 0.2);
+  --lagoa-glow: 0 0 22px rgb(242 163 58 / 0.45);
 
   --lagoa-dur-fast: 120ms;
   --lagoa-dur-base: 200ms;
@@ -131,24 +124,24 @@
   --ui-error: var(--ui-color-error-400);
   --ui-warning: var(--ui-color-warning-400);
 
-  --ui-bg: #0F2A2D;
-  --ui-bg-muted: #133438;
-  --ui-bg-elevated: #194147;
-  --ui-bg-accented: #235157;
-  --ui-text: #D3E6DC;
-  --ui-text-highlighted: #F3FBF6;
-  --ui-text-toned: #B3CCBF;
-  --ui-text-muted: #8FB0A1;
-  --ui-text-dimmed: #8FB0A1;
+  --ui-bg: #0A2631;
+  --ui-bg-muted: #0E3140;
+  --ui-bg-elevated: #133D4E;
+  --ui-bg-accented: #1C5066;
+  --ui-text: #D6E8EE;
+  --ui-text-highlighted: #F2FAFD;
+  --ui-text-toned: #B2CDD6;
+  --ui-text-muted: #8DB3BF;
+  --ui-text-dimmed: #8DB3BF;
   --ui-border: rgb(255 255 255 / 0.1);
   --ui-border-muted: rgb(255 255 255 / 0.06);
   --ui-border-accented: rgb(255 255 255 / 0.18);
 
-  --lagoa-desk: #08201F;
+  --lagoa-desk: #061C24;
   --lagoa-header: var(--color-tinta-950);
   --lagoa-scrim: linear-gradient(180deg, rgb(0 0 0 / 0.5), rgb(0 0 0 / 0.8));
   --lagoa-rule: rgb(255 255 255 / 0.1);
-  --lagoa-slot: #6F9686;
+  --lagoa-slot: #5C8C9A;
   --lagoa-shadow-card: 0 0 0 1px rgb(255 255 255 / 0.06), 0 14px 32px -16px rgb(0 0 0 / 0.7);
 }
 
@@ -314,8 +307,8 @@ body {
 
 /* Anel que pulsa: "aberta agora", "ao vivo". */
 @keyframes live-dot {
-  0%, 100% { box-shadow: 0 0 0 0 rgb(164 222 40 / 0.5); }
-  60% { box-shadow: 0 0 0 8px rgb(164 222 40 / 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgb(242 163 58 / 0.5); }
+  60% { box-shadow: 0 0 0 8px rgb(242 163 58 / 0); }
 }
 
 .live-dot {

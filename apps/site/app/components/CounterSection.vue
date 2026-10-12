@@ -20,7 +20,7 @@ const BULLETS = [
           <SectionHeading :title="t('counter.title')" :lead="t('counter.lead')" />
           <ul class="flex flex-col">
             <li v-for="bullet in BULLETS" :key="bullet.key" class="flex items-center gap-3 border-t border-(--lagoa-rule) py-4 text-toned">
-              <UIcon :name="bullet.icon" class="size-6 shrink-0 text-(--color-lima-200)" aria-hidden="true" />
+              <UIcon :name="bullet.icon" class="size-6 shrink-0 text-(--color-sol-200)" aria-hidden="true" />
               {{ t(`counter.bullets.${bullet.key}`, { minutes: VISIT_QR_TTL_MINUTES }) }}
             </li>
           </ul>
@@ -29,7 +29,7 @@ const BULLETS = [
         <!-- A ordem importa (gerar, escanear): por isso é lista numerada. -->
         <ol :aria-label="t('counter.stepsLabel')" class="flex flex-col gap-6">
           <li v-for="(step, index) in STEPS" :key="step" class="flex gap-5 rounded-(--radius-card) border border-(--lagoa-rule) p-6">
-            <span class="letreiro tabular grid size-12 shrink-0 place-items-center rounded-full border-2 border-current text-xl text-(--color-lima-200)" aria-hidden="true">
+            <span class="letreiro tabular grid size-12 shrink-0 place-items-center rounded-full border-2 border-current text-xl text-(--color-sol-200)" aria-hidden="true">
               {{ index + 1 }}
             </span>
             <div class="flex flex-col gap-1.5">
