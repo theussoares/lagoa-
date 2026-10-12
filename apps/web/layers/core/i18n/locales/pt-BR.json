@@ -536,7 +536,7 @@
   },
   "redemption": {
     "pageTitle": "Resgatar prêmio",
-    "back": "Carteira",
+    "back": "Voltar para a carteira",
     "title": "Mostre este código no balcão",
     "codeLabel": "Código de resgate",
     "validFor": "Vale por",

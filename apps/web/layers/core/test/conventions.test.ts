@@ -224,6 +224,14 @@ function usesRawButton(path: string): boolean {
 
 describeRule('customer screens use ActionButton', TRANSITIONAL_RAW_BUTTON, usesRawButton, 'no <UButton> in layers/customer; pick an ActionButton role')
 
+describe('white focus ring', () => {
+  it('lives only in ActionButton and HeaderIconLink', () => {
+    const allowed = ['layers/ui/app/components/ActionButton.vue', 'layers/ui/app/components/HeaderIconLink.vue']
+    const offenders = appFiles().filter((path) => !allowed.includes(path) && /focus-visible:outline-white/.test(stripComments(read(path))))
+    expect(offenders, 'use ActionButton surface="dark" or HeaderIconLink').toEqual([])
+  })
+})
+
 describe('page size limits', () => {
   const pages = appFiles().filter(isPage)
 
