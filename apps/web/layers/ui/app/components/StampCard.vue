@@ -19,7 +19,7 @@ const slotGrid = computed(() => (props.card.body.kind === 'slots' ? slotGridStyl
   <article class="rise flex flex-col rounded-(--radius-card) bg-default shadow-(--lagoa-shadow-card)">
     <header class="flex items-center justify-between gap-3 px-5 pt-5 pb-4">
       <div class="flex min-w-0 items-center gap-3">
-        <span class="pop-tilt grid size-12 shrink-0 place-items-center rounded-2xl bg-(--color-lima-100) text-(--color-lima-700) dark:bg-(--color-lima-900) dark:text-(--color-lima-200)" aria-hidden="true">
+        <span class="pop-tilt grid size-12 shrink-0 place-items-center rounded-2xl bg-(--color-sol-100) text-(--color-sol-700) dark:bg-(--color-sol-900) dark:text-(--color-sol-200)" aria-hidden="true">
           <UIcon :name="card.icon" class="size-7" />
         </span>
         <div class="min-w-0">
