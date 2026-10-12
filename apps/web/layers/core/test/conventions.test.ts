@@ -27,7 +27,6 @@ const TRANSITIONAL_BROWSER_API: readonly string[] = [
 
 /** Página com mais de 30 linhas de script. */
 const TRANSITIONAL_PAGE_SCRIPT: readonly string[] = [
-  'layers/customer/app/pages/discover.vue',
   'layers/customer/app/pages/reward-redemption.vue',
   'layers/customer/app/pages/sign-in.vue',
   'layers/merchant/app/pages/campaigns.vue',
@@ -38,7 +37,6 @@ const TRANSITIONAL_PAGE_SCRIPT: readonly string[] = [
 
 /** Página com mais de 60 linhas de template. */
 const TRANSITIONAL_PAGE_TEMPLATE: readonly string[] = [
-  'layers/customer/app/pages/discover.vue',
   'layers/customer/app/pages/rewards.vue',
   'layers/customer/app/pages/sign-in.vue',
   'layers/merchant/app/pages/campaigns.vue',
