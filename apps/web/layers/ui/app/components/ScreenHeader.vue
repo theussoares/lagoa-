@@ -7,9 +7,15 @@ interface Props {
   headingId?: string
   /** Deixa 40px na base para um card herói subir sobre a faixa; sem card, passe false. */
   overlap?: boolean
+  /** Passo a passo move o foco para o título ao trocar de etapa (`focus()` exposto). */
+  focusable?: boolean
 }
 
 withDefaults(defineProps<Props>(), { overlap: true })
+
+const heading = useTemplateRef<HTMLHeadingElement>('heading')
+
+defineExpose({ focus: (): void => heading.value?.focus() })
 </script>
 
 <template>
@@ -25,7 +31,7 @@ withDefaults(defineProps<Props>(), { overlap: true })
     <div class="relative flex flex-col gap-3 pt-4">
       <div class="flex items-start justify-between gap-4">
         <div class="flex flex-col gap-1">
-          <h1 :id="headingId" class="font-display text-[2.25rem] leading-none font-bold text-balance">{{ title }}</h1>
+          <h1 :id="headingId" ref="heading" class="font-display text-[2.25rem] leading-none font-bold text-balance focus:outline-none" :tabindex="focusable ? -1 : undefined">{{ title }}</h1>
           <p v-if="lead" class="max-w-[30ch] text-pretty text-white">{{ lead }}</p>
         </div>
         <slot name="actions" />

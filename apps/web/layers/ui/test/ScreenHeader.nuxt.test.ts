@@ -52,4 +52,30 @@ describe('ScreenHeader', () => {
     expect(lead?.classes()).toContain('text-white')
     expect(lead?.classes()).not.toContain('text-white/90')
   })
+
+  it('takes the focus on its heading when it is focusable', async () => {
+    const wrapper = await mountSuspended(ScreenHeader, {
+      props: { title: 'Carimbo ganho!', focusable: true },
+      attachTo: document.body,
+    })
+    wrapper.vm.focus()
+    expect(document.activeElement).toBe(wrapper.get('h1').element)
+    expect(wrapper.get('h1').attributes('tabindex')).toBe('-1')
+    wrapper.unmount()
+  })
+
+  it('keeps the heading out of the tab order when it is not focusable', async () => {
+    const wrapper = await mountSuspended(ScreenHeader, { props: { title: 'Perfil' } })
+    expect(wrapper.get('h1').attributes('tabindex')).toBeUndefined()
+  })
+
+  it('keeps a long title whole next to an actions slot', async () => {
+    const title = 'Carimbo ganho na Barbearia Navalha do Centro'
+    const wrapper = await mountSuspended(ScreenHeader, {
+      props: { title },
+      slots: { actions: '<span data-test="stamp">carimbo</span>' },
+    })
+    expect(wrapper.get('h1').text()).toBe(title)
+    expect(wrapper.get('[data-test="stamp"]').exists()).toBe(true)
+  })
 })
