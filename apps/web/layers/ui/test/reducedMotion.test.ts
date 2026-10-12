@@ -17,4 +17,8 @@ describe('reduced motion', () => {
   it.each(animatedClasses)('turns off .%s under prefers-reduced-motion', (name) => {
     expect(reducedMotionCss).toMatch(new RegExp(`\\.${name}\\b`))
   })
+
+  it('dissolves entrances instead of hiding them', () => {
+    expect(reducedMotionCss).toMatch(/rise-fade/)
+  })
 })

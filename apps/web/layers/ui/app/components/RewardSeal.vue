@@ -34,11 +34,11 @@ const props = withDefaults(defineProps<Props>(), { tilt: -7, pressed: false })
   border: 2px solid currentColor;
   opacity: 0;
   pointer-events: none;
-  animation: seal-ring 700ms var(--ease-out-expo) 280ms both;
+  animation: seal-ring var(--lagoa-dur-splash) var(--ease-out-expo) calc(var(--lagoa-stagger) * 6) both;
 }
 
 .seal-splash::after {
-  animation-delay: 420ms;
+  animation-delay: calc(var(--lagoa-stagger) * 8);
 }
 
 @keyframes seal-ring {

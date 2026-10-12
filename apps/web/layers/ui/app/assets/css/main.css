@@ -115,6 +115,11 @@
   --lagoa-dur-base: 200ms;
   --lagoa-dur-stamp: 420ms;
   --lagoa-dur-rise: 520ms;
+  --lagoa-dur-enter: 400ms;
+  --lagoa-dur-exit: 130ms;
+  --lagoa-dur-splash: 700ms;
+  --lagoa-stagger: 50ms;
+  --lagoa-stagger-steps: 6;
 }
 
 .dark {
@@ -290,7 +295,7 @@ body {
 
 .rise {
   animation: rise var(--lagoa-dur-rise) var(--ease-elegant) both;
-  animation-delay: calc(var(--i, 0) * 70ms);
+  animation-delay: calc(min(var(--i, 0), var(--lagoa-stagger-steps)) * var(--lagoa-stagger));
 }
 
 /* Ícone que "estala" ao entrar. */
@@ -301,8 +306,8 @@ body {
 }
 
 .pop-tilt {
-  animation: pop-tilt 480ms var(--ease-elegant) both;
-  animation-delay: calc(var(--i, 0) * 70ms);
+  animation: pop-tilt var(--lagoa-dur-enter) var(--ease-elegant) both;
+  animation-delay: calc(min(var(--i, 0), var(--lagoa-stagger-steps)) * var(--lagoa-stagger));
 }
 
 /* Anel que pulsa: "aberta agora", "ao vivo". */
@@ -325,8 +330,19 @@ body {
   animation: slow-pan 18s ease-in-out infinite alternate;
 }
 
+/* Movimento reduzido: o que entra dissolve (opacidade), o decorativo e o contínuo param. */
+@keyframes rise-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .rise, .pop-tilt, .live-dot, .slow-pan {
+  .rise, .pop-tilt {
+    animation: rise-fade var(--lagoa-dur-base) linear both;
+    animation-delay: 0s;
+  }
+
+  .live-dot, .slow-pan {
     animation: none;
   }
 }
