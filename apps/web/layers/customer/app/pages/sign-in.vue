@@ -64,12 +64,18 @@ function backToPhone(): void {
 </script>
 
 <template>
-  <div class="flex flex-1 flex-col gap-8">
-    <SignInHero v-if="step.name === 'phone'" :brand="t('app.name')" :caption="t('signIn.heroCaption')" />
+  <div class="flex flex-1 flex-col gap-6">
+    <SignInHero
+      v-if="step.name === 'phone'"
+      :brand="t('app.name')"
+      :city="t('signIn.city')"
+      :title="t('signIn.title')"
+      :lead="t('signIn.lead')"
+      :caption="t('signIn.heroCaption')"
+      image="/city/tres-lagoas.jpg"
+    />
 
     <form v-if="step.name === 'phone'" class="flex flex-1 flex-col gap-6" novalidate @submit.prevent="requestCode(phoneDraft)">
-      <PageTitle :title="t('signIn.title')" :lead="t('signIn.lead')" />
-
       <UFormField :label="t('signIn.phoneLabel')" :hint="t('signIn.phoneHint')" :error="phoneError" name="phone" size="xl">
         <template #error="{ error: message }">
           <span v-if="message" class="flex items-start gap-1.5"><UIcon name="i-ph-warning-circle" class="mt-0.5 size-4 shrink-0" aria-hidden="true" />{{ message }}</span>

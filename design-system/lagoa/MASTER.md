@@ -14,7 +14,7 @@ uma impressão de verdade; o prêmio é um carimbo vermelho batido torto.
 
 **Evolução (out/2026, referência de produto aprovada):** o app do cliente passa
 a ter cabeçalho de tela com foto da cidade, **um card herói por tela** e cards
-de loja com foto, em verde-petróleo e lima, abrindo no escuro. O carimbo
+de loja com foto, em azul-lago e âmbar de pôr do sol ([ADR-0003](../../docs/adr/0003-paleta-cidade-das-aguas.md)), abrindo no escuro. O carimbo
 continua sendo a assinatura (casas, impressão, batida); o que muda é a moldura:
 mais imagem, cantos maiores, tipografia de produto.
 
@@ -25,19 +25,18 @@ com função (a cidade no topo, a vitrine da loja); nunca como papel de parede.
 
 ## Cor
 
-Estratégia **restrita**: uma tinta verde-petróleo profunda, um acento vivo (lima)
+Estratégia **restrita**: uma tinta azul-lago profunda, um acento quente (âmbar)
 e neutros derivados deles. Nada de cinza azulado chapado. O vermelho é
 reservado e raro. Referência estudada: enggaja.com (tinta escura + acento vivo,
 bordas e texto de apoio no mesmo tom da tinta).
 
 | Papel | Token Nuxt UI | Claro | Escuro | Uso |
 | --- | --- | --- | --- | --- |
-| Tinta | `primary` → `tinta` | `tinta-700` #167A48 | `tinta-300` #82DBA8 | ação principal, carimbos batidos, foco, links |
-| Tinta profunda | `tinta-950` #0B3538 | texto forte, cabeçalho de tela | idem | títulos, `--lagoa-header` |
-| Lima | `--color-lima-*` (acento, sem papel em `app.config`) | `lima-100` fundo / `lima-700` texto | `lima-900` / `lima-200` | "aberta agora", ícone do herói, destaque positivo; nunca ação |
+| Tinta | `primary` → `tinta` | `tinta-700` #0F6381 | `tinta-300` #74CBE3 | ação principal, carimbos batidos, foco, links |
+| Tinta profunda | `tinta-950` #062B3A | texto forte, cabeçalho de tela | idem | títulos, `--lagoa-header` |
+| Sol (âmbar) | `--color-sol-*` (acento, sem papel em `app.config`) | `sol-100` fundo / `sol-700` texto | `sol-900` / `sol-200` | "aberta agora", ícone do herói, destaque positivo; nunca ação |
 | Carimbo | `secondary` → `carimbo` | `carimbo-600` #B62C15 | `carimbo-300` #FDA796 | **só** prêmio liberado, resgate, código ativo |
 | Folha | `success` → `folha` | `folha-600` #0D7A46 | `folha-300` | confirmação (carimbo lançado, código válido) |
-| Sol | `--color-sol-*` | `sol-100` / `sol-800` | `sol-900` / `sol-200` | selo de destaque ("Desafio do mês") |
 | Erro / Aviso | `error` → `red`, `warning` → `amber` | padrão | padrão | sempre com ícone + texto |
 | Mesa (neutro) | `neutral` → `mesa` | cinzas neutros, levemente quentes | ver superfícies | bordas, apoio |
 
@@ -46,22 +45,22 @@ Configurações). Fundo claro é branco puro (nada azulado: parece "tema de IA")
 
 | Token | Claro | Escuro |
 | --- | --- | --- |
-| `--lagoa-desk` (fundo da página) | #FFFFFF | #08201F |
-| `--ui-bg` (cartão, folha, input) | #FFFFFF | #0F2A2D |
-| `--ui-bg-muted` / `-elevated` / `-accented` | `mesa-50` / `100` / `200` | #133438 / #194147 / #235157 |
-| `--ui-text-highlighted` | `tinta-950` | #F3FBF6 |
-| `--ui-text` / `-toned` / `-muted` | `mesa-800` / `700` / `600` | #D3E6DC / #B3CCBF / #8FB0A1 |
+| `--lagoa-desk` (fundo da página) | #FFFFFF | #061C24 |
+| `--ui-bg` (cartão, folha, input) | #FFFFFF | #0A2631 |
+| `--ui-bg-muted` / `-elevated` / `-accented` | `mesa-50` / `100` / `200` | #0E3140 / #133D4E / #1C5066 |
+| `--ui-text-highlighted` | `tinta-950` | #F2FAFD |
+| `--ui-text` / `-toned` / `-muted` | `mesa-800` / `700` / `600` | #D6E8EE / #B2CDD6 / #8DB3BF |
 | `--lagoa-header` | `tinta-900` | `tinta-950` |
 | `--lagoa-rule` (pauta) | `mesa-200` | branco 10% |
-| `--lagoa-slot` (casa vazia) | `mesa-500` (≥3:1) | #6F9686 (≥3:1) |
+| `--lagoa-slot` (casa vazia) | `mesa-500` (≥3:1) | #5C8C9A (≥3:1) |
 
 Regras:
 
 - Nunca hex solto em componente: só tokens (`text-primary`, `bg-default`,
-  `var(--lagoa-desk)`, `--color-lima-*`).
+  `var(--lagoa-desk)`, `--color-sol-*`).
 - Vermelho nunca decora. Se aparece, existe prêmio ou código em jogo.
-- Lima vivo só como fundo ou detalhe; texto lima usa `lima-700` (claro) ou
-  `lima-200` (escuro) para manter 4.5:1.
+- Âmbar vivo só como fundo ou detalhe; texto âmbar usa `sol-700` (claro) ou
+  `sol-200` (escuro) para manter 4.5:1.
 - Cor nunca é o único sinal: prêmio leva o texto "Prêmio liberado"; erro leva
   ícone e frase.
 - Claro e escuro são desenhados juntos; escuro é "caderneta à noite", não

@@ -34,7 +34,7 @@ const sampleCard = computed<StampCardModel>(() => ({
       <div class="flex flex-col items-start gap-6 sm:gap-7">
         <h1 class="type-display text-highlighted">
           {{ t('hero.titleLead') }}
-          <span class="block text-(--color-lima-200)">{{ t('hero.titleAccent') }}</span>
+          <span class="block text-(--color-sol-200)">{{ t('hero.titleAccent') }}</span>
         </h1>
 
         <p class="type-lead text-lg sm:text-xl">{{ t('hero.lead') }}</p>
