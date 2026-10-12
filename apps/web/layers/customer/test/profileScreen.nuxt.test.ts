@@ -2,10 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
 import { computed } from 'vue'
-import { useNuxtApp } from '#imports'
+import { clearNuxtData, useNuxtApp } from '#imports'
 import { anaSession } from '#layers/core/test/fixtures'
-import { mountComposable } from '#layers/core/test/composableHarness.nuxt'
+import { mountComposable as mountHarness } from '#layers/core/test/composableHarness.nuxt'
+import type { MountedComposable } from '#layers/core/test/composableHarness.nuxt'
 import { resetWorld, restoreClock } from '#layers/core/test/pageHarness.nuxt'
+import type { Birthday } from '#shared/schemas/common'
 import { useBirthdayEditing } from '../app/composables/useBirthdayEditing'
 import { useProfileScreen } from '../app/composables/useProfileScreen'
 
@@ -14,13 +16,25 @@ const { signOutMock, toastAdd } = vi.hoisted(() => ({ signOutMock: vi.fn(), toas
 mockNuxtImport('useCustomerSession', () => () => ({ signOut: signOutMock }))
 mockNuxtImport('useToast', () => () => ({ add: toastAdd }))
 
+const mounted: Array<{ unmount: () => void }> = []
+
+/** O Nuxt guarda o carregador da primeira montagem por chave: desmontar ao fim de cada teste evita espiões em serviços velhos. */
+async function mountComposable<T>(factory: () => T, options: { route?: string } = {}): Promise<MountedComposable<T>> {
+  const result = await mountHarness(factory, options)
+  mounted.push(result.wrapper)
+  return result
+}
+
 beforeEach(() => {
   resetWorld({ customer: anaSession })
+  clearNuxtData()
   signOutMock.mockReset()
   toastAdd.mockReset()
 })
 
 afterEach(() => {
+  mounted.splice(0).forEach((wrapper) => wrapper.unmount())
+  clearNuxtData()
   vi.restoreAllMocks()
   restoreClock()
 })
@@ -59,7 +73,7 @@ describe('useProfileScreen', () => {
     const { result } = await mountComposable(useProfileScreen)
     const before = result.state.status === 'success' ? result.state.value.birthday : undefined
     vi.spyOn(services().profile, 'updateProfile').mockResolvedValue({ ok: false, error: { code: 'birthdayLocked', changeableAt: '2027-01-01T00:00:00Z' } })
-    await result.birthday.save({ day: 5, month: 3 } as never, 'save')
+    await result.birthday.save('03-05' as Birthday, 'save')
     await vi.waitFor(() => expect(result.state.status).toBe('success'))
     expect(result.state.status === 'success' && result.state.value.birthday).toEqual(before)
     expect(toastAdd).toHaveBeenCalledWith(expect.objectContaining({ color: 'error' }))
@@ -100,7 +114,7 @@ describe('useBirthdayEditing', () => {
       useBirthdayEditing({ state: computed(() => screen.state), set: vi.fn(), reload }),
     )
     vi.spyOn(services().profile, 'updateProfile').mockResolvedValue({ ok: false, error: { code: 'birthdayLocked', changeableAt: '2027-01-01T00:00:00Z' } })
-    await result.save({ day: 5, month: 3 } as never, 'save')
+    await result.save('03-05' as Birthday, 'save')
     expect(reload).toHaveBeenCalledTimes(1)
   })
 })

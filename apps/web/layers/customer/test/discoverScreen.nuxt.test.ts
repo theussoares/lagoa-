@@ -3,12 +3,22 @@ import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
 import { clearNuxtData, useNuxtApp } from '#imports'
 import { anaSession } from '#layers/core/test/fixtures'
-import { mountComposable } from '#layers/core/test/composableHarness.nuxt'
+import { mountComposable as mountHarness } from '#layers/core/test/composableHarness.nuxt'
+import type { MountedComposable } from '#layers/core/test/composableHarness.nuxt'
 import { resetWorld, restoreClock } from '#layers/core/test/pageHarness.nuxt'
 import { useDiscoverScreen } from '../app/composables/useDiscoverScreen'
 
 const { signOutMock } = vi.hoisted(() => ({ signOutMock: vi.fn() }))
 mockNuxtImport('useCustomerSession', () => () => ({ signOut: signOutMock }))
+
+const mounted: Array<{ unmount: () => void }> = []
+
+/** O Nuxt guarda o carregador da primeira montagem por chave: desmontar ao fim de cada teste evita espiões em serviços velhos. */
+async function mountComposable<T>(factory: () => T, options: { route?: string } = {}): Promise<MountedComposable<T>> {
+  const result = await mountHarness(factory, options)
+  mounted.push(result.wrapper)
+  return result
+}
 
 beforeEach(() => {
   resetWorld({ customer: anaSession })
@@ -18,6 +28,8 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  mounted.splice(0).forEach((wrapper) => wrapper.unmount())
+  clearNuxtData()
   vi.restoreAllMocks()
   restoreClock()
 })
