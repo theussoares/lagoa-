@@ -26,7 +26,7 @@ const titleId = useId()
   >
     <span
       v-if="icon"
-      class="pop-tilt absolute top-5 right-5 grid size-14 place-items-center rounded-2xl bg-(--color-lima-100) text-(--color-lima-700) dark:bg-(--color-lima-900) dark:text-(--color-lima-200)"
+      class="pop-tilt absolute top-5 right-5 grid size-14 place-items-center rounded-2xl bg-(--color-sol-100) text-(--color-sol-700) dark:bg-(--color-sol-900) dark:text-(--color-sol-200)"
       aria-hidden="true"
     >
       <UIcon :name="icon" class="size-8" />

@@ -54,7 +54,7 @@ export default defineNuxtConfig({
       htmlAttrs: { lang: 'pt-BR' },
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'theme-color', content: '#0B3538' },
+        { name: 'theme-color', content: '#062B3A' },
       ],
     },
   },

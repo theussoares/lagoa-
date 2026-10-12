@@ -18,7 +18,7 @@ defineProps<Props>()
     <img v-if="image" :src="image" alt="" class="slow-pan absolute inset-0 size-full object-cover" />
     <div v-if="image" class="absolute inset-0 bg-(image:--lagoa-scrim)" aria-hidden="true" />
     <!-- Halo do acento: a luz da água no canto, só cor, sem textura. -->
-    <div class="pointer-events-none absolute -top-16 -right-12 size-56 rounded-full bg-(--color-lima-400) opacity-30 blur-3xl" aria-hidden="true" />
+    <div class="pointer-events-none absolute -top-16 -right-12 size-56 rounded-full bg-(--color-sol-400) opacity-30 blur-3xl" aria-hidden="true" />
     <div class="relative flex flex-col gap-3 pt-4">
       <div class="flex items-start justify-between gap-4">
         <div class="flex flex-col gap-1">

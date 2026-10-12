@@ -23,7 +23,7 @@ function closeMenu(): void {
     <div class="mx-auto max-w-6xl rounded-[1.75rem] bg-(--lagoa-header) text-default shadow-(--lagoa-shadow-card)">
       <div class="flex items-center justify-between gap-3 py-2 pr-2 pl-5">
         <a href="#inicio" class="inline-flex min-h-11 items-center font-display text-2xl font-bold text-highlighted" :aria-label="t('nav.home')">
-          Lagoa<span class="text-(--color-lima-200)">+</span>
+          Lagoa<span class="text-(--color-sol-200)">+</span>
         </a>
 
         <nav :aria-label="t('nav.label')" class="hidden lg:block">

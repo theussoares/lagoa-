@@ -21,10 +21,10 @@ const STEPS = ['call', 'reply', 'setup'] as const
       </div>
 
       <div class="flex flex-col gap-4">
-        <h3 class="letreiro text-lg text-(--color-lima-200)">{{ t('closing.stepsLabel') }}</h3>
+        <h3 class="letreiro text-lg text-(--color-sol-200)">{{ t('closing.stepsLabel') }}</h3>
         <ol class="flex flex-col">
           <li v-for="(step, index) in STEPS" :key="step" class="flex items-center gap-4 border-t border-(--lagoa-rule) py-4 text-lg text-toned">
-            <span class="letreiro tabular grid size-10 shrink-0 place-items-center rounded-full border-2 border-current text-(--color-lima-200)" aria-hidden="true">
+            <span class="letreiro tabular grid size-10 shrink-0 place-items-center rounded-full border-2 border-current text-(--color-sol-200)" aria-hidden="true">
               {{ index + 1 }}
             </span>
             {{ t(`closing.steps.${step}`) }}
