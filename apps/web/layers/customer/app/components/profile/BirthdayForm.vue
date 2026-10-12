@@ -43,6 +43,7 @@ const chosen = computed(() => joinBirthday({ day: day.value, month: month.value 
 const changed = computed(() => chosen.value !== null && chosen.value !== props.birthday)
 const partial = computed(() => (day.value === null) !== (month.value === null))
 const busy = computed(() => props.pending !== null)
+const notice = computed(() => props.labels.locked !== null || partial.value)
 const frozen = computed(() => busy.value || props.labels.locked !== null)
 
 function toNumber(value: unknown): number | null {
@@ -63,9 +64,9 @@ function submit(): void {
 
 <template>
   <form class="flex flex-col gap-4" novalidate @submit.prevent="submit">
-    <fieldset :disabled="frozen" class="flex flex-col gap-3">
+    <fieldset :disabled="frozen" class="flex flex-col gap-3" :aria-describedby="notice ? 'birthday-help birthday-notice' : 'birthday-help'">
       <legend class="mb-1 text-base font-medium text-highlighted">{{ labels.legend }}</legend>
-      <p class="text-base text-muted">{{ labels.help }}</p>
+      <p id="birthday-help" class="text-base text-muted">{{ labels.help }}</p>
       <div class="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-3">
         <UFormField :label="labels.day" name="birthdayDay">
           <USelect
@@ -92,10 +93,9 @@ function submit(): void {
           />
         </UFormField>
       </div>
-      <p v-if="labels.locked" class="flex items-start gap-2 text-base text-toned">
-        <UIcon name="i-ph-lock-simple" class="mt-1 size-4 shrink-0" aria-hidden="true" />{{ labels.locked }}
+      <p v-if="notice" id="birthday-notice" role="status" class="flex items-start gap-2 text-base text-toned">
+        <UIcon v-if="labels.locked" name="i-ph-lock-simple" class="mt-1 size-4 shrink-0" aria-hidden="true" />{{ labels.locked ?? labels.partial }}
       </p>
-      <p v-else-if="partial" class="text-base text-toned" aria-live="polite">{{ labels.partial }}</p>
     </fieldset>
     <div class="flex flex-wrap items-center gap-3">
       <UButton
