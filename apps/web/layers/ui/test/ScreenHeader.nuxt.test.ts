@@ -35,6 +35,6 @@ describe('ScreenHeader', () => {
       props: { title: 'Perfil' },
       slots: { actions: '<a href="/perfil" aria-label="Perfil">ir</a>' },
     })
-    expect(wrapper.get('a[aria-label="Perfil"]').exists()).toBe(true)
+    expect(wrapper.find('a[aria-label="Perfil"]').exists()).toBe(true)
   })
 })
