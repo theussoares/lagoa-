@@ -5,19 +5,19 @@ import request from 'supertest'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import type { PhoneNumber } from '#shared/schemas/phone'
 import { ENV } from '../../config/config.module'
+import { OtpSendGate } from './otp-send-gate'
+import { OtpSender, type OtpSendResult } from './otp-sender'
 import { SendSmsHookController } from './send-sms-hook.controller'
-import { SmsSendGate } from './sms-send-gate'
-import { SmsSender } from './sms-sender'
 
 const KEY = Buffer.from('hook-test-secret-hook-test-secret')
 const SECRET = `v1,whsec_${KEY.toString('base64')}`
 
-class RecordingSmsSender extends SmsSender {
-  sent: Array<{ phone: PhoneNumber; message: string }> = []
-  accepts = true
-  async send(phone: PhoneNumber, message: string): Promise<boolean> {
-    this.sent.push({ phone, message })
-    return this.accepts
+class RecordingOtpSender extends OtpSender {
+  sent: Array<{ phone: PhoneNumber; code: string }> = []
+  result: OtpSendResult = 'sent'
+  async send(phone: PhoneNumber, code: string): Promise<OtpSendResult> {
+    this.sent.push({ phone, code })
+    return this.result
   }
 }
 
@@ -37,13 +37,17 @@ class ScriptedGate {
 
 describe('Send SMS hook', () => {
   let app: INestApplication
-  const sender = new RecordingSmsSender()
+  const sender = new RecordingOtpSender()
   const gate = new ScriptedGate()
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [SendSmsHookController],
-      providers: [{ provide: ENV, useValue: { SEND_SMS_HOOK_SECRET: SECRET } }, { provide: SmsSender, useValue: sender }, { provide: SmsSendGate, useValue: gate }],
+      providers: [
+        { provide: ENV, useValue: { SEND_SMS_HOOK_SECRET: SECRET } },
+        { provide: OtpSender, useValue: sender },
+        { provide: OtpSendGate, useValue: gate },
+      ],
     }).compile()
     app = moduleRef.createNestApplication({ rawBody: true })
     await app.init()
@@ -51,7 +55,7 @@ describe('Send SMS hook', () => {
   afterAll(() => app.close())
   beforeEach(() => {
     sender.sent = []
-    sender.accepts = true
+    sender.result = 'sent'
     gate.allowed = true
   })
 
@@ -59,7 +63,7 @@ describe('Send SMS hook', () => {
     await request(app.getHttpServer()).post('/auth/hooks/send-sms').set(signed(PAYLOAD)).send(PAYLOAD).expect(200, {})
     expect(sender.sent).toHaveLength(1)
     expect(sender.sent[0]?.phone).toBe('67991230374')
-    expect(sender.sent[0]?.message).toContain('123456')
+    expect(sender.sent[0]?.code).toBe('123456')
   })
 
   it.each([
@@ -77,15 +81,21 @@ describe('Send SMS hook', () => {
   })
 
   it('reports a hook error when the provider fails', async () => {
-    sender.accepts = false
+    sender.result = 'failed'
     const response = await request(app.getHttpServer()).post('/auth/hooks/send-sms').set(signed(PAYLOAD)).send(PAYLOAD).expect(200)
-    expect(response.body).toEqual({ error: { http_code: 502, message: 'sms provider failed' } })
+    expect(response.body).toEqual({ error: { http_code: 502, message: 'code provider failed' } })
   })
 
-  it('answers 429 and sends nothing when the phone hit its SMS limit', async () => {
+  it('reports 429 when the provider throttles the recipient', async () => {
+    sender.result = 'throttled'
+    const response = await request(app.getHttpServer()).post('/auth/hooks/send-sms').set(signed(PAYLOAD)).send(PAYLOAD).expect(200)
+    expect(response.body).toEqual({ error: { http_code: 429, message: 'too many code requests' } })
+  })
+
+  it('answers 429 and sends nothing when the phone hit its limit', async () => {
     gate.allowed = false
     const response = await request(app.getHttpServer()).post('/auth/hooks/send-sms').set(signed(PAYLOAD)).send(PAYLOAD).expect(200)
-    expect(response.body).toEqual({ error: { http_code: 429, message: 'too many sms requests' } })
+    expect(response.body).toEqual({ error: { http_code: 429, message: 'too many code requests' } })
     expect(sender.sent).toHaveLength(0)
   })
 })

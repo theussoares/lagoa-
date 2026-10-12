@@ -1,5 +1,4 @@
-import { Controller, HttpCode, Post, Req, UnauthorizedException } from '@nestjs/common'
-import { Inject } from '@nestjs/common'
+import { Controller, HttpCode, Inject, Post, Req, UnauthorizedException } from '@nestjs/common'
 import type { RawBodyRequest } from '@nestjs/common'
 import type { Request } from 'express'
 import { z } from 'zod'
@@ -7,21 +6,24 @@ import { parsePhoneNumber } from '#shared/utils/phone'
 import { ENV } from '../../config/config.module'
 import type { Env } from '../../config/env'
 import { Public } from '../public.decorator'
-import { SmsSendGate } from './sms-send-gate'
-import { SmsSender } from './sms-sender'
+import { OtpSendGate } from './otp-send-gate'
+import { OtpSender } from './otp-sender'
 import { isValidWebhook } from './standard-webhook'
 
-const HookPayloadSchema = z.object({ user: z.object({ phone: z.string() }), sms: z.object({ otp: z.string().regex(/^\d{4,10}$/) }) })
+const HookPayloadSchema = z.object({
+  user: z.object({ phone: z.string() }),
+  sms: z.object({ otp: z.string().regex(/^\d{4,10}$/) }),
+})
 
 const hookError = (httpCode: number, message: string) => ({ error: { http_code: httpCode, message } })
 
-/** Chamado só pelo Supabase Auth (Send SMS Hook): é ele quem gera o código; aqui só entregamos pela Comtele. */
+/** Chamado só pelo Supabase Auth (Send SMS Hook, nome do Supabase): ele gera o código; aqui só entregamos pelo WhatsApp. */
 @Controller('auth/hooks')
 export class SendSmsHookController {
   constructor(
     @Inject(ENV) private readonly env: Pick<Env, 'SEND_SMS_HOOK_SECRET'>,
-    private readonly sms: SmsSender,
-    private readonly gate: SmsSendGate,
+    private readonly otp: OtpSender,
+    private readonly gate: OtpSendGate,
   ) {}
 
   @Public()
@@ -44,9 +46,10 @@ export class SendSmsHookController {
     const phone = payload.success ? parsePhoneNumber(payload.data.user.phone) : null
     if (!payload.success || phone === null || !phone.ok) return hookError(400, 'invalid payload')
 
-    if (!(await this.gate.allow(phone.value))) return hookError(429, 'too many sms requests')
+    if (!(await this.gate.allow(phone.value))) return hookError(429, 'too many code requests')
 
-    const sent = await this.sms.send(phone.value, `Lagoa+: seu código é ${payload.data.sms.otp}. Não compartilhe com ninguém.`)
-    return sent ? {} : hookError(502, 'sms provider failed')
+    const result = await this.otp.send(phone.value, payload.data.sms.otp)
+    if (result === 'throttled') return hookError(429, 'too many code requests')
+    return result === 'sent' ? {} : hookError(502, 'code provider failed')
   }
 }
