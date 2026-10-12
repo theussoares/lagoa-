@@ -35,6 +35,15 @@ Direção completa: `.impeccable/surfaces/layers-customer.md`.
 | Descobrir | Lista de lojas como cartões em branco (sem carimbo ainda) com letreiro e regra do clube; desafios como cartão com casas por loja |
 | Perfil | Consentimentos revogáveis, dados, sair |
 
+## Cabeçalho das telas internas
+
+Carteira, Descobrir, Prêmios, Perfil e Ranking abrem com `ScreenHeader` + foto da
+cidade (`useCityHeaderImage()`). O primeiro elemento só sobe sobre a faixa
+(`relative -mt-10`) quando é **um card único** (Carteira: `CardStack`; Descobrir:
+`HeroCard`; Perfil: card de telefone e avisos). Quando a tela abre com título de
+seção ou lista, o conteúdo começa abaixo da faixa: texto escuro nunca fica sobre
+a faixa escura.
+
 ## Tipografia aqui
 
 Body 17px. `count` 56px só no cartão do topo e no Carimbo ganho.
