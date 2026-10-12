@@ -22,7 +22,7 @@ const titleId = useId()
   <!-- O único destaque da tela: sobe 40px sobre a faixa do cabeçalho. -->
   <article
     :aria-labelledby="titleId"
-    class="rise relative -mt-10 flex flex-col gap-4 overflow-hidden rounded-(--radius-card) bg-default p-5 shadow-(--lagoa-shadow-card)"
+    class="card-raised rise relative -mt-10 flex flex-col gap-4 overflow-hidden p-5"
   >
     <span
       v-if="icon"

@@ -11,7 +11,7 @@ const titleId = useId()
 </script>
 
 <template>
-  <article :aria-labelledby="titleId" class="rise flex flex-col overflow-hidden rounded-(--radius-card) bg-default shadow-(--lagoa-shadow-card)">
+  <article :aria-labelledby="titleId" class="card rise flex flex-col overflow-hidden">
     <ShopCardMedia :showcase="shop.showcase" :icon="shop.icon" :tag="shop.tag" />
 
     <div class="flex flex-col gap-4 px-5 pb-5">

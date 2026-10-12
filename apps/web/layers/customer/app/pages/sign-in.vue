@@ -94,7 +94,7 @@ function backToPhone(): void {
         />
       </UFormField>
 
-      <UButton type="submit" size="xl" block :loading="pending" :label="t('signIn.sendCode')" class="mt-auto" />
+      <ActionButton role="primary" type="submit" block :loading="pending" :label="t('signIn.sendCode')" class="mt-auto" />
     </form>
 
     <SignInProfileStep
@@ -117,7 +117,7 @@ function backToPhone(): void {
             </template>
           </i18n-t>
           {{ ' ' }}
-          <UButton variant="link" class="relative min-h-0 p-0 align-baseline text-base after:absolute after:-inset-x-1 after:-inset-y-2.5 after:content-['']" :label="t('signIn.changePhone')" @click="backToPhone" />
+          <ActionButton role="inline" class="relative min-h-0 p-0 align-baseline text-base after:absolute after:-inset-x-1 after:-inset-y-2.5 after:content-['']" :label="t('signIn.changePhone')" @click="backToPhone" />
         </p>
       </PageTitle>
 
@@ -142,10 +142,9 @@ function backToPhone(): void {
       <div class="mt-auto flex flex-col gap-3">
         <p class="text-base text-muted">{{ t('signIn.smsDelayHint') }}</p>
         <p class="text-base text-muted">{{ t('signIn.terms') }}</p>
-        <UButton type="submit" size="xl" block :loading="pending" :label="t('signIn.submit')" />
-        <UButton
-          variant="ghost"
-          color="neutral"
+        <ActionButton role="primary" type="submit" block :loading="pending" :label="t('signIn.submit')" />
+        <ActionButton
+          role="quiet"
           block
           :disabled="resendIn > 0 || pending"
           :label="resendIn > 0 ? t('signIn.resendIn', { seconds: resendIn }) : t('signIn.resend')"

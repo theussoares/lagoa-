@@ -3,13 +3,16 @@ interface Props {
   icon: string
   /** Inclinação fixa em graus (−6 a +6). */
   tilt: number
-  tone?: 'ink' | 'reward'
+  /** `light` e `rewardLight`: tintas claras para a batida sobre a foto escura do cabeçalho. */
+  tone?: 'ink' | 'reward' | 'light' | 'rewardLight'
   /** Recebe a batida do carimbo ao aparecer. */
   pressed?: boolean
   delayMs?: number
 }
 
 const props = withDefaults(defineProps<Props>(), { tone: 'ink', pressed: false, delayMs: 0 })
+
+const INK_CLASS = { ink: 'text-primary', reward: 'text-secondary', light: 'text-white', rewardLight: 'text-secondary-300' } as const
 
 const style = computed(() => ({
   '--stamp-tilt': `${props.tilt}deg`,
@@ -22,7 +25,7 @@ const style = computed(() => ({
 <template>
   <span
     class="impression relative grid size-full place-items-center rounded-full border-[2.5px] bg-current/8"
-    :class="[tone === 'reward' ? 'text-secondary' : 'text-primary', pressed && 'stamp-press']"
+    :class="[INK_CLASS[tone], pressed && 'stamp-press']"
     :style="style"
     aria-hidden="true"
   >

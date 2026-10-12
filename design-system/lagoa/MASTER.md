@@ -171,11 +171,32 @@ esquerda, título em letreiro, régua tracejada em cima e embaixo (não caixa ci
 
 ## Componentes
 
+### Movimento
+
+Tokens por função em `main.css`: `--lagoa-dur-fast` 120ms (feedback de toque), `--lagoa-dur-base` 200ms (mudança de estado), `--lagoa-dur-enter` 400ms (entrada de ícone/selo), `--lagoa-dur-stamp` 420ms, `--lagoa-dur-rise` 520ms (entrada de bloco), `--lagoa-dur-exit` 130ms (saída, mais curta que a entrada), `--lagoa-stagger` 50ms com teto de `--lagoa-stagger-steps` (6) passos. Duração literal em ms fora dos tokens é proibida (teste `motionTokens`). Sob `prefers-reduced-motion`, o que entra dissolve (`rise-fade`), o decorativo e o contínuo param, o carimbo fica estático. Todo `animation:` novo precisa do bloco de movimento reduzido no mesmo arquivo.
+
+### Cards
+
+Três níveis, definidos uma vez em `main.css`: `card` (leitura), `card-tap` (card inteiro que é link: pressiona em `scale` e sobe a sombra) e `card-raised` (o destaque da tela, que sobe sobre a faixa). Não repetir `rounded-(--radius-card) bg-default shadow-(--lagoa-shadow-card)` (teste `cardSurface`). Um card tem uma ação principal; se leva a algum lugar, ele todo é o link.
+
+### Papéis de ação
+
+| Papel | Visual | Uso |
+| --- | --- | --- |
+| `primary` | preenchido tinta, `xl` | a ação final da tela ou do formulário |
+| `reward` | preenchido carimbo, `xl` | só levar ao resgate de prêmio |
+| `secondary` | contornado neutro, `lg` | alternativa ou saída |
+| `quiet` | texto (ghost), `lg` | baixa prioridade (Sair, Reenviar) |
+| `danger` / `dangerConfirm` | contornado vermelho / preenchido | abrir a confirmação / confirmar o destrutivo |
+| `inline` | link | dentro de frase |
+
+Um `primary` por tela ou formulário; `reward` e `primary` não dividem a mesma região. Fundo escuro: `surface="dark"` (anel de foco branco, 3:1) e `HeaderIconLink` para ícones redondos do cabeçalho. Rótulo = verbo + objeto, um destino ou comando, um rótulo: "Ver carteira", "Voltar para a carteira", "Resgatar prêmio", "Tirar aniversário" / "Manter a data", "Apagar minha conta" / "Manter minha conta", "Digitar o código da visita" (teste `labelGlossary`).
+
 ### Da lib (Nuxt UI), tematizados por `app.config.ts`
 
 | Necessidade | Componente | Regra |
 | --- | --- | --- |
-| Ação | `UButton` | tamanho padrão `lg` (≥48px); um primário por tela; `xl` para "Dar 1 carimbo" e "Fazer check-in" |
+| Ação | `ActionButton` (sobre `UButton`) | o papel escolhe cor, variante e tamanho; no app do cliente `UButton` cru é proibido (teste de convenção). Ver "Papéis de ação" |
 | Campo | `UInput`, `UFormField`, `UForm` | label visível sempre; schema Zod de `shared/`; erro abaixo do campo |
 | Código | `UPinInput` | 6 casas, caixa-alta, `tabular-nums`; dentro do `RedemptionStub`. Alfabeto sem sósias (`READABLE_CODE_ALPHABET`: sem 0/O, 1/I, 8/B, 5/S, 2/Z, U/V) |
 | Folha inferior | `UDrawer` | ações do cartão e confirmação no app |

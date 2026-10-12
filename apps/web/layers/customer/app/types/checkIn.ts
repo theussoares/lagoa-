@@ -75,7 +75,8 @@ export type ViewfinderStatus = 'busy' | 'joining' | 'scanning' | 'starting'
 export interface CheckInHeroStamp {
   readonly icon: string
   readonly tilt: number
-  readonly tone: 'ink' | 'reward'
+  /** A batida grande cai sempre sobre a foto escura: só tons claros. */
+  readonly tone: 'light' | 'rewardLight'
 }
 
 export interface CheckInEarnedView {

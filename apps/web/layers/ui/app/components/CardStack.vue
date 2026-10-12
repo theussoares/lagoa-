@@ -79,7 +79,7 @@ const hidden = computed(() => stack.value.hidden)
 }
 
 .deal-leave-active {
-  transition: transform 130ms ease-in, opacity 130ms ease-in;
+  transition: transform var(--lagoa-dur-exit) ease-in, opacity var(--lagoa-dur-exit) ease-in;
 }
 
 .deal-enter-from {

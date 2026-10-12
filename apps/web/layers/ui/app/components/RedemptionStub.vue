@@ -32,7 +32,7 @@ defineExpose({ focus })
 </script>
 
 <template>
-  <section :aria-labelledby="labelId" class="stub relative rounded-(--radius-card) bg-default shadow-(--lagoa-shadow-card)">
+  <section :aria-labelledby="labelId" class="card stub relative">
     <header class="px-4 pt-3 pb-3">
       <h2 :id="labelId" class="letreiro text-[0.9375rem] text-highlighted">{{ title }}</h2>
       <p class="mt-1 text-[0.9375rem] text-muted">{{ hint }}</p>

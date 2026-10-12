@@ -55,7 +55,7 @@ const slots: StampSlotModel[] = Array.from({ length: SLOTS }, (_, index) => ({
     </header>
 
     <!-- O cartão sobe sobre a faixa: o que a pessoa ganha ao entrar. -->
-    <figure class="relative -mt-10 rounded-(--radius-card) bg-default shadow-(--lagoa-shadow-card)">
+    <figure class="card-raised relative -mt-10">
       <ol class="grid grid-cols-5 gap-3 px-5 py-4" aria-hidden="true">
         <StampSlot
           v-for="slot in slots"

@@ -15,7 +15,7 @@ const emit = defineEmits<Emits>()
 </script>
 
 <template>
-  <div class="flex flex-col gap-5 rounded-(--radius-card) bg-default p-5 shadow-(--lagoa-shadow-card)" role="alert">
+  <div class="card flex flex-col gap-5 p-5" role="alert">
     <div class="flex items-start gap-3">
       <UIcon
         :name="notice.icon"
@@ -29,16 +29,16 @@ const emit = defineEmits<Emits>()
       </div>
     </div>
     <div class="flex flex-col gap-3">
-      <UButton v-if="notice.recovery === 'wallet'" to="/carteira" size="xl" block :label="$t('checkIn.toWallet')" />
+      <ActionButton v-if="notice.recovery === 'wallet'" role="primary" to="/carteira" block :label="$t('checkIn.toWallet')" />
       <template v-else>
-        <UButton
-          size="xl"
+        <ActionButton
+          role="primary"
           block
           :icon="notice.recovery === 'retry' ? 'i-ph-arrow-counter-clockwise' : 'i-ph-qr-code'"
           :label="notice.recovery === 'retry' ? $t('common.retry') : $t('checkIn.scanAgain')"
           @click="emit('recover')"
         />
-        <UButton variant="outline" color="neutral" size="xl" block icon="i-ph-keyboard" :label="$t('checkIn.typeVisitCode')" @click="emit('typeCode')" />
+        <ActionButton role="secondary" size="xl" block icon="i-ph-keyboard" :label="$t('checkIn.typeVisitCode')" @click="emit('typeCode')" />
       </template>
     </div>
   </div>
