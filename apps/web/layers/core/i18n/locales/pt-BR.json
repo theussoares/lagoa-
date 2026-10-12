@@ -229,8 +229,8 @@
       "removeTitle": "Tirar o aniversário?",
       "removeDescription": "A visita deixa de valer o dobro no seu dia. Para cadastrar outra data, espere até {date}.",
       "removeDescriptionFree": "A visita deixa de valer o dobro no seu dia. Você pode cadastrar de novo quando quiser.",
-      "removeConfirm": "Tirar a data",
-      "removeCancel": "Manter",
+      "removeConfirm": "Tirar aniversário",
+      "removeCancel": "Manter a data",
       "day": "Dia",
       "month": "Mês",
       "placeholderDay": "Escolha",
@@ -249,7 +249,7 @@
     "eraseButton": "Apagar minha conta",
     "eraseConfirmTitle": "Apagar a conta para sempre?",
     "eraseConfirmDescription": "Você perde os carimbos e os prêmios ainda não resgatados. Para voltar, precisa criar uma conta nova.",
-    "eraseConfirm": "Sim, apagar tudo",
+    "eraseConfirm": "Apagar minha conta",
     "eraseCancel": "Manter minha conta",
     "erased": "Conta apagada."
   },
@@ -554,7 +554,7 @@
   "rewards": {
     "title": "Prêmios",
     "readyTitle": "Para resgatar",
-    "redeem": "Mostrar código no balcão",
+    "redeem": "Resgatar prêmio",
     "noneReady": "Nenhum prêmio liberado agora.",
     "closest": "O mais perto é {shop}: falta {units} para {reward}. | O mais perto é {shop}: faltam {units} para {reward}.",
     "upcomingTitle": "A caminho",
@@ -588,7 +588,7 @@
     },
     "freshEmpty": "Você já tem cartão em todas as lojas da rede. Quando uma loja nova entrar, ela aparece aqui.",
     "knownTitle": "Já na sua carteira",
-    "openWallet": "Abrir a carteira",
+    "openWallet": "Ver carteira",
     "rule": "{units} = {reward}",
     "earn": {
       "visit": "{units} por visita",
@@ -610,8 +610,8 @@
     "cameraScanning": "Procurando o QR…",
     "submitting": "Registrando sua visita…",
     "useCamera": "Usar a câmera",
-    "typeVisitCode": "Tenho o código da visita",
-    "typeShopCode": "Tenho o código do cartaz da loja",
+    "typeVisitCode": "Digitar o código da visita",
+    "typeShopCode": "Digitar o código do cartaz da loja",
     "visitCodeLabel": "Código da visita",
     "shopCodeLabel": "Código da loja",
     "submitClaim": "Ganhar",
@@ -660,7 +660,7 @@
       "leadNoShop": "A loja já está na sua carteira.",
       "welcome": "Seus {units} de boas-vindas entram na primeira compra.",
       "next": "Na hora de pagar, peça o QR da visita no caixa.",
-      "toWallet": "Ver na carteira",
+      "toWallet": "Ver carteira",
       "announce": "{title}. {lead}"
     }
   },

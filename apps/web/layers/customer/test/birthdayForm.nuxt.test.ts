@@ -14,7 +14,7 @@ const LABELS: BirthdayFormLabels = {
   partial: 'Escolha o dia e o mês',
   locked: null,
   save: 'Salvar',
-  remove: 'Tirar a data',
+  remove: 'Tirar aniversário',
   removeTitle: 'Tirar?',
   removeDescription: 'Descrição',
   removeConfirm: 'Tirar',
@@ -48,6 +48,6 @@ describe('BirthdayForm accessibility', () => {
     expect(form.get('#birthday-notice').text()).toContain('2 de out.')
     expect(form.get('fieldset').attributes('aria-describedby')).toBe('birthday-help birthday-notice')
     expect(form.text()).not.toContain('Salvar')
-    expect(form.text()).toContain('Tirar a data')
+    expect(form.text()).toContain('Tirar aniversário')
   })
 })
