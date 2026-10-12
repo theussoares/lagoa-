@@ -12,7 +12,7 @@ import { allowing, type ApiClient } from './http/ApiClient'
 const MS_PER_MINUTE = 60_000
 
 /**
- * Cliente: celular + SMS (Supabase, no servidor do Nuxt) e depois a sessão da API. Número sem cadastro não é criado
+ * Cliente: celular + código no WhatsApp (Supabase, no servidor do Nuxt) e depois a sessão da API. Número sem cadastro não é criado
  * sozinho: o app pede o nome antes (`registerCustomer`); o celular vem do token.
  */
 export class HttpAuthService implements AuthService {

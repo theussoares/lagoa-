@@ -38,7 +38,7 @@ export function safeReturnPath(value: unknown): string {
 
 /**
  * Para onde voltar depois do login: o `?para=` mais, só se for fragmento de visita válido e o destino for o
- * check-in, o `#visita=` (o QR da visita sobrevive ao cadastro por SMS). Qualquer outro fragmento é descartado.
+ * check-in, o `#visita=` (o QR da visita sobrevive ao cadastro por código). Qualquer outro fragmento é descartado.
  */
 export function returnLocation(para: unknown, hash: string): string {
   const [path = HOME_PATH] = safeReturnPath(para).split('#')

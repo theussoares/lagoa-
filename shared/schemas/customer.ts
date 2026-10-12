@@ -34,7 +34,7 @@ export const ConsentUpdateSchema = z.object({ granted: z.boolean() })
 export type ConsentUpdate = z.infer<typeof ConsentUpdateSchema>
 
 /**
- * Cadastro do cliente. O celular de quem entrou por SMS já vem confirmado no token; `phone` só vale no login por e-mail.
+ * Cadastro do cliente. O celular de quem entrou por código já vem confirmado no token; `phone` só vale no login por e-mail.
  * `firstName` é o nome pelo qual a pessoa quer ser chamada (app e painel); `email` é opcional e só identifica a conta.
  */
 export const CustomerRegistrationSchema = z.object({

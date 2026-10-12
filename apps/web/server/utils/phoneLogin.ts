@@ -8,7 +8,7 @@ const BRAZIL_COUNTRY_CODE = '+55'
 
 const toE164 = (phone: PhoneNumber): string => `${BRAZIL_COUNTRY_CODE}${phone}`
 
-/** Login por celular + SMS no Supabase Auth. Só o servidor fala com ele: o navegador nunca vê o token. Uma instância por requisição (o cliente guarda sessão). */
+/** Login por celular + código no Supabase Auth. channel: 'sms' é o canal do Supabase; a entrega real é feita pelo nosso hook da API via WhatsApp. Só o servidor fala com ele: o navegador nunca vê o token. Uma instância por requisição (o cliente guarda sessão). */
 export class PhoneLogin {
   constructor(private readonly supabase: SupabaseClient) {}
 

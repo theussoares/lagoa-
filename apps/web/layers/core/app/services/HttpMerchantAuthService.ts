@@ -11,7 +11,7 @@ import { allowing, type ApiClient } from './http/ApiClient'
 const MS_PER_MINUTE = 60_000
 
 /**
- * Lojista: o mesmo celular + SMS do cliente (Supabase, no servidor do Nuxt). Depois do código, `GET /merchant/session`
+ * Lojista: o mesmo celular + código no WhatsApp do cliente (Supabase, no servidor do Nuxt). Depois do código, `GET /merchant/session`
  * diz se já existe loja (`session`) ou se falta criar o clube (`signUp`); o cookie da sessão identifica o dono.
  */
 export class HttpMerchantAuthService implements MerchantAuthService {

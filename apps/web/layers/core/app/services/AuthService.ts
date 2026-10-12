@@ -8,7 +8,7 @@ export type SignInError = ErrorOf<'invalidLoginCode' | 'loginCodeExpired'> | Tra
 export type RegisterError = ErrorOf<'emailAlreadyUsed'> | TransportError
 export type MerchantSignInError = SignInError | ErrorOf<'shopSuspended'>
 
-/** Login do cliente por celular + código de 6 dígitos (SMS). */
+/** Login do cliente por celular + código de 6 dígitos (WhatsApp). */
 export interface AuthService {
   requestLoginCode(phone: PhoneNumber): Promise<Result<LoginChallenge, TransportError>>
   /** Confirma o código. Quem já tem conta entra; quem é novo recebe `signUp` e termina em `registerCustomer`. */

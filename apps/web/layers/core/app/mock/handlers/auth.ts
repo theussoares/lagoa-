@@ -11,7 +11,7 @@ import { ensureCustomer, findShop } from './queries'
 
 type CodeError = ErrorOf<'invalidLoginCode' | 'loginCodeExpired'>
 
-/** No mock o "SMS" não sai: o código é sempre o de teste configurado no backend. */
+/** No mock o WhatsApp não sai: o código é sempre o de teste configurado no backend. */
 export function requestLoginCode(ctx: MockContext, phone: PhoneNumber, code: LoginCode): LoginChallenge {
   const expiresAt = toIso(addMinutes(ctx.now, LOGIN_CODE_TTL_MINUTES))
   ctx.state.loginChallenges = [
