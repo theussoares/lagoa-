@@ -23,7 +23,7 @@ const eraseLabels = computed(() => ({
       <h2 id="data-title" class="letreiro text-base text-toned">{{ t('profile.dataTitle') }}</h2>
       <div class="flex flex-col gap-3 rounded-(--radius-card) bg-default p-4 shadow-(--lagoa-shadow-card)">
         <p class="text-base text-muted">{{ t('profile.dataHelp') }}</p>
-        <UButton variant="outline" color="neutral" size="lg" block icon="i-ph-download-simple" :loading="downloading" :label="t('profile.dataDownload')" @click="emit('download')" />
+        <ActionButton role="secondary" block icon="i-ph-download-simple" :loading="downloading" :label="t('profile.dataDownload')" @click="emit('download')" />
       </div>
     </section>
 

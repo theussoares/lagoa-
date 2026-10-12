@@ -51,11 +51,11 @@ const screen = useProfileScreen()
         </div>
       </section>
 
-      <UButton to="/ranking" variant="outline" color="neutral" size="lg" block icon="i-ph-trophy" :label="t('ranking.link')" />
+      <ProfileRankingLink />
 
       <ProfilePrivacySection :downloading="screen.exporter.pending" :erasing="screen.erasing" @download="screen.downloadData" @erase="screen.eraseAccount" />
 
-      <UButton variant="outline" color="neutral" size="lg" block icon="i-ph-sign-out" :label="t('profile.signOut')" @click="screen.signOut" />
+      <ActionButton role="quiet" block icon="i-ph-sign-out" :label="t('profile.signOut')" @click="screen.signOut" />
     </div>
   </div>
 </template>

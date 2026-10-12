@@ -51,3 +51,12 @@ describe('BirthdayForm accessibility', () => {
     expect(form.text()).toContain('Tirar aniversário')
   })
 })
+
+describe('BirthdayForm action roles', () => {
+  it('saves as the form primary and removes as an outlined danger action', async () => {
+    const form = await mountForm({ birthday: '03-15' })
+    const buttons = form.findAll('button')
+    expect(buttons.find((b) => b.text() === 'Salvar')?.classes()).toContain('bg-primary')
+    expect(buttons.find((b) => b.text() === 'Tirar aniversário')?.classes().join(' ')).toContain('ring-error')
+  })
+})

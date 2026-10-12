@@ -98,19 +98,18 @@ function submit(): void {
       </p>
     </fieldset>
     <div class="flex flex-wrap items-center gap-3">
-      <UButton
+      <ActionButton
         v-if="labels.locked === null"
+        role="primary"
         type="submit"
         size="lg"
         :label="labels.save"
         :loading="pending === 'save'"
         :disabled="!changed || busy"
       />
-      <UButton
+      <ActionButton
         v-if="birthday !== null"
-        variant="ghost"
-        color="neutral"
-        size="lg"
+        role="danger"
         :label="labels.remove"
         :disabled="busy"
         @click="confirmingRemoval = true"
@@ -119,8 +118,8 @@ function submit(): void {
 
     <UDrawer v-model:open="confirmingRemoval" :title="labels.removeTitle" :description="labels.removeDescription">
       <template #footer>
-        <UButton color="error" size="xl" block :label="labels.removeConfirm" :loading="pending === 'remove'" @click="emit('remove')" />
-        <UButton variant="outline" color="neutral" size="xl" block :label="labels.removeCancel" :disabled="busy" @click="confirmingRemoval = false" />
+        <ActionButton role="dangerConfirm" size="xl" block :label="labels.removeConfirm" :loading="pending === 'remove'" @click="emit('remove')" />
+        <ActionButton role="secondary" size="xl" block :label="labels.removeCancel" :disabled="busy" @click="confirmingRemoval = false" />
       </template>
     </UDrawer>
   </form>
