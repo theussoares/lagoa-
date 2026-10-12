@@ -30,7 +30,6 @@ const TRANSITIONAL_PAGE_SCRIPT: readonly string[] = [
   'layers/customer/app/pages/discover.vue',
   'layers/customer/app/pages/reward-redemption.vue',
   'layers/customer/app/pages/sign-in.vue',
-  'layers/customer/app/pages/wallet.vue',
   'layers/merchant/app/pages/campaigns.vue',
   'layers/merchant/app/pages/customers.vue',
   'layers/merchant/app/pages/merchant-sign-in.vue',
