@@ -15,7 +15,7 @@ const emit = defineEmits<Emits>()
 </script>
 
 <template>
-  <div class="flex flex-col items-start gap-4 rounded-(--radius-card) bg-default p-5 shadow-(--lagoa-shadow-card)" role="alert">
+  <div class="card flex flex-col items-start gap-4 p-5" role="alert">
     <p class="flex items-start gap-3 text-highlighted">
       <UIcon :name="icon" class="mt-0.5 size-6 shrink-0 text-error" aria-hidden="true" />
       <span>{{ message }}</span>

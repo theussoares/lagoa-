@@ -14,7 +14,7 @@ const { t } = useI18n()
     <h2 id="upcoming-title" class="text-[1.375rem] leading-tight font-semibold text-highlighted [font-stretch:95%]">
       {{ t('rewards.upcomingTitle') }}
     </h2>
-    <div class="rounded-(--radius-card) bg-default px-5 py-1 shadow-(--lagoa-shadow-card)">
+    <div class="card px-5 py-1">
       <RewardProgressList :rewards="rewards" />
     </div>
   </section>

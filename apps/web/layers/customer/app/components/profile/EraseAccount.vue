@@ -10,7 +10,7 @@ const confirming = ref(false)
 </script>
 
 <template>
-  <div class="flex flex-col gap-3 rounded-(--radius-card) bg-default p-4 shadow-(--lagoa-shadow-card)">
+  <div class="card flex flex-col gap-3 p-4">
     <p class="text-base text-muted">{{ labels.help }}</p>
     <ActionButton role="danger" block icon="i-ph-trash" :label="labels.button" @click="confirming = true" />
 

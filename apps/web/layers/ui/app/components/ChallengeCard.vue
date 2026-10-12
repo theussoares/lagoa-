@@ -13,7 +13,7 @@ const titleId = useId()
 </script>
 
 <template>
-  <article :aria-labelledby="titleId" class="flex flex-col rounded-(--radius-card) bg-default shadow-(--lagoa-shadow-card)">
+  <article :aria-labelledby="titleId" class="card flex flex-col">
     <header class="flex flex-col gap-1 px-5 pt-5 pb-4">
       <h3 :id="titleId" class="text-[1.375rem] leading-tight font-semibold text-balance text-highlighted [font-stretch:95%]">
         {{ challenge.title }}

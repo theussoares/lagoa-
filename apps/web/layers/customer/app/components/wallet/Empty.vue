@@ -22,7 +22,7 @@ const slots: StampSlotModel[] = Array.from({ length: SLOTS }, (_, index) => ({
 </script>
 
 <template>
-  <div class="flex flex-col rounded-(--radius-card) bg-default shadow-(--lagoa-shadow-card)">
+  <div class="card flex flex-col">
     <ol class="grid grid-cols-5 gap-3 px-5 py-5" aria-hidden="true">
       <StampSlot v-for="slot in slots" :key="slot.number" :model="slot" icon="i-ph-storefront-bold" />
     </ol>

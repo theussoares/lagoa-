@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-4" role="status" :aria-label="$t('common.loading')">
-    <div class="flex flex-col gap-5 rounded-(--radius-card) bg-default p-5 shadow-(--lagoa-shadow-card)">
+    <div class="card flex flex-col gap-5 p-5">
       <div class="flex items-center gap-4">
         <USkeleton class="size-14 rounded-full" />
         <div class="flex flex-1 flex-col gap-2">

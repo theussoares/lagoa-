@@ -171,6 +171,14 @@ esquerda, título em letreiro, régua tracejada em cima e embaixo (não caixa ci
 
 ## Componentes
 
+### Movimento
+
+Tokens por função em `main.css`: `--lagoa-dur-fast` 120ms (feedback de toque), `--lagoa-dur-base` 200ms (mudança de estado), `--lagoa-dur-enter` 400ms (entrada de ícone/selo), `--lagoa-dur-stamp` 420ms, `--lagoa-dur-rise` 520ms (entrada de bloco), `--lagoa-dur-exit` 130ms (saída, mais curta que a entrada), `--lagoa-stagger` 50ms com teto de `--lagoa-stagger-steps` (6) passos. Duração literal em ms fora dos tokens é proibida (teste `motionTokens`). Sob `prefers-reduced-motion`, o que entra dissolve (`rise-fade`), o decorativo e o contínuo param, o carimbo fica estático. Todo `animation:` novo precisa do bloco de movimento reduzido no mesmo arquivo.
+
+### Cards
+
+Três níveis, definidos uma vez em `main.css`: `card` (leitura), `card-tap` (card inteiro que é link: pressiona em `scale` e sobe a sombra) e `card-raised` (o destaque da tela, que sobe sobre a faixa). Não repetir `rounded-(--radius-card) bg-default shadow-(--lagoa-shadow-card)` (teste `cardSurface`). Um card tem uma ação principal; se leva a algum lugar, ele todo é o link.
+
 ### Papéis de ação
 
 | Papel | Visual | Uso |

@@ -12,7 +12,7 @@ defineProps<Props>()
 <template>
   <NuxtLink
     :to="to"
-    class="rise flex h-full w-44 flex-col overflow-hidden rounded-(--radius-card) bg-default shadow-(--lagoa-shadow-card) transition-transform duration-(--lagoa-dur-fast) active:scale-[0.98]"
+    class="card-tap rise flex h-full w-44 flex-col overflow-hidden"
   >
     <span class="relative block h-24 bg-(--color-tinta-100) dark:bg-(--color-tinta-900)" aria-hidden="true">
       <img v-if="shop.showcase.image" :src="shop.showcase.image" alt="" class="absolute inset-0 size-full object-cover" />

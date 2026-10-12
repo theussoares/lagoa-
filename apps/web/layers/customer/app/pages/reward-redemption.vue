@@ -29,7 +29,7 @@ const screen = useRewardRedemptionScreen()
 
       <div
         v-else-if="!screen.ticket || !screen.card"
-        class="flex flex-col gap-5 rounded-(--radius-card) bg-default p-5 shadow-(--lagoa-shadow-card)"
+        class="card flex flex-col gap-5 p-5"
         :aria-label="t('common.loading')"
         role="status"
       >

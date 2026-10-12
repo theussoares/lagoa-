@@ -33,7 +33,7 @@ const screen = useProfileScreen()
 
       <section v-if="screen.state.status === 'success'" aria-labelledby="birthday-title" class="flex flex-col gap-3">
         <h2 id="birthday-title" class="letreiro text-base text-toned">{{ t('profile.birthday.title') }}</h2>
-        <div class="rounded-(--radius-card) bg-default p-4 shadow-(--lagoa-shadow-card)">
+        <div class="card p-4">
           <ProfileBirthdayForm
             :birthday="screen.state.value.birthday"
             :labels="screen.birthday.labels"
@@ -46,7 +46,7 @@ const screen = useProfileScreen()
 
       <section aria-labelledby="appearance-title" class="flex flex-col gap-3">
         <h2 id="appearance-title" class="letreiro text-base text-toned">{{ t('profile.appearanceTitle') }}</h2>
-        <div class="rounded-(--radius-card) bg-default p-4 shadow-(--lagoa-shadow-card)">
+        <div class="card p-4">
           <ThemeChoice v-model="screen.theme" :labels="screen.themeLabels" />
         </div>
       </section>

@@ -51,7 +51,7 @@ const screen = useWalletScreen()
         <h2 id="ledger-title" class="type-h2">
           {{ t('wallet.ledgerTitle') }}
         </h2>
-        <div class="rounded-(--radius-card) bg-default px-5 py-1 shadow-(--lagoa-shadow-card)">
+        <div class="card px-5 py-1">
           <USkeleton v-if="screen.activityState.status === 'loading'" class="my-3 h-24" />
           <LedgerList v-else-if="screen.ledger.length > 0" :entries="screen.ledger" />
           <p v-else class="py-4 text-muted">{{ t('wallet.ledgerEmpty') }}</p>

@@ -15,7 +15,7 @@ const emit = defineEmits<Emits>()
 </script>
 
 <template>
-  <div class="flex flex-col gap-5 rounded-(--radius-card) bg-default p-5 shadow-(--lagoa-shadow-card)" role="alert">
+  <div class="card flex flex-col gap-5 p-5" role="alert">
     <div class="flex items-start gap-3">
       <UIcon
         :name="notice.icon"

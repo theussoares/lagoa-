@@ -22,7 +22,7 @@ const { t } = useI18n()
     <h2 id="history-title" class="text-[1.375rem] leading-tight font-semibold text-highlighted [font-stretch:95%]">
       {{ t('rewards.historyTitle') }}
     </h2>
-    <div class="rounded-(--radius-card) bg-default px-5 py-1 shadow-(--lagoa-shadow-card)">
+    <div class="card px-5 py-1">
       <USkeleton v-if="status === 'loading'" class="my-3 h-16" />
       <div v-else-if="status === 'error'" class="flex flex-wrap items-center justify-between gap-3 py-3">
         <p class="flex items-start gap-1.5 text-toned">

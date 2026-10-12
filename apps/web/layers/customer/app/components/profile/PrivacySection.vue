@@ -21,7 +21,7 @@ const eraseLabels = computed(() => ({
   <div class="flex flex-col gap-6">
     <section aria-labelledby="data-title" class="flex flex-col gap-3">
       <h2 id="data-title" class="letreiro text-base text-toned">{{ t('profile.dataTitle') }}</h2>
-      <div class="flex flex-col gap-3 rounded-(--radius-card) bg-default p-4 shadow-(--lagoa-shadow-card)">
+      <div class="card flex flex-col gap-3 p-4">
         <p class="text-base text-muted">{{ t('profile.dataHelp') }}</p>
         <ActionButton role="secondary" block icon="i-ph-download-simple" :loading="downloading" :label="t('profile.dataDownload')" @click="emit('download')" />
       </div>
