@@ -6,6 +6,7 @@ definePageMeta({ path: '/premios', layout: 'customer', middleware: 'customer-aut
 const { t } = useI18n()
 const translate = useTranslate()
 useHead({ title: () => `${t('rewards.title')} · ${t('app.name')}` })
+const cityHeaderImage = useCityHeaderImage()
 
 const { signOut } = useCustomerSession()
 const { state: cardsState, reload: reloadCards } = useWalletCards()
@@ -36,7 +37,7 @@ watch(unauthorized, (value) => {
 
 <template>
   <div class="flex flex-col gap-8">
-    <PageTitle :title="t('rewards.title')" />
+    <ScreenHeader :title="t('rewards.title')" :image="cityHeaderImage" />
 
     <div v-if="cardsState.status === 'loading'" class="flex flex-col gap-4" role="status" :aria-label="t('common.loading')">
       <div class="flex flex-col gap-5 rounded-(--radius-card) bg-default p-5 shadow-(--lagoa-shadow-card)">

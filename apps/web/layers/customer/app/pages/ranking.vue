@@ -7,6 +7,7 @@ const { t } = useI18n()
 const translate = useTranslate()
 const toast = useToast()
 useHead({ title: () => `${t('ranking.title')} · ${t('app.name')}` })
+const cityHeaderImage = useCityHeaderImage()
 
 const { ranking: rankingService } = useCustomerServices()
 const { signOut } = useCustomerSession()
@@ -30,7 +31,11 @@ async function changeConsent(update: Parameters<typeof rankingService.setConsent
 
 <template>
   <div class="flex flex-col gap-6">
-    <PageTitle :title="t('ranking.title')" :lead="state.status === 'success' ? t('ranking.lead', { month: monthTitle(state.value.month) }) : undefined" />
+    <ScreenHeader
+      :title="t('ranking.title')"
+      :lead="state.status === 'success' ? t('ranking.lead', { month: monthTitle(state.value.month) }) : undefined"
+      :image="cityHeaderImage"
+    />
 
     <USkeleton v-if="state.status === 'loading'" class="h-56 rounded-(--radius-card)" />
     <WalletProblem v-else-if="state.status === 'error'" :message="t(`errors.${state.error.code}`)" :action="t('common.retry')" @retry="reload" />

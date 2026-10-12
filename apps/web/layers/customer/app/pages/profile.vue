@@ -8,6 +8,7 @@ definePageMeta({ path: '/perfil', layout: 'customer', middleware: 'customer-auth
 const { t } = useI18n()
 const toast = useToast()
 useHead({ title: () => `${t('profile.title')} · ${t('app.name')}` })
+const cityHeaderImage = useCityHeaderImage()
 
 const { profile, account } = useCustomerServices()
 const { signOut } = useCustomerSession()
@@ -92,64 +93,68 @@ async function saveBirthday(birthday: Birthday | null, action: BirthdayAction): 
 </script>
 
 <template>
-  <div class="flex flex-col gap-6">
-    <PageTitle :title="t('profile.title')" />
+  <div>
+    <ScreenHeader :title="t('profile.title')" :image="cityHeaderImage" />
 
-    <USkeleton v-if="state.status === 'loading'" class="h-56 rounded-(--radius-card)" />
+    <div class="flex flex-col gap-6">
+      <div class="relative -mt-10">
+        <USkeleton v-if="state.status === 'loading'" class="h-56 rounded-(--radius-card)" />
 
-    <WalletProblem
-      v-else-if="state.status === 'error'"
-      :message="t(`errors.${state.error.code}`)"
-      :action="t('common.retry')"
-      @retry="reload"
-    />
-
-    <dl v-else class="rounded-(--radius-card) bg-default px-5 shadow-(--lagoa-shadow-card)">
-      <div class="flex flex-col gap-1 border-b border-(--lagoa-rule) py-4">
-        <dt class="text-base text-muted">{{ t('profile.phoneLabel') }}</dt>
-        <dd class="tabular text-lg font-semibold text-highlighted">{{ state.value.maskedPhone }}</dd>
-      </div>
-      <div class="py-4">
-        <dt class="sr-only">{{ t('profile.consentLabel') }}</dt>
-        <dd>
-          <USwitch
-            :model-value="state.value.consent.notifications"
-            size="lg"
-            :loading="savingConsent"
-            :disabled="savingConsent"
-            :label="t('profile.consentLabel')"
-            :description="state.value.consent.notifications ? t('profile.consentOn') : t('profile.consentOff')"
-            :ui="{ root: 'items-start gap-3', label: 'text-base font-medium text-highlighted', description: 'text-base text-muted' }"
-            @update:model-value="onConsentChange"
-          />
-        </dd>
-      </div>
-    </dl>
-
-    <section v-if="state.status === 'success'" aria-labelledby="birthday-title" class="flex flex-col gap-3">
-      <h2 id="birthday-title" class="letreiro text-base text-toned">{{ t('profile.birthday.title') }}</h2>
-      <div class="rounded-(--radius-card) bg-default p-4 shadow-(--lagoa-shadow-card)">
-        <ProfileBirthdayForm
-          :birthday="state.value.birthday"
-          :labels="birthdayLabels"
-          :pending="birthdayPending"
-          @save="saveBirthday($event, 'save')"
-          @remove="saveBirthday(null, 'remove')"
+        <WalletProblem
+          v-else-if="state.status === 'error'"
+          :message="t(`errors.${state.error.code}`)"
+          :action="t('common.retry')"
+          @retry="reload"
         />
+
+        <dl v-else class="rounded-(--radius-card) bg-default px-5 shadow-(--lagoa-shadow-card)">
+          <div class="flex flex-col gap-1 border-b border-(--lagoa-rule) py-4">
+            <dt class="text-base text-muted">{{ t('profile.phoneLabel') }}</dt>
+            <dd class="tabular text-lg font-semibold text-highlighted">{{ state.value.maskedPhone }}</dd>
+          </div>
+          <div class="py-4">
+            <dt class="sr-only">{{ t('profile.consentLabel') }}</dt>
+            <dd>
+              <USwitch
+                :model-value="state.value.consent.notifications"
+                size="lg"
+                :loading="savingConsent"
+                :disabled="savingConsent"
+                :label="t('profile.consentLabel')"
+                :description="state.value.consent.notifications ? t('profile.consentOn') : t('profile.consentOff')"
+                :ui="{ root: 'items-start gap-3', label: 'text-base font-medium text-highlighted', description: 'text-base text-muted' }"
+                @update:model-value="onConsentChange"
+              />
+            </dd>
+          </div>
+        </dl>
       </div>
-    </section>
 
-    <section aria-labelledby="appearance-title" class="flex flex-col gap-3">
-      <h2 id="appearance-title" class="letreiro text-base text-toned">{{ t('profile.appearanceTitle') }}</h2>
-      <div class="rounded-(--radius-card) bg-default p-4 shadow-(--lagoa-shadow-card)">
-        <ThemeChoice v-model="theme" :labels="themeLabels" />
-      </div>
-    </section>
+      <section v-if="state.status === 'success'" aria-labelledby="birthday-title" class="flex flex-col gap-3">
+        <h2 id="birthday-title" class="letreiro text-base text-toned">{{ t('profile.birthday.title') }}</h2>
+        <div class="rounded-(--radius-card) bg-default p-4 shadow-(--lagoa-shadow-card)">
+          <ProfileBirthdayForm
+            :birthday="state.value.birthday"
+            :labels="birthdayLabels"
+            :pending="birthdayPending"
+            @save="saveBirthday($event, 'save')"
+            @remove="saveBirthday(null, 'remove')"
+          />
+        </div>
+      </section>
 
-    <UButton to="/ranking" variant="outline" color="neutral" size="lg" block icon="i-ph-trophy" :label="t('ranking.link')" />
+      <section aria-labelledby="appearance-title" class="flex flex-col gap-3">
+        <h2 id="appearance-title" class="letreiro text-base text-toned">{{ t('profile.appearanceTitle') }}</h2>
+        <div class="rounded-(--radius-card) bg-default p-4 shadow-(--lagoa-shadow-card)">
+          <ThemeChoice v-model="theme" :labels="themeLabels" />
+        </div>
+      </section>
 
-    <ProfilePrivacySection :downloading="exporter.pending.value" :erasing="erasing" @download="downloadData" @erase="eraseAccount" />
+      <UButton to="/ranking" variant="outline" color="neutral" size="lg" block icon="i-ph-trophy" :label="t('ranking.link')" />
 
-    <UButton variant="outline" color="neutral" size="lg" block icon="i-ph-sign-out" :label="t('profile.signOut')" @click="signOut" />
+      <ProfilePrivacySection :downloading="exporter.pending.value" :erasing="erasing" @download="downloadData" @erase="eraseAccount" />
+
+      <UButton variant="outline" color="neutral" size="lg" block icon="i-ph-sign-out" :label="t('profile.signOut')" @click="signOut" />
+    </div>
   </div>
 </template>
