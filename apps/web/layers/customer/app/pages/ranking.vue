@@ -35,6 +35,7 @@ async function changeConsent(update: Parameters<typeof rankingService.setConsent
       :title="t('ranking.title')"
       :lead="state.status === 'success' ? t('ranking.lead', { month: monthTitle(state.value.month) }) : undefined"
       :image="cityHeaderImage"
+      :overlap="false"
     />
 
     <USkeleton v-if="state.status === 'loading'" class="h-56 rounded-(--radius-card)" />

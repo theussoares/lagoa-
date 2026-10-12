@@ -112,7 +112,7 @@
 
   --lagoa-desk: #FFFFFF;
   --lagoa-header: var(--color-tinta-900);
-  --lagoa-scrim: linear-gradient(180deg, rgb(11 53 56 / 0.55), rgb(11 53 56 / 0.82));
+  --lagoa-scrim: linear-gradient(180deg, rgb(11 53 56 / 0.7), rgb(11 53 56 / 0.85));
   --lagoa-rule: var(--color-mesa-200);
   --lagoa-slot: var(--color-mesa-500);
   --lagoa-shadow-card: 0 0 0 1px rgb(11 53 56 / 0.09), 0 1px 0 rgb(11 53 56 / 0.04), 0 14px 32px -18px rgb(11 53 56 / 0.2);

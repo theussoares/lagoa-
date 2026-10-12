@@ -37,4 +37,19 @@ describe('ScreenHeader', () => {
     })
     expect(wrapper.find('a[aria-label="Perfil"]').exists()).toBe(true)
   })
+
+  it('keeps room for an overlapping card by default and drops it when told not to overlap', async () => {
+    const overlapping = await mountSuspended(ScreenHeader, { props: { title: 'Perfil' } })
+    expect(overlapping.get('header').classes()).toContain('pb-16')
+    const flat = await mountSuspended(ScreenHeader, { props: { title: 'Prêmios', overlap: false } })
+    expect(flat.get('header').classes()).not.toContain('pb-16')
+    expect(flat.get('header').classes()).toContain('pb-6')
+  })
+
+  it('writes the lead in full white so it stays readable over a bright photo', async () => {
+    const wrapper = await mountSuspended(ScreenHeader, { props: { title: 'Ranking', lead: 'Outubro', image: '/example/city.svg' } })
+    const lead = wrapper.findAll('p').find((node) => node.text() === 'Outubro')
+    expect(lead?.classes()).toContain('text-white')
+    expect(lead?.classes()).not.toContain('text-white/90')
+  })
 })

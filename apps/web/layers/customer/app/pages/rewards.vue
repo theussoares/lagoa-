@@ -37,7 +37,7 @@ watch(unauthorized, (value) => {
 
 <template>
   <div class="flex flex-col gap-8">
-    <ScreenHeader :title="t('rewards.title')" :image="cityHeaderImage" />
+    <ScreenHeader :title="t('rewards.title')" :image="cityHeaderImage" :overlap="false" />
 
     <div v-if="cardsState.status === 'loading'" class="flex flex-col gap-4" role="status" :aria-label="t('common.loading')">
       <div class="flex flex-col gap-5 rounded-(--radius-card) bg-default p-5 shadow-(--lagoa-shadow-card)">

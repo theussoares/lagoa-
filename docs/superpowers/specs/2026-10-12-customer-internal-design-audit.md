@@ -9,7 +9,7 @@ Leitura de código contra o MASTER e o checklist da task 1. Nada foi corrigido a
 | Varredura | Resultado |
 | --- | --- |
 | Hex solto em `layers/customer/app` e `layers/ui/app/components` | Nenhuma ocorrência |
-| `text-[...]` fora da escala | 8 usos, todos de `1.375rem` (títulos de seção/aviso e posição do ranking) e 3 de `1.75rem`/`2.25rem` só no `sign-in/Hero` (fora do escopo). `1.375rem` repete em 5 lugares: candidato a token |
+| `text-[...rem]` fora da escala (clientes + `layers/ui`) | 30 usos, 11 tamanhos: `0.9375rem` ×11 (InlineStatus, PanelRefreshAction, CounterKeypad, SpineNav, FoldModule, RedemptionStub, PhoneDisplay), `1.375rem` ×10 (ranking/List, check-in/Notice, wallet/Empty, rewards ×3, RewardCoupon, StampCard, ChallengeCard, RedemptionTicket), `1.75rem` ×4, `2.25rem` ×2 (sign-in/Hero, ScreenHeader), `1.25rem` ×2, `1.0625rem` ×2, e um de cada `1.5rem`, `2rem`, `2.75rem`, `3.5rem`, `4rem` |
 | Ícones/skeletons `size-4..7` | Só decorativos (`aria-hidden`) e skeletons; nenhum alvo de toque pequeno encontrado |
 | Linhas de `<script>` por página | profile 91, wallet 64, sign-in 63, discover 51, reward-redemption 47, rewards 34, ranking 28, invite 5, check-in 5 (limite do CLAUDE.md: 30) |
 | Cabeçalho | `ScreenHeader` só em Carteira (sem foto) e Descobrir (com foto). `PageTitle` liso em Prêmios, Ranking, Perfil, Resgate, Check-in e passos Ganhou/Entrou |
@@ -29,7 +29,7 @@ Leitura de código contra o MASTER e o checklist da task 1. Nada foi corrigido a
 | 9 | Check-in | `PageTitle` liso; passos Ganhou/Entrou (`EarnedStep`/`JoinedStep`) usam `PageTitle focusable`: é o momento de maior emoção do app e tem o visual mais pobre | alto | 3 |
 | 10 | Perfil | Página de 91 linhas de script, acima do limite; lógica deveria estar em `useProfileScreen` | médio | 4 |
 | 11 | Carteira, Descobrir, Resgate, Prêmios | Scripts acima de 30 linhas (64, 51, 47, 34) | médio | 4 (refatoração, não cola com o visual) |
-| 12 | Ranking, Prêmios, Descobrir | `text-[1.375rem]` repetido em 5 títulos de seção: vira token/classe do design system | médio | 1 (pequeno, junto da Task 7) |
+| 12 | `layers/customer` e `layers/ui` | Tamanhos de texto soltos (`text-[…rem]`): 11 valores diferentes em 30 usos; `1.375rem` (título de seção) e `0.9375rem` (texto pequeno) repetem 10 e 11 vezes. Falta uma escala de tipo no design system | médio | 1 (pequeno, junto da Task 7) |
 | 13 | `AppTabBar` | Ação central de check-in sai da barra (`-mt-6`, `size-16`): o alvo passa de 44px, ok. `h-[4.75rem]` fixo: conferir se o conteúdo reserva a altura em 375px | médio | verificar visualmente |
 | 14 | Convite | Tela só com "abrindo…" sem estado de erro visível na página (depende de `useInviteScreen`) | médio | 4 |
 | 15 | Todas | Estados vazio/erro existem na Carteira (`Empty`, `Problem`); Prêmios, Ranking e Perfil precisam ser conferidos tela a tela com sessão | médio | 3–4 |
