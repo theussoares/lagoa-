@@ -37,12 +37,19 @@ Direção completa: `.impeccable/surfaces/layers-customer.md`.
 
 ## Cabeçalho das telas internas
 
-Carteira, Descobrir, Prêmios, Perfil e Ranking abrem com `ScreenHeader` + foto da
-cidade (`useCityHeaderImage()`). O primeiro elemento só sobe sobre a faixa
+Carteira, Descobrir, Prêmios, Perfil, Ranking, Resgate, Check-in e os passos
+Carimbo ganho e Entrou no clube abrem com `ScreenHeader` + foto da cidade
+(`useCityHeaderImage()`; nos passos a página passa a foto por prop). O primeiro elemento só sobe sobre a faixa
 (`relative -mt-10`) quando é **um card único** (Carteira: `CardStack`; Descobrir:
 `HeroCard`; Perfil: card de telefone e avisos). Quando a tela abre com título de
 seção ou lista, o conteúdo começa abaixo da faixa: texto escuro nunca fica sobre
 a faixa escura.
+
+Nos passos que trocam de etapa (Ganhou, Entrou) o `ScreenHeader` é `focusable` e
+o foco vai para o `h1`. Sem cartão para subir (`card: null`) o cabeçalho usa
+`overlap=false`. O carimbo grande do Ganhou usa o tom `light` do `StampImpression`
+(tinta branca) porque a tinta `primary` some sobre a foto escura. O botão voltar
+do Resgate é ícone de 44px no slot `actions`, com `aria-label`.
 
 ## Tipografia aqui
 
