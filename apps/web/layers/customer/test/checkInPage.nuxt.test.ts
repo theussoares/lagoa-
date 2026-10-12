@@ -78,6 +78,11 @@ afterEach(() => {
 })
 
 describe('check-in page: typed code', () => {
+  it('shows exactly one h1 while scanning', async () => {
+    const page = await mountCheckIn()
+    expect(page.findAll('h1')).toHaveLength(1)
+  })
+
   it('shows the camera screen first and offers to type the visit code', async () => {
     const page = await mountCheckIn()
     expect(visibleText(page)).toContain(t('checkIn.leadScan'))

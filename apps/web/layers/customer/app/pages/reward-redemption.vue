@@ -9,6 +9,7 @@ const translate = useTranslate()
 const route = useRoute()
 const router = useRouter()
 useHead({ title: () => `${t('redemption.pageTitle')} · ${t('app.name')}` })
+const cityHeaderImage = useCityHeaderImage()
 
 const { signOut } = useCustomerSession()
 const { state, remaining, request } = useRewardRedemption(String(route.params.cardId))
@@ -48,64 +49,68 @@ watch(state, (current) => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-6">
-    <div class="-mb-3 flex flex-col items-start">
-      <UButton :to="back.to" variant="ghost" color="neutral" icon="i-ph-arrow-left" :label="back.label" class="-ml-2.5" />
-    </div>
-    <PageTitle :title="title" />
+  <div>
+    <ScreenHeader :title="title" :image="cityHeaderImage">
+      <template #actions>
+        <RewardRedemptionBackLink :to="back.to" :label="back.label" />
+      </template>
+    </ScreenHeader>
 
-    <p class="sr-only" aria-live="polite">{{ announcement }}</p>
+    <!-- Erro, esqueleto e bilhete são cards únicos: o primeiro sobe sobre a faixa. -->
+    <div class="relative -mt-10 flex flex-col gap-6">
+      <p class="sr-only" aria-live="polite">{{ announcement }}</p>
 
-    <WalletProblem
-      v-if="state.status === 'error'"
-      :message="errorText"
-      :action="canRetry ? t('common.retry') : t('redemption.backToWallet')"
-      :icon="canRetry ? undefined : 'i-ph-warning-circle'"
-      :action-icon="canRetry ? undefined : 'i-ph-arrow-left'"
-      @retry="canRetry ? request() : navigateTo('/carteira')"
-    />
+      <WalletProblem
+        v-if="state.status === 'error'"
+        :message="errorText"
+        :action="canRetry ? t('common.retry') : t('redemption.backToWallet')"
+        :icon="canRetry ? undefined : 'i-ph-warning-circle'"
+        :action-icon="canRetry ? undefined : 'i-ph-arrow-left'"
+        @retry="canRetry ? request() : navigateTo('/carteira')"
+      />
 
-    <div
-      v-else-if="!ticket || !card"
-      class="flex flex-col gap-5 rounded-(--radius-card) bg-default p-5 shadow-(--lagoa-shadow-card)"
-      :aria-label="t('common.loading')"
-      role="status"
-    >
-      <div class="flex items-center gap-4">
-        <USkeleton class="size-12 rounded-full" />
-        <div class="flex flex-1 flex-col gap-2">
-          <USkeleton class="h-4 w-1/3" />
-          <USkeleton class="h-6 w-2/3" />
+      <div
+        v-else-if="!ticket || !card"
+        class="flex flex-col gap-5 rounded-(--radius-card) bg-default p-5 shadow-(--lagoa-shadow-card)"
+        :aria-label="t('common.loading')"
+        role="status"
+      >
+        <div class="flex items-center gap-4">
+          <USkeleton class="size-12 rounded-full" />
+          <div class="flex flex-1 flex-col gap-2">
+            <USkeleton class="h-4 w-1/3" />
+            <USkeleton class="h-6 w-2/3" />
+          </div>
         </div>
+        <USkeleton class="mx-auto mt-4 h-14 w-4/5" />
+        <USkeleton class="h-1 w-full" />
       </div>
-      <USkeleton class="mx-auto mt-4 h-14 w-4/5" />
-      <USkeleton class="h-1 w-full" />
+
+      <template v-else>
+        <RedemptionTicket
+          :shop-name="card.shop.name"
+          :icon="categoryIcon(card.shop.category)"
+          :reward="redemption?.rewardTitle ?? card.rewardTitle"
+          :code-label="t('redemption.codeLabel')"
+          :state="ticket"
+        />
+
+        <div v-if="ticket.kind === 'active'" class="flex flex-col gap-3 text-pretty text-toned">
+          <p>{{ t('redemption.howTo') }}</p>
+          <p v-if="heldUntil" class="text-base text-muted">{{ heldUntil }}</p>
+        </div>
+
+        <UButton
+          v-else-if="ticket.kind === 'expired'"
+          size="xl"
+          block
+          icon="i-ph-arrow-clockwise"
+          :label="t('redemption.regenerate')"
+          @click="request"
+        />
+
+        <UButton v-else to="/carteira" size="xl" block :label="t('redemption.backToWallet')" />
+      </template>
     </div>
-
-    <template v-else>
-      <RedemptionTicket
-        :shop-name="card.shop.name"
-        :icon="categoryIcon(card.shop.category)"
-        :reward="redemption?.rewardTitle ?? card.rewardTitle"
-        :code-label="t('redemption.codeLabel')"
-        :state="ticket"
-      />
-
-      <div v-if="ticket.kind === 'active'" class="flex flex-col gap-3 text-pretty text-toned">
-        <p>{{ t('redemption.howTo') }}</p>
-        <p v-if="heldUntil" class="text-base text-muted">{{ heldUntil }}</p>
-      </div>
-
-      <UButton
-        v-else-if="ticket.kind === 'expired'"
-        size="xl"
-        block
-        icon="i-ph-arrow-clockwise"
-        :label="t('redemption.regenerate')"
-        @click="request"
-      />
-
-      <UButton v-else to="/carteira" size="xl" block :label="t('redemption.backToWallet')" />
-    </template>
   </div>
 </template>

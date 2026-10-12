@@ -76,6 +76,6 @@ describe('ScreenHeader', () => {
       slots: { actions: '<span data-test="stamp">carimbo</span>' },
     })
     expect(wrapper.get('h1').text()).toBe(title)
-    expect(wrapper.get('[data-test="stamp"]').exists()).toBe(true)
+    expect(wrapper.find('[data-test="stamp"]').exists()).toBe(true)
   })
 })
