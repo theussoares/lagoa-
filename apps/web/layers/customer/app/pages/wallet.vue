@@ -14,6 +14,7 @@ const { state: cardsState, reload: reloadCards } = useWalletCards()
 const { state: activityState } = useWalletActivity()
 const { state: profileState } = useCustomerProfile()
 const seenStamps = useSeenStamps()
+const cityHeaderImage = useCityHeaderImage()
 
 const activeChoice = ref('')
 
@@ -66,7 +67,7 @@ const ledger = computed(() => {
 
 <template>
   <div>
-    <ScreenHeader :title="greeting" :lead="t('wallet.lead')">
+    <ScreenHeader :title="greeting" :lead="t('wallet.lead')" :image="cityHeaderImage">
       <template #actions>
         <NuxtLink
           to="/perfil"
