@@ -5,7 +5,7 @@ const PEEKS = 2
 
 <template>
   <div class="flex flex-col" aria-hidden="true">
-    <div class="rounded-(--radius-card) bg-default shadow-(--lagoa-shadow-card)">
+    <div class="card">
       <div class="flex items-center gap-3 px-5 pt-5 pb-4">
         <USkeleton class="size-6 rounded-full" />
         <div class="flex flex-col gap-2">

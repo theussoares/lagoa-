@@ -65,19 +65,17 @@ useFocusTarget(() => props.focusRequest, 'code', () => focusFirstInput(field.val
     </UFormField>
 
     <div class="flex flex-col gap-3">
-      <UButton type="submit" size="xl" block :loading="typing" :label="$t(KIND_TEXT[kind].submit)" />
-      <UButton
-        variant="outline"
-        color="neutral"
+      <ActionButton role="primary" type="submit" block :loading="typing" :label="$t(KIND_TEXT[kind].submit)" />
+      <ActionButton
+        role="secondary"
         block
         icon="i-ph-keyboard"
         :label="$t(KIND_TEXT[kind].switchTo)"
         @click="emit('switchKind')"
       />
-      <UButton
+      <ActionButton
         v-if="cameraIssue !== 'unavailable'"
-        variant="ghost"
-        color="neutral"
+        role="quiet"
         block
         icon="i-ph-qr-code"
         :label="$t('checkIn.useCamera')"

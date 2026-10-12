@@ -14,7 +14,7 @@ const panelId = useId()
 
 <template>
   <!-- Folha dobrada da caderneta: fechada mostra só o resumo; os campos continuam no formulário. -->
-  <section :aria-labelledby="headingId" class="rounded-(--radius-card) bg-default shadow-(--lagoa-shadow-card)">
+  <section :aria-labelledby="headingId" class="card">
     <h2 :id="headingId" class="m-0">
       <button
         type="button"

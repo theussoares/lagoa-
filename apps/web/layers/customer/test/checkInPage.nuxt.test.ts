@@ -78,6 +78,11 @@ afterEach(() => {
 })
 
 describe('check-in page: typed code', () => {
+  it('shows exactly one h1 while scanning', async () => {
+    const page = await mountCheckIn()
+    expect(page.findAll('h1')).toHaveLength(1)
+  })
+
   it('shows the camera screen first and offers to type the visit code', async () => {
     const page = await mountCheckIn()
     expect(visibleText(page)).toContain(t('checkIn.leadScan'))
@@ -93,6 +98,7 @@ describe('check-in page: typed code', () => {
     await typeCode(page.find('form').element, qr.visitCode)
     await vi.waitFor(() => expect(page.find('#earned-title').exists()).toBe(true))
     await vi.waitFor(() => expect(document.activeElement).toBe(page.find('#earned-title').element))
+    expect(page.get('header').classes()).toContain('pb-16')
     expect(visibleText(page)).toContain(t('checkIn.toWallet'))
     expect(visibleText(page)).toMatchSnapshot()
   })

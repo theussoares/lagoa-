@@ -18,6 +18,8 @@
     "build:api": "pnpm --filter @lagoa/api build",
     "test:api": "pnpm --filter @lagoa/api test",
     "typecheck:api": "pnpm --filter @lagoa/api typecheck",
+    "supabase:local:start": "SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN=local npx supabase@2.120.0 start -x studio,imgproxy,vector,logflare,mailpit,edge-runtime",
+    "supabase:local:stop": "npx supabase@2.120.0 stop",
     "db:up": "docker compose up -d --wait postgres",
     "db:down": "docker compose down",
     "db:reset": "docker compose down -v && docker compose up -d --wait postgres",

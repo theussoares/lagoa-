@@ -35,6 +35,26 @@ Direção completa: `.impeccable/surfaces/layers-customer.md`.
 | Descobrir | Lista de lojas como cartões em branco (sem carimbo ainda) com letreiro e regra do clube; desafios como cartão com casas por loja |
 | Perfil | Consentimentos revogáveis, dados, sair |
 
+## Cabeçalho das telas internas
+
+Carteira, Descobrir, Prêmios, Perfil, Ranking, Resgate, Check-in e os passos
+Carimbo ganho e Entrou no clube abrem com `ScreenHeader` + foto da cidade
+(`useCityHeaderImage()`; nos passos a página passa a foto por prop). O primeiro elemento só sobe sobre a faixa
+(`relative -mt-10`) quando é **um card único** (Carteira: `CardStack`; Descobrir:
+`HeroCard`; Perfil: card de telefone e avisos). Quando a tela abre com título de
+seção ou lista, o conteúdo começa abaixo da faixa: texto escuro nunca fica sobre
+a faixa escura.
+
+Nos passos que trocam de etapa (Ganhou, Entrou) o `ScreenHeader` é `focusable` e
+o foco vai para o `h1`. Sem cartão para subir (`card: null`) o cabeçalho usa
+`overlap=false`. O carimbo grande do Ganhou usa o tom `light` do `StampImpression`
+(tinta branca) porque a tinta `primary` some sobre a foto escura. O botão voltar
+do Resgate é ícone de 44px no slot `actions`, com `aria-label`.
+
+## Ações por tela
+
+Carteira: erro → `primary` "Tentar de novo"; prêmio liberado → `reward`. Carimbo ganho: com prêmio `reward` + `secondary` "Ver carteira", sem prêmio `primary`. Perfil: sem `primary` de página; Ranking é linha de navegação, "Baixar meus dados" `secondary`, "Sair desta conta" `quiet`, "Apagar minha conta" e "Tirar aniversário" `danger`; "Salvar aniversário" é o `primary` do próprio formulário. Check-in: escanear/enviar `primary`, digitar o código `secondary`, câmera `quiet`. Entrar: "Receber código"/"Entrar" `primary`, "Reenviar código" `quiet`, "Trocar número" `inline`.
+
 ## Tipografia aqui
 
 Body 17px. `count` 56px só no cartão do topo e no Carimbo ganho.

@@ -7,6 +7,7 @@ const { t } = useI18n()
 const translate = useTranslate()
 const toast = useToast()
 useHead({ title: () => `${t('ranking.title')} · ${t('app.name')}` })
+const cityHeaderImage = useCityHeaderImage()
 
 const { ranking: rankingService } = useCustomerServices()
 const { signOut } = useCustomerSession()
@@ -30,7 +31,12 @@ async function changeConsent(update: Parameters<typeof rankingService.setConsent
 
 <template>
   <div class="flex flex-col gap-6">
-    <PageTitle :title="t('ranking.title')" :lead="state.status === 'success' ? t('ranking.lead', { month: monthTitle(state.value.month) }) : undefined" />
+    <ScreenHeader
+      :title="t('ranking.title')"
+      :lead="state.status === 'success' ? t('ranking.lead', { month: monthTitle(state.value.month) }) : undefined"
+      :image="cityHeaderImage"
+      :overlap="false"
+    />
 
     <USkeleton v-if="state.status === 'loading'" class="h-56 rounded-(--radius-card)" />
     <WalletProblem v-else-if="state.status === 'error'" :message="t(`errors.${state.error.code}`)" :action="t('common.retry')" @retry="reload" />
@@ -41,7 +47,7 @@ async function changeConsent(update: Parameters<typeof rankingService.setConsent
       <p v-if="myStandingLine(state.value, translate)" class="text-base text-toned" aria-live="polite">{{ myStandingLine(state.value, translate) }}</p>
 
       <RankingJoinForm v-if="!state.value.me.optedIn" :pending="pending" :labels="joinLabels" @join="changeConsent({ granted: true, name: $event })" />
-      <UButton v-else variant="outline" color="neutral" size="lg" block :loading="pending" :label="t('ranking.leave')" @click="changeConsent({ granted: false })" />
+      <ActionButton v-else role="secondary" block :loading="pending" :label="t('ranking.leave')" @click="changeConsent({ granted: false })" />
       <p class="text-base text-muted">{{ t('ranking.privacy') }}</p>
     </template>
   </div>

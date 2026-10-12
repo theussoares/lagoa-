@@ -1,96 +1,32 @@
 <script setup lang="ts">
-import type { StampCardModel } from '#layers/ui/app/types/wallet'
-import type { SeenBalances } from '#layers/customer/app/types/wallet'
-import { formatShortDate } from '#shared/utils/dateFormat'
-
 definePageMeta({ path: '/carteira', layout: 'customer', middleware: 'customer-auth' })
 
 const { t } = useI18n()
-const translate = useTranslate()
 useHead({ title: () => `${t('wallet.title')} · ${t('app.name')}` })
-
-const { signOut } = useCustomerSession()
-const { state: cardsState, reload: reloadCards } = useWalletCards()
-const { state: activityState } = useWalletActivity()
-const { state: profileState } = useCustomerProfile()
-const seenStamps = useSeenStamps()
-
-const activeChoice = ref('')
-
-// O "visto" mora no aparelho: no servidor e na hidratação nada é "novo" (HTML igual nos dois lados); depois de montar,
-// a batida acontece nesta tela e o saldo vira visto.
-const seen = shallowRef<SeenBalances | null>(null)
-onMounted(() => {
-  seen.value = seenStamps.snapshot()
-})
-
-const cards = computed<StampCardModel[]>(() => {
-  if (cardsState.value.status !== 'success') return []
-  const seenNow = seen.value
-  return cardsState.value.value.map((card) =>
-    toStampCardModel(card, { t: translate, seenBalance: seenNow === null ? card.balance : (seenNow[card.id] ?? 0), formatDate: formatShortDate }),
-  )
-})
-const activeId = computed({
-  get: () => activeChoice.value || cards.value[0]?.id || '',
-  set: (id: string) => {
-    activeChoice.value = id
-  },
-})
-
-watch([cardsState, seen], ([state, seenNow]) => {
-  if (state.status === 'success' && seenNow !== null) seenStamps.remember(Object.fromEntries(state.value.map((card) => [card.id, card.balance])))
-})
-
-const anyUnauthorized = computed(() =>
-  [cardsState.value, activityState.value, profileState.value].some(
-    (state) => state.status === 'error' && state.error.code === 'unauthorized',
-  ),
-)
-watch(anyUnauthorized, (unauthorized) => {
-  if (unauthorized) void signOut()
-})
-
-const firstName = computed(() => (profileState.value.status === 'success' ? profileState.value.value.firstName : null))
-const greeting = computed(() => (firstName.value ? t('wallet.greeting', { name: firstName.value }) : t('wallet.greetingAnonymous')))
-
-const ledger = computed(() => {
-  if (activityState.value.status !== 'success') return []
-  const now = new Date()
-  const iconByShop = new Map<string, string>(
-    cardsState.value.status === 'success' ? cardsState.value.value.map((card) => [card.shop.id, categoryIcon(card.shop.category)]) : [],
-  )
-  return activityState.value.value.map((activity) => toLedgerEntryModel(activity, now, translate, iconByShop))
-})
+const screen = useWalletScreen()
 </script>
 
 <template>
   <div>
-    <ScreenHeader :title="greeting" :lead="t('wallet.lead')">
+    <ScreenHeader :title="screen.greeting" :lead="t('wallet.lead')" :image="screen.cityHeaderImage">
       <template #actions>
-        <NuxtLink
-          to="/perfil"
-          class="grid size-11 shrink-0 place-items-center rounded-full bg-white/15 text-white ring-1 ring-white/50 transition-colors duration-(--lagoa-dur-fast) hover:bg-white/25"
-          :aria-label="t('wallet.profileLink')"
-        >
-          <UIcon name="i-ph-user-circle" class="size-7" aria-hidden="true" />
-        </NuxtLink>
+        <HeaderIconLink to="/perfil" :label="t('wallet.profileLink')" icon="i-ph-user-circle" icon-size="lg" />
       </template>
     </ScreenHeader>
 
     <div class="flex flex-col gap-8">
       <section :aria-label="t('wallet.stackLabel')" class="relative -mt-10">
-        <WalletStackSkeleton v-if="cardsState.status === 'loading'" />
+        <WalletStackSkeleton v-if="screen.cardsState.status === 'loading'" />
 
         <WalletProblem
-          v-else-if="cardsState.status === 'error'"
-          :message="t(`errors.${cardsState.error.code}`)"
+          v-else-if="screen.cardsState.status === 'error'"
+          :message="t(`errors.${screen.cardsState.error.code}`)"
           :action="t('common.retry')"
-          @retry="reloadCards"
+          @retry="screen.reloadCards"
         />
 
         <WalletEmpty
-          v-else-if="cards.length === 0"
+          v-else-if="screen.cards.length === 0"
           :title="t('wallet.emptyTitle')"
           :lead="t('wallet.empty')"
           :action="t('wallet.emptyAction')"
@@ -99,25 +35,25 @@ const ledger = computed(() => {
 
         <CardStack
           v-else
-          :cards="cards"
-          :active-id="activeId"
+          :cards="screen.cards"
+          :active-id="screen.activeId"
           :show-label="(card) => t('wallet.showCard', { shop: card.shopName })"
           :more-label="(hidden) => t('wallet.showMore', { count: hidden }, hidden)"
-          @select="activeId = $event"
+          @select="screen.activeId = $event"
         >
           <template #actions="{ card }">
-            <UButton v-if="card.rewardReady" :to="`/premios/${card.id}`" color="secondary" size="xl" block icon="i-ph-gift" :label="t('wallet.redeem')" />
+            <ActionButton v-if="card.rewardReady" role="reward" :to="`/premios/${card.id}`" block icon="i-ph-gift" :label="t('wallet.redeem')" />
           </template>
         </CardStack>
       </section>
 
-      <section v-if="cards.length > 0 || ledger.length > 0" class="flex flex-col gap-3" aria-labelledby="ledger-title">
+      <section v-if="screen.cards.length > 0 || screen.ledger.length > 0" class="flex flex-col gap-3" aria-labelledby="ledger-title">
         <h2 id="ledger-title" class="type-h2">
           {{ t('wallet.ledgerTitle') }}
         </h2>
-        <div class="rounded-(--radius-card) bg-default px-5 py-1 shadow-(--lagoa-shadow-card)">
-          <USkeleton v-if="activityState.status === 'loading'" class="my-3 h-24" />
-          <LedgerList v-else-if="ledger.length > 0" :entries="ledger" />
+        <div class="card px-5 py-1">
+          <USkeleton v-if="screen.activityState.status === 'loading'" class="my-3 h-24" />
+          <LedgerList v-else-if="screen.ledger.length > 0" :entries="screen.ledger" />
           <p v-else class="py-4 text-muted">{{ t('wallet.ledgerEmpty') }}</p>
         </div>
       </section>

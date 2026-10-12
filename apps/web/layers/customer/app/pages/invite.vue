@@ -3,8 +3,9 @@ definePageMeta({ path: '/convite', layout: 'customer', middleware: 'customer-aut
 
 usePageTitle('invite.pageTitle')
 useInviteScreen()
+const cityHeaderImage = useCityHeaderImage()
 </script>
 
 <template>
-  <p class="text-center" aria-live="polite">{{ $t('invite.opening') }}</p>
+  <InviteOpening :title="$t('invite.pageTitle')" :lead="$t('invite.lead')" :image="cityHeaderImage" :message="$t('invite.opening')" />
 </template>
