@@ -38,7 +38,7 @@ const challengeModels = computed(() => {
 const heroChallenge = computed(() => challengeModels.value.find((challenge) => !challenge.done) ?? null)
 const otherChallenges = computed(() => challengeModels.value.filter((challenge) => challenge.id !== heroChallenge.value?.id))
 
-const CITY_HEADER_IMAGE = cityHeaderImageUrl(useRuntimeConfig().public.supabaseUrl)
+const cityHeaderImage = useCityHeaderImage()
 const mapUrl = shopsMapUrl()
 
 const unauthorized = computed(() =>
@@ -53,7 +53,7 @@ watch(unauthorized, (value) => {
 
 <template>
   <div>
-    <ScreenHeader :title="t('discover.title')" :lead="t('discover.lead')" :image="CITY_HEADER_IMAGE">
+    <ScreenHeader :title="t('discover.title')" :lead="t('discover.lead')" :image="cityHeaderImage">
       <template #actions>
         <a
           :href="mapUrl"
