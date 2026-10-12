@@ -12,5 +12,5 @@ coverage
 .impeccable/config.local.json
 
 # Playwright
-/test-results/
+test-results/
 /playwright-report/

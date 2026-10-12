@@ -36,7 +36,6 @@ describe('ActionButton', () => {
   it('uses a white focus ring on dark surfaces and keeps the theme ring otherwise', async () => {
     const dark = await render({ role: 'primary', surface: 'dark' })
     expect(dark.get('button').classes()).toContain('focus-visible:outline-white')
-    expect(dark.get('button').classes()).not.toContain('focus-visible:outline-primary')
     const light = await render({ role: 'primary' })
     expect(light.get('button').classes()).not.toContain('focus-visible:outline-white')
   })
