@@ -3,8 +3,8 @@ interface Props {
   icon: string
   /** Inclinação fixa em graus (−6 a +6). */
   tilt: number
-  /** `light`: tinta branca para a batida sobre a foto escura do cabeçalho. */
-  tone?: 'ink' | 'reward' | 'light'
+  /** `light` e `rewardLight`: tintas claras para a batida sobre a foto escura do cabeçalho. */
+  tone?: 'ink' | 'reward' | 'light' | 'rewardLight'
   /** Recebe a batida do carimbo ao aparecer. */
   pressed?: boolean
   delayMs?: number
@@ -12,7 +12,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), { tone: 'ink', pressed: false, delayMs: 0 })
 
-const INK_CLASS = { ink: 'text-primary', reward: 'text-secondary', light: 'text-white' } as const
+const INK_CLASS = { ink: 'text-primary', reward: 'text-secondary', light: 'text-white', rewardLight: 'text-secondary-300' } as const
 
 const style = computed(() => ({
   '--stamp-tilt': `${props.tilt}deg`,

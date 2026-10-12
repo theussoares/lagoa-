@@ -262,7 +262,7 @@ describe('check-in components: EarnedStep', () => {
         announcement: 'Você ganhou 1 carimbo.',
       },
       card: null,
-      heroStamp: { icon: 'i-ph-seal-check-bold', tilt: 1, tone: 'ink' },
+      heroStamp: { icon: 'i-ph-seal-check-bold', tilt: 1, tone: 'light' },
       rewardCardId: null,
       ...rest,
     }

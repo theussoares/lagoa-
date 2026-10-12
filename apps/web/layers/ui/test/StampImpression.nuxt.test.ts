@@ -15,4 +15,10 @@ describe('StampImpression', () => {
     expect(light.classes()).toContain('text-white')
     expect(light.classes()).not.toContain('text-primary')
   })
+
+  it('has a light reward tone that stays readable over the dark photo', async () => {
+    const stamp = await mountSuspended(StampImpression, { props: { icon: 'i-ph-gift', tilt: 2, tone: 'rewardLight' } })
+    expect(stamp.classes()).toContain('text-secondary-300')
+    expect(stamp.classes()).not.toContain('text-secondary')
+  })
 })
