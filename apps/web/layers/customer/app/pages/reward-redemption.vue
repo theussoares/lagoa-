@@ -1,76 +1,34 @@
 <script setup lang="ts">
-import type { RedemptionTicketState } from '#layers/ui/app/types/redemption'
-import { formatShortDate } from '#shared/utils/dateFormat'
-
 definePageMeta({ path: '/premios/:cardId', layout: 'customer', middleware: 'customer-auth' })
 
 const { t } = useI18n()
-const translate = useTranslate()
-const route = useRoute()
-const router = useRouter()
 useHead({ title: () => `${t('redemption.pageTitle')} · ${t('app.name')}` })
-const cityHeaderImage = useCityHeaderImage()
-
-const { signOut } = useCustomerSession()
-const { state, remaining, request } = useRewardRedemption(String(route.params.cardId))
-const { state: cardsState } = useWalletCards()
-
-const card = computed(() => {
-  if (cardsState.value.status !== 'success') return undefined
-  return cardsState.value.value.find((item) => item.id === route.params.cardId)
-})
-
-const redemption = computed(() => (state.value.status === 'ready' ? state.value.redemption : undefined))
-const ticket = computed<RedemptionTicketState | undefined>(() =>
-  redemption.value ? toRedemptionTicketState(redemption.value, remaining.value, translate) : undefined,
-)
-const announcement = computed(() =>
-  ticket.value?.kind === 'active' ? minutesLeftAnnouncement(remaining.value, translate) : '',
-)
-const heldUntil = computed(() =>
-  card.value?.rewardExpiresAt ? t('redemption.heldUntil', { date: formatShortDate(card.value.rewardExpiresAt) }) : null,
-)
-
-const errorText = computed(() => {
-  if (state.value.status !== 'error') return ''
-  const { error } = state.value
-  return error.code === 'rewardNotReady' ? t('errors.rewardNotReady', { remaining: error.remaining }) : t(`errors.${error.code}`)
-})
-const title = computed(() => (ticket.value?.kind === 'redeemed' ? t('redemption.redeemedTitle') : t('redemption.title')))
-// Quem chegou pela aba Prêmios volta para ela; o resto volta para a carteira.
-const back = router.options.history.state.back === '/premios'
-  ? { to: '/premios', label: t('redemption.backToRewards') }
-  : { to: '/carteira', label: t('redemption.back') }
-const canRetry = computed(() => state.value.status === 'error' && state.value.error.code === 'network')
-
-watch(state, (current) => {
-  if (current.status === 'error' && current.error.code === 'unauthorized') void signOut()
-})
+const screen = useRewardRedemptionScreen()
 </script>
 
 <template>
   <div>
-    <ScreenHeader :title="title" :image="cityHeaderImage">
+    <ScreenHeader :title="screen.title" :image="screen.cityHeaderImage">
       <template #actions>
-        <RewardRedemptionBackLink :to="back.to" :label="back.label" />
+        <RewardRedemptionBackLink :to="screen.back.to" :label="screen.back.label" />
       </template>
     </ScreenHeader>
 
     <!-- Erro, esqueleto e bilhete são cards únicos: o primeiro sobe sobre a faixa. -->
     <div class="relative -mt-10 flex flex-col gap-6">
-      <p class="sr-only" aria-live="polite">{{ announcement }}</p>
+      <p class="sr-only" aria-live="polite">{{ screen.announcement }}</p>
 
       <WalletProblem
-        v-if="state.status === 'error'"
-        :message="errorText"
-        :action="canRetry ? t('common.retry') : t('redemption.backToWallet')"
-        :icon="canRetry ? undefined : 'i-ph-warning-circle'"
-        :action-icon="canRetry ? undefined : 'i-ph-arrow-left'"
-        @retry="canRetry ? request() : navigateTo('/carteira')"
+        v-if="screen.state.status === 'error'"
+        :message="screen.errorText"
+        :action="screen.canRetry ? t('common.retry') : t('redemption.backToWallet')"
+        :icon="screen.canRetry ? undefined : 'i-ph-warning-circle'"
+        :action-icon="screen.canRetry ? undefined : 'i-ph-arrow-left'"
+        @retry="screen.canRetry ? screen.request() : navigateTo('/carteira')"
       />
 
       <div
-        v-else-if="!ticket || !card"
+        v-else-if="!screen.ticket || !screen.card"
         class="flex flex-col gap-5 rounded-(--radius-card) bg-default p-5 shadow-(--lagoa-shadow-card)"
         :aria-label="t('common.loading')"
         role="status"
@@ -88,25 +46,25 @@ watch(state, (current) => {
 
       <template v-else>
         <RedemptionTicket
-          :shop-name="card.shop.name"
-          :icon="categoryIcon(card.shop.category)"
-          :reward="redemption?.rewardTitle ?? card.rewardTitle"
+          :shop-name="screen.card.shop.name"
+          :icon="categoryIcon(screen.card.shop.category)"
+          :reward="screen.redemption?.rewardTitle ?? screen.card.rewardTitle"
           :code-label="t('redemption.codeLabel')"
-          :state="ticket"
+          :state="screen.ticket"
         />
 
-        <div v-if="ticket.kind === 'active'" class="flex flex-col gap-3 text-pretty text-toned">
+        <div v-if="screen.ticket.kind === 'active'" class="flex flex-col gap-3 text-pretty text-toned">
           <p>{{ t('redemption.howTo') }}</p>
-          <p v-if="heldUntil" class="text-base text-muted">{{ heldUntil }}</p>
+          <p v-if="screen.heldUntil" class="text-base text-muted">{{ screen.heldUntil }}</p>
         </div>
 
         <UButton
-          v-else-if="ticket.kind === 'expired'"
+          v-else-if="screen.ticket.kind === 'expired'"
           size="xl"
           block
           icon="i-ph-arrow-clockwise"
           :label="t('redemption.regenerate')"
-          @click="request"
+          @click="screen.request"
         />
 
         <UButton v-else to="/carteira" size="xl" block :label="t('redemption.backToWallet')" />

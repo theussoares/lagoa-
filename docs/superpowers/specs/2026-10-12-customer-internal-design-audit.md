@@ -27,11 +27,11 @@ Leitura de código contra o MASTER e o checklist da task 1. Nada foi corrigido a
 | 7 | `main.css` | Animações novas podem esquecer `prefers-reduced-motion`; nada garante isso | alto | 2 (Task 4) |
 | 8 | Resgate | `PageTitle` liso numa tela de momento crítico; botão voltar solto acima do título; skeleton usa `role="status"` com `aria-label`, ok | médio | 3 |
 | 9 | Check-in | `PageTitle` liso; passos Ganhou/Entrou (`EarnedStep`/`JoinedStep`) usam `PageTitle focusable`: é o momento de maior emoção do app e tem o visual mais pobre | alto | 3 |
-| 10 | Perfil | Página de 91 linhas de script, acima do limite; lógica deveria estar em `useProfileScreen` | médio | 4 |
-| 11 | Carteira, Descobrir, Resgate, Prêmios | Scripts acima de 30 linhas (64, 51, 47, 34) | médio | 4 (refatoração, não cola com o visual) |
+| 10 | Perfil | Página de 91 linhas de script, acima do limite; lógica deveria estar em `useProfileScreen` | médio | 4 (feito: `useProfileScreen`, `useBirthdayEditing`) |
+| 11 | Carteira, Descobrir, Resgate, Prêmios | Scripts acima de 30 linhas (64, 51, 47, 34) | médio | 4 (feito, exceto Entrar: `useWalletScreen`, `useDiscoverScreen`, `useRewardsScreen`, `useRewardRedemptionScreen`) |
 | 12 | `layers/customer` e `layers/ui` | Tamanhos de texto soltos (`text-[…rem]`): 11 valores diferentes em 30 usos; `1.375rem` (título de seção) e `0.9375rem` (texto pequeno) repetem 10 e 11 vezes. Falta uma escala de tipo no design system | médio | 1 (pequeno, junto da Task 7) |
 | 13 | `AppTabBar` | Ação central de check-in sai da barra (`-mt-6`, `size-16`): o alvo passa de 44px, ok. `h-[4.75rem]` fixo: conferir se o conteúdo reserva a altura em 375px | médio | verificar visualmente |
-| 14 | Convite | Tela só com "abrindo…" sem estado de erro visível na página (depende de `useInviteScreen`) | médio | 4 |
+| 14 | Convite | Tela só com "abrindo…" sem estado de erro visível na página (depende de `useInviteScreen`) | médio | 4 (feito: o fluxo nunca mostra erro por decisão; ganhou o cabeçalho com foto e testes) |
 | 15 | Prêmios, Ranking, Perfil, Carteira | Estados conferidos no navegador (ver tabela abaixo): sem defeito encontrado | médio | conferido na Onda 3 |
 
 Ordem por severidade: alto (1, 2, 3, 4, 6, 7, 9), médio (5, 8, 10–15).
