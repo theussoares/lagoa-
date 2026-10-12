@@ -57,3 +57,4 @@ Use o Supabase local (`apps/api/README.md`, seção "Supabase local"): celular `
 - **Onda 3 (plano seguinte):** 8, 9, 15 (Resgate, Check-in, passos Ganhou/Entrou).
 - **Onda 4:** 10, 11, 14 e itens de formulário do Perfil.
 - **Pequeno e solto:** 12 (token do tamanho de título de seção), 13 (conferir a barra em 375px).
+- **Onda 5 (feita):** botões, hierarquia e nomenclatura (`ActionButton`, `HeaderIconLink`, glossário).

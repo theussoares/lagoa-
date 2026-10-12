@@ -51,6 +51,10 @@ o foco vai para o `h1`. Sem cartão para subir (`card: null`) o cabeçalho usa
 (tinta branca) porque a tinta `primary` some sobre a foto escura. O botão voltar
 do Resgate é ícone de 44px no slot `actions`, com `aria-label`.
 
+## Ações por tela
+
+Carteira: erro → `primary` "Tentar de novo"; prêmio liberado → `reward`. Carimbo ganho: com prêmio `reward` + `secondary` "Ver carteira", sem prêmio `primary`. Perfil: sem `primary` de página; Ranking é linha de navegação, "Baixar meus dados" `secondary`, "Sair desta conta" `quiet`, "Apagar minha conta" e "Tirar aniversário" `danger`; "Salvar aniversário" é o `primary` do próprio formulário. Check-in: escanear/enviar `primary`, digitar o código `secondary`, câmera `quiet`. Entrar: "Receber código"/"Entrar" `primary`, "Reenviar código" `quiet`, "Trocar número" `inline`.
+
 ## Tipografia aqui
 
 Body 17px. `count` 56px só no cartão do topo e no Carimbo ganho.

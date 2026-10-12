@@ -34,6 +34,7 @@ Props: `role` (obrigatória), `surface` (`'light' | 'dark'`, padrão `'light'`),
 | `quiet` | `color=neutral variant=ghost` | `lg` | baixa prioridade |
 | `danger` | `color=error variant=outline` | `lg` | abrir a confirmação de algo destrutivo |
 | `dangerConfirm` | `color=error variant=solid` | `lg` | confirmar o destrutivo, dentro da confirmação |
+| `inline` | `color=primary variant=link` | `lg` | link dentro de frase (acrescentado no plano) |
 
 O mapa papel → `{ color, variant, size }` é um objeto constante em `layers/ui/app/utils/actionRole.ts` (estratégia plugável, sem `switch` espalhado). Tipos em `layers/ui/app/types/action.ts` (`ActionRole`, `ActionSurface`).
 
@@ -76,6 +77,8 @@ Rótulos que já estão corretos (verbo + objeto, único) ficam: "Tentar de novo
 | Check-in | escanear/entrar `primary`; "Digitar o código da visita" `secondary` |
 | Entrar | "Receber código" `primary`; "Reenviar código" `quiet` |
 | Ranking, Descobrir, Convite | papéis conforme a tabela, sem mudança visual além da cor/variante |
+
+"Salvar aniversário" é `primary` `size=lg`: é o envio do próprio formulário (a regra "Perfil sem primary" vale para ações da página).
 
 Telas listadas só como exemplo acima são fechadas no plano, uma a uma, contra o código atual (19 arquivos do cliente usam `UButton`).
 

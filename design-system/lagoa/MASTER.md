@@ -171,11 +171,24 @@ esquerda, título em letreiro, régua tracejada em cima e embaixo (não caixa ci
 
 ## Componentes
 
+### Papéis de ação
+
+| Papel | Visual | Uso |
+| --- | --- | --- |
+| `primary` | preenchido tinta, `xl` | a ação final da tela ou do formulário |
+| `reward` | preenchido carimbo, `xl` | só levar ao resgate de prêmio |
+| `secondary` | contornado neutro, `lg` | alternativa ou saída |
+| `quiet` | texto (ghost), `lg` | baixa prioridade (Sair, Reenviar) |
+| `danger` / `dangerConfirm` | contornado vermelho / preenchido | abrir a confirmação / confirmar o destrutivo |
+| `inline` | link | dentro de frase |
+
+Um `primary` por tela ou formulário; `reward` e `primary` não dividem a mesma região. Fundo escuro: `surface="dark"` (anel de foco branco, 3:1) e `HeaderIconLink` para ícones redondos do cabeçalho. Rótulo = verbo + objeto, um destino ou comando, um rótulo: "Ver carteira", "Voltar para a carteira", "Resgatar prêmio", "Tirar aniversário" / "Manter a data", "Apagar minha conta" / "Manter minha conta", "Digitar o código da visita" (teste `labelGlossary`).
+
 ### Da lib (Nuxt UI), tematizados por `app.config.ts`
 
 | Necessidade | Componente | Regra |
 | --- | --- | --- |
-| Ação | `UButton` | tamanho padrão `lg` (≥48px); um primário por tela; `xl` para "Dar 1 carimbo" e "Fazer check-in" |
+| Ação | `ActionButton` (sobre `UButton`) | o papel escolhe cor, variante e tamanho; no app do cliente `UButton` cru é proibido (teste de convenção). Ver "Papéis de ação" |
 | Campo | `UInput`, `UFormField`, `UForm` | label visível sempre; schema Zod de `shared/`; erro abaixo do campo |
 | Código | `UPinInput` | 6 casas, caixa-alta, `tabular-nums`; dentro do `RedemptionStub`. Alfabeto sem sósias (`READABLE_CODE_ALPHABET`: sem 0/O, 1/I, 8/B, 5/S, 2/Z, U/V) |
 | Folha inferior | `UDrawer` | ações do cartão e confirmação no app |
