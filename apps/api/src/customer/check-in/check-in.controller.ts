@@ -39,11 +39,12 @@ export class CheckInController {
 
   /**
    * Ganha pelo código curto digitado. São 28⁵ combinações e cada acerto tira a visita de quem está no caixa, então
-   * o teto por conta é baixo e fica nesta rota própria (P-03).
+   * o teto por conta é baixo e fica nesta rota própria (P-03). Sem contador não há teto: recusa (fail-closed).
    */
   @Post('code')
   @HttpCode(200)
   @RequiresTerms()
+  @FailClosedThrottle()
   @Throttle({
     default: { limit: VISIT_CODE_ATTEMPTS_LIMIT, ttl: VISIT_CODE_ATTEMPTS_WINDOW_MINUTES * 60_000 },
     ip: { limit: 60, ttl: 60_000 },

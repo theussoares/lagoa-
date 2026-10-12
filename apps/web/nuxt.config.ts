@@ -1,6 +1,7 @@
 // As layers em ./layers (core, ui, customer, merchant, admin) são registradas
 // automaticamente pelo Nuxt 4 e ganham os aliases #layers/<nome>.
 import { fileURLToPath } from 'node:url'
+import { SECURITY_HEADERS } from './server/utils/securityHeaders'
 
 /** Rotas do lojista (layer `merchant`): SPA, sem SSR (desktop, sessão conferida no servidor pelos middlewares). */
 const MERCHANT_SPA_ROUTES = ['/painel', '/configuracoes', '/campanhas', '/balcao/**', '/programa', '/clientes']
@@ -12,7 +13,10 @@ export default defineNuxtConfig({
   // O app do cliente renderiza no servidor (cookie httpOnly -> BFF -> API). O painel do lojista usa o mesmo BFF, mas
   // fica como SPA (só desktop, nada a indexar).
   ssr: true,
-  routeRules: Object.fromEntries(MERCHANT_SPA_ROUTES.map((route) => [route, { ssr: false }])),
+  routeRules: {
+    '/**': { headers: SECURITY_HEADERS },
+    ...Object.fromEntries(MERCHANT_SPA_ROUTES.map((route) => [route, { ssr: false }])),
+  },
   devtools: { enabled: true },
   modules: ['@vite-pwa/nuxt'],
   runtimeConfig: {

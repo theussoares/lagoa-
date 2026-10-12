@@ -1,6 +1,6 @@
 import type { CustomerId } from '#shared/schemas/ids'
 import type { MaskedPhone } from '#shared/schemas/phone'
-import type { CustomerFilter, MerchantCustomerRow } from '#shared/schemas/customer'
+import type { CustomerFilter, MerchantCustomerPage } from '#shared/schemas/customer'
 import type { TransportError } from '#shared/types/errors'
 import type { AsyncResultState } from '#layers/core/app/types/asyncResult'
 import type { ComputedRef, Ref } from 'vue'
@@ -42,6 +42,12 @@ export interface CustomerTableLabels {
 
 export interface MerchantCustomers {
   filter: Ref<CustomerFilter>
-  state: ComputedRef<AsyncResultState<MerchantCustomerRow[], TransportError>>
+  /** Páginas já carregadas juntas em `items`; `total` conta o filtro inteiro. */
+  state: ComputedRef<AsyncResultState<MerchantCustomerPage, TransportError>>
   reload: () => Promise<void>
+  /** Busca a próxima página e junta ao fim; não faz nada sem `nextCursor`. */
+  loadMore: () => Promise<void>
+  loadingMore: Ref<boolean>
+  /** Falha do último "Carregar mais"; a lista já carregada continua na tela. */
+  loadMoreError: Ref<TransportError | null>
 }

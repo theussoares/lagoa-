@@ -1,9 +1,9 @@
-import { type CanActivate, type ExecutionContext, Controller, Get, type INestApplication } from '@nestjs/common'
+import { type CanActivate, type ExecutionContext, Controller, Get, type INestApplication, Logger } from '@nestjs/common'
 import { APP_FILTER, APP_GUARD } from '@nestjs/core'
 import { Throttle, ThrottlerModule } from '@nestjs/throttler'
 import { Test } from '@nestjs/testing'
 import request from 'supertest'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { AllExceptionsFilter } from '../common/http/all-exceptions.filter'
 import type { AuthenticatedRequest } from './auth.types'
 import { UserThrottlerGuard } from './user-throttler.guard'
@@ -53,11 +53,19 @@ describe('throttling after auth', () => {
 
   const call = (user: string) => request(app.getHttpServer()).get('/limited').set('x-test-user', user)
 
-  it('limits per user and answers 429 rateLimited', async () => {
+  it('limits per user, answers 429 rateLimited and logs who hit the limit', async () => {
+    const warned: string[] = []
+    const warnSpy = vi.spyOn(Logger.prototype, 'warn').mockImplementation((message: unknown) => {
+      warned.push(String(message))
+    })
     await call('user-a').expect(200)
     await call('user-a').expect(200)
     const blocked = await call('user-a').expect(429)
+    warnSpy.mockRestore()
     expect(blocked.body).toEqual({ code: 'rateLimited' })
+    expect(warned.map((line) => JSON.parse(line))).toEqual([
+      expect.objectContaining({ event: 'rateLimit.hit', route: '/limited', userId: 'user-a', code: 'rateLimited' }),
+    ])
   })
 
   it('does not punish another user behind the same IP', async () => {

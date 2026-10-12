@@ -2,6 +2,7 @@
   "name": "lagoa-plus",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@12.6.0",
   "scripts": {
     "dev": "pnpm --filter @lagoa/web dev",
     "build": "pnpm --filter @lagoa/web build",
