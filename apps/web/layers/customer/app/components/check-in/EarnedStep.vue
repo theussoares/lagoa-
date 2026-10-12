@@ -32,7 +32,7 @@ useFocusTarget(() => props.focusRequest, 'earnedHeading', () => heading.value?.f
       <template #actions>
         <!-- A batida grande: o carimbo cai na faixa antes de passar para o cartão. -->
         <span class="relative z-10 size-24 shrink-0">
-          <StampImpression :icon="earned.heroStamp.icon" :tilt="earned.heroStamp.tilt" :tone="earned.heroStamp.tone" pressed />
+          <StampImpression :icon="earned.heroStamp.icon" :tilt="earned.heroStamp.tilt" :tone="earned.heroStamp.tone === 'ink' ? 'light' : earned.heroStamp.tone" pressed />
         </span>
       </template>
       <p

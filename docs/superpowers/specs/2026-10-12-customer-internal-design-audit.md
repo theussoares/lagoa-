@@ -32,13 +32,24 @@ Leitura de código contra o MASTER e o checklist da task 1. Nada foi corrigido a
 | 12 | `layers/customer` e `layers/ui` | Tamanhos de texto soltos (`text-[…rem]`): 11 valores diferentes em 30 usos; `1.375rem` (título de seção) e `0.9375rem` (texto pequeno) repetem 10 e 11 vezes. Falta uma escala de tipo no design system | médio | 1 (pequeno, junto da Task 7) |
 | 13 | `AppTabBar` | Ação central de check-in sai da barra (`-mt-6`, `size-16`): o alvo passa de 44px, ok. `h-[4.75rem]` fixo: conferir se o conteúdo reserva a altura em 375px | médio | verificar visualmente |
 | 14 | Convite | Tela só com "abrindo…" sem estado de erro visível na página (depende de `useInviteScreen`) | médio | 4 |
-| 15 | Todas | Estados vazio/erro existem na Carteira (`Empty`, `Problem`); Prêmios, Ranking e Perfil precisam ser conferidos tela a tela com sessão | médio | 3–4 |
+| 15 | Prêmios, Ranking, Perfil, Carteira | Estados conferidos no navegador (ver tabela abaixo): sem defeito encontrado | médio | conferido na Onda 3 |
 
 Ordem por severidade: alto (1, 2, 3, 4, 6, 7, 9), médio (5, 8, 10–15).
 
+## Estados conferidos (Onda 3, 390px, Supabase local)
+
+| Tela | Carregando | Vazio | Erro (API parada) | Sucesso |
+| --- | --- | --- | --- | --- |
+| Carteira | esqueleto do maço | card com ação "Ver lojas da rede" | "Tentar de novo" | maço + caderneta |
+| Prêmios | esqueleto | card com ação | mostra o último dado em cache; erro só no histórico, com "Tentar de novo" | "Para resgatar" e "A caminho" |
+| Ranking | esqueleto | texto + formulário de apelido | "Tentar de novo" | não conferido (conta sem outros no ranking) |
+| Perfil | esqueleto (não capturado) | n/a | card de erro sobe sobre a faixa, "Tentar de novo" recupera | dados, aniversário, aparência |
+
+Resgate, Check-in (digitar código), "Entrou no clube" e "Carimbo/Pontos ganhos" também foram vistos. Não conferidos: o passo "prêmio liberado" do Carimbo ganho (tom `reward` do carimbo grande sobre a foto), o aviso de antifraude e a câmera (bloqueada no navegador do app).
+
 ## Como verificar
 
-Sem sessão local disponível: as telas internas só abrem logadas e o app do cliente não tem mock. O login é por SMS no Supabase Auth (nuvem). O `.env` de dev aponta para o projeto `ozgkauepsjaefyhagcuo`, e ainda não foi confirmado se ele é a homologação ou a produção. Para virar verificação visual é preciso um celular de teste com código fixo configurado num projeto de homologação, mais dados de exemplo (`ALLOW_SEED=1 pnpm --filter @lagoa/api db:seed` no Postgres local do Docker ou na homologação). Até lá, a verificação das ondas é por testes (Vitest) e leitura de código.
+Use o Supabase local (`apps/api/README.md`, seção "Supabase local"): celular `67999990001`, código `123456`. Recarregar a página por inteiro derruba a sessão (cookie com `path=/api`); entre pela tela de Entrar e navegue sem recarregar.
 
 ## Plano seguinte
 
