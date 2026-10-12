@@ -1,11 +1,11 @@
-import { REWARD_HOLD_DAYS } from '#shared/constants/domain'
+import { MERCHANT_CUSTOMERS_PAGE_SIZE, REWARD_HOLD_DAYS } from '#shared/constants/domain'
 import { isLapsedSince } from '#shared/domain/customer'
 import { isVisitKind } from '#shared/domain/ledger'
 import { summarizeWeek } from '#shared/domain/weekSummary'
 import { isRewardReady } from '#shared/domain/loyaltyCard'
 import { ProgramDraftSchema } from '#shared/schemas/program'
-import type { CustomerFilter, MerchantCustomerRow } from '#shared/schemas/customer'
-import type { ShopId } from '#shared/schemas/ids'
+import type { CustomerFilter, MerchantCustomerPage, MerchantCustomerRow } from '#shared/schemas/customer'
+import type { CustomerId, ShopId } from '#shared/schemas/ids'
 import type { LoyaltyCard } from '#shared/schemas/loyaltyCard'
 import type { Program, ProgramDraft } from '#shared/schemas/program'
 import type { WeekSummary } from '#shared/schemas/weekSummary'
@@ -24,7 +24,7 @@ const filters: Readonly<Record<CustomerFilter, (row: MerchantCustomerRow) => boo
   rewardReady: (row) => isRewardReady(row),
 }
 
-export function merchantCustomers(ctx: MockContext, shopId: ShopId, filter: CustomerFilter): MerchantCustomerRow[] {
+function merchantCustomers(ctx: MockContext, shopId: ShopId, filter: CustomerFilter): MerchantCustomerRow[] {
   return ctx.state.cards
     .filter((card) => card.shopId === shopId)
     .flatMap((card): MerchantCustomerRow[] => {
@@ -50,6 +50,20 @@ export function merchantCustomers(ctx: MockContext, shopId: ShopId, filter: Cust
     })
     .filter(filters[filter])
     .toSorted((a, b) => (b.lastVisitAt ?? '').localeCompare(a.lastVisitAt ?? ''))
+}
+
+/** Mesmo contrato da API: página de MERCHANT_CUSTOMERS_PAGE_SIZE, cursor no último cliente mostrado e contagem do filtro inteiro. */
+export function merchantCustomerPage(ctx: MockContext, shopId: ShopId, filter: CustomerFilter, cursor: CustomerId | null): MerchantCustomerPage {
+  const rows = merchantCustomers(ctx, shopId, filter)
+  const start = cursor === null ? 0 : rows.findIndex((row) => row.customerId === cursor) + 1
+  const items = start === 0 && cursor !== null ? [] : rows.slice(start, start + MERCHANT_CUSTOMERS_PAGE_SIZE)
+  const hasMore = items.length > 0 && start + items.length < rows.length
+  return {
+    items,
+    nextCursor: hasMore ? (items[items.length - 1]?.customerId ?? null) : null,
+    total: rows.length,
+    acceptingNotifications: rows.filter((row) => row.acceptsNotifications).length,
+  }
 }
 
 export function weekSummary(ctx: MockContext, shopId: ShopId): WeekSummary {

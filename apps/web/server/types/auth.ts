@@ -3,6 +3,8 @@ export interface TokenPair {
   readonly refreshToken: string
   /** Segundos de vida do access token, como o Supabase devolve. */
   readonly expiresIn: number
+  /** `sub` do token (id opaco da conta): só para o log de segurança, nunca vai para cookie nem resposta. */
+  readonly userId: string
 }
 
 /** Código que o front já entende (`parseDomainError`); o status HTTP sai dele em `authErrorStatus`. */

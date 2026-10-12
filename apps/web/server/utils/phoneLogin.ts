@@ -43,10 +43,12 @@ interface SessionLike {
   readonly access_token: string
   readonly refresh_token: string
   readonly expires_in: number
+  readonly user: { readonly id: string }
 }
 
 const tokensOf = (session: SessionLike): TokenPair => ({
   accessToken: session.access_token,
   refreshToken: session.refresh_token,
   expiresIn: session.expires_in,
+  userId: session.user.id,
 })

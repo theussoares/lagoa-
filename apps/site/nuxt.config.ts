@@ -1,6 +1,7 @@
 // Landing page do lojista. Separada do apps/web porque o app é SPA (o mock vive no
 // localStorage) e a LP precisa de HTML pré-renderizado para SEO e LCP.
 import { fileURLToPath } from 'node:url'
+import { SECURITY_HEADERS } from '../web/server/utils/securityHeaders'
 
 export default defineNuxtConfig({
   // Mesmo tema, fontes e componentes de carimbo do app: a LP mostra o produto de verdade.
@@ -24,6 +25,7 @@ export default defineNuxtConfig({
     preference: 'light',
     fallback: 'light',
   },
+  routeRules: { '/**': { headers: SECURITY_HEADERS } },
   nitro: {
     prerender: { routes: ['/'], crawlLinks: true },
   },

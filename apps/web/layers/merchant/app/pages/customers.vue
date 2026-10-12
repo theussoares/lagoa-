@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { TabsItem } from '@nuxt/ui'
 import { LAPSED_AFTER_DAYS } from '#shared/constants/domain'
-import { isReachableForReminder } from '#shared/domain/customer'
 import { CustomerFilterSchema } from '#shared/schemas/customer'
 import type { CustomerTableLabels } from '../types/customer'
 import { CUSTOMER_FILTER_QUERY, customerFilterFromSlug, customerFilterSlug } from '../utils/customerFilterQuery'
@@ -16,7 +15,7 @@ useHead({ title: () => `${t('customers.title')} · ${t('app.name')}` })
 
 const route = useRoute()
 const router = useRouter()
-const { filter, state, reload } = useMerchantCustomers(customerFilterFromSlug(route.query[CUSTOMER_FILTER_QUERY]))
+const { filter, state, reload, loadMore, loadingMore, loadMoreError } = useMerchantCustomers(customerFilterFromSlug(route.query[CUSTOMER_FILTER_QUERY]))
 
 // O filtro mora na URL (`?filtro=sumidos`): o Início linka direto e o menu lateral volta para "Todos".
 // Troca de aba usa `replace`: o Voltar do navegador sai da tela em vez de desfazer cada aba.
@@ -51,12 +50,9 @@ function onFilterChange(value: string | number): void {
 const rows = computed(() => {
   if (state.value.status !== 'success') return []
   const now = new Date()
-  return state.value.value.map((row) => toCustomerRowModel(row, now, translate))
+  return state.value.value.items.map((row) => toCustomerRowModel(row, now, translate))
 })
-
-const reachableLapsed = computed(() =>
-  state.value.status === 'success' ? state.value.value.filter(isReachableForReminder).length : 0,
-)
+const page = computed(() => (state.value.status === 'success' ? state.value.value : null))
 
 const tableLabels = computed<CustomerTableLabels>(() => ({
   customer: t('customers.table.customer'),
@@ -80,7 +76,7 @@ const tableLabels = computed<CustomerTableLabels>(() => ({
       <template #actions>
         <div class="flex items-center gap-1">
           <span v-if="state.status === 'success'" class="tabular text-[0.9375rem] text-muted">
-            {{ t('customers.count', state.value.length) }}
+            {{ t('customers.count', state.value.total) }}
           </span>
           <UButton
             variant="ghost"
@@ -110,10 +106,10 @@ const tableLabels = computed<CustomerTableLabels>(() => ({
         </div>
 
         <p
-          v-if="filter === 'lapsed' && state.status === 'success' && state.value.length > 0"
+          v-if="filter === 'lapsed' && page !== null && page.total > 0"
           class="flex flex-wrap items-center gap-x-1.5 text-[0.9375rem] text-toned"
         >
-          <UIcon name="i-ph-bell-ringing" class="size-4 shrink-0" aria-hidden="true" />{{ t('customers.lapsedHint', { count: reachableLapsed, total: rows.length }) }}
+          <UIcon name="i-ph-bell-ringing" class="size-4 shrink-0" aria-hidden="true" />{{ t('customers.lapsedHint', { count: page.acceptingNotifications, total: page.total }) }}
           <!-- A janela e a expiração só o servidor sabe: quem de fato recebe aparece em Campanhas. -->
           <ULink to="/campanhas" class="inline-flex min-h-11 items-center font-semibold text-primary">{{ t('customers.lapsedHintLink') }}</ULink>
         </p>
@@ -136,7 +132,17 @@ const tableLabels = computed<CustomerTableLabels>(() => ({
           live
         />
         <p v-else-if="rows.length === 0" class="py-10 text-center text-muted">{{ t(`customers.empty.${filter}`, { days: LAPSED_AFTER_DAYS }) }}</p>
-        <CustomersTable v-else :rows="rows" :labels="tableLabels" :caption="t('customers.table.caption')" />
+        <template v-else>
+          <CustomersTable :rows="rows" :labels="tableLabels" :caption="t('customers.table.caption')" />
+          <CustomersLoadMore
+            v-if="page !== null && page.nextCursor !== null"
+            :shown="rows.length"
+            :total="page.total"
+            :loading="loadingMore"
+            :error-code="loadMoreError?.code ?? null"
+            @load="loadMore"
+          />
+        </template>
       </div>
     </PanelModule>
   </div>

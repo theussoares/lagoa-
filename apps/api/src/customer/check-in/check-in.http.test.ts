@@ -8,6 +8,7 @@ import { Clock } from '../../common/clock'
 import { AllExceptionsFilter } from '../../common/http/all-exceptions.filter'
 import { generateVisitToken } from '../../common/visit-token'
 import { UserThrottlerGuard } from '../../auth/user-throttler.guard'
+import { RateLimitStorageUnavailableError } from '../../throttling/postgres-throttler.storage'
 import { ReferralSettlement } from '../../ledger/referral-settlement'
 import { FakeAuthGuard } from '../../test-support/fake-auth.guard'
 import { FixedProfileRepository } from '../../test-support/fixed-profile.repository'
@@ -21,15 +22,25 @@ import { CheckInService } from './check-in.service'
 const TOKEN = generateVisitToken()
 const VISIT_CODE = 'K7M4P'
 
-async function appWith(repository: FakeCheckInRepository, profiles: FixedProfileRepository, throttled: boolean): Promise<INestApplication> {
+const THROTTLERS = [
+  { name: 'default', ttl: 60_000, limit: 120 },
+  { name: 'ip', ttl: 60_000, limit: 600, getTracker: (req: { ip?: string }) => String(req.ip ?? 'unknown') },
+]
+
+/** Contador fora do ar: toda contagem falha como o `PostgresThrottlerStorage` falharia. */
+const DOWN_STORAGE = {
+  increment: async (): Promise<never> => {
+    throw new RateLimitStorageUnavailableError()
+  },
+}
+
+type Throttling = 'off' | 'on' | 'storageDown'
+
+async function appWith(repository: FakeCheckInRepository, profiles: FixedProfileRepository, throttling: Throttling): Promise<INestApplication> {
+  const throttled = throttling !== 'off'
   const moduleRef = await Test.createTestingModule({
     imports: throttled
-      ? [
-          ThrottlerModule.forRoot([
-            { name: 'default', ttl: 60_000, limit: 120 },
-            { name: 'ip', ttl: 60_000, limit: 600, getTracker: (req) => String(req.ip ?? 'unknown') },
-          ]),
-        ]
+      ? [ThrottlerModule.forRoot(throttling === 'storageDown' ? { storage: DOWN_STORAGE, throttlers: THROTTLERS } : THROTTLERS)]
       : [],
     controllers: [CheckInController],
     providers: [
@@ -55,7 +66,7 @@ describe('check-in HTTP (claim the visit QR)', () => {
   const repository = new FakeCheckInRepository(visitQrTarget())
 
   beforeAll(async () => {
-    app = await appWith(repository, profiles, false)
+    app = await appWith(repository, profiles, 'off')
   })
   afterAll(async () => app.close())
 
@@ -163,7 +174,7 @@ describe('check-in HTTP limits', () => {
 
   beforeAll(async () => {
     // Nenhum QR existe: cada tentativa é uma credencial inventada, o caso que o limite protege.
-    app = await appWith(new FakeCheckInRepository(null), new FixedProfileRepository(acceptedProfile()), true)
+    app = await appWith(new FakeCheckInRepository(null), new FixedProfileRepository(acceptedProfile()), 'on')
   })
   afterAll(async () => app.close())
 
@@ -181,5 +192,31 @@ describe('check-in HTTP limits', () => {
     }
     const blocked = await request(app.getHttpServer()).post('/check-in/code').send({ visitCode: VISIT_CODE }).expect(429)
     expect(blocked.body).toEqual({ code: 'rateLimited' })
+  })
+})
+
+describe('check-in HTTP when the rate-limit counter is down', () => {
+  let app: INestApplication
+  const repository = new FakeCheckInRepository(visitQrTarget())
+
+  beforeAll(async () => {
+    app = await appWith(repository, new FixedProfileRepository(acceptedProfile()), 'storageDown')
+  })
+  afterAll(async () => app.close())
+
+  beforeEach(() => {
+    repository.qr = lockedVisitQr()
+    repository.state = FIRST_VISIT
+    repository.lookups = []
+  })
+
+  it('refuses the typed code with 429 rateLimited before any lookup: guessing would be unbounded (P-03)', async () => {
+    const blocked = await request(app.getHttpServer()).post('/check-in/code').send({ visitCode: VISIT_CODE }).expect(429)
+    expect(blocked.body).toEqual({ code: 'rateLimited' })
+    expect(repository.lookups).toEqual([])
+  })
+
+  it('still lets the 256-bit token through (fail open)', async () => {
+    await request(app.getHttpServer()).post('/check-in').send({ token: TOKEN }).expect(200)
   })
 })

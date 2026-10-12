@@ -20,6 +20,8 @@ export const BIRTHDAY_CHANGE_COOLDOWN_DAYS = 365
 /** Cidade do piloto: completa o endereço da loja na busca do mapa. */
 export const PILOT_CITY = 'Três Lagoas, MS'
 export const LAPSED_AFTER_DAYS = 30
+/** Página da tela Clientes do lojista: a lista cresce com a loja e nunca sai inteira (nem decifra todos os celulares). */
+export const MERCHANT_CUSTOMERS_PAGE_SIZE = 50
 /** Código impresso embaixo do QR da loja (entrar no clube), para quem prefere digitar. */
 export const CHECK_IN_CODE_LENGTH = 6
 /** Folga para espaços e hífens de quem digita o código impresso embaixo do QR. */
@@ -77,6 +79,12 @@ export const CUSTOMER_FIRST_NAME_MAX_LENGTH = 40
 export const EMAIL_MAX_LENGTH = 254
 export const LOGIN_CODE_LENGTH = 6
 export const LOGIN_CODE_TTL_MINUTES = 5
+/**
+ * Tentativas de código de login por celular na janela. O limite do Supabase é por IP e lá chega o IP do BFF (que muda a
+ * cada chamada): sem este teto, 10⁶ códigos ficariam ao alcance de quem martela o BFF.
+ */
+export const LOGIN_VERIFY_ATTEMPTS_MAX = 5
+export const LOGIN_VERIFY_WINDOW_MINUTES = 15
 export const FOUNDER_PLAN_PRICE_CENTS = 7900
 
 export const PROGRAM_TARGET_MIN = 3

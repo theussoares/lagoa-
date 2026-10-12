@@ -1,25 +1,17 @@
-import { beforeEach, describe, expect, it } from 'vitest'
-import { Clock } from '../../common/clock'
-import { PiiService } from '../../common/pii.service'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { MERCHANT_CUSTOMERS_PAGE_SIZE } from '#shared/constants/domain'
+import { lapsedCutoff } from '#shared/domain/customer'
+import type { Clock } from '../../common/clock'
+import type { PiiService } from '../../common/pii.service'
 import { createTestPii } from '../../test-support/pii'
 import type { MerchantShopRecord } from '../session/session.repository'
 import { SessionRepository } from '../session/session.repository'
-import type { CustomersRepository, RawCustomerCardRow } from './customers.repository'
+import { FakeCustomersRepository, rawCustomer } from './customers.fixtures'
 import { CustomersService } from './customers.service'
 
-class FakeClock extends Clock {
-  constructor(private currentTime: Date) {
-    super()
-  }
-
-  now(): Date {
-    return this.currentTime
-  }
-
-  setTime(time: Date): void {
-    this.currentTime = time
-  }
-}
+const NOW = new Date('2026-10-08T12:00:00Z')
+const ownerUserId = '018f98a2-7b2a-7182-9f33-6d004bbbb001'
+const shopId = '018f98a2-7b2a-7182-9f33-6d004bbbb002'
 
 class FakeSessionRepository extends SessionRepository {
   shop: MerchantShopRecord | null = null
@@ -29,144 +21,66 @@ class FakeSessionRepository extends SessionRepository {
   }
 }
 
-class FakeCustomersRepository implements CustomersRepository {
-  rows: RawCustomerCardRow[] = []
-
-  async listShopCustomers(_shopId: string): Promise<RawCustomerCardRow[]> {
-    return this.rows
-  }
-}
-
 describe('CustomersService', () => {
   let pii: PiiService
-  let clock: FakeClock
   let sessionRepo: FakeSessionRepository
   let customersRepo: FakeCustomersRepository
   let service: CustomersService
 
-  const ownerUserId = '018f98a2-7b2a-7182-9f33-6d004bbbb001'
-  const shopId = '018f98a2-7b2a-7182-9f33-6d004bbbb002'
-
   beforeEach(() => {
     pii = createTestPii()
-    clock = new FakeClock(new Date('2026-10-08T12:00:00Z'))
     sessionRepo = new FakeSessionRepository()
-    sessionRepo.shop = {
-      id: shopId,
-      ownerUserId,
-      name: 'Padaria Central',
-      status: 'approved',
-      merchantTermsVersion: null,
-    }
+    sessionRepo.shop = { id: shopId, ownerUserId, name: 'Padaria Central', status: 'approved', merchantTermsVersion: null }
     customersRepo = new FakeCustomersRepository()
+    const clock: Clock = { now: () => NOW }
     service = new CustomersService(sessionRepo, customersRepo, pii, clock)
   })
 
-  it('retorna notFound se a loja do lojista não existir', async () => {
+  it('answers notFound when the owner has no shop, without querying customers', async () => {
     sessionRepo.shop = null
-    const result = await service.listCustomers(ownerUserId, 'all')
-    expect(result.ok).toBe(false)
-    if (!result.ok) {
-      expect(result.error.code).toBe('notFound')
-    }
+    expect(await service.listCustomers(ownerUserId, 'all')).toEqual({ ok: false, error: { code: 'notFound', entity: 'merchant' } })
+    expect(customersRepo.pageQueries).toEqual([])
   })
 
-  it('mascara o celular decifrado e nunca expõe o telefone em claro (LGPD)', async () => {
-    const rawPhone = '67999990374'
-    customersRepo.rows = [
-      {
-        customerId: '018f98a2-7b2a-7182-9f33-6d004bbbb010',
-        phoneEncrypted: pii.encrypt(rawPhone),
-        firstName: 'Maria',
-        unit: 'stamp',
-        balance: 5,
-        target: 10,
-        visitsCount: 3,
-        lastVisitAt: new Date('2026-10-06T10:00:00Z'),
-        acceptsNotifications: true,
-      },
-    ]
-
+  it('masks the decrypted phone and never returns it in clear (LGPD)', async () => {
+    customersRepo.rows = [rawCustomer(pii, 10, { firstName: 'Maria', balance: 5, visitsCount: 3, acceptsNotifications: true })]
     const result = await service.listCustomers(ownerUserId, 'all')
-    expect(result.ok).toBe(true)
-    if (result.ok) {
-      expect(result.value).toHaveLength(1)
-      const row = result.value[0]!
-      expect(row.maskedPhone).toBe('(67) 9••••-0374')
-      expect(JSON.stringify(result.value)).not.toContain(rawPhone)
-      expect(row.firstName).toBe('Maria')
-      expect(row.unit).toBe('stamp')
-      expect(row.balance).toBe(5)
-      expect(row.target).toBe(10)
-      expect(row.visitsCount).toBe(3)
-      expect(row.acceptsNotifications).toBe(true)
-      expect(row.isLapsed).toBe(false)
-    }
+    if (!result.ok) throw new Error('page expected')
+    expect(result.value.items).toEqual([
+      expect.objectContaining({ maskedPhone: '(67) 9••••-0010', firstName: 'Maria', balance: 5, visitsCount: 3, isLapsed: false, acceptsNotifications: true }),
+    ])
+    expect(JSON.stringify(result.value)).not.toContain('67999990010')
   })
 
-  it('filtra clientes corretamente por all, lapsed e rewardReady', async () => {
-    // Clock: 2026-10-08T12:00:00Z
-    // 35 dias atrás: 2026-09-03
-    const phone1 = '67999990001'
-    const phone2 = '67999990002'
-    const phone3 = '67999990003'
+  it('scopes the query to the owner shop and pushes filter and lapsed cutoff down to the repository', async () => {
+    await service.listCustomers(ownerUserId, 'lapsed', '018f98a2-7b2a-7182-9f33-6d004bbbb099')
+    const scope = { shopId, filter: 'lapsed', lapsedCutoff: lapsedCutoff(NOW) }
+    expect(customersRepo.pageQueries).toEqual([{ ...scope, after: '018f98a2-7b2a-7182-9f33-6d004bbbb099', limit: MERCHANT_CUSTOMERS_PAGE_SIZE + 1 }])
+    expect(customersRepo.countScopes).toEqual([scope])
+  })
 
-    customersRepo.rows = [
-      {
-        customerId: '018f98a2-7b2a-7182-9f33-6d004bbbb011',
-        phoneEncrypted: pii.encrypt(phone1),
-        firstName: 'Lapsed Customer',
-        unit: 'stamp',
-        balance: 2,
-        target: 10,
-        visitsCount: 1,
-        lastVisitAt: new Date('2026-09-01T10:00:00Z'), // > 30 dias atrás
-        acceptsNotifications: true,
-      },
-      {
-        customerId: '018f98a2-7b2a-7182-9f33-6d004bbbb012',
-        phoneEncrypted: pii.encrypt(phone2),
-        firstName: 'Reward Ready Customer',
-        unit: 'stamp',
-        balance: 10,
-        target: 10,
-        visitsCount: 10,
-        lastVisitAt: new Date('2026-10-07T10:00:00Z'), // recente
-        acceptsNotifications: false,
-      },
-      {
-        customerId: '018f98a2-7b2a-7182-9f33-6d004bbbb013',
-        phoneEncrypted: pii.encrypt(phone3),
-        firstName: 'Regular Customer',
-        unit: 'stamp',
-        balance: 4,
-        target: 10,
-        visitsCount: 4,
-        lastVisitAt: new Date('2026-10-05T10:00:00Z'), // recente
-        acceptsNotifications: true,
-      },
-    ]
+  it('returns one page with a cursor when there is more, decrypting only the phones it shows', async () => {
+    customersRepo.rows = Array.from({ length: MERCHANT_CUSTOMERS_PAGE_SIZE + 1 }, (_, index) => rawCustomer(pii, index))
+    customersRepo.counts = { total: 120, acceptingNotifications: 30 }
+    const decrypt = vi.spyOn(pii, 'decrypt')
 
-    const allResult = await service.listCustomers(ownerUserId, 'all')
-    expect(allResult.ok).toBe(true)
-    if (allResult.ok) {
-      expect(allResult.value).toHaveLength(3)
-    }
+    const result = await service.listCustomers(ownerUserId, 'all')
+    if (!result.ok) throw new Error('page expected')
+    expect(result.value.items).toHaveLength(MERCHANT_CUSTOMERS_PAGE_SIZE)
+    expect(result.value.nextCursor).toBe(customersRepo.rows[MERCHANT_CUSTOMERS_PAGE_SIZE - 1]?.customerId)
+    expect(result.value).toMatchObject({ total: 120, acceptingNotifications: 30 })
+    expect(decrypt).toHaveBeenCalledTimes(MERCHANT_CUSTOMERS_PAGE_SIZE)
+  })
 
-    const lapsedResult = await service.listCustomers(ownerUserId, 'lapsed')
-    expect(lapsedResult.ok).toBe(true)
-    if (lapsedResult.ok) {
-      expect(lapsedResult.value).toHaveLength(1)
-      expect(lapsedResult.value[0]!.firstName).toBe('Lapsed Customer')
-      expect(lapsedResult.value[0]!.isLapsed).toBe(true)
-    }
+  it('has no cursor on the last page', async () => {
+    customersRepo.rows = [rawCustomer(pii, 1), rawCustomer(pii, 2)]
+    const result = await service.listCustomers(ownerUserId, 'all')
+    expect(result).toMatchObject({ ok: true, value: { nextCursor: null } })
+  })
 
-    const rewardResult = await service.listCustomers(ownerUserId, 'rewardReady')
-    expect(rewardResult.ok).toBe(true)
-    if (rewardResult.ok) {
-      expect(rewardResult.value).toHaveLength(1)
-      expect(rewardResult.value[0]!.firstName).toBe('Reward Ready Customer')
-      expect(rewardResult.value[0]!.balance).toBe(10)
-    }
+  it('marks lapsed rows with the shared rule', async () => {
+    customersRepo.rows = [rawCustomer(pii, 1, { lastVisitAt: new Date('2026-09-01T10:00:00Z') })]
+    const result = await service.listCustomers(ownerUserId, 'lapsed')
+    expect(result).toMatchObject({ ok: true, value: { items: [{ isLapsed: true }] } })
   })
 })

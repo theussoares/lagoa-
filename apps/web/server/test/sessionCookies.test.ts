@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ACCESS_COOKIE, REFRESH_COOKIE, expiredCookiesFor, sessionCookiesFor } from '../utils/sessionCookies'
 
-const tokens = { accessToken: 'at', refreshToken: 'rt', expiresIn: 3600 }
+const tokens = { accessToken: 'at', refreshToken: 'rt', expiresIn: 3600, userId: 'user-1' }
 
 describe('session cookies', () => {
   it('are httpOnly, SameSite=Lax and scoped to /api', () => {
