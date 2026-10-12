@@ -13,12 +13,12 @@ const CLASS_BY_ROLE: Record<ActionRole, string> = {
   inline: 'text-primary',
 }
 
-async function render(props: Record<string, unknown>) {
+async function render(props: { role: ActionRole } & Record<string, unknown>) {
   return mountSuspended(ActionButton, { props: { label: 'Ação', ...props } })
 }
 
 describe('ActionButton', () => {
-  it.each(Object.entries(CLASS_BY_ROLE))('role %s renders its look', async (role, token) => {
+  it.each(Object.entries(CLASS_BY_ROLE) as [ActionRole, string][])('role %s renders its look', async (role, token) => {
     const button = await render({ role })
     expect(button.get('button').classes().join(' ')).toContain(token)
   })
