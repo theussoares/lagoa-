@@ -10,8 +10,8 @@ const cityHeaderImage = useCityHeaderImage()
   <div>
     <p class="sr-only" aria-live="polite">{{ screen.announcement }}</p>
 
-    <CheckInEarnedStep v-if="screen.earned" :earned="screen.earned" :focus-request="screen.focusRequest" />
-    <CheckInJoinedStep v-else-if="screen.joined" :joined="screen.joined" :focus-request="screen.focusRequest" />
+    <CheckInEarnedStep v-if="screen.earned" :earned="screen.earned" :image="cityHeaderImage" :focus-request="screen.focusRequest" />
+    <CheckInJoinedStep v-else-if="screen.joined" :joined="screen.joined" :image="cityHeaderImage" :focus-request="screen.focusRequest" />
 
     <template v-else>
       <ScreenHeader
