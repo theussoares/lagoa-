@@ -20,6 +20,6 @@ const emit = defineEmits<Emits>()
       <UIcon :name="icon" class="mt-0.5 size-6 shrink-0 text-error" aria-hidden="true" />
       <span>{{ message }}</span>
     </p>
-    <UButton variant="outline" color="neutral" :icon="actionIcon" :label="action" @click="emit('retry')" />
+    <ActionButton role="primary" size="lg" :icon="actionIcon" :label="action" @click="emit('retry')" />
   </div>
 </template>

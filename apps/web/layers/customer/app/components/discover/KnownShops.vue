@@ -19,6 +19,6 @@ const { t } = useI18n()
         <ShopTile :shop="shop" to="/carteira" class="!animate-none" />
       </li>
     </ul>
-    <UButton to="/carteira" variant="ghost" color="neutral" trailing-icon="i-ph-arrow-right" :label="t('discover.openWallet')" class="self-start" />
+    <ActionButton role="quiet" to="/carteira" trailing-icon="i-ph-arrow-right" :label="t('discover.openWallet')" class="self-start" />
   </section>
 </template>

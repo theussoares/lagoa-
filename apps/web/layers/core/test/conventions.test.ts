@@ -45,16 +45,7 @@ const TRANSITIONAL_PAGE_TEMPLATE: readonly string[] = [
 ]
 
 /** Tela do cliente com `<UButton>` cru: use `ActionButton` (papéis em layers/ui). */
-const TRANSITIONAL_RAW_BUTTON: readonly string[] = [
-  'layers/customer/app/components/discover/KnownShops.vue',
-  'layers/customer/app/components/ranking/JoinForm.vue',
-  'layers/customer/app/components/rewards/HistorySection.vue',
-  'layers/customer/app/components/wallet/Empty.vue',
-  'layers/customer/app/components/wallet/Problem.vue',
-  'layers/customer/app/pages/ranking.vue',
-  'layers/customer/app/pages/reward-redemption.vue',
-  'layers/customer/app/pages/wallet.vue',
-]
+const TRANSITIONAL_RAW_BUTTON: readonly string[] = []
 
 /** Composables dedicados a API de navegador (CLAUDE.md, "Browser API"). */
 const BROWSER_COMPOSABLES: readonly string[] = ['useFocus', 'useHaptics', 'useFileDownload', 'useImageResize', 'useInputCaret', 'useLeaveGuard', 'usePrint', 'useQrScanner']

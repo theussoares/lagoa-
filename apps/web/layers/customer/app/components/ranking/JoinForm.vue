@@ -16,6 +16,6 @@ const name = ref('')
     <UFormField :label="labels.name" :help="labels.help">
       <UInput v-model="name" size="xl" class="w-full" :maxlength="RANKING_NAME_MAX_LENGTH" autocomplete="off" />
     </UFormField>
-    <UButton type="submit" size="lg" block :loading="pending" :label="labels.submit" />
+    <ActionButton role="primary" size="lg" type="submit" block :loading="pending" :label="labels.submit" />
   </form>
 </template>

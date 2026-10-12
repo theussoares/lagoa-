@@ -31,7 +31,7 @@ const slots: StampSlotModel[] = Array.from({ length: SLOTS }, (_, index) => ({
         <h2 class="text-[1.375rem] leading-[1.2] font-semibold text-balance text-highlighted [font-stretch:95%]">{{ title }}</h2>
         <p class="text-pretty text-toned">{{ lead }}</p>
       </div>
-      <UButton :to="to" size="xl" block icon="i-ph-compass" :label="action" />
+      <ActionButton role="primary" :to="to" block icon="i-ph-compass" :label="action" />
     </div>
   </div>
 </template>

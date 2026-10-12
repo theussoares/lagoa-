@@ -29,7 +29,7 @@ const { t } = useI18n()
           <UIcon name="i-ph-wifi-slash" class="mt-1 size-4 shrink-0" aria-hidden="true" />
           {{ errorCode ? t(`errors.${errorCode}`) : '' }}
         </p>
-        <UButton variant="outline" color="neutral" icon="i-ph-arrow-counter-clockwise" :label="t('common.retry')" @click="emit('retry')" />
+        <ActionButton role="primary" size="lg" icon="i-ph-arrow-counter-clockwise" :label="t('common.retry')" @click="emit('retry')" />
       </div>
       <LedgerList v-else-if="entries.length > 0" :entries="entries" />
       <p v-else class="py-4 text-pretty text-muted">{{ t('rewards.historyEmpty') }}</p>

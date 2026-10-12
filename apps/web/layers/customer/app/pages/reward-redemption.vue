@@ -58,16 +58,16 @@ const screen = useRewardRedemptionScreen()
           <p v-if="screen.heldUntil" class="text-base text-muted">{{ screen.heldUntil }}</p>
         </div>
 
-        <UButton
+        <ActionButton
           v-else-if="screen.ticket.kind === 'expired'"
-          size="xl"
+          role="primary"
           block
           icon="i-ph-arrow-clockwise"
           :label="t('redemption.regenerate')"
           @click="screen.request"
         />
 
-        <UButton v-else to="/carteira" size="xl" block :label="t('redemption.backToWallet')" />
+        <ActionButton v-else role="primary" to="/carteira" block :label="t('redemption.backToWallet')" />
       </template>
     </div>
   </div>

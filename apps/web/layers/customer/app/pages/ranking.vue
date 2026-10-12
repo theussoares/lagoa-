@@ -47,7 +47,7 @@ async function changeConsent(update: Parameters<typeof rankingService.setConsent
       <p v-if="myStandingLine(state.value, translate)" class="text-base text-toned" aria-live="polite">{{ myStandingLine(state.value, translate) }}</p>
 
       <RankingJoinForm v-if="!state.value.me.optedIn" :pending="pending" :labels="joinLabels" @join="changeConsent({ granted: true, name: $event })" />
-      <UButton v-else variant="outline" color="neutral" size="lg" block :loading="pending" :label="t('ranking.leave')" @click="changeConsent({ granted: false })" />
+      <ActionButton v-else role="secondary" block :loading="pending" :label="t('ranking.leave')" @click="changeConsent({ granted: false })" />
       <p class="text-base text-muted">{{ t('ranking.privacy') }}</p>
     </template>
   </div>

@@ -42,7 +42,7 @@ const screen = useWalletScreen()
           @select="screen.activeId = $event"
         >
           <template #actions="{ card }">
-            <UButton v-if="card.rewardReady" :to="`/premios/${card.id}`" color="secondary" size="xl" block icon="i-ph-gift" :label="t('wallet.redeem')" />
+            <ActionButton v-if="card.rewardReady" role="reward" :to="`/premios/${card.id}`" block icon="i-ph-gift" :label="t('wallet.redeem')" />
           </template>
         </CardStack>
       </section>
