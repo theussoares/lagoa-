@@ -13,13 +13,12 @@ e `seed.example.ts`. Nomes em inglês, seguindo o glossário do `CLAUDE.md`.
   enviado pelo Resend como SMTP do Supabase). O Nest valida o JWT do Supabase.
   `AppUser.id` é o mesmo `auth.users.id`, então não existe tabela de código/OTP no
   nosso modelo.
-- **Celular:** obrigatório no cadastro, guardado como dado pessoal, **sem
-  verificação por SMS** no MVP. Serve para o Balcão achar o cliente.
+- **Celular:** obrigatório no cadastro, verificado via código no WhatsApp (Cloud API da Meta).
+  O histórico de envios é limitado pela tabela `sms_sends` (3 envios/60 min por hash do celular, sem PII).
 
 ## Fora do MVP
 
-`Campaign` e `CampaignRecipient`, `Plan`, `Subscription` e `Invoice`, `NetworkAdmin`,
-verificação de celular por SMS.
+`Campaign` e `CampaignRecipient`, `Plan`, `Subscription` e `Invoice`, `NetworkAdmin`.
 
 Consequências:
 - Sem campanhas, o lembrete para "clientes sumidos" fica de fora. A lista de sumidos

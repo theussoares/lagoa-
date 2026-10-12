@@ -52,7 +52,7 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
   (`/check-in#visita=<token>`), nunca em query: não chega ao servidor, ao `Referer` nem ao `?para=` do login.
   O Balcão não recebe mais celular.
 - **BFF (`apps/web/server`, modo `http`):** o navegador só fala com o próprio domínio. `/api/auth/*`
-  faz o login por SMS no Supabase e guarda o token em cookie httpOnly (`lagoa_at`/`lagoa_rt`, SameSite=Lax,
+  faz o login por código no WhatsApp no Supabase e guarda o token em cookie httpOnly (`lagoa_at`/`lagoa_rt`, SameSite=Lax,
   path `/api`); cada rota de `server/api/**` é um handler explícito (método + caminho fixo da API, entrada validada com
   o schema do `shared`) que troca o cookie por `Bearer` via `callApi` (`NUXT_API_BASE_URL`, só no servidor); não há
   proxy genérico: rota que não existe lá devolve 404 e os caminhos reais da API nunca aparecem no navegador. Escrita em `/api/**` exige `Origin` do próprio host ou de `NUXT_ALLOWED_ORIGINS`. Peças puras
@@ -66,7 +66,7 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
   não roda no SSR: estado derivado de dado assíncrono é `computed`.
 - **Lojista (painel):** SPA (`routeRules` `ssr: false`: `/painel`, `/balcao/**`, `/programa`, `/clientes`, `/campanhas`,
   `/configuracoes`) sobre a API `merchant/*` pelo mesmo BFF (`server/api/merchant/**`, uma rota por rota da API). Login
-  pelo mesmo SMS do cliente (`/api/auth`); depois do código, `GET /api/merchant/session` diz se já há loja (`session`) ou
+  pelo mesmo código no WhatsApp do cliente (`/api/auth`); depois do código, `GET /api/merchant/session` diz se já há loja (`session`) ou
   se falta o Criar o clube (`signUp`, sem ticket: o cookie identifica o dono). A sessão (`useMerchantSessionStore`) fica só
   na memória e é conferida no servidor pelos middlewares (`useMerchantSession().check()`). `runtimeConfig.public.merchantBackend`
   (`NUXT_PUBLIC_MERCHANT_BACKEND`) é `http` por padrão; `mock` (navegador, `localStorage`, código `246810`) só para testes e
