@@ -41,6 +41,19 @@ const titleId = useId()
         <span>{{ shop.earn }}<template v-if="shop.welcome"> · {{ shop.welcome }}</template></span>
       </p>
 
+      <ActionButton
+        v-if="shop.contact"
+        role="primary"
+        :to="shop.contact.href"
+        target="_blank"
+        external
+        block
+        icon="i-ph-whatsapp-logo"
+        trailing-icon="i-ph-arrow-up-right"
+        :label="shop.contact.label"
+        :aria-label="shop.contact.accessibleLabel"
+        class="min-h-11"
+      />
       <UButton
         :to="shop.directions.href"
         target="_blank"

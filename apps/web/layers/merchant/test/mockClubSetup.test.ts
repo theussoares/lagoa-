@@ -72,11 +72,11 @@ describe('mock ClubSetupService', () => {
     const poster = await merchant.poster.getPoster()
     if (!poster.ok) throw new Error(poster.error.code)
 
-    expect(await merchant.visitQr.issueVisitQr({})).toEqual({ ok: false, error: { code: 'shopPendingApproval' } })
+    expect(await merchant.visitQr.issueVisitQr({ amountCents: 3200 })).toEqual({ ok: false, error: { code: 'shopPendingApproval' } })
     expect(await customer.checkIn.joinShop(poster.value.checkInCode)).toEqual({ ok: false, error: { code: 'invalidShopQr' } })
 
     await backend.run((ctx) => approveShop(ctx, session.shopId))
-    expect((await merchant.visitQr.issueVisitQr({})).ok).toBe(true)
+    expect((await merchant.visitQr.issueVisitQr({ amountCents: 3200 })).ok).toBe(true)
   })
 
   it('signs the new merchant in next time with the shop status', async () => {
@@ -172,7 +172,7 @@ describe('suspended shop', () => {
     expect(await auth.signInMerchant(EXAMPLE_IDS.phones.barbershopMerchant, backend.loginCode)).toEqual({ ok: false, error: { code: 'shopSuspended' } })
 
     const suspended = { ok: false, error: { code: 'shopSuspended' } }
-    expect(await merchant.visitQr.issueVisitQr({})).toEqual(suspended)
+    expect(await merchant.visitQr.issueVisitQr({ amountCents: 3200 })).toEqual(suspended)
     expect(await merchant.counter.validateRedemption(RedemptionCodeSchema.parse('ACD234'))).toEqual(suspended)
     expect(await merchant.campaigns.sendReminder({ message: 'Volte!', bonusUnits: 0 }, 1)).toEqual(suspended)
     expect(await merchant.shopStatus.getStatus()).toEqual({ ok: true, value: 'suspended' })

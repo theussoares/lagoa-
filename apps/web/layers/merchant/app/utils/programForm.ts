@@ -23,16 +23,21 @@ const DEFAULT_POINTS_PER_VISIT = 10
 export const COOLDOWN_HOUR_OPTIONS: readonly number[] = [4, 12, 24, 48, 168]
 /** Valor do seletor para "1 vez por dia (vira à meia-noite)"; as horas são valores numéricos. */
 export const CALENDAR_DAY_COOLDOWN_VALUE = 'calendarDay'
-/** Horas guardadas no `calendarDay` (não contam; só satisfazem o CHECK do banco). */
+/** Valor do seletor para "Sem limite" (o cliente vai quantas vezes quiser). */
+export const UNLIMITED_COOLDOWN_VALUE = 'unlimited'
+/** Horas guardadas fora do modo corrido (não contam; só satisfazem o CHECK do banco). */
 const CALENDAR_DAY_STORED_HOURS = 24
 
 /** Valor do seletor de janela para a política atual. */
 export function cooldownSelectValue(checkIn: CheckInPolicy): string {
-  return checkIn.cooldownMode === 'calendarDay' ? CALENDAR_DAY_COOLDOWN_VALUE : String(checkIn.cooldownHours)
+  if (checkIn.cooldownMode === 'calendarDay') return CALENDAR_DAY_COOLDOWN_VALUE
+  if (checkIn.cooldownMode === 'unlimited') return UNLIMITED_COOLDOWN_VALUE
+  return String(checkIn.cooldownHours)
 }
 
 /** Política nova a partir do valor escolhido no seletor; `null` para valor inválido. */
 export function withCooldownValue(checkIn: CheckInPolicy, value: unknown): CheckInPolicy | null {
+  if (value === UNLIMITED_COOLDOWN_VALUE) return { ...checkIn, cooldownMode: 'unlimited', cooldownHours: CALENDAR_DAY_STORED_HOURS }
   if (value === CALENDAR_DAY_COOLDOWN_VALUE) return { ...checkIn, cooldownMode: 'calendarDay', cooldownHours: CALENDAR_DAY_STORED_HOURS }
   const hours = Number(value)
   return Number.isInteger(hours) && hours > 0 ? { ...checkIn, cooldownMode: 'rolling', cooldownHours: hours } : null

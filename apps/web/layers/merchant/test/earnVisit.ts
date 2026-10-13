@@ -9,7 +9,7 @@ export async function earnVisit(
   backend: MockBackend,
   merchant: MerchantServices,
   customerId: CustomerId,
-  request: { amountCents?: number } = {},
+  request: { amountCents?: number } = { amountCents: 3200 },
 ): Promise<CheckInResult> {
   const issued = await merchant.visitQr.issueVisitQr(request)
   if (!issued.ok) throw new Error(issued.error.code)

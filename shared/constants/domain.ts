@@ -19,6 +19,8 @@ export const REWARD_HOLD_DAYS = 30
 export const BIRTHDAY_CHANGE_COOLDOWN_DAYS = 365
 /** Cidade do piloto: completa o endereço da loja na busca do mapa. */
 export const PILOT_CITY = 'Três Lagoas, MS'
+/** Código do país (Brasil) para o link do WhatsApp; os celulares do app guardam só DDD + número. */
+export const PILOT_COUNTRY_CODE = '55'
 export const LAPSED_AFTER_DAYS = 30
 /** Página da tela Clientes do lojista: a lista cresce com a loja e nunca sai inteira (nem decifra todos os celulares). */
 export const MERCHANT_CUSTOMERS_PAGE_SIZE = 50
@@ -115,6 +117,8 @@ export const HOME_LAPSED_PREVIEW_LIMIT = 5
 export const SHOP_NAME_MAX_LENGTH = 60
 export const SHOP_NEIGHBORHOOD_MAX_LENGTH = 40
 export const SHOP_ADDRESS_MAX_LENGTH = 100
+/** Texto do botão de WhatsApp nos cards da loja ("Agendar agora"). */
+export const SHOP_CTA_LABEL_MAX_LENGTH = 24
 /** Foto da loja (vitrine do Descobrir): o app reduz antes de enviar; o servidor recusa acima disto (o bucket aceita 2 MB). */
 export const SHOP_PHOTO_MAX_BYTES = 1_000_000
 /** Maior lado do banner depois da redução no navegador, em pixels. */

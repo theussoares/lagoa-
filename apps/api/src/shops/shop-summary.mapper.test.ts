@@ -43,6 +43,13 @@ describe('toShopSummary', () => {
     expect(showcase?.logoUrl).toBe('https://project.supabase.co/storage/v1/object/public/shop-assets/abc/logo.png')
   })
 
+  it('adds the WhatsApp button only when the shop has a valid number', () => {
+    expect(summaryOf(catalogShop({ whatsapp: '67991234567', ctaLabel: 'Agendar agora' })).contact).toEqual({ whatsapp: '67991234567', ctaLabel: 'Agendar agora' })
+    expect(summaryOf(catalogShop({ whatsapp: '67991234567' })).contact).toEqual({ whatsapp: '67991234567', ctaLabel: null })
+    expect(summaryOf(catalogShop()).contact).toBeUndefined()
+    expect(summaryOf(catalogShop({ whatsapp: '123' })).contact).toBeUndefined()
+  })
+
   it('leaves the showcase out without images', () => {
     expect(summaryOf(catalogShop()).showcase).toBeUndefined()
   })

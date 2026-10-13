@@ -14,6 +14,8 @@ export const CATALOG_COLUMNS = {
   addressLine: shops.addressLine,
   logoPath: shops.logoPath,
   bannerPath: shops.bannerPath,
+  whatsapp: shops.whatsapp,
+  ctaLabel: shops.ctaLabel,
   mode: programs.mode,
   earnUnits: programs.earnUnits,
   target: programs.target,
@@ -31,6 +33,8 @@ export interface CatalogRow {
   readonly addressLine: string
   readonly logoPath: string | null
   readonly bannerPath: string | null
+  readonly whatsapp: string | null
+  readonly ctaLabel: string | null
   readonly mode: ProgramMode
   readonly earnUnits: number
   readonly target: number
@@ -62,6 +66,8 @@ export function toCatalogShop(row: CatalogRow): CatalogShop | null {
     addressLine: row.addressLine,
     logoPath: row.logoPath,
     bannerPath: row.bannerPath,
+    whatsapp: row.whatsapp,
+    ctaLabel: row.ctaLabel,
     program: { rules: rules.value, rewardTitle: row.rewardTitle, bonusRules: bonusRules.data, expiration: expiration.value },
   }
 }

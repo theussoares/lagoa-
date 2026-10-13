@@ -40,7 +40,12 @@ function basePointsOf(pointsPerReal: number, amountCents: number): number | null
 /** Botão de gerar e dica do valor do formulário do QR da visita. */
 export function toVisitQrIssueText(action: CounterAction | null, amountCents: number, t: Translate): VisitQrIssueText {
   const plain = t('counter.visitQr.issue')
-  if (action?.kind !== 'amount') return { issueLabel: plain, amountHint: undefined, amountPreview: undefined }
+  if (action === null) return { issueLabel: plain, amountHint: undefined, amountPreview: undefined }
+  // Nos modos por visita o valor só fica registrado (Início e Clientes mostram); o cliente ganha pela regra da visita.
+  if (action.kind === 'visit') {
+    const issueLabel = amountCents > 0 ? t('counter.visitQr.issueAmount', { amount: formatCurrency(amountCents) }) : plain
+    return { issueLabel, amountHint: t('counter.visitQr.amountRecordedHint'), amountPreview: undefined }
+  }
   const amountHint = t('counter.visitQr.amountHint', { points: unitsText(t, 'point', action.pointsPerReal) })
   const points = amountCents > 0 ? basePointsOf(action.pointsPerReal, amountCents) : null
   if (points === null) return { issueLabel: plain, amountHint, amountPreview: undefined }

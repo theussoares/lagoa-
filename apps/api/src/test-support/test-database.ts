@@ -111,6 +111,7 @@ export class TestDatabase {
     bonusRules?: BonusRules
     checkInEnabled?: boolean
     cooldownHours?: number
+    cooldownMode?: 'rolling' | 'calendarDay' | 'unlimited'
     expiration?: ExpirationPolicy
   } = {}): Promise<TestShop> {
     const ownerId = await this.createCustomer({ withProfile: false })
@@ -141,6 +142,7 @@ export class TestDatabase {
       expirationMonths: options.expiration?.kind === 'afterInactivity' ? options.expiration.months : null,
       checkInEnabled: options.checkInEnabled ?? true,
       checkInCooldownHours: options.cooldownHours ?? 24,
+      ...(options.cooldownMode && { checkInCooldownMode: options.cooldownMode }),
     })
     return shop
   }

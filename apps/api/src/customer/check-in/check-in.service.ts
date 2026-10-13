@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { cooldownEndsAt } from '#shared/domain/antifraud'
 import { unitOf } from '#shared/domain/programStrategies'
-import type { VisitQrUseError } from '#shared/domain/visitQr'
+import { type VisitQrUseError, visitLedgerKindFor } from '#shared/domain/visitQr'
 import { type CheckInResult, CheckInResultSchema, type VisitCodeClaimRequest, type VisitQrClaimRequest } from '#shared/schemas/visit'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
@@ -108,7 +108,7 @@ function toResult(target: VisitQrTarget, recorded: VisitClaimRecorded): CheckInR
       id: entryId,
       shopId: shop.id,
       shopName: shop.name,
-      kind: target.earn.kind,
+      kind: visitLedgerKindFor(rules),
       unit,
       units,
       rewardTitle: null,

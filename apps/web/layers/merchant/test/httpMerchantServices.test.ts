@@ -29,7 +29,7 @@ describe('http merchant services', () => {
       }),
     )
     const { visitQr } = servicesWith(fetcher)
-    const result = await visitQr.issueVisitQr({})
+    const result = await visitQr.issueVisitQr({ amountCents: 3200 })
     expect(result.ok).toBe(true)
     expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.test/v1/merchant/visit-qrs')
   })
@@ -106,7 +106,7 @@ describe('http merchant services', () => {
     const fetcher = vi.fn<typeof fetch>(async () => json(403, { code: 'merchantTermsNotAccepted' }))
     const { counter, visitQr } = servicesWith(fetcher)
     const refused = { ok: false, error: { code: 'merchantTermsNotAccepted' } }
-    expect(await visitQr.issueVisitQr({})).toEqual(refused)
+    expect(await visitQr.issueVisitQr({ amountCents: 3200 })).toEqual(refused)
     expect(await counter.validateRedemption(RedemptionCodeSchema.parse('ACDEFG'))).toEqual(refused)
     expect(await counter.confirmRedemption(RedemptionIdSchema.parse('01925b44-9000-7000-8000-000000000009'))).toEqual(refused)
   })
@@ -147,7 +147,7 @@ describe('http merchant services', () => {
   it('visitQr maps the live QR limit', async () => {
     const fetcher = vi.fn<typeof fetch>(async () => json(409, { code: 'visitQrLimitReached' }))
     const { visitQr } = servicesWith(fetcher)
-    expect(await visitQr.issueVisitQr({})).toEqual({ ok: false, error: { code: 'visitQrLimitReached' } })
+    expect(await visitQr.issueVisitQr({ amountCents: 3200 })).toEqual({ ok: false, error: { code: 'visitQrLimitReached' } })
   })
 
   it('counter confirm keeps rewardNotReady (the code stops being valid on the server)', async () => {

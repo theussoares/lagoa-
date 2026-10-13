@@ -24,6 +24,11 @@ const filters: Readonly<Record<CustomerFilter, (row: MerchantCustomerRow) => boo
   rewardReady: (row) => isRewardReady(row),
 }
 
+function lastAmountOf(ctx: MockContext, shopId: ShopId, customerId: CustomerId): number | null {
+  const purchases = ctx.state.ledger.filter((record) => record.shopId === shopId && record.customerId === customerId && record.amountCents !== null)
+  return purchases.toSorted((a, b) => b.createdAt.localeCompare(a.createdAt))[0]?.amountCents ?? null
+}
+
 function merchantCustomers(ctx: MockContext, shopId: ShopId, filter: CustomerFilter): MerchantCustomerRow[] {
   return ctx.state.cards
     .filter((card) => card.shopId === shopId)
@@ -45,6 +50,7 @@ function merchantCustomers(ctx: MockContext, shopId: ShopId, filter: CustomerFil
           lastVisitAt: card.lastVisitAt,
           isLapsed: isLapsedSince(card.lastVisitAt, ctx.now),
           acceptsNotifications: customer.consent.notifications,
+          lastAmountCents: lastAmountOf(ctx, shopId, customer.id),
         },
       ]
     })

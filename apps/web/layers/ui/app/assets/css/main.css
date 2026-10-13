@@ -152,6 +152,11 @@
   --lagoa-shadow-raised: 0 0 0 1px rgb(255 255 255 / 0.08), 0 22px 40px -18px rgb(0 0 0 / 0.8);
 }
 
+/* Dois toques seguidos (carimbo, botões) não dão zoom; o pinch continua valendo, por acessibilidade. */
+html {
+  touch-action: manipulation;
+}
+
 body {
   background: var(--lagoa-desk);
   color: var(--ui-text);

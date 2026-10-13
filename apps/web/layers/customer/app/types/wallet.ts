@@ -5,6 +5,15 @@ import type { WalletCard } from '#shared/schemas/loyaltyCard'
 import type { WalletActivity } from '#shared/schemas/visit'
 import type { TransportError } from '#shared/types/errors'
 
+/** Abas da carteira: todos, com prêmio liberado, ainda juntando. */
+export type WalletFilter = 'all' | 'ready' | 'progress'
+
+export interface WalletFilterOption {
+  readonly value: WalletFilter
+  readonly label: string
+  readonly count: number
+}
+
 export type SeenBalances = Readonly<Record<string, number>>
 
 export interface SeenStamps {
@@ -23,8 +32,16 @@ export interface WalletScreen {
   readonly cardsState: AsyncResultState<WalletCard[], TransportError>
   readonly reloadCards: () => Promise<void>
   readonly activityState: AsyncResultState<WalletActivity[], TransportError>
+  /** Todos os cartões da pessoa. */
   readonly cards: StampCardModel[]
-  activeId: string
+  /** Os que passam na aba e na busca. */
+  readonly visibleCards: StampCardModel[]
+  filter: WalletFilter
+  query: string
+  readonly filterCounts: Record<WalletFilter, number>
+  /** Cartão aberto na lista (um por vez); vazio = todos fechados. */
+  expandedId: string
+  readonly toggleCard: (id: string) => void
   readonly greeting: string
   readonly ledger: LedgerEntryModel[]
   readonly cityHeaderImage: string

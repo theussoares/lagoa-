@@ -10,6 +10,8 @@ export interface CatalogShop {
   readonly addressLine: string
   readonly logoPath: string | null
   readonly bannerPath: string | null
+  readonly whatsapp: string | null
+  readonly ctaLabel: string | null
   readonly program: {
     readonly rules: ProgramRules
     readonly rewardTitle: string

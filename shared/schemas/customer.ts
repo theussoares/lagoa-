@@ -56,6 +56,8 @@ export const MerchantCustomerRowSchema = z.object({
   lastVisitAt: IsoDateTimeSchema.nullable(),
   isLapsed: z.boolean(),
   acceptsNotifications: z.boolean(),
+  /** Valor da compra mais recente com valor lançado nesta loja; `null` se nenhuma trouxe valor. */
+  lastAmountCents: z.number().int().positive().nullable(),
 })
 export type MerchantCustomerRow = z.infer<typeof MerchantCustomerRowSchema>
 

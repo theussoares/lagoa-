@@ -2,7 +2,6 @@ import { VISIT_QR_STATUS_POLL_MS } from '#shared/constants/domain'
 import type { VisitQr, VisitQrIssueRequest } from '#shared/schemas/visitQr'
 import type { DomainErrorCode } from '#shared/types/errors'
 import type { Result } from '#shared/types/result'
-import type { CounterAction } from '../types/counter'
 import type { VisitQrControl, VisitQrState } from '../types/visitQr'
 import { visitQrRemainingSeconds } from '../utils/visitQrModels'
 
@@ -76,14 +75,14 @@ export function useVisitQr(): VisitQrControl {
     if (seconds === 0 && awaitingCustomer.value) void poll()
   })
 
-  async function issue(action: CounterAction): Promise<void> {
+  async function issue(): Promise<void> {
     if (state.value.status === 'issuing') return
     const amountCents = Number(amount.value)
-    if (action.kind === 'amount' && !(amountCents > 0)) {
+    if (!(amountCents > 0)) {
       state.value = { status: 'error', code: 'invalidAmount' }
       return
     }
-    const request: VisitQrIssueRequest = action.kind === 'amount' ? { amountCents } : {}
+    const request: VisitQrIssueRequest = { amountCents }
     state.value = { status: 'issuing' }
     const sentAt = Date.now()
     const result = await visitQr.issueVisitQr(request)

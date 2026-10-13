@@ -17,7 +17,7 @@ export interface VisitQrControl {
   state: Readonly<Ref<VisitQrState>>
   /** Segundos que faltam para vencer, pelo relógio do servidor; 0 sem QR aguardando o cliente. */
   remaining: Readonly<Ref<number>>
-  issue: (action: CounterAction) => Promise<void>
+  issue: () => Promise<void>
   cancel: () => Promise<void>
   reset: () => void
   /** `null` fora do mock. */

@@ -36,7 +36,7 @@ describe('mock visit QR testing service', () => {
   it('is wired next to the real service and simulates the use of an active QR', async () => {
     const { backend } = makeBackend()
     const services = createMockMerchantServices(backend, staticSession(barbershopSession))
-    const issued = await services.visitQr.issueVisitQr({})
+    const issued = await services.visitQr.issueVisitQr({ amountCents: 3200 })
     if (!issued.ok) throw new Error(issued.error.code)
     const simulated = await services.visitQrTesting?.simulateClaim(issued.value.id)
     expect(simulated).toMatchObject({ ok: true, value: { status: 'claimed' } })

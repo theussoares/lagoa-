@@ -8,7 +8,7 @@ import { visitQrLink } from '#shared/utils/checkInCode'
 
 /** O que o Balcão faria na venda: um QR da visita novo no mock, com o token que só o cliente vê. */
 export async function issueTestVisitQr(shopId: ShopId = EXAMPLE_IDS.shops.barbershop): Promise<IssuedVisitQr> {
-  const issued = await useNuxtApp().$mockBackend.run((ctx) => issueVisitQr(ctx, shopId, EXAMPLE_IDS.merchants.barbershop, {}))
+  const issued = await useNuxtApp().$mockBackend.run((ctx) => issueVisitQr(ctx, shopId, EXAMPLE_IDS.merchants.barbershop, { amountCents: 3200 }))
   if (!issued.ok) throw new Error(issued.error.code)
   return issued.value
 }

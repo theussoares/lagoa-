@@ -11,6 +11,8 @@ export interface RawCustomerCardRow {
   readonly visitsCount: number
   readonly lastVisitAt: Date | null
   readonly acceptsNotifications: boolean
+  /** Valor da compra mais recente com valor lançado; `null` se nenhuma trouxe valor. */
+  readonly lastAmountCents: number | null
 }
 
 /** Quem entra na lista: a loja do dono e o filtro da aba, já resolvido em instante (`lapsedCutoff`). */

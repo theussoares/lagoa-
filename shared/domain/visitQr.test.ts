@@ -121,14 +121,24 @@ describe('decideVisitQrUse', () => {
 })
 
 describe('planVisitQrIssue', () => {
-  it('locks a visit for the per-visit modes and refuses an amount (CA-07)', () => {
-    expect(planVisitQrIssue(STAMPS, undefined)).toEqual({ ok: true, value: { kind: 'visit' } })
-    expect(planVisitQrIssue(PER_VISIT, undefined)).toEqual({ ok: true, value: { kind: 'visit' } })
-    expect(planVisitQrIssue(STAMPS, 1000)).toEqual({ ok: false, error: { code: 'amountNotAccepted' } })
+  it('requires the sale amount in every mode', () => {
+    expect(planVisitQrIssue(STAMPS, undefined)).toEqual({ ok: false, error: { code: 'invalidAmount' } })
+    expect(planVisitQrIssue(PER_VISIT, undefined)).toEqual({ ok: false, error: { code: 'invalidAmount' } })
   })
 
-  it.each([undefined, 0, -1, 10.5, AMOUNT_MAX_CENTS + 1, 50])('refuses %j in the per-real mode (CA-06)', (amount) => {
-    expect(planVisitQrIssue(PER_REAL, amount)).toEqual({ ok: false, error: { code: 'invalidAmount' } })
+  it('records the amount on the per-visit modes', () => {
+    expect(planVisitQrIssue(STAMPS, 1000)).toEqual({ ok: true, value: { kind: 'amount', amountCents: 1000 } })
+    expect(planVisitQrIssue(PER_VISIT, 1000)).toEqual({ ok: true, value: { kind: 'amount', amountCents: 1000 } })
+  })
+
+  it.each([undefined, 0, -1, 10.5, AMOUNT_MAX_CENTS + 1])('refuses %j in every mode', (amount) => {
+    for (const rules of [STAMPS, PER_VISIT, PER_REAL]) {
+      expect(planVisitQrIssue(rules, amount)).toEqual({ ok: false, error: { code: 'invalidAmount' } })
+    }
+  })
+
+  it('refuses an amount that earns no point in the per-real mode (CA-06)', () => {
+    expect(planVisitQrIssue(PER_REAL, 50)).toEqual({ ok: false, error: { code: 'invalidAmount' } })
   })
 
   it('locks the amount in the per-real mode', () => {

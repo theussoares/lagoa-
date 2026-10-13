@@ -59,12 +59,11 @@ const tableLabels = computed<CustomerTableLabels>(() => ({
   card: t('customers.table.card'),
   visits: t('customers.table.visits'),
   lastVisit: t('customers.table.lastVisit'),
-  notifications: t('customers.table.notifications'),
+  lastPurchase: t('customers.table.lastPurchase'),
   noName: t('customers.table.noName'),
   rewardReady: t('customers.table.rewardReady'),
   lapsed: t('customers.table.lapsed'),
-  acceptsNotifications: t('customers.table.acceptsNotifications'),
-  noNotifications: t('customers.table.noNotifications'),
+  noPurchase: t('customers.table.noPurchase'),
 }))
 </script>
 

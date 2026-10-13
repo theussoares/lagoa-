@@ -61,6 +61,7 @@ export class CustomersService {
       lastVisitAt,
       isLapsed: isLapsedSince(lastVisitAt, now),
       acceptsNotifications: raw.acceptsNotifications,
+      lastAmountCents: raw.lastAmountCents,
     }
   }
 }

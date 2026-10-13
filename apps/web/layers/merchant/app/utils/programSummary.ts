@@ -13,11 +13,18 @@ const FIELDS_BY_SECTION: Readonly<Record<ProgramFoldSection, readonly ProgramFie
 
 /** "4 horas", "24 horas", "2 dias", "1 vez por dia". 24 h fica em horas para não confundir com o dia. */
 export function cooldownLabel(cooldown: CheckInCooldown, t: Translate): string {
+  if (cooldown.cooldownMode === 'unlimited') return t('program.visitRules.cooldownUnlimited')
   if (cooldown.cooldownMode === 'calendarDay') return t('program.visitRules.cooldownCalendarDay')
   const hours = cooldown.cooldownHours
   return hours % HOURS_PER_DAY === 0 && hours > HOURS_PER_DAY
     ? t('program.visitRules.cooldownDays', { count: hours / HOURS_PER_DAY }, hours / HOURS_PER_DAY)
     : t('program.visitRules.cooldownHours', { count: hours }, hours)
+}
+
+function cooldownSummary(checkIn: CheckInCooldown, t: Translate): string {
+  if (checkIn.cooldownMode === 'unlimited') return t('program.summary.cooldownUnlimited')
+  if (checkIn.cooldownMode === 'calendarDay') return t('program.summary.cooldownCalendarDay')
+  return t('program.summary.cooldown', { interval: cooldownLabel(checkIn, t) })
 }
 
 /** O que está ligado em cada seção fechada, numa linha: o lojista lê sem precisar abrir. */
@@ -35,9 +42,7 @@ export function toProgramSummaries(draft: ProgramDraft, t: Translate): ProgramSe
 
   const visitRules = [
     checkIn.enabled ? t('program.summary.checkInOn') : t('program.summary.checkInOff'),
-    checkIn.cooldownMode === 'calendarDay'
-      ? t('program.summary.cooldownCalendarDay')
-      : t('program.summary.cooldown', { interval: cooldownLabel(checkIn, t) }),
+    cooldownSummary(checkIn, t),
     expirationPolicy.kind === 'never'
       ? t('program.summary.neverExpires')
       : t('program.summary.expiresAfter', { count: expirationPolicy.months }, expirationPolicy.months),

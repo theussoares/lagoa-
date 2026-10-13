@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common'
 import { and, desc, eq, gte, isNull, lte, sql, type SQL } from 'drizzle-orm'
 import type { CustomerFilter } from '#shared/schemas/customer'
 import { DB, type Database } from '../../database/database.module'
-import { loyaltyCards } from '../../database/schema/cards'
+import { ledgerEntries, loyaltyCards } from '../../database/schema/cards'
 import { programs } from '../../database/schema/shops'
 import { appUsers, customerProfiles } from '../../database/schema/users'
 import {
@@ -56,6 +56,13 @@ export class DrizzleCustomersRepository extends CustomersRepository {
         visitsCount: loyaltyCards.visitsCount,
         lastVisitAt: loyaltyCards.lastVisitAt,
         acceptsNotifications: customerProfiles.notificationsConsent,
+        // Uma consulta pelo índice `(card, occurred_at desc, id desc)` por linha da página (no máximo MERCHANT_CUSTOMERS_PAGE_SIZE).
+        lastAmountCents: sql<number | null>`(
+          select ${ledgerEntries.amountCents} from ${ledgerEntries}
+          where ${ledgerEntries.cardId} = ${loyaltyCards.id} and ${ledgerEntries.amountCents} is not null
+          order by ${ledgerEntries.occurredAt} desc nulls last, ${ledgerEntries.id} desc
+          limit 1
+        )`,
       })
       .from(loyaltyCards)
       .innerJoin(programs, eq(programs.id, loyaltyCards.programId))

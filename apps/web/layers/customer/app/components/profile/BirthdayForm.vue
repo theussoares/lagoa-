@@ -18,17 +18,19 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const day = ref<number | null>(null)
-const month = ref<number | null>(null)
+/** `undefined` = ainda não mexeu: vale a data salva. Derivado (não `watch immediate`) para sair certo já no SSR. */
+const pickedDay = ref<number | null | undefined>(undefined)
+const pickedMonth = ref<number | null | undefined>(undefined)
+const saved = computed(() => splitBirthday(props.birthday))
+const day = computed(() => (pickedDay.value === undefined ? saved.value.day : pickedDay.value))
+const month = computed(() => (pickedMonth.value === undefined ? saved.value.month : pickedMonth.value))
 const confirmingRemoval = ref(false)
 watch(
   () => props.birthday,
-  (saved) => {
-    const parts = splitBirthday(saved)
-    day.value = parts.day
-    month.value = parts.month
+  () => {
+    pickedDay.value = undefined
+    pickedMonth.value = undefined
   },
-  { immediate: true },
 )
 watch(
   () => props.pending,
@@ -52,9 +54,9 @@ function toNumber(value: unknown): number | null {
 }
 
 function setMonth(value: unknown): void {
-  month.value = toNumber(value)
+  pickedMonth.value = toNumber(value)
   // 31 de janeiro → abril: o dia que não existe no mês novo sai, em vez de virar data inválida.
-  if (day.value !== null && month.value !== null && joinBirthday({ day: day.value, month: month.value }) === null) day.value = null
+  if (day.value !== null && month.value !== null && joinBirthday({ day: day.value, month: month.value }) === null) pickedDay.value = null
 }
 
 function submit(): void {
@@ -77,7 +79,7 @@ function submit(): void {
             :disabled="frozen"
             :ui="{ base: 'min-h-11' }"
             class="w-full"
-            @update:model-value="day = toNumber($event)"
+            @update:model-value="pickedDay = toNumber($event)"
           />
         </UFormField>
         <UFormField :label="labels.month" name="birthdayMonth">

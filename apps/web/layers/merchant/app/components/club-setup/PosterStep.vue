@@ -11,7 +11,7 @@ interface Props {
 }
 
 interface Emits {
-  (event: 'approve' | 'print' | 'retry'): void
+  (event: 'approve' | 'print' | 'download' | 'retry'): void
 }
 
 defineProps<Props>()
@@ -38,6 +38,7 @@ const emit = defineEmits<Emits>()
       />
       <div class="flex flex-wrap gap-3">
         <UButton size="lg" icon="i-ph-printer" :label="$t('clubSetup.poster.print')" :disabled="!poster" @click="emit('print')" />
+        <UButton size="lg" variant="outline" color="neutral" icon="i-ph-download-simple" :label="$t('clubSetup.poster.download')" :disabled="!poster" @click="emit('download')" />
         <UButton :to="MERCHANT_PANEL_PATH" size="lg" variant="outline" color="neutral" trailing-icon="i-ph-arrow-right" :label="$t('clubSetup.poster.goToPanel')" />
       </div>
     </section>
