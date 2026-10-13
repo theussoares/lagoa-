@@ -2,7 +2,7 @@
 import { HOME_LAPSED_PREVIEW_LIMIT, LAPSED_AFTER_DAYS, MERCHANT_TERMS_VERSION, WEEK_SUMMARY_DAYS } from '#shared/constants/domain'
 import { CUSTOMER_FILTER_QUERY, customerFilterSlug } from '../utils/customerFilterQuery'
 import { toCustomerRowModel } from '../utils/customerModels'
-import { toWeekDayRows, toWeekHeadline } from '../utils/homeModels'
+import { toHomeStatCards } from '../utils/homeModels'
 import type { LapsedPreviewLabels } from '../types/home'
 
 definePageMeta({ path: '/painel', layout: 'merchant', middleware: 'merchant-auth' })
@@ -22,15 +22,14 @@ watch(state, (current) => {
 })
 
 const snapshot = computed(() => (state.value.status === 'success' ? state.value.value : null))
-const headline = computed(() => (snapshot.value === null ? '' : toWeekHeadline(snapshot.value.week, translate)))
-const weekRows = computed(() => (snapshot.value === null ? [] : toWeekDayRows(snapshot.value.week, translate)))
+const lapsedTotal = computed(() => snapshot.value?.lapsed.total ?? 0)
+const reachable = computed(() => snapshot.value?.reachable ?? null)
+const statCards = computed(() => (snapshot.value === null ? [] : toHomeStatCards({ week: snapshot.value.week, lapsedTotal: lapsedTotal.value, reachable: reachable.value }, translate)))
 const lapsedRows = computed(() => {
   if (snapshot.value === null) return []
   const now = new Date()
   return snapshot.value.lapsed.items.slice(0, HOME_LAPSED_PREVIEW_LIMIT).map((row) => toCustomerRowModel(row, now, translate))
 })
-const lapsedTotal = computed(() => snapshot.value?.lapsed.total ?? 0)
-const reachable = computed(() => snapshot.value?.reachable ?? null)
 
 const lapsedLink = { path: '/clientes', query: { [CUSTOMER_FILTER_QUERY]: customerFilterSlug('lapsed') } }
 const lapsedLabels = computed<LapsedPreviewLabels>(() => ({ caption: t('home.lapsed.caption'), noName: t('customers.table.noName') }))
@@ -72,9 +71,11 @@ const lapsedLabels = computed<LapsedPreviewLabels>(() => ({ caption: t('home.lap
       @print="posterReprint.print"
     />
 
-    <div v-if="state.status === 'loading'" class="grid gap-5 lg:grid-cols-12" role="status" :aria-label="t('common.loading')">
-      <USkeleton class="h-96 rounded-(--radius-card) lg:col-span-7" />
-      <USkeleton class="h-80 rounded-(--radius-card) lg:col-span-5" />
+    <div v-if="state.status === 'loading'" class="flex flex-col gap-5" role="status" :aria-label="t('common.loading')">
+      <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <USkeleton v-for="index in 4" :key="index" class="h-32 rounded-(--radius-card)" />
+      </div>
+      <USkeleton class="h-80 rounded-(--radius-card)" />
     </div>
 
     <InkNote
@@ -86,15 +87,12 @@ const lapsedLabels = computed<LapsedPreviewLabels>(() => ({ caption: t('home.lap
       live
     />
 
-    <div v-else-if="snapshot" class="grid items-start gap-5 lg:grid-cols-12">
-      <PanelModule :title="t('home.week.title')" class="lg:col-span-7">
-        <div class="flex flex-col gap-4">
-          <p class="text-lg text-highlighted">{{ headline }}</p>
-          <HomeWeekLedger :rows="weekRows" :caption="t('home.week.caption', { days: WEEK_SUMMARY_DAYS })" />
-        </div>
-      </PanelModule>
+    <div v-else-if="snapshot" class="flex flex-col gap-5">
+      <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <HomeStatCard v-for="card in statCards" :key="card.id" :card="card" />
+      </div>
 
-      <PanelModule :title="t('home.lapsed.title')" class="lg:col-span-5">
+      <PanelModule :title="t('home.lapsed.title')">
         <template v-if="lapsedTotal > 0" #actions>
           <ULink :to="lapsedLink" class="inline-flex min-h-11 items-center text-[0.9375rem] font-semibold text-primary">
             {{ t('home.lapsed.seeAll') }}
@@ -115,7 +113,6 @@ const lapsedLabels = computed<LapsedPreviewLabels>(() => ({ caption: t('home.lap
               :color="reachable ? 'primary' : 'neutral'"
               :label="t('home.lapsed.remind')"
             />
-            <p v-if="reachable !== null" class="text-center text-sm text-muted">{{ t('home.lapsed.reachable', { count: reachable }, reachable) }}</p>
           </div>
         </div>
       </PanelModule>
