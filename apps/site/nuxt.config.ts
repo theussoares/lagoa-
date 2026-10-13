@@ -27,7 +27,7 @@ export default defineNuxtConfig({
   },
   routeRules: { '/**': { headers: SECURITY_HEADERS } },
   nitro: {
-    prerender: { routes: ['/'], crawlLinks: true },
+    prerender: { routes: ['/', '/sitemap.xml', '/robots.txt'], crawlLinks: true },
   },
   runtimeConfig: {
     public: {
