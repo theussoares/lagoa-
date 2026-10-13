@@ -1,8 +1,8 @@
 <script setup lang="ts">
 const { t } = useI18n()
 
-const FOUNDER_ITEMS = ['retention', 'slowDay', 'newCustomers', 'setup'] as const
-const PRO_ITEMS = ['lapsed', 'campaigns', 'spotlight'] as const
+const FOUNDER_ITEMS = ['stamps', 'birthday', 'limit', 'setup'] as const
+const PRO_ITEMS = ['bonus', 'spotlight', 'lapsed', 'limit'] as const
 </script>
 
 <template>

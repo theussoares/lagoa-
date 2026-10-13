@@ -24,6 +24,7 @@ const sampleCard = computed<StampCardModel>(() => ({
   summary: t('card.summary'),
   rewardReady: false,
   note: null,
+  contact: null,
 }))
 </script>
 

@@ -2,10 +2,10 @@
 const { t } = useI18n()
 
 const RULES = [
-  { key: 'surprise', icon: 'i-ph-calendar-star-bold', tilt: 2 },
-  { key: 'referral', icon: 'i-ph-users-three-bold', tilt: -5 },
-  { key: 'welcome', icon: 'i-ph-hand-waving-bold', tilt: -3 },
-  { key: 'birthday', icon: 'i-ph-cake-bold', tilt: 4 },
+  { key: 'surprise', pro: true, icon: 'i-ph-calendar-star-bold', tilt: 2 },
+  { key: 'referral', pro: true, icon: 'i-ph-users-three-bold', tilt: -5 },
+  { key: 'welcome', pro: true, icon: 'i-ph-hand-waving-bold', tilt: -3 },
+  { key: 'birthday', pro: false, icon: 'i-ph-cake-bold', tilt: 4 },
 ] as const
 </script>
 
@@ -25,6 +25,7 @@ const RULES = [
           </span>
         </span>
         <div class="flex flex-col gap-1.5 pt-1">
+          <StampTag v-if="rule.pro" :label="t('bonus.proTag')" tone="reward" icon="i-ph-star-bold" class="self-start" />
           <h3 class="type-card-title">{{ t(`bonus.${rule.key}.title`) }}</h3>
           <p class="text-toned">{{ t(`bonus.${rule.key}.body`) }}</p>
         </div>

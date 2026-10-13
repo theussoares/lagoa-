@@ -88,18 +88,16 @@
   },
   "lapsed": {
     "title": "Quem sumiu volta a comprar.",
-    "lead": "O Lagoa+ mostra quem não aparece há mais de {lapsedDays} dias e manda um lembrete com carimbo de presente. É venda que já foi sua, voltando para o seu caixa.",
-    "consent": "Só recebe aviso quem aceitou. O celular aparece sempre mascarado.",
+    "lead": "O Lagoa+ mostra quem não aparece há mais de {lapsedDays} dias. Você sabe quem chamar de volta antes que ele vire cliente do concorrente.",
+    "consent": "O celular aparece sempre mascarado.",
     "listTitle": "Sem visita há mais de {lapsedDays} dias",
     "daysAgo": "há {days} dias",
-    "consentTag": "Aceitou avisos",
-    "reminder": "Lembrete: “Sentimos sua falta. Volte e ganhe 1 carimbo de presente.”",
     "sample": "Exemplo ilustrativo",
     "proTag": "No Fundador Pro"
   },
   "bonus": {
     "title": "Movimento até no dia fraco.",
-    "lead": "Ligue o que faz sentido para a sua loja. Se duas regras caírem no mesmo dia, vale a maior.",
+    "lead": "Ligue o que faz sentido para a sua loja. Se duas regras caírem no mesmo dia, vale a maior. O aniversário vem em todos os planos; as outras regras, no Fundador Pro.",
     "surprise": {
       "tag": "2×",
       "title": "Dia fraco com movimento",
@@ -119,7 +117,8 @@
       "tag": "2×",
       "title": "Um motivo a mais no aniversário",
       "body": "No dia do aniversário, cada visita vale dois carimbos."
-    }
+    },
+    "proTag": "No Fundador Pro"
   },
   "network": {
     "title": "Cliente novo sem pagar anúncio.",
@@ -141,7 +140,7 @@
   "pricing": {
     "title": "Menos de R$ 3 por dia para parar de perder cliente.",
     "paybackNote": "Exemplo: com ticket médio de R$ 30, 3 voltas a mais no mês cobrem o Fundador.",
-    "scarcity": "Só {founderSpots} lojas entram com preço de Fundador. Depois, o preço volta para R$ 119,90 e R$ 249,90.",
+    "scarcity": "Só {founderSpots} lojas entram com preço de Fundador, e as {founderSpots} primeiras do Pro não têm limite de clientes. Depois, o preço volta para R$ 119,90 e R$ 249,90.",
     "currency": "R$",
     "period": "/mês",
     "featured": "Mais completo",
@@ -153,21 +152,22 @@
         "from": "119,90",
         "price": "79,90",
         "items": {
-          "retention": "Cliente voltando a cada compra",
-          "slowDay": "Movimento no dia fraco",
-          "newCustomers": "Cliente novo pela indicação e pela vitrine da cidade",
+          "stamps": "Carimbo na venda e resgate do prêmio no balcão",
+          "birthday": "Carimbo em dobro no aniversário do cliente",
+          "limit": "Até 300 clientes no clube",
           "setup": "Implantação com a Equipe Lagoa+"
         }
       },
       "pro": {
         "name": "Fundador Pro",
         "from": "249,90",
-        "price": "89,90",
+        "price": "99,90",
         "lead": "Tudo do Fundador, mais:",
         "items": {
-          "lapsed": "Recupere quem parou de comprar",
-          "campaigns": "Lembrete com carimbo de presente para trazer de volta",
-          "spotlight": "Sua loja em destaque no Descobrir"
+          "bonus": "Boas-vindas, indicação e dia surpresa em dobro",
+          "spotlight": "Sua loja em destaque no Descobrir",
+          "lapsed": "Lista de quem parou de comprar",
+          "limit": "Até 1.000 clientes no clube (as {founderSpots} primeiras lojas, sem limite)"
         }
       }
     },
@@ -212,15 +212,15 @@
       },
       "price": {
         "q": "Quanto custa?",
-        "a": "O Fundador custa R$ 79,90 por mês e o Fundador Pro, R$ 89,90, os dois com preço travado e sem fidelidade. A loja entra depois da aprovação da rede. O preço de Fundador vale só para as primeiras {founderSpots} lojas."
+        "a": "O Fundador custa R$ 79,90 por mês e o Fundador Pro, R$ 99,90, os dois com preço travado e sem fidelidade. A loja entra depois da aprovação da rede. O preço de Fundador vale só para as primeiras {founderSpots} lojas."
       },
       "plans": {
         "q": "Qual a diferença entre Fundador e Pro?",
-        "a": "O Pro inclui a lista de quem sumiu, os lembretes com carimbo de presente e o destaque da sua loja no Descobrir."
+        "a": "O Fundador tem carimbo, resgate e bônus de aniversário, para até 300 clientes. O Pro soma boas-vindas, indicação e dia surpresa, a lista de quem sumiu e o destaque da sua loja no Descobrir, para até 1.000 clientes (as primeiras {founderSpots} lojas do Pro não têm limite)."
       },
       "privacy": {
         "q": "Como ficam os dados dos meus clientes?",
-        "a": "O celular é dado pessoal: aparece mascarado nas listas e nunca é exposto. Lembrete só vai para quem aceitou receber avisos, e a pessoa pode cancelar quando quiser."
+        "a": "O celular é dado pessoal: aparece mascarado nas listas e nunca é exposto."
       },
       "change": {
         "q": "Posso mudar a meta depois?",
