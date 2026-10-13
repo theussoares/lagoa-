@@ -13,7 +13,9 @@
     "faq": "Dúvidas",
     "signIn": "Entrar no Balcão",
     "openMenu": "Abrir menu",
-    "closeMenu": "Fechar menu"
+    "closeMenu": "Fechar menu",
+    "blog": "Blog",
+    "guide": "Guia"
   },
   "cta": {
     "primary": "Quero vender mais",
@@ -31,7 +33,15 @@
     "note": "Piloto em Três Lagoas/MS · só {founderSpots} lojas com preço de Fundador, a partir de R$ 79,90/mês",
     "receipt": "+1 carimbo pelo QR da visita",
     "receiptDetail": "agora 8 de 10",
-    "visualLabel": "Exemplo: o cartão do cliente com 8 de 10 carimbos, faltando 2 para um corte grátis, e o aviso do carimbo que acabou de cair pelo QR da visita."
+    "visualLabel": "Exemplo: o cartão do cliente com 8 de 10 carimbos, faltando 2 para um corte grátis, e o aviso do carimbo que acabou de cair pelo QR da visita.",
+    "segments": {
+      "barber": "Barbearias",
+      "cafe": "Cafés",
+      "pizza": "Pizzarias",
+      "pet": "Pet shops",
+      "gym": "Academias"
+    },
+    "segmentsLabel": "Feito para o comércio de bairro"
   },
   "card": {
     "shopName": "Sua barbearia",
@@ -247,7 +257,8 @@
   "footer": {
     "tagline": "Clube de fidelidade do comércio de Três Lagoas/MS.",
     "merchantSignIn": "Entrar no Balcão",
-    "copyright": "© {year} Lagoa+"
+    "copyright": "© {year} Lagoa+",
+    "explore": "Explorar"
   },
   "pain": {
     "title": "Você conhece esse mês.",
@@ -257,5 +268,37 @@
       "competitor": "Ele vai para o concorrente e você nem fica sabendo."
     },
     "closing": "Não é falta de cliente. É falta de motivo para ele voltar."
+  },
+  "blog": {
+    "title": "Blog",
+    "lead": "Ideias práticas para o comércio de Três Lagoas fazer o cliente voltar.",
+    "seoTitle": "Blog · Lagoa+",
+    "seoDescription": "Artigos práticos sobre fidelidade, retorno de clientes e vendas no comércio local.",
+    "read": "Ler artigo",
+    "back": "Voltar ao blog",
+    "readingTime": "{minutes} min de leitura"
+  },
+  "guide": {
+    "title": "Guia do lojista",
+    "lead": "Tudo para começar e usar o Balcão no dia a dia, em passos curtos.",
+    "seoTitle": "Guia do lojista · Lagoa+",
+    "seoDescription": "Como começar, gerar o QR da visita, validar resgates e ligar as regras bônus no Lagoa+.",
+    "back": "Voltar ao guia",
+    "more": "Continue lendo"
+  },
+  "content": {
+    "ctaTitle": "Quer isso na sua loja?",
+    "ctaLead": "Chame a rede no WhatsApp. A gente monta o clube com você, sem custo de implantação."
+  },
+  "roi": {
+    "title": "Faça a conta da sua loja.",
+    "lead": "Mexa nos controles. É um exemplo com o seu ticket médio, não uma promessa de resultado.",
+    "ticket": "Ticket médio",
+    "returns": "Voltas a mais por mês",
+    "extra": "Venda extra por mês",
+    "plan": "Plano Fundador",
+    "covers": "A venda extra cobre o plano e sobram {net}.",
+    "short": "Faltam {count} voltas para cobrir o plano.",
+    "note": "Exemplo ilustrativo. O resultado real depende da sua loja."
   }
 }
