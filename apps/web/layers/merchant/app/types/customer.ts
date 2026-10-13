@@ -23,7 +23,8 @@ export interface CustomerRowModel {
   /** "hoje", "há 3 dias", "há 42 dias", "nunca". */
   readonly lastVisit: string
   readonly isLapsed: boolean
-  readonly acceptsNotifications: boolean
+  /** Valor da compra mais recente, "R$ 24,90"; `null` se nenhuma trouxe valor. */
+  readonly lastPurchase: string | null
 }
 
 export interface CustomerTableLabels {
@@ -32,12 +33,11 @@ export interface CustomerTableLabels {
   /** Visitas que deram carimbo ou ponto; resgates não contam. */
   readonly visits: string
   readonly lastVisit: string
-  readonly notifications: string
+  readonly lastPurchase: string
   readonly noName: string
   readonly rewardReady: string
   readonly lapsed: string
-  readonly acceptsNotifications: string
-  readonly noNotifications: string
+  readonly noPurchase: string
 }
 
 export interface MerchantCustomers {

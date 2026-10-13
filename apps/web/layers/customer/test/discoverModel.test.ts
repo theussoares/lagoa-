@@ -72,6 +72,21 @@ describe('toShopTeaserModel', () => {
     })
   })
 
+  it('has no WhatsApp button unless the shop registered a number', () => {
+    expect(toShopTeaserModel(shop('shop_b'), new Set(), t).contact).toBeNull()
+  })
+
+  it('shows the WhatsApp button with the text the shop chose, or the default text', () => {
+    const withLabel = ShopSummarySchema.parse({ ...shop('shop_b'), contact: { whatsapp: '67991234567', ctaLabel: 'Agendar agora' } })
+    expect(toShopTeaserModel(withLabel, new Set(), t).contact).toEqual({
+      label: 'Agendar agora',
+      accessibleLabel: 'shopContact.accessibleLabel label=Agendar agora shop=Loja shop_b',
+      href: 'https://wa.me/5567991234567',
+    })
+    const withoutLabel = ShopSummarySchema.parse({ ...shop('shop_b'), contact: { whatsapp: '67991234567', ctaLabel: null } })
+    expect(toShopTeaserModel(withoutLabel, new Set(), t).contact?.label).toBe('shopContact.defaultLabel')
+  })
+
   it('uses a ruler for points and has no welcome line when the bonus is off', () => {
     const model = toShopTeaserModel(
       shop('shop_c', { unit: 'point', target: 150, earnRate: { per: 'real', units: 1 }, welcomeUnits: 0 }),

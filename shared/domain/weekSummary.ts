@@ -10,6 +10,8 @@ export interface WeekLedgerRecord {
   readonly customerId: CustomerId
   readonly kind: LedgerKind
   readonly createdAt: IsoDateTime
+  /** Valor da venda que o QR trouxe; `null` nas linhas sem valor (resgate, bônus, QR antigo). */
+  readonly amountCents?: number | null
 }
 
 function localDate(iso: IsoDateTime): string {
@@ -36,6 +38,8 @@ function firstVisitDates(records: readonly WeekLedgerRecord[]): Map<CustomerId, 
   return new Map([...first].map(([customerId, createdAt]) => [customerId, localDate(createdAt)]))
 }
 
+const sumAmounts = (records: readonly WeekLedgerRecord[]): number => records.reduce((total, record) => total + (record.amountCents ?? 0), 0)
+
 function summarizeDay(isoDate: string, records: readonly WeekLedgerRecord[], firstVisits: Map<CustomerId, string>): DaySummary {
   const visits = records.filter((record) => isVisitKind(record.kind))
   const newCustomers = new Set(visits.map((record) => record.customerId).filter((customerId) => firstVisits.get(customerId) === isoDate))
@@ -44,6 +48,7 @@ function summarizeDay(isoDate: string, records: readonly WeekLedgerRecord[], fir
     visits: visits.length,
     newCustomers: newCustomers.size,
     redemptions: records.filter((record) => record.kind === 'redemption').length,
+    amountCents: sumAmounts(visits),
   }
 }
 
@@ -68,5 +73,6 @@ export function summarizeWeek(records: readonly WeekLedgerRecord[], now: Date): 
     customers: visitors.size,
     newCustomers: days.reduce((total, day) => total + day.newCustomers, 0),
     redemptions: days.reduce((total, day) => total + day.redemptions, 0),
+    amountCents: days.reduce((total, day) => total + day.amountCents, 0),
   }
 }

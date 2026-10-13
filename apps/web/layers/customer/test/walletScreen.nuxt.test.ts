@@ -43,15 +43,34 @@ describe('useWalletScreen', () => {
     expect(signOutMock).toHaveBeenCalledTimes(1)
   })
 
-  it('shows the cards, with the first one active until another is chosen', async () => {
+  it('shows the cards, with the first one open until the person opens or closes one', async () => {
     const { result } = await mountComposable(useWalletScreen)
     expect(result.cards.length).toBeGreaterThan(0)
-    expect(result.activeId).toBe(result.cards[0]?.id)
+    expect(result.expandedId).toBe(result.cards[0]?.id)
     const other = result.cards[1]
     if (other) {
-      result.activeId = other.id
-      expect(result.activeId).toBe(other.id)
+      result.toggleCard(other.id)
+      expect(result.expandedId).toBe(other.id)
+      result.toggleCard(other.id)
+      expect(result.expandedId).toBe('')
     }
+  })
+
+  it('narrows the list by tab and by search, without accent or case, and counts each tab', async () => {
+    const { result } = await mountComposable(useWalletScreen)
+    const total = result.cards.length
+    expect(result.filterCounts.all).toBe(total)
+    expect(result.filterCounts.ready + result.filterCounts.progress).toBe(total)
+    result.filter = 'ready'
+    expect(result.visibleCards).toHaveLength(result.filterCounts.ready)
+    result.filter = 'all'
+    const first = result.cards[0]
+    if (first === undefined) throw new Error('a card was expected')
+    result.query = first.shopName.toUpperCase().normalize('NFD').replace(/\p{Diacritic}/gu, '')
+    expect(result.visibleCards.map((card) => card.id)).toContain(first.id)
+    result.query = 'zzzz-sem-loja'
+    expect(result.visibleCards).toHaveLength(0)
+    expect(result.expandedId).toBe('')
   })
 
   it('greets by first name once the profile is there', async () => {

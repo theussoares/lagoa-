@@ -6,14 +6,14 @@ describe('VisitQrsRules', () => {
   const rules = new VisitQrsRules()
 
   describe('planIssue', () => {
-    it('accepts undefined amount for stamps program', () => {
+    it('rejects missing amount on stamps program with invalidAmount', () => {
       const result = rules.planIssue({ mode: 'stamps', target: 10 }, undefined)
-      expect(result).toEqual({ ok: true, value: { kind: 'visit' } })
+      expect(result).toEqual({ ok: false, error: { code: 'invalidAmount' } })
     })
 
-    it('rejects amount on stamps program with amountNotAccepted', () => {
+    it('records the amount on stamps program', () => {
       const result = rules.planIssue({ mode: 'stamps', target: 10 }, 5000)
-      expect(result).toEqual({ ok: false, error: { code: 'amountNotAccepted' } })
+      expect(result).toEqual({ ok: true, value: { kind: 'amount', amountCents: 5000 } })
     })
 
     it('accepts valid amount on pointsPerCurrency program', () => {

@@ -20,6 +20,9 @@ export const shops = pgTable(
     /** Caminhos no bucket `shop-assets` (nunca a URL): logo quadrado e banner, a capa do card no Descobrir. */
     logoPath: text('logo_path'),
     bannerPath: text('banner_path'),
+    /** Contato público da loja nos cards: WhatsApp (só dígitos, celular BR) e o texto do botão. */
+    whatsapp: text('whatsapp'),
+    ctaLabel: text('cta_label'),
     status: shopStatus('status').notNull().default('pending'),
     plan: shopPlan('plan').notNull().default('founder'),
     /** Cartaz novo impresso? `null` = ainda não (aviso no Início); o Criar o clube já grava `now()`. */
@@ -30,7 +33,12 @@ export const shops = pgTable(
     createdAt: createdAt(),
   },
   // Um dono, uma loja (RN-02); trocar por `shop_members` mexe aqui e no resolver, não nos services.
-  (t) => [index('shops_status_idx').on(t.status), uniqueIndex('shops_owner_uq').on(t.ownerUserId)],
+  (t) => [
+    index('shops_status_idx').on(t.status),
+    uniqueIndex('shops_owner_uq').on(t.ownerUserId),
+    check('shops_whatsapp_check', sql`${t.whatsapp} IS NULL OR ${t.whatsapp} ~ '^[1-9]{2}9[0-9]{8}$'`),
+    check('shops_cta_label_check', sql`${t.ctaLabel} IS NULL OR (${t.whatsapp} IS NOT NULL AND char_length(${t.ctaLabel}) BETWEEN 1 AND 24)`),
+  ],
 )
 
 /** Quem mudou a situação ou o plano de uma loja, por script da rede. `actor` é um apelido de operador, nunca e-mail. */
@@ -74,7 +82,7 @@ export const programs = pgTable(
   expirationMonths: integer('expiration_months'),
   checkInEnabled: boolean('check_in_enabled').notNull().default(true),
   checkInCooldownHours: integer('check_in_cooldown_hours').notNull(),
-  /** `CheckInCooldownMode`: `rolling` (horas corridas) ou `calendarDay` (uma visita por dia local, vira à meia-noite). */
+  /** `CheckInCooldownMode`: `rolling` (horas corridas) ou `calendarDay` (uma visita por dia local, vira à meia-noite) ou `unlimited` (sem janela). */
   checkInCooldownMode: text('check_in_cooldown_mode').$type<CheckInCooldownMode>().notNull().default('rolling'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -84,7 +92,7 @@ export const programs = pgTable(
     // `IS NOT NULL` é necessário: CHECK que resulta em NULL passa no Postgres.
     // Janela de check-in de 1 a 168 h (CHECK_IN_COOLDOWN_MAX_HOURS): 0 ou negativo liberaria check-in ilimitado.
     check('programs_check_in_cooldown_check', sql`${t.checkInCooldownHours} BETWEEN 1 AND 168`),
-    check('programs_check_in_cooldown_mode_check', sql`${t.checkInCooldownMode} IN ('rolling', 'calendarDay')`),
+    check('programs_check_in_cooldown_mode_check', sql`${t.checkInCooldownMode} IN ('rolling', 'calendarDay', 'unlimited')`),
     check('programs_expiration_check', sql`${t.expirationKind} = 'never' OR (${t.expirationMonths} IS NOT NULL AND ${t.expirationMonths} BETWEEN 1 AND 24)`),
   ],
 )

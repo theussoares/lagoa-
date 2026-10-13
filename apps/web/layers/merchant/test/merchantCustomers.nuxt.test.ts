@@ -25,6 +25,7 @@ const row = (index: number): MerchantCustomerRow => ({
   lastVisitAt: null,
   isLapsed: false,
   acceptsNotifications: false,
+  lastAmountCents: null,
 })
 
 const page = (items: MerchantCustomerRow[], nextCursor: CustomerId | null, total = 3): Result<MerchantCustomerPage, TransportError> => ({

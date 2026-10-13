@@ -33,7 +33,6 @@ export async function resolveAccessToken(event: H3Event, settings: CookieSetting
     startSession(event, refreshed.value, settings)
     return { ok: true, value: refreshed.value.accessToken }
   }
-  if (refreshed.code !== 'internal') return refreshed
-  endSession(event, settings)
-  return { ok: false, code: 'unauthorized' }
+  if (refreshed.code === 'unauthorized') endSession(event, settings)
+  return refreshed
 }

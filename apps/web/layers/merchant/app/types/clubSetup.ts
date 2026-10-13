@@ -74,5 +74,6 @@ export interface ClubSetupScreen {
   readonly setMode: (mode: ProgramMode) => void
   readonly approve: () => Promise<void>
   readonly print: () => void
+  readonly downloadPoster: () => Promise<void>
   readonly retryPoster: () => Promise<void>
 }

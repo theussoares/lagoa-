@@ -1,7 +1,8 @@
-import type { SeenBalances, WalletScreen } from '../types/wallet'
+import type { SeenBalances, WalletFilter, WalletScreen } from '../types/wallet'
+import { countWalletCards, filterWalletCards } from '../utils/walletFilter'
 import { formatShortDate } from '#shared/utils/dateFormat'
 
-/** Carteira: maço de cartões, caderneta recente e saudação. */
+/** Carteira: lista de cartões com abas e busca, caderneta recente e saudação. */
 export function useWalletScreen(): WalletScreen {
   const { t } = useI18n()
   const translate = useTranslate()
@@ -12,7 +13,10 @@ export function useWalletScreen(): WalletScreen {
   const seenStamps = useSeenStamps()
   const cityHeaderImage = useCityHeaderImage()
 
-  const activeChoice = ref('')
+  const filter = ref<WalletFilter>('all')
+  const query = ref('')
+  // `undefined` = a pessoa ainda não mexeu: o primeiro cartão da lista já vem aberto. Derivado (sem watch), para sair igual no SSR.
+  const expandedChoice = ref<string | undefined>(undefined)
 
   // O "visto" mora no aparelho: no servidor e na hidratação nada é "novo" (HTML igual nos dois lados); depois de montar,
   // a batida acontece nesta tela e o saldo vira visto.
@@ -28,12 +32,20 @@ export function useWalletScreen(): WalletScreen {
       toStampCardModel(card, { t: translate, seenBalance: seenNow === null ? card.balance : (seenNow[card.id] ?? 0), formatDate: formatShortDate }),
     )
   })
-  const activeId = computed({
-    get: () => activeChoice.value || cards.value[0]?.id || '',
+  const visibleCards = computed(() => filterWalletCards(cards.value, filter.value, query.value))
+  const filterCounts = computed(() => countWalletCards(cards.value))
+  const expandedId = computed({
+    get: () => {
+      const choice = expandedChoice.value ?? visibleCards.value[0]?.id ?? ''
+      return visibleCards.value.some((card) => card.id === choice) ? choice : ''
+    },
     set: (id: string) => {
-      activeChoice.value = id
+      expandedChoice.value = id
     },
   })
+  function toggleCard(id: string): void {
+    expandedId.value = expandedId.value === id ? '' : id
+  }
 
   watch([cardsState, seen], ([state, seenNow]) => {
     if (state.status === 'success' && seenNow !== null) seenStamps.remember(Object.fromEntries(state.value.map((card) => [card.id, card.balance])))
@@ -60,5 +72,5 @@ export function useWalletScreen(): WalletScreen {
     return activityState.value.value.map((activity) => toLedgerEntryModel(activity, now, translate, iconByShop))
   })
 
-  return reactive({ cardsState, reloadCards, activityState, cards, activeId, greeting, ledger, cityHeaderImage })
+  return reactive({ cardsState, reloadCards, activityState, cards, visibleCards, filter, query, filterCounts, expandedId, toggleCard, greeting, ledger, cityHeaderImage })
 }

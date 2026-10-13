@@ -16,8 +16,17 @@
     "lead": "Continue juntando carimbos pela cidade e ganhe prêmios.",
     "profileLink": "Abrir seu perfil",
     "stackLabel": "Seus cartões",
-    "showCard": "Mostrar o cartão de {shop}",
-    "showMore": "Mostrar mais 1 cartão | Mostrar mais {count} cartões",
+    "openCard": "Abrir o cartão de {shop}",
+    "closeCard": "Fechar o cartão de {shop}",
+    "searchLabel": "Buscar e filtrar seus cartões",
+    "searchPlaceholder": "Buscar loja",
+    "searchClear": "Limpar a busca",
+    "noMatch": "Nenhum cartão encontrado. Mude a aba ou a busca.",
+    "filters": {
+      "all": "Todos",
+      "ready": "Prêmio liberado",
+      "progress": "Juntando"
+    },
     "redeem": "Resgatar prêmio",
     "ledgerTitle": "Caderneta",
     "ledgerEmpty": "Suas visitas aparecem aqui assim que o primeiro carimbo cair.",
@@ -51,6 +60,7 @@
       "issueAmount": "Gerar QR de {amount}",
       "amountLabel": "Valor da compra",
       "amountHint": "Vale {points} por real gasto.",
+      "amountRecordedHint": "O valor fica registrado no Início e em Clientes. O ganho segue a regra do clube.",
       "amountPreview": "{amount} vale {points} (antes de bônus).",
       "qrLabel": "QR da visita, vale até {time}",
       "codeLabel": "Código para digitar",
@@ -312,12 +322,11 @@
       "card": "Cartão",
       "visits": "Visitas",
       "lastVisit": "Última visita",
-      "notifications": "Avisos",
+      "lastPurchase": "Última compra",
+      "noPurchase": "—",
       "noName": "Sem nome",
       "rewardReady": "Prêmio liberado",
-      "lapsed": "Sumido",
-      "acceptsNotifications": "Aceita",
-      "noNotifications": "Não aceita"
+      "lapsed": "Sumido"
     },
     "progress": "{balance} de {target} {units}",
     "lastVisit": {
@@ -405,14 +414,15 @@
         "description": "O cliente escaneia o QR do cartaz e entra no clube sozinho. O carimbo só vem do QR da visita."
       },
       "cooldown": "Intervalo mínimo entre visitas do mesmo cliente",
-      "cooldownHint": "Antifraude: o mesmo cliente não ganha duas visitas dentro desse intervalo, contando também as lançadas no Balcão. Em “1 vez por dia”, o dia vira à meia-noite: 23h e 3h do dia seguinte contam como duas visitas.",
+      "cooldownHint": "Antifraude: o mesmo cliente não ganha duas visitas dentro desse intervalo, contando também as lançadas no Balcão. Em “1 vez por dia”, o dia vira à meia-noite: 23h e 3h do dia seguinte contam como duas visitas. Em “Sem limite”, o cliente ganha a cada QR da visita, quantas vezes for.",
       "cooldownHours": "{count} hora | {count} hora | {count} horas",
       "cooldownDays": "{count} dia | 1 dia | {count} dias",
       "expiration": "Validade dos carimbos e pontos",
       "expirationHint": "Contada a partir da última visita do cliente.",
       "expirationNever": "Nunca vencem",
       "expirationMonths": "{count} mês sem visita | 1 mês sem visita | {count} meses sem visita",
-      "cooldownCalendarDay": "1 vez por dia"
+      "cooldownCalendarDay": "1 vez por dia",
+      "cooldownUnlimited": "Sem limite"
     },
     "summary": {
       "noBonus": "Nenhuma regra ligada",
@@ -422,7 +432,8 @@
       "cooldown": "1 visita a cada {interval}",
       "neverExpires": "não vencem",
       "expiresAfter": "vencem após {count} mês sem visita | vencem após 1 mês sem visita | vencem após {count} meses sem visita",
-      "cooldownCalendarDay": "1 visita por dia (vira à meia-noite)"
+      "cooldownCalendarDay": "1 visita por dia (vira à meia-noite)",
+      "cooldownUnlimited": "Sem limite de visitas"
     },
     "card": {
       "title": "O cartão",
@@ -516,7 +527,9 @@
       "customers": "nenhum cliente | 1 cliente | {count} clientes",
       "newCustomers": "nenhum cliente novo | 1 cliente novo | {count} clientes novos",
       "redemptions": "nenhum prêmio entregue | 1 prêmio entregue | {count} prêmios entregues",
-      "today": "Hoje, {date}"
+      "today": "Hoje, {date}",
+      "sold": "Vendas lançadas: {amount}.",
+      "soldDay": "{amount} em vendas"
     },
     "lapsed": {
       "title": "Clientes sumidos",
@@ -687,6 +700,24 @@
     "title": "Configurações",
     "lead": "Foto da loja e ajustes deste computador ou tablet do balcão.",
     "appearance": "Aparência",
+    "contact": {
+      "title": "WhatsApp nos cards",
+      "lead": "O botão aparece no card da sua loja no Descobrir e na carteira do cliente, e abre uma conversa com este número.",
+      "whatsappLabel": "WhatsApp da loja",
+      "whatsappHint": "Celular com DDD. Deixe vazio para não mostrar o botão.",
+      "invalidWhatsapp": "Digite um celular com DDD, como (67) 99999-9999.",
+      "labelLabel": "Texto do botão",
+      "labelHint": "Até 24 caracteres",
+      "presets": "Sugestões de texto do botão",
+      "preset": {
+        "schedule": "Agendar agora",
+        "order": "Pedir agora",
+        "buy": "Comprar agora",
+        "talk": "Falar no WhatsApp"
+      },
+      "save": "Salvar",
+      "saved": "Salvo. O botão já aparece nos cards."
+    },
     "photo": {
       "uploading": "Enviando a foto…",
       "saved": "Imagem salva. Ela já aparece no Descobrir.",
@@ -764,9 +795,16 @@
       "lead": "Imprima e deixe no balcão: o cliente aponta a câmera e entra no clube. O carimbo vem do QR da visita, que você gera na venda.",
       "approved": "Loja aprovada: a entrada pelo cartaz e o Balcão já valem.",
       "print": "Imprimir cartaz",
+      "download": "Baixar QR",
+      "fileName": "qr-code-lagoa-mais",
+      "downloadError": "Não conseguimos baixar o QR agora. Tente de novo.",
       "goToPanel": "Ir para o Início",
       "loadError": "Não conseguimos montar o cartaz agora."
     }
+  },
+  "shopContact": {
+    "defaultLabel": "Falar no WhatsApp",
+    "accessibleLabel": "{label}: {shop} (abre o WhatsApp)"
   },
   "invite": {
     "pageTitle": "Convite",

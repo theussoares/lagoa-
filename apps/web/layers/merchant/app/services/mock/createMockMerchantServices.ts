@@ -4,7 +4,7 @@ import type { CustomerFilter } from '#shared/schemas/customer'
 import type { CustomerId, RedemptionId, VisitQrId } from '#shared/schemas/ids'
 import type { ProgramDraft } from '#shared/schemas/program'
 import type { RedemptionCode } from '#shared/schemas/redemption'
-import type { ShopPhotoKind, ShopPhotos, ShopPhotoUpload } from '#shared/schemas/shop'
+import type { ShopContactUpdate, ShopPhotoKind, ShopPhotos, ShopPhotoUpload } from '#shared/schemas/shop'
 import type { VisitQrIssueRequest } from '#shared/schemas/visitQr'
 import { ok } from '#shared/types/result'
 import { asMerchant } from '#layers/core/app/mock/withSession'
@@ -16,6 +16,7 @@ import { confirmRedemption, todayEntries, validateRedemption } from '#layers/cor
 import { cancelVisitQr, getVisitQr, issueVisitQr } from '#layers/core/app/mock/handlers/visitQr'
 import { simulateVisitQrClaim } from '#layers/core/app/mock/handlers/visitQrClaim'
 import { countActiveCards, getProgram, merchantCustomerPage, updateProgram, weekSummary } from '#layers/core/app/mock/handlers/merchant'
+import { contactOf, saveContact } from '#layers/core/app/mock/handlers/shopContact'
 import type { MerchantSessionProvider } from '#layers/core/app/services/SessionProvider'
 
 export function createMockMerchantServices(backend: MockBackend, sessions: MerchantSessionProvider): MerchantServices {
@@ -74,6 +75,10 @@ export function createMockMerchantServices(backend: MockBackend, sessions: Merch
         photos = kind === 'logo' ? { ...photos, logoUrl: url } : { ...photos, bannerUrl: url }
         return Promise.resolve(ok(photos))
       },
+    },
+    shopContact: {
+      getContact: () => asMerchant(backend, sessions, contactOf),
+      saveContact: (update: ShopContactUpdate) => asMerchant(backend, sessions, (ctx, shopId) => saveContact(ctx, shopId, update)),
     },
     shopStatus: {
       getStatus: () => asMerchant(backend, sessions, shopStatus),

@@ -16,35 +16,7 @@ const screen = useWalletScreen()
 
     <div class="flex flex-col gap-8">
       <section :aria-label="t('wallet.stackLabel')" class="relative -mt-10">
-        <WalletStackSkeleton v-if="screen.cardsState.status === 'loading'" />
-
-        <WalletProblem
-          v-else-if="screen.cardsState.status === 'error'"
-          :message="t(`errors.${screen.cardsState.error.code}`)"
-          :action="t('common.retry')"
-          @retry="screen.reloadCards"
-        />
-
-        <WalletEmpty
-          v-else-if="screen.cards.length === 0"
-          :title="t('wallet.emptyTitle')"
-          :lead="t('wallet.empty')"
-          :action="t('wallet.emptyAction')"
-          to="/descobrir"
-        />
-
-        <CardStack
-          v-else
-          :cards="screen.cards"
-          :active-id="screen.activeId"
-          :show-label="(card) => t('wallet.showCard', { shop: card.shopName })"
-          :more-label="(hidden) => t('wallet.showMore', { count: hidden }, hidden)"
-          @select="screen.activeId = $event"
-        >
-          <template #actions="{ card }">
-            <ActionButton v-if="card.rewardReady" role="reward" :to="`/premios/${card.id}`" block icon="i-ph-gift" :label="t('wallet.redeem')" />
-          </template>
-        </CardStack>
+        <WalletCardsContainer :screen="screen" />
       </section>
 
       <section v-if="screen.cards.length > 0 || screen.ledger.length > 0" class="flex flex-col gap-3" aria-labelledby="ledger-title">

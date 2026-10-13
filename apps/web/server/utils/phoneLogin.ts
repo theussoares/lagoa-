@@ -2,7 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { PhoneNumber } from '#shared/schemas/phone'
 import type { LoginCode } from '#shared/schemas/session'
 import type { AuthOutcome, TokenPair } from '../types/auth'
-import { transportCodeOf, verifyErrorCodeOf } from './authErrors'
+import { refreshErrorCodeOf, transportCodeOf, verifyErrorCodeOf } from './authErrors'
 
 const BRAZIL_COUNTRY_CODE = '+55'
 
@@ -25,7 +25,7 @@ export class PhoneLogin {
 
   async refresh(refreshToken: string): Promise<AuthOutcome<TokenPair>> {
     const { data, error } = await this.supabase.auth.refreshSession({ refresh_token: refreshToken })
-    if (error !== null) return { ok: false, code: transportCodeOf(error) }
+    if (error !== null) return { ok: false, code: refreshErrorCodeOf(error) }
     return data.session === null ? { ok: false, code: 'internal' } : { ok: true, value: tokensOf(data.session) }
   }
 

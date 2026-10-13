@@ -49,6 +49,7 @@ export function toShopSummary(shop: ShopRecord, program: Program): ShopSummary {
     neighborhood: shop.neighborhood,
     addressLine: shop.addressLine,
     showcase: shop.showcase,
+    contact: shop.contact,
     program: {
       unit: unitOf(program.rules),
       target: program.rules.target,

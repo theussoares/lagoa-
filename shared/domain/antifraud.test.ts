@@ -46,3 +46,17 @@ describe('calendarDay cooldown (one visit per local day, resets at midnight)', (
     expect(cooldownEndsAt(at23hLocal, { cooldownHours: 168, cooldownMode: 'calendarDay' }).toISOString()).toBe('2026-10-04T04:00:00.000Z')
   })
 })
+
+describe('unlimited cooldown', () => {
+  const unlimited = { cooldownHours: 24, cooldownMode: 'unlimited' } as const
+  const visitAt = new Date('2026-10-03T12:00:00Z')
+
+  it('never holds the next visit, not even a second later', () => {
+    expect(checkInAvailableAt(visitAt, unlimited, new Date(visitAt.getTime() + 1000))).toBeNull()
+    expect(checkInAvailableAt(visitAt, unlimited, visitAt)).toBeNull()
+  })
+
+  it('frees the next visit at the visit itself', () => {
+    expect(cooldownEndsAt(visitAt, unlimited).toISOString()).toBe(visitAt.toISOString())
+  })
+})

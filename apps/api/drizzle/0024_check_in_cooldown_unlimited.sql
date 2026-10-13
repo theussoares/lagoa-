@@ -1,0 +1,2 @@
+ALTER TABLE "programs" DROP CONSTRAINT "programs_check_in_cooldown_mode_check";--> statement-breakpoint
+ALTER TABLE "programs" ADD CONSTRAINT "programs_check_in_cooldown_mode_check" CHECK ("programs"."check_in_cooldown_mode" IN ('rolling', 'calendarDay', 'unlimited'));

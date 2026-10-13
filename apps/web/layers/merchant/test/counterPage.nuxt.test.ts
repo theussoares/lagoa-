@@ -68,6 +68,12 @@ afterEach(() => {
   restoreClock()
 })
 
+/** Todo QR leva o valor da venda: digita o valor e envia o formulário (Enter). */
+async function submitSale(page: VueWrapper): Promise<void> {
+  await page.get('input').setValue('3200')
+  await page.get('form').trigger('submit')
+}
+
 function codeCells(page: VueWrapper): ParentNode {
   const stub = page.findAll('section').find((section) => section.find('h2').text() === t('counter.redemption.title'))
   if (!stub) throw new Error('redemption stub missing')
@@ -89,17 +95,17 @@ async function requestPizzeriaCode(): Promise<string> {
 }
 
 describe('counter page: the visit QR', () => {
-  it('shows the empty counter on mount, with no phone field and the issue button focused (CA-24)', async () => {
+  it('shows the empty counter on mount, with no phone field and the sale amount focused (CA-24)', async () => {
     const page = await mountCounter()
     expect(visibleText(page)).toMatchSnapshot()
     expect(page.find('input[type="tel"]').exists()).toBe(false)
     expect(visibleText(page)).not.toContain('Celular do cliente')
-    expect(issueButton(page).element).toBe(document.activeElement)
+    expect(page.get('input').element).toBe(document.activeElement)
   })
 
   it('issues a QR on Enter: the QR, the code to type and the countdown take the place of the form (CA-09)', async () => {
     const page = await mountCounter()
-    await page.get('form').trigger('submit')
+    await submitSale(page)
     await vi.waitFor(() => expect(page.find('svg[role="img"]').exists()).toBe(true))
     const text = visibleText(page)
     expect(text).toContain(t('counter.visitQr.codeLabel'))
@@ -112,7 +118,7 @@ describe('counter page: the visit QR', () => {
 
   it('cancels the QR, then offers another QR with the focus on it', async () => {
     const page = await mountCounter()
-    await page.get('form').trigger('submit')
+    await submitSale(page)
     await vi.waitFor(() => expect(page.find('svg[role="img"]').exists()).toBe(true))
     await buttonByLabel(page, t('counter.visitQr.cancel')).trigger('click')
     await vi.waitFor(() => expect(visibleText(page)).toContain(t('counter.visitQr.status.cancelled')))
@@ -121,12 +127,12 @@ describe('counter page: the visit QR', () => {
     await vi.waitFor(() => expect(another.element).toBe(document.activeElement))
     await another.trigger('click')
     await vi.waitFor(() => expect(page.find('form').exists()).toBe(true))
-    await vi.waitFor(() => expect(issueButton(page).element).toBe(document.activeElement))
+    await vi.waitFor(() => expect(page.get('input').element).toBe(document.activeElement))
   })
 
   it('CA-22: the QR turns into "used" and the ledger gets the masked row (simulated customer)', async () => {
     const page = await mountCounter()
-    await page.get('form').trigger('submit')
+    await submitSale(page)
     await vi.waitFor(() => expect(page.find('svg[role="img"]').exists()).toBe(true))
     await buttonByLabel(page, t('counter.visitQr.simulateClaim')).trigger('click')
     await vi.waitFor(() => expect(visibleText(page)).toContain(t('counter.todayCount', { count: 4 }, 4)))
@@ -157,7 +163,7 @@ describe('counter page: amount mode', () => {
   it('CA-09: Enter with the amount issues a QR pinned to it and clears the field', async () => {
     const page = await mountCounter()
     await typeInto(amountInput(page), '2500')
-    await page.get('form').trigger('submit')
+    await submitSale(page)
     await vi.waitFor(() => expect(page.find('svg[role="img"]').exists()).toBe(true))
     await buttonByLabel(page, t('counter.visitQr.cancel')).trigger('click')
     await buttonByLabel(page, t('counter.visitQr.issueAnother')).trigger('click')
@@ -223,7 +229,7 @@ describe('counter page: session and shop status', () => {
   it('ends the merchant session when the server answers unauthorized', async () => {
     const page = await mountCounter()
     useMerchantSessionStore().endMerchant()
-    await page.get('form').trigger('submit')
+    await submitSale(page)
     await vi.waitFor(() => expect(navigateToMock).toHaveBeenCalledWith('/balcao/entrar', { replace: true }))
     expect(useMerchantSessionStore().merchant).toBeNull()
   })
@@ -231,7 +237,7 @@ describe('counter page: session and shop status', () => {
   it('refreshes the shop status when the shop is still pending approval', async () => {
     resetWorld({ merchant: gymSession })
     const page = await mountCounter()
-    await page.get('form').trigger('submit')
+    await submitSale(page)
     await vi.waitFor(() => expect(refreshShopStatusMock).toHaveBeenCalled())
     expect(navigateToMock).not.toHaveBeenCalled()
     expect(useMerchantSessionStore().merchant).not.toBeNull()
@@ -243,7 +249,7 @@ describe('counter page: session and shop status', () => {
       const shop = ctx.state.shops.find((item) => item.id === EXAMPLE_IDS.shops.barbershop)
       if (shop) shop.status = 'suspended'
     })
-    await page.get('form').trigger('submit')
+    await submitSale(page)
     await vi.waitFor(() => expect(refreshShopStatusMock).toHaveBeenCalled())
     expect(navigateToMock).not.toHaveBeenCalled()
   })

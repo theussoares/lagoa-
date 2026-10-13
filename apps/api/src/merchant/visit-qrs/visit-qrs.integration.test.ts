@@ -61,7 +61,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant visit QRs against a real database'
   it('CA-08: stops at the live QR limit, even when many are issued at the same time', async () => {
     const shop = await data.createShop()
     const owner = await ownerOf(shop.id)
-    const results = await Promise.all(Array.from({ length: VISIT_QR_ACTIVE_MAX_PER_SHOP + 6 }, () => service.issueVisitQr(owner, {})))
+    const results = await Promise.all(Array.from({ length: VISIT_QR_ACTIVE_MAX_PER_SHOP + 6 }, () => service.issueVisitQr(owner, { amountCents: 3200 })))
     expect(results.filter((result) => result.ok)).toHaveLength(VISIT_QR_ACTIVE_MAX_PER_SHOP)
     expect(results.filter((result) => !result.ok && result.error.code === 'visitQrLimitReached')).toHaveLength(6)
     expect(await activeCount(shop.id)).toBe(VISIT_QR_ACTIVE_MAX_PER_SHOP)
@@ -72,7 +72,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant visit QRs against a real database'
     const owner = await ownerOf(shop.id)
     const longAgo = new Date(clock.now().getTime() - 60 * 60_000)
     for (let i = 0; i < VISIT_QR_ACTIVE_MAX_PER_SHOP; i++) await data.createVisitQr({ shopId: shop.id, createdAt: longAgo })
-    expect(await service.issueVisitQr(owner, {})).toMatchObject({ ok: true })
+    expect(await service.issueVisitQr(owner, { amountCents: 3200 })).toMatchObject({ ok: true })
     const rows = await data.db.select({ status: visitQrs.status }).from(visitQrs).where(eq(visitQrs.shopId, shop.id))
     expect(rows.filter((row) => row.status === 'expired')).toHaveLength(VISIT_QR_ACTIVE_MAX_PER_SHOP)
     expect(await activeCount(shop.id)).toBe(1)
@@ -107,7 +107,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant visit QRs against a real database'
     // O que o `PUT /program` faz: trava a loja `FOR UPDATE`, troca a versão ativa e só então confirma.
     await data.db.transaction(async (tx) => {
       await tx.select({ id: shops.id }).from(shops).where(eq(shops.id, shop.id)).for('update')
-      const issuing = service.issueVisitQr(owner, {})
+      const issuing = service.issueVisitQr(owner, { amountCents: 3200 })
       pending.issue = issuing
       const state = await Promise.race([issuing.then(() => 'done'), new Promise((resolve) => setTimeout(() => resolve('waiting'), 400))])
       expect(state, 'the emission must wait for the shop lock').toBe('waiting')
@@ -125,7 +125,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant visit QRs against a real database'
     const shop = await data.createShop({ rules: { mode: 'stamps', target: 10 } })
     const owner = await ownerOf(shop.id)
     const customer = await data.createCustomer()
-    const issued = await service.issueVisitQr(owner, {})
+    const issued = await service.issueVisitQr(owner, { amountCents: 3200 })
     if (!issued.ok) throw new Error('issue expected')
     const pending: { claim: ReturnType<CheckInService['claimVisitQr']> | null } = { claim: null }
 
@@ -158,7 +158,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant visit QRs against a real database'
   it('cancel is idempotent and never turns an expired QR into a cancelled one', async () => {
     const shop = await data.createShop()
     const owner = await ownerOf(shop.id)
-    const issued = await service.issueVisitQr(owner, {})
+    const issued = await service.issueVisitQr(owner, { amountCents: 3200 })
     if (!issued.ok) throw new Error('issue expected')
     expect(await service.cancelVisitQr(owner, issued.value.id)).toMatchObject({ ok: true, value: { status: 'cancelled' } })
     expect(await service.cancelVisitQr(owner, issued.value.id)).toMatchObject({ ok: true, value: { status: 'cancelled' } })
@@ -172,7 +172,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant visit QRs against a real database'
     const owner = await ownerOf(shop.id)
     const customer = await data.createCustomer()
     await data.setPhone(customer, pii.encrypt(PhoneNumberSchema.parse('67991230374')))
-    const issued = await service.issueVisitQr(owner, {})
+    const issued = await service.issueVisitQr(owner, { amountCents: 3200 })
     if (!issued.ok) throw new Error('issue expected')
     expect(await checkIn.claimVisitQr(customer, { token: issued.value.token })).toMatchObject({ ok: true })
     const before = await service.getVisitQr(owner, issued.value.id)
@@ -185,7 +185,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant visit QRs against a real database'
 
   it('CA-03: another merchant cannot read or cancel a QR that is not theirs', async () => {
     const [mine, theirs] = [await data.createShop(), await data.createShop()]
-    const issued = await service.issueVisitQr(await ownerOf(mine.id), {})
+    const issued = await service.issueVisitQr(await ownerOf(mine.id), { amountCents: 3200 })
     if (!issued.ok) throw new Error('issue expected')
     expect(await service.getVisitQr(await ownerOf(theirs.id), issued.value.id)).toEqual({ ok: false, error: { code: 'notFound', entity: 'visitQr' } })
     expect(await service.cancelVisitQr(await ownerOf(theirs.id), issued.value.id)).toEqual({ ok: false, error: { code: 'notFound', entity: 'visitQr' } })
@@ -195,7 +195,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant visit QRs against a real database'
   it('R12: the merchant who owns the shop cannot earn on a QR of their own shop (answers as a QR that does not exist)', async () => {
     const shop = await data.createShop()
     const owner = await ownerOf(shop.id)
-    const issued = await service.issueVisitQr(owner, {})
+    const issued = await service.issueVisitQr(owner, { amountCents: 3200 })
     if (!issued.ok) throw new Error('issue expected')
     // O dono também é cliente (tem perfil): usa o próprio QR.
     await data.db.insert((await import('../../database/schema')).customerProfiles).values({ userId: owner, referralCode: `R${Math.random().toString(36).slice(2, 9).toUpperCase()}`.slice(0, 8) })

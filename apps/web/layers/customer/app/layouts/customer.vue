@@ -10,6 +10,7 @@ const items = computed<[TabBarItem, TabBarItem, TabBarItem, TabBarItem]>(() => [
   { to: '/premios', label: t('nav.rewards'), icon: 'i-ph-gift', activeIcon: 'i-ph-gift-fill' },
   { to: '/perfil', label: t('nav.profile'), icon: 'i-ph-user-circle', activeIcon: 'i-ph-user-circle-fill' },
 ])
+useSwipeNavigation(() => items.value.map((item) => item.to))
 const action = computed<TabBarItem>(() => ({
   to: '/check-in',
   label: t('nav.checkIn'),

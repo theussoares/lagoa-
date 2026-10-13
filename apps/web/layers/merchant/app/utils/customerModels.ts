@@ -2,6 +2,7 @@ import type { MerchantCustomerRow } from '#shared/schemas/customer'
 import { isRewardReady } from '#shared/domain/loyaltyCard'
 import { calendarDaysBetween } from '#shared/utils/time'
 import type { Translate } from '#layers/core/app/types/i18n'
+import { formatCurrency } from '#shared/utils/currency'
 import type { CustomerRowModel } from '../types/customer'
 
 function lastVisitText(lastVisitAt: string | null, now: Date, t: Translate): string {
@@ -21,6 +22,6 @@ export function toCustomerRowModel(row: MerchantCustomerRow, now: Date, t: Trans
     visits: String(row.visitsCount),
     lastVisit: lastVisitText(row.lastVisitAt, now, t),
     isLapsed: row.isLapsed,
-    acceptsNotifications: row.acceptsNotifications,
+    lastPurchase: row.lastAmountCents === null ? null : formatCurrency(row.lastAmountCents),
   }
 }

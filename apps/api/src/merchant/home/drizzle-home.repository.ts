@@ -20,6 +20,7 @@ export class DrizzleHomeRepository extends HomeRepository {
         customerId: ledgerEntries.customerId,
         kind: ledgerEntries.kind,
         occurredAt: ledgerEntries.occurredAt,
+        amountCents: ledgerEntries.amountCents,
       })
       .from(ledgerEntries)
       .where(
@@ -38,6 +39,7 @@ export class DrizzleHomeRepository extends HomeRepository {
           customerId: row.customerId as CustomerId,
           kind: parsed.data,
           createdAt: toIso(row.occurredAt),
+          amountCents: row.amountCents,
         },
       ]
     })

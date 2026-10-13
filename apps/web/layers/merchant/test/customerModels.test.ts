@@ -23,6 +23,7 @@ function row(overrides: Partial<MerchantCustomerRow>): MerchantCustomerRow {
     lastVisitAt: '2026-09-29T15:00:00.000Z',
     isLapsed: false,
     acceptsNotifications: true,
+    lastAmountCents: 4590,
     ...overrides,
   })
 }

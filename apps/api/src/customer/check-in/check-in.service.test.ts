@@ -110,9 +110,9 @@ describe('CheckInService.claimVisitQr', () => {
       })
     })
 
-    it('reports the activity as an amount when the QR carries one', async () => {
+    it('reports a stamp card activity as a visit even when the QR carries the sale amount', async () => {
       const { service } = serviceFor(visitQrTarget({ earn: { kind: 'amount', amountCents: 4590 } }))
-      expect(await service.claimVisitQr(TEST_USER.id, { token: TOKEN })).toMatchObject({ ok: true, value: { activity: { kind: 'amount' } } })
+      expect(await service.claimVisitQr(TEST_USER.id, { token: TOKEN })).toMatchObject({ ok: true, value: { activity: { kind: 'visit' } } })
     })
 
     it('marks the reward ready when the visit completes the card', async () => {

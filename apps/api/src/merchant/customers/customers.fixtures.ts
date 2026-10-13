@@ -38,6 +38,7 @@ export function rawCustomer(pii: PiiService, index: number, overrides: Partial<R
     visitsCount: 1,
     lastVisitAt: new Date('2026-10-06T10:00:00Z'),
     acceptsNotifications: false,
+    lastAmountCents: null,
     ...overrides,
   }
 }

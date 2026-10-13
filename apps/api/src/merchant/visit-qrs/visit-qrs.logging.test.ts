@@ -70,7 +70,7 @@ describe('the merchant visit QR routes leave no credential or personal data in t
   }
 
   it('after issuing, reading and cancelling', async () => {
-    const issued = await request(app.getHttpServer()).post('/merchant/visit-qrs').send({}).expect(201)
+    const issued = await request(app.getHttpServer()).post('/merchant/visit-qrs').send({ amountCents: 3200 }).expect(201)
     const { id, token, visitCode } = issued.body as { id: string; token: string; visitCode: string }
     await request(app.getHttpServer()).get(`/merchant/visit-qrs/${id}`).expect(200)
     await request(app.getHttpServer()).post(`/merchant/visit-qrs/${id}/cancel`).expect(201)
@@ -79,14 +79,14 @@ describe('the merchant visit QR routes leave no credential or personal data in t
 
   it('after a refusal by the live QR limit', async () => {
     repository.activeCount = 99
-    await request(app.getHttpServer()).post('/merchant/visit-qrs').send({}).expect(409)
+    await request(app.getHttpServer()).post('/merchant/visit-qrs').send({ amountCents: 3200 }).expect(409)
     repository.activeCount = 0
     expectNothingSensitiveLogged()
   })
 
   it('after an unexpected error, which answers 500 internal and logs only its type', async () => {
     repository.issueFails = new Error(leaky('K7M4P'))
-    const response = await request(app.getHttpServer()).post('/merchant/visit-qrs').send({}).expect(500)
+    const response = await request(app.getHttpServer()).post('/merchant/visit-qrs').send({ amountCents: 3200 }).expect(500)
     expect(response.body).toEqual({ code: 'internal' })
     expect(logged.every((line) => line.startsWith('Unhandled Error'))).toBe(true)
     expectNothingSensitiveLogged('K7M4P')

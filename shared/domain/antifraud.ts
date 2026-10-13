@@ -3,8 +3,9 @@ import { addHours, startOfLocalDay } from '../utils/time'
 
 const HOURS_PER_DAY = 24
 
-/** Quando termina a janela aberta por uma visita: horas corridas, ou a meia-noite local seguinte no `calendarDay`. */
+/** Quando termina a janela aberta por uma visita: horas corridas, a meia-noite local seguinte no `calendarDay`, ou já (`unlimited`). */
 export function cooldownEndsAt(visitAt: Date, cooldown: CheckInCooldown): Date {
+  if (cooldown.cooldownMode === 'unlimited') return visitAt
   if (cooldown.cooldownMode === 'calendarDay') return addHours(startOfLocalDay(visitAt), HOURS_PER_DAY)
   return addHours(visitAt, cooldown.cooldownHours)
 }

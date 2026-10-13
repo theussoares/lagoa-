@@ -5,6 +5,7 @@ import type { Translate } from '#layers/core/app/types/i18n'
 import { stampTilt } from '#layers/ui/app/utils/stampTilt'
 import { categoryIcon } from './categoryIcon'
 import { pendingWelcomeUnits } from './pendingWelcome'
+import { shopContactLink } from './shopContact'
 import type { WalletCardModelOptions } from '../types/wallet'
 
 /** Acima disso a grade de casas deixa de caber em 390px e o cartão vira régua. */
@@ -89,5 +90,6 @@ export function toStampCardModel(card: WalletCard, options: WalletCardModelOptio
       : t('wallet.card.summary', { shop: card.shop.name, balance: card.balance, target: card.target, units, reward: card.rewardTitle }, remaining),
     rewardReady: ready,
     note: noteFor(card, t),
+    contact: shopContactLink(card.shop, t),
   }
 }

@@ -5,6 +5,7 @@ import type { ChallengeModel, KnownShopModel, ShopPreview, ShopShowcaseModel, Sh
 import type { Translate } from '#layers/core/app/types/i18n'
 import { stampTilt } from '#layers/ui/app/utils/stampTilt'
 import { categoryIcon } from './categoryIcon'
+import { shopContactLink } from './shopContact'
 import type { ShopGroups } from '../types/discover'
 
 /** Acima disso as casas de exemplo não cabem numa linha de 390px. */
@@ -99,6 +100,7 @@ export function toShopTeaserModel(shop: ShopSummary, challengeShopIds: ReadonlyS
       accessibleLabel: t('discover.directionsTo', { shop: shop.name }),
       href: shopDirectionsUrl(shop),
     },
+    contact: shopContactLink(shop, t),
   }
 }
 
