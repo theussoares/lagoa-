@@ -15,7 +15,7 @@ const { shops, customers, merchants, checkInCodes } = EXAMPLE_IDS
 
 function setup() {
   const { backend, clock } = makeBackend()
-  const issue = async (shopId: ShopId = shops.barbershop, request: VisitQrIssueRequest = {}): Promise<IssuedVisitQr> => {
+  const issue = async (shopId: ShopId = shops.barbershop, request: VisitQrIssueRequest = { amountCents: 3200 }): Promise<IssuedVisitQr> => {
     const result = await backend.run((ctx) => issueVisitQr(ctx, shopId, merchants.barbershop, request))
     if (!result.ok) throw new Error(result.error.code)
     return result.value
@@ -32,7 +32,7 @@ describe('mock visit QR: issue', () => {
     expect(qr.token).toMatch(/^[A-Za-z0-9_-]{43}$/)
     expect(qr.visitCode).toHaveLength(5)
     expect(qr.status).toBe('active')
-    expect(qr.earn).toEqual({ kind: 'visit' })
+    expect(qr.earn).toEqual({ kind: 'amount', amountCents: 3200 })
     expect(Date.parse(qr.expiresAt) - Date.parse(qr.createdAt)).toBe(VISIT_QR_TTL_MINUTES * 60_000)
   })
 
@@ -61,7 +61,7 @@ describe('mock visit QR: claim', () => {
     expect(result.value.card).toMatchObject({ balance: 9, target: 10, rewardReady: false })
     expect(result.value.activity).toMatchObject({ kind: 'visit', units: 1 })
     const ledger = await backend.run((ctx) => ctx.state.ledger.find((record) => record.id === result.value.activity.id))
-    expect(ledger).toMatchObject({ customerId: customers.ana, shopId: shops.barbershop, amountCents: null })
+    expect(ledger).toMatchObject({ customerId: customers.ana, shopId: shops.barbershop, amountCents: 3200 })
   })
 
   it('CA-11 accepts at T0+4:59 and refuses at T0+5:00', async () => {

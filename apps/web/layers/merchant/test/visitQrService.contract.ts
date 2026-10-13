@@ -27,11 +27,11 @@ export interface VisitQrContractHarness {
  */
 export function describeVisitQrServiceContract(name: string, setup: () => VisitQrContractHarness): void {
   describe(`VisitQrService contract: ${name}`, () => {
-    it('CA-05 issues a stamp QR without amount: active, with token, code and a 5-minute life', async () => {
+    it('CA-05 issues a stamp QR carrying the sale amount: active, with token, code and a 5-minute life', async () => {
       const { visitQr } = setup()
-      const result = await visitQr.issueVisitQr({})
+      const result = await visitQr.issueVisitQr({ amountCents: 3200 })
       if (!result.ok) throw new Error(result.error.code)
-      expect(result.value).toMatchObject({ status: 'active', earn: { kind: 'visit' }, claim: null, refusal: null })
+      expect(result.value).toMatchObject({ status: 'active', earn: { kind: 'amount', amountCents: 3200 }, claim: null, refusal: null })
       expect(result.value.token).toMatch(/^[A-Za-z0-9_-]{43}$/)
       expect(result.value.visitCode).toHaveLength(5)
       expect(Date.parse(result.value.expiresAt) - Date.parse(result.value.createdAt)).toBe(5 * 60_000)
@@ -41,20 +41,20 @@ export function describeVisitQrServiceContract(name: string, setup: () => VisitQ
       const { visitQr } = setup()
       const issued = []
       for (let i = 0; i < VISIT_QR_ACTIVE_MAX_PER_SHOP; i += 1) {
-        const result = await visitQr.issueVisitQr({})
+        const result = await visitQr.issueVisitQr({ amountCents: 3200 })
         if (!result.ok) throw new Error(`${i}: ${result.error.code}`)
         issued.push(result.value)
       }
-      expect(await visitQr.issueVisitQr({})).toEqual({ ok: false, error: { code: 'visitQrLimitReached' } })
+      expect(await visitQr.issueVisitQr({ amountCents: 3200 })).toEqual({ ok: false, error: { code: 'visitQrLimitReached' } })
       const first = issued[0]
       if (first === undefined) throw new Error('expected a QR')
       await visitQr.cancelVisitQr(first.id)
-      expect(await visitQr.issueVisitQr({})).toMatchObject({ ok: true })
+      expect(await visitQr.issueVisitQr({ amountCents: 3200 })).toMatchObject({ ok: true })
     })
 
     it('CA-25 puts the token in the link fragment, never in the query', async () => {
       const { visitQr } = setup()
-      const result = await visitQr.issueVisitQr({})
+      const result = await visitQr.issueVisitQr({ amountCents: 3200 })
       if (!result.ok) throw new Error(result.error.code)
       const link = visitQrLink('https://app.test', result.value.token)
       expect(link).toMatch(/^https?:\/\/[^?#]+\/check-in#visita=[A-Za-z0-9_-]{43}$/)
@@ -66,31 +66,33 @@ export function describeVisitQrServiceContract(name: string, setup: () => VisitQ
       expect(result).toMatchObject({ ok: true, value: { earn: { kind: 'amount', amountCents: 3200 } } })
     })
 
-    it('CA-06 refuses a points-per-real QR without amount, with zero, or above the ceiling', async () => {
-      const { perReal } = setup()
+    it('CA-06 refuses a QR without amount, with zero, or above the ceiling, in any mode', async () => {
+      const { perReal, visitQr } = setup()
       const invalid = { ok: false, error: { code: 'invalidAmount' } }
-      expect(await perReal.issueVisitQr({})).toEqual(invalid)
-      expect(await perReal.issueVisitQr({ amountCents: 0 })).toEqual(invalid)
-      expect(await perReal.issueVisitQr({ amountCents: AMOUNT_MAX_CENTS + 1 })).toEqual(invalid)
+      for (const service of [perReal, visitQr]) {
+        expect(await service.issueVisitQr({})).toEqual(invalid)
+        expect(await service.issueVisitQr({ amountCents: 0 })).toEqual(invalid)
+        expect(await service.issueVisitQr({ amountCents: AMOUNT_MAX_CENTS + 1 })).toEqual(invalid)
+      }
     })
 
-    it('CA-07 refuses an amount on a stamps program', async () => {
+    it('CA-07 records the amount on a stamps program', async () => {
       const { visitQr } = setup()
-      expect(await visitQr.issueVisitQr({ amountCents: 5000 })).toEqual({ ok: false, error: { code: 'amountNotAccepted' } })
+      expect(await visitQr.issueVisitQr({ amountCents: 5000 })).toMatchObject({ ok: true, value: { earn: { kind: 'amount', amountCents: 5000 } } })
     })
 
     it('CA-08 refuses to issue while the shop is pending or suspended', async () => {
       const first = setup()
       await first.closeShop('pending')
-      expect(await first.visitQr.issueVisitQr({})).toEqual({ ok: false, error: { code: 'shopPendingApproval' } })
+      expect(await first.visitQr.issueVisitQr({ amountCents: 3200 })).toEqual({ ok: false, error: { code: 'shopPendingApproval' } })
       const second = setup()
       await second.closeShop('suspended')
-      expect(await second.visitQr.issueVisitQr({})).toEqual({ ok: false, error: { code: 'shopSuspended' } })
+      expect(await second.visitQr.issueVisitQr({ amountCents: 3200 })).toEqual({ ok: false, error: { code: 'shopSuspended' } })
     })
 
     it('reads a QR back without the token', async () => {
       const { visitQr } = setup()
-      const issued = await visitQr.issueVisitQr({})
+      const issued = await visitQr.issueVisitQr({ amountCents: 3200 })
       if (!issued.ok) throw new Error(issued.error.code)
       const read = await visitQr.getVisitQr(issued.value.id)
       if (!read.ok) throw new Error(read.error.code)
@@ -100,7 +102,7 @@ export function describeVisitQrServiceContract(name: string, setup: () => VisitQ
 
     it('answers a QR of another shop as not found, for reading and for cancelling', async () => {
       const { visitQr, otherShop } = setup()
-      const issued = await visitQr.issueVisitQr({})
+      const issued = await visitQr.issueVisitQr({ amountCents: 3200 })
       if (!issued.ok) throw new Error(issued.error.code)
       expect(await otherShop.getVisitQr(issued.value.id)).toMatchObject({ ok: false, error: { code: 'notFound' } })
       expect(await otherShop.cancelVisitQr(issued.value.id)).toMatchObject({ ok: false, error: { code: 'notFound' } })
@@ -110,7 +112,7 @@ export function describeVisitQrServiceContract(name: string, setup: () => VisitQ
 
     it('cancels an active QR, and cancelling again changes nothing', async () => {
       const { visitQr } = setup()
-      const issued = await visitQr.issueVisitQr({})
+      const issued = await visitQr.issueVisitQr({ amountCents: 3200 })
       if (!issued.ok) throw new Error(issued.error.code)
       const first = await visitQr.cancelVisitQr(issued.value.id)
       expect(first).toMatchObject({ ok: true, value: { status: 'cancelled' } })
@@ -119,7 +121,7 @@ export function describeVisitQrServiceContract(name: string, setup: () => VisitQ
 
     it('CA-18 makes a cancelled QR useless to the customer', async () => {
       const { visitQr, claimAsCustomer } = setup()
-      const issued = await visitQr.issueVisitQr({})
+      const issued = await visitQr.issueVisitQr({ amountCents: 3200 })
       if (!issued.ok) throw new Error(issued.error.code)
       await visitQr.cancelVisitQr(issued.value.id)
       expect(await claimAsCustomer({ kind: 'token', token: issued.value.token })).toEqual({ ok: false, error: { code: 'invalidVisitQr' } })
@@ -127,7 +129,7 @@ export function describeVisitQrServiceContract(name: string, setup: () => VisitQ
 
     it('RN-10 keeps a used QR as used when the merchant cancels it afterwards', async () => {
       const { visitQr, claimAsCustomer } = setup()
-      const issued = await visitQr.issueVisitQr({})
+      const issued = await visitQr.issueVisitQr({ amountCents: 3200 })
       if (!issued.ok) throw new Error(issued.error.code)
       expect((await claimAsCustomer({ kind: 'token', token: issued.value.token })).ok).toBe(true)
       expect(await visitQr.cancelVisitQr(issued.value.id)).toMatchObject({ ok: true, value: { status: 'claimed' } })
@@ -135,7 +137,7 @@ export function describeVisitQrServiceContract(name: string, setup: () => VisitQ
 
     it('CA-16 makes a QR stale when the program changes after issuing it', async () => {
       const { visitQr, claimAsCustomer, changeProgram } = setup()
-      const issued = await visitQr.issueVisitQr({})
+      const issued = await visitQr.issueVisitQr({ amountCents: 3200 })
       if (!issued.ok) throw new Error(issued.error.code)
       await changeProgram()
       expect(await claimAsCustomer({ kind: 'token', token: issued.value.token })).toEqual({ ok: false, error: { code: 'visitQrStale' } })
@@ -143,7 +145,7 @@ export function describeVisitQrServiceContract(name: string, setup: () => VisitQ
 
     it('requires a merchant session', async () => {
       const { signedOut } = setup()
-      expect(await signedOut.issueVisitQr({})).toEqual({ ok: false, error: { code: 'unauthorized' } })
+      expect(await signedOut.issueVisitQr({ amountCents: 3200 })).toEqual({ ok: false, error: { code: 'unauthorized' } })
     })
   })
 }

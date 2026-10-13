@@ -90,12 +90,12 @@ describe('merchant visit-qrs HTTP', () => {
   it('POST /merchant/visit-qrs: issues a stamp QR successfully', async () => {
     const response = await request(app.getHttpServer())
       .post('/merchant/visit-qrs')
-      .send({})
+      .send({ amountCents: 3200 })
       .expect(201)
 
     expect(response.body).toMatchObject({
       status: 'active',
-      earn: { kind: 'visit' },
+      earn: { kind: 'amount', amountCents: 3200 },
       claim: null,
       refusal: null,
     })
@@ -103,13 +103,10 @@ describe('merchant visit-qrs HTTP', () => {
     expect(response.body.visitCode).toHaveLength(5)
   })
 
-  it('POST /merchant/visit-qrs: returns 400 amountNotAccepted when amount is sent for stamps', async () => {
-    const response = await request(app.getHttpServer())
-      .post('/merchant/visit-qrs')
-      .send({ amountCents: 5000 })
-      .expect(422)
+  it('POST /merchant/visit-qrs: refuses a stamps QR without amount (invalidAmount)', async () => {
+    const response = await request(app.getHttpServer()).post('/merchant/visit-qrs').send({}).expect(400)
 
-    expect(response.body).toEqual({ code: 'amountNotAccepted' })
+    expect(response.body).toEqual({ code: 'invalidAmount' })
   })
 
   it('POST /merchant/visit-qrs: returns 400 invalidAmount when missing amount on pointsPerCurrency', async () => {
@@ -131,7 +128,7 @@ describe('merchant visit-qrs HTTP', () => {
 
     const response = await request(app.getHttpServer())
       .post('/merchant/visit-qrs')
-      .send({})
+      .send({ amountCents: 3200 })
       .expect(403)
 
     expect(response.body).toEqual({ code: 'shopPendingApproval' })
@@ -140,7 +137,7 @@ describe('merchant visit-qrs HTTP', () => {
   it('GET /merchant/visit-qrs/:id: gets visit QR by id', async () => {
     const issueRes = await request(app.getHttpServer())
       .post('/merchant/visit-qrs')
-      .send({})
+      .send({ amountCents: 3200 })
       .expect(201)
 
     const qrId = issueRes.body.id
@@ -165,7 +162,7 @@ describe('merchant visit-qrs HTTP', () => {
   it('POST /merchant/visit-qrs/:id/cancel: cancels active QR', async () => {
     const issueRes = await request(app.getHttpServer())
       .post('/merchant/visit-qrs')
-      .send({})
+      .send({ amountCents: 3200 })
       .expect(201)
 
     const qrId = issueRes.body.id

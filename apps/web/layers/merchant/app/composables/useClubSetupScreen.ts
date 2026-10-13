@@ -14,6 +14,8 @@ export function useClubSetupScreen(): ClubSetupScreen {
   const { step, form, shopErrors, programErrors, submitState, posterState } = setup
   const { approveForTesting } = useShopStatus()
   const { print } = usePrint()
+  const { savePng } = useQrDownload()
+  const toast = useToast()
   const fieldOptions = useProgramFieldOptions(computed(() => form.value.program))
 
   const shopName = computed(() => form.value.shop.name.trim())
@@ -28,6 +30,12 @@ export function useClubSetupScreen(): ClubSetupScreen {
 
   async function approve(): Promise<void> {
     if (approveForTesting !== null && (await approveForTesting())) await setup.loadPoster()
+  }
+
+  async function downloadPoster(): Promise<void> {
+    if (poster.value === null) return
+    const saved = await savePng(`${t('clubSetup.poster.fileName')}.png`, poster.value.qr)
+    if (!saved) toast.add({ color: 'error', icon: 'i-ph-warning-circle', title: t('clubSetup.poster.downloadError') })
   }
 
   // Etapa nova: o foco vai para o título, e o leitor de tela anuncia onde o lojista está.
@@ -75,6 +83,7 @@ export function useClubSetupScreen(): ClubSetupScreen {
     setMode: setup.setMode,
     approve,
     print,
+    downloadPoster,
     retryPoster: setup.loadPoster,
   })
 }

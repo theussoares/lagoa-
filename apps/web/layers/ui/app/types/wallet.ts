@@ -1,3 +1,5 @@
+import type { ExternalLinkModel } from './discover'
+
 /**
  * Modelos de exibição dos componentes de domínio. Chegam com o texto pronto
  * (pt-BR já traduzido pela superfície); os componentes só desenham.
@@ -55,6 +57,8 @@ export interface StampCardModel {
   readonly rewardReady: boolean
   /** Dica do cartão ainda sem visita ("Peça o QR da visita no caixa..."); null quando já há visita. */
   readonly note: string | null
+  /** Botão de WhatsApp da loja ("Agendar agora"); `null` sem WhatsApp cadastrado. */
+  readonly contact: ExternalLinkModel | null
 }
 
 export interface LedgerEntryModel {

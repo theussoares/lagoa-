@@ -17,13 +17,18 @@ export interface BffClaim {
   readonly claimedIp: string | undefined
 }
 
+/** A requisição prova que vem do BFF (segredo compartilhado, comparado em tempo constante). Sem segredo configurado, nunca. */
+export function isBffCaller(secret: string | undefined, presentedSecret: string | undefined): boolean {
+  if (secret === undefined || presentedSecret === undefined) return false
+  return timingSafeEqual(digest(secret), digest(presentedSecret))
+}
+
 /**
  * Atrás do BFF todo mundo chega com o IP do servidor do Nuxt. O BFF diz quem é o cliente, e a API só acredita
  * se ele provar que é o BFF (segredo compartilhado, comparado em tempo constante). IP malformado é ignorado.
  */
 export function trustedClientIp({ secret, presentedSecret, claimedIp }: BffClaim): string | null {
-  if (secret === undefined || presentedSecret === undefined || claimedIp === undefined) return null
-  if (!timingSafeEqual(digest(secret), digest(presentedSecret))) return null
+  if (claimedIp === undefined || !isBffCaller(secret, presentedSecret)) return null
   return isIP(claimedIp) === 0 ? null : claimedIp
 }
 

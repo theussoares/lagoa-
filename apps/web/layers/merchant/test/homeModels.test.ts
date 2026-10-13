@@ -15,8 +15,9 @@ function week(overrides: Partial<WeekSummary> = {}): WeekSummary {
     visits: 0,
     newCustomers: 0,
     redemptions: 0,
+    amountCents: 0,
   }))
-  return { days, visits: 0, customers: 0, newCustomers: 0, redemptions: 0, ...overrides }
+  return { days, visits: 0, customers: 0, newCustomers: 0, redemptions: 0, amountCents: 0, ...overrides }
 }
 
 describe('toWeekHeadline', () => {
@@ -25,6 +26,11 @@ describe('toWeekHeadline', () => {
     expect(headline).toContain('home.week.headline days=7')
     expect(headline).toContain('visits=home.week.visits count=3 #3')
     expect(headline).toContain('redemptions=home.week.redemptions count=0 #0')
+  })
+
+  it('adds the sales total when the QRs carried amounts', () => {
+    const headline = toWeekHeadline(week({ visits: 3, customers: 2, amountCents: 12_050 }), t)
+    expect(headline).toMatch(/home\.week\.sold amount=R\$.*120,50/)
   })
 
   it('has its own sentence for a week with no visits', () => {
@@ -47,6 +53,8 @@ describe('toWeekDayRows', () => {
     expect(rows[6]).toMatchObject({ count: 2, isToday: true,  detail: 'home.week.newCustomers count=1 #1' })
     expect(rows[0]).toMatchObject({ count: 0, detail: null })
     expect(rows[0]?.label).toMatch(/26/)
+    const sold = toWeekDayRows({ ...base, days: base.days.map((day, index) => (index === 6 ? { ...day, visits: 1, amountCents: 4590 } : day)) }, t)
+    expect(sold[6]?.detail).toMatch(/home\.week\.soldDay amount=R\$.*45,90/)
     expect(rows[6]?.label).toMatch(/^home\.week\.today date=.*2/)
   })
 })

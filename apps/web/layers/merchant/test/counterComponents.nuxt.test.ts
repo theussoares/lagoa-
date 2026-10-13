@@ -173,11 +173,11 @@ describe('counter components: AmountField', () => {
 })
 
 describe('counter components: VisitQrIssueForm', () => {
-  it('has no phone field or keypad: only the lead and the issue button', async () => {
+  it('has no phone field or keypad: only the lead, the sale amount and the issue button', async () => {
     const page = await mountIt(VisitQrIssueForm, formProps)
     expect(page.text()).toContain(t('counter.visitQr.lead', { minutes: 5 }))
     expect(page.get('button[type="submit"]').text()).toBe('Gerar QR da visita')
-    expect(page.find('input').exists()).toBe(false)
+    expect(page.findAll('input')).toHaveLength(1)
     expect(page.findAll('button')).toHaveLength(1)
   })
 

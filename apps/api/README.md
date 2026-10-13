@@ -171,3 +171,13 @@ Scripts de operação (nunca em CI): `pnpm --filter @lagoa/api shop:status --sho
 (exige `ALLOW_SHOP_ADMIN=1`; grava `shop_status_events`) e `db:backfill-visits` (recalcula `visits_count`/`first_visit_at` do ledger;
 rodar depois do deploy que mantém os contadores). `DELETE /customer/account` de dono de loja responde 409 `accountOwnsShop`.
 
+
+### Supabase local (login sem SMS em dev)
+
+`pnpm supabase:local:start` (Docker) sobe só auth, banco e API REST do Supabase em `127.0.0.1:54321/54322`; a
+configuração está em `supabase/config.toml`. O celular fictício `67999990001` aceita o código fixo `123456` (`[auth.sms.test_otp]`),
+sem enviar SMS; qualquer outro celular segue o caminho normal. Para apontar o app para ele, num worktree sem `.env`:
+`apps/api/.env` com `DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`, `SUPABASE_URL=http://127.0.0.1:54321`,
+`ALLOW_SEED=true`, chaves `PII_*`/`BFF_SHARED_SECRET` geradas com `openssl rand -base64 32`; `apps/web/.env` com
+`NUXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321`, `NUXT_SUPABASE_ANON_KEY` (a chave publishable que o `start` imprime) e o mesmo
+`NUXT_BFF_SHARED_SECRET`. Depois `pnpm --filter @lagoa/api db:migrate && pnpm --filter @lagoa/api db:seed`. Nunca use o `.env` de produção junto.

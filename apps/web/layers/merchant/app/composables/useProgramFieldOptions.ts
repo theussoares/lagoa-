@@ -4,7 +4,7 @@ import { unitOf } from '#shared/domain/programStrategies'
 import type { ProgramDraft } from '#shared/schemas/program'
 import type { SelectOption } from '#layers/ui/app/types/form'
 import type { Translate } from '#layers/core/app/types/i18n'
-import { CALENDAR_DAY_COOLDOWN_VALUE, COOLDOWN_HOUR_OPTIONS, EXPIRATION_MONTH_OPTIONS } from '../utils/programForm'
+import { CALENDAR_DAY_COOLDOWN_VALUE, COOLDOWN_HOUR_OPTIONS, EXPIRATION_MONTH_OPTIONS, UNLIMITED_COOLDOWN_VALUE } from '../utils/programForm'
 import { cooldownLabel, toProgramSummaries } from '../utils/programSummary'
 import type { ProgramFieldLimits, ProgramFieldOptions } from '../types/program'
 
@@ -18,7 +18,7 @@ function withCurrent(options: readonly number[], current: number | null): number
 
 const HOURS_PER_DAY = 24
 
-/** Horas corridas em ordem, com "1 vez por dia (vira à meia-noite)" logo depois das 24 h. */
+/** Horas corridas em ordem, com "1 vez por dia (vira à meia-noite)" logo depois das 24 h e "Sem limite" no fim. */
 function cooldownOptionsOf(draft: ProgramDraft | null, translate: Translate): SelectOption[] {
   const rollingHours = draft?.checkIn.cooldownMode === 'rolling' ? draft.checkIn.cooldownHours : null
   const hours = withCurrent(COOLDOWN_HOUR_OPTIONS, rollingHours).map((value) => ({
@@ -27,7 +27,9 @@ function cooldownOptionsOf(draft: ProgramDraft | null, translate: Translate): Se
   }))
   const calendarDay = { label: cooldownLabel({ cooldownHours: HOURS_PER_DAY, cooldownMode: 'calendarDay' }, translate), value: CALENDAR_DAY_COOLDOWN_VALUE }
   const afterDay = hours.findIndex((option) => Number(option.value) > HOURS_PER_DAY)
-  return afterDay === -1 ? [...hours, calendarDay] : [...hours.slice(0, afterDay), calendarDay, ...hours.slice(afterDay)]
+  const unlimited = { label: cooldownLabel({ cooldownHours: HOURS_PER_DAY, cooldownMode: 'unlimited' }, translate), value: UNLIMITED_COOLDOWN_VALUE }
+  const limited = afterDay === -1 ? [...hours, calendarDay] : [...hours.slice(0, afterDay), calendarDay, ...hours.slice(afterDay)]
+  return [...limited, unlimited]
 }
 
 function limitsOf(draft: ProgramDraft | null): ProgramFieldLimits {

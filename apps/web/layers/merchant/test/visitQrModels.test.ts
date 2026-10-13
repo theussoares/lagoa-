@@ -93,7 +93,11 @@ describe('formatCountdown', () => {
 describe('toVisitQrIssueText', () => {
   it('offers the plain button in the visit modes and while the program loads', () => {
     expect(toVisitQrIssueText(null, 0, t)).toEqual({ issueLabel: 'counter.visitQr.issue', amountHint: undefined, amountPreview: undefined })
-    expect(toVisitQrIssueText({ kind: 'visit', unit: 'point', units: 5 }, 0, t).amountHint).toBeUndefined()
+    expect(toVisitQrIssueText({ kind: 'visit', unit: 'point', units: 5 }, 0, t)).toEqual({
+      issueLabel: 'counter.visitQr.issue',
+      amountHint: 'counter.visitQr.amountRecordedHint',
+      amountPreview: undefined,
+    })
   })
 
   it('explains the rate in the amount mode and names the amount on the button once typed', () => {

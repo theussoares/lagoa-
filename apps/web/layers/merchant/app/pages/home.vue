@@ -27,9 +27,9 @@ const weekRows = computed(() => (snapshot.value === null ? [] : toWeekDayRows(sn
 const lapsedRows = computed(() => {
   if (snapshot.value === null) return []
   const now = new Date()
-  return snapshot.value.lapsed.slice(0, HOME_LAPSED_PREVIEW_LIMIT).map((row) => toCustomerRowModel(row, now, translate))
+  return snapshot.value.lapsed.items.slice(0, HOME_LAPSED_PREVIEW_LIMIT).map((row) => toCustomerRowModel(row, now, translate))
 })
-const lapsedTotal = computed(() => snapshot.value?.lapsed.length ?? 0)
+const lapsedTotal = computed(() => snapshot.value?.lapsed.total ?? 0)
 const reachable = computed(() => snapshot.value?.reachable ?? null)
 
 const lapsedLink = { path: '/clientes', query: { [CUSTOMER_FILTER_QUERY]: customerFilterSlug('lapsed') } }

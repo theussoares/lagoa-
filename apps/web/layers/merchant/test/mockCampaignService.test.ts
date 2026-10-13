@@ -62,7 +62,7 @@ describe('mock CampaignService', () => {
     expect(activity.ok && activity.value[0]).toMatchObject({ kind: 'campaignBonus', units: 1, shopId: shops.barbershop })
 
     const lapsed = await barbershop.customers.listCustomers('lapsed')
-    expect(lapsed.ok && lapsed.value.map((row) => row.firstName)).toEqual(['João', 'Lucas'])
+    expect(lapsed.ok && lapsed.value.items.map((row) => row.firstName)).toEqual(['João', 'Lucas'])
     const counter = await barbershop.counter.listTodayEntries()
     expect(counter.ok && counter.value.entries.some((entry) => entry.kind === 'campaignBonus')).toBe(false)
   })

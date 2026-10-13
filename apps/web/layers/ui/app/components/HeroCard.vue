@@ -22,11 +22,11 @@ const titleId = useId()
   <!-- O único destaque da tela: sobe 40px sobre a faixa do cabeçalho. -->
   <article
     :aria-labelledby="titleId"
-    class="rise relative -mt-10 flex flex-col gap-4 overflow-hidden rounded-(--radius-card) bg-default p-5 shadow-(--lagoa-shadow-card)"
+    class="card-raised rise relative -mt-10 flex flex-col gap-4 overflow-hidden p-5"
   >
     <span
       v-if="icon"
-      class="pop-tilt absolute top-5 right-5 grid size-14 place-items-center rounded-2xl bg-(--color-lima-100) text-(--color-lima-700) dark:bg-(--color-lima-900) dark:text-(--color-lima-200)"
+      class="pop-tilt absolute top-5 right-5 grid size-14 place-items-center rounded-2xl bg-(--color-sol-100) text-(--color-sol-700) dark:bg-(--color-sol-900) dark:text-(--color-sol-200)"
       aria-hidden="true"
     >
       <UIcon :name="icon" class="size-8" />

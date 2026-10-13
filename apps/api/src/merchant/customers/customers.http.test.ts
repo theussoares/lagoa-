@@ -11,7 +11,8 @@ import { createTestPii } from '../../test-support/pii'
 import type { MerchantShopRecord } from '../session/session.repository'
 import { SessionRepository } from '../session/session.repository'
 import { CustomersController } from './customers.controller'
-import { CustomersRepository, type RawCustomerCardRow } from './customers.repository'
+import { CustomersRepository } from './customers.repository'
+import { FakeCustomersRepository, rawCustomer } from './customers.fixtures'
 import { CustomersService } from './customers.service'
 import { MerchantShopGuard } from '../access/merchant-shop.guard'
 
@@ -29,24 +30,16 @@ class TestSessionRepository extends SessionRepository {
   }
 }
 
-class TestCustomersRepository extends CustomersRepository {
-  rows: RawCustomerCardRow[] = []
-
-  async listShopCustomers(_shopId: string): Promise<RawCustomerCardRow[]> {
-    return this.rows
-  }
-}
-
 describe('merchant customers HTTP', () => {
   let app: INestApplication
   let sessionRepo: TestSessionRepository
-  let customersRepo: TestCustomersRepository
+  let customersRepo: FakeCustomersRepository
   let pii: PiiService
 
   beforeAll(async () => {
     pii = createTestPii()
     sessionRepo = new TestSessionRepository()
-    customersRepo = new TestCustomersRepository()
+    customersRepo = new FakeCustomersRepository()
 
     const moduleRef = await Test.createTestingModule({
       controllers: [CustomersController],
@@ -81,68 +74,29 @@ describe('merchant customers HTTP', () => {
       status: 'approved',
       merchantTermsVersion: null,
     }
-    customersRepo.rows = [
-      {
-        customerId: '018f98a2-7b2a-7182-9f33-6d004bbbb011',
-        phoneEncrypted: pii.encrypt('67999990001'),
-        firstName: 'Lapsed Customer',
-        unit: 'stamp',
-        balance: 2,
-        target: 10,
-        visitsCount: 1,
-        lastVisitAt: new Date('2026-09-01T10:00:00Z'),
-        acceptsNotifications: true,
-      },
-      {
-        customerId: '018f98a2-7b2a-7182-9f33-6d004bbbb012',
-        phoneEncrypted: pii.encrypt('67999990002'),
-        firstName: 'Reward Ready Customer',
-        unit: 'stamp',
-        balance: 10,
-        target: 10,
-        visitsCount: 10,
-        lastVisitAt: new Date('2026-10-07T10:00:00Z'),
-        acceptsNotifications: false,
-      },
-    ]
+    customersRepo.rows = [rawCustomer(pii, 1), rawCustomer(pii, 2)]
+    customersRepo.counts = { total: 2, acceptingNotifications: 1 }
+    customersRepo.pageQueries = []
   })
 
-  it('GET /merchant/customers default returns all customers with masked phone', async () => {
-    const response = await request(app.getHttpServer())
-      .get('/merchant/customers')
-      .expect(200)
+  it('GET /merchant/customers answers the first page with masked phones and the counts', async () => {
+    const response = await request(app.getHttpServer()).get('/merchant/customers').expect(200)
 
-    expect(response.body).toHaveLength(2)
-    expect(response.body[0].maskedPhone).toBe('(67) 9••••-0001')
-    expect(response.body[1].maskedPhone).toBe('(67) 9••••-0002')
+    expect(response.body).toMatchObject({ nextCursor: null, total: 2, acceptingNotifications: 1 })
+    expect(response.body.items.map((row: { maskedPhone: string }) => row.maskedPhone)).toEqual(['(67) 9••••-0001', '(67) 9••••-0002'])
     expect(JSON.stringify(response.body)).not.toContain('67999990001')
-    expect(JSON.stringify(response.body)).not.toContain('67999990002')
+    expect(customersRepo.pageQueries[0]).toMatchObject({ filter: 'all', after: null })
   })
 
-  it('GET /merchant/customers?filter=lapsed returns only lapsed customers', async () => {
-    const response = await request(app.getHttpServer())
-      .get('/merchant/customers?filter=lapsed')
-      .expect(200)
-
-    expect(response.body).toHaveLength(1)
-    expect(response.body[0].firstName).toBe('Lapsed Customer')
-    expect(response.body[0].isLapsed).toBe(true)
+  it('GET /merchant/customers?filter=lapsed&cursor=<id> passes filter and cursor through', async () => {
+    const cursor = '018f98a2-7b2a-7182-9f33-6d004bbbb001'
+    await request(app.getHttpServer()).get(`/merchant/customers?filter=lapsed&cursor=${cursor}`).expect(200)
+    expect(customersRepo.pageQueries[0]).toMatchObject({ filter: 'lapsed', after: cursor })
   })
 
-  it('GET /merchant/customers?filter=rewardReady returns only reward-ready customers', async () => {
-    const response = await request(app.getHttpServer())
-      .get('/merchant/customers?filter=rewardReady')
-      .expect(200)
-
-    expect(response.body).toHaveLength(1)
-    expect(response.body[0].firstName).toBe('Reward Ready Customer')
-    expect(response.body[0].balance).toBe(10)
-  })
-
-  it('GET /merchant/customers?filter=invalid returns 400', async () => {
-    await request(app.getHttpServer())
-      .get('/merchant/customers?filter=invalid')
-      .expect(400)
+  it.each(['filter=invalid', 'cursor=not-a-uuid', "cursor=1'%20or%201=1"])('GET /merchant/customers?%s answers 400 without querying', async (search) => {
+    await request(app.getHttpServer()).get(`/merchant/customers?${search}`).expect(400)
+    expect(customersRepo.pageQueries).toEqual([])
   })
 
   it('GET /merchant/customers returns 404 when shop not found', async () => {

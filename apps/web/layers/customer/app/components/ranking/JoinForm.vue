@@ -12,10 +12,10 @@ const name = ref('')
 </script>
 
 <template>
-  <form class="flex flex-col gap-3 rounded-(--radius-card) bg-default p-4 shadow-(--lagoa-shadow-card)" @submit.prevent="emit('join', name)">
+  <form class="card flex flex-col gap-3 p-4" @submit.prevent="emit('join', name)">
     <UFormField :label="labels.name" :help="labels.help">
       <UInput v-model="name" size="xl" class="w-full" :maxlength="RANKING_NAME_MAX_LENGTH" autocomplete="off" />
     </UFormField>
-    <UButton type="submit" size="lg" block :loading="pending" :label="labels.submit" />
+    <ActionButton role="primary" size="lg" type="submit" block :loading="pending" :label="labels.submit" />
   </form>
 </template>

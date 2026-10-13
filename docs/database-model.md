@@ -62,6 +62,8 @@ class Shop {
   +char6 checkInCode  «unique»
   +text logoPath?  «bucket shop-assets, logo quadrado»
   +text bannerPath?  «bucket shop-assets, capa do card»
+  +text whatsapp?  «celular BR (DDD + 9 dígitos), contato público do botão nos cards»
+  +text ctaLabel?  «texto do botão, até 24; só com whatsapp»
   +enum status  «pending | approved | suspended»
   +timestamptz createdAt
 }
@@ -79,7 +81,7 @@ class Program {
   +int expirationMonths?
   +bool checkInEnabled
   +int checkInCooldownHours
-  +text checkInCooldownMode «rolling | calendarDay»
+  +text checkInCooldownMode «rolling | calendarDay | unlimited»
   +timestamptz updatedAt
 }
 class LoyaltyCard {

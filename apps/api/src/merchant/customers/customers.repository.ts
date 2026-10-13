@@ -1,3 +1,4 @@
+import type { CustomerFilter } from '#shared/schemas/customer'
 import type { ProgramUnit } from '#shared/schemas/program'
 
 export interface RawCustomerCardRow {
@@ -10,8 +11,30 @@ export interface RawCustomerCardRow {
   readonly visitsCount: number
   readonly lastVisitAt: Date | null
   readonly acceptsNotifications: boolean
+  /** Valor da compra mais recente com valor lançado; `null` se nenhuma trouxe valor. */
+  readonly lastAmountCents: number | null
+}
+
+/** Quem entra na lista: a loja do dono e o filtro da aba, já resolvido em instante (`lapsedCutoff`). */
+export interface CustomerScope {
+  readonly shopId: string
+  readonly filter: CustomerFilter
+  readonly lapsedCutoff: Date
+}
+
+export interface CustomerPageQuery extends CustomerScope {
+  /** Último cliente da página anterior; `null` na primeira. */
+  readonly after: string | null
+  readonly limit: number
+}
+
+export interface CustomerCounts {
+  readonly total: number
+  readonly acceptingNotifications: number
 }
 
 export abstract class CustomersRepository {
-  abstract listShopCustomers(shopId: string): Promise<RawCustomerCardRow[]>
+  /** Mais recentes primeiro (`lastVisitAt desc nulls last`, desempate pelo cartão), no máximo `limit` linhas. */
+  abstract listShopCustomers(query: CustomerPageQuery): Promise<RawCustomerCardRow[]>
+  abstract countShopCustomers(scope: CustomerScope): Promise<CustomerCounts>
 }

@@ -7,10 +7,6 @@ import { toVisitQrCode, toVisitQrDisplayModel, toVisitQrIssueText } from '../uti
 import type { CounterAction, CounterFocus, CounterFocusTarget, CounterLedger } from '../types/counter'
 import type { CounterVisitQrView, VisitQrControl } from '../types/visitQr'
 
-function initialFocusTarget(action: CounterAction): CounterFocusTarget {
-  return action.kind === 'amount' ? 'amount' : 'issueVisitQr'
-}
-
 /** Painel do QR da visita: o que o botão faz, os textos, o recibo do uso e quando devolver o foco. */
 export function useVisitQrPanel(
   program: AsyncResult<Program, TransportError>,
@@ -52,7 +48,7 @@ export function useVisitQrPanel(
     (current) => {
       if (current === null || focusedOnLoad) return
       focusedOnLoad = true
-      void focusAfterRender(initialFocusTarget(current))
+      void focusAfterRender('amount')
     },
     { immediate: true },
   )
@@ -74,13 +70,13 @@ export function useVisitQrPanel(
   async function issue(): Promise<void> {
     const current = action.value
     if (current === null) return
-    await control.issue(current)
+    await control.issue()
     if (errorCode.value === 'invalidAmount') focus('amount')
   }
 
   async function issueAnother(): Promise<void> {
     control.reset()
-    if (action.value !== null) await focusAfterRender(initialFocusTarget(action.value))
+    if (action.value !== null) await focusAfterRender('amount')
   }
 
   function inputAmount(value: string | number): void {

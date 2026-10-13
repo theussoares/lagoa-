@@ -34,6 +34,6 @@ function heroStampOf(current: EarnedState, reward: boolean, cardIcon: string | u
   return {
     icon: reward ? REWARD_STAMP_ICON : (cardIcon ?? FALLBACK_STAMP_ICON),
     tilt: stampTilt(cardId, balance),
-    tone: reward ? 'reward' : 'ink',
+    tone: reward ? 'rewardLight' : 'light',
   }
 }

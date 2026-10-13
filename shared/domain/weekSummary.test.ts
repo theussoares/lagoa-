@@ -40,7 +40,7 @@ describe('summarizeWeek', () => {
       now,
     )
     expect(week).toMatchObject({ visits: 3, customers: 2, newCustomers: 1, redemptions: 1 })
-    expect(week.days.at(-1)).toEqual({ isoDate: '2026-10-02', visits: 2, newCustomers: 1, redemptions: 1 })
+    expect(week.days.at(-1)).toEqual({ isoDate: '2026-10-02', visits: 2, newCustomers: 1, redemptions: 1, amountCents: 0 })
   })
 
   it('counts a customer as new on the day of the first visit to this shop, whatever the channel', () => {

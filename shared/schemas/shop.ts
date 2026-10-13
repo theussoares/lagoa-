@@ -2,11 +2,13 @@ import { z } from 'zod'
 import { LoyaltyCardIdSchema, ShopIdSchema } from './ids'
 import { EarnRateSchema, ProgramUnitSchema } from './program'
 import { readableCodeSchema } from './common'
+import { PhoneNumberSchema } from './phone'
 import {
   CHECK_IN_CODE_INPUT_MAX_LENGTH,
   CHECK_IN_CODE_LENGTH,
   REWARD_TITLE_MAX_LENGTH,
   SHOP_ADDRESS_MAX_LENGTH,
+  SHOP_CTA_LABEL_MAX_LENGTH,
   SHOP_NAME_MAX_LENGTH,
   SHOP_NEIGHBORHOOD_MAX_LENGTH,
   SHOP_PHOTO_MAX_BYTES,
@@ -55,6 +57,30 @@ export type ShopPhotoKind = z.infer<typeof ShopPhotoKindSchema>
 export const ShopPhotosSchema = z.object({ logoUrl: z.string().url().nullable(), bannerUrl: z.string().url().nullable() })
 export type ShopPhotos = z.infer<typeof ShopPhotosSchema>
 
+const CtaLabelSchema = z.string().trim().min(1).max(SHOP_CTA_LABEL_MAX_LENGTH)
+
+/**
+ * Contato público da loja nos cards (Descobrir e Carteira): o WhatsApp do negócio que o lojista escolheu divulgar e o
+ * texto do botão ("Agendar agora", "Pedir agora"). Não é o celular de nenhum cliente.
+ */
+export const ShopContactSchema = z.object({
+  whatsapp: PhoneNumberSchema.nullable(),
+  /** `null` = o botão usa o texto padrão ("Falar no WhatsApp"). Sem WhatsApp não há botão, então fica `null`. */
+  ctaLabel: CtaLabelSchema.nullable(),
+})
+export type ShopContact = z.infer<typeof ShopContactSchema>
+
+/** O que o lojista salva em Configurações. */
+export const ShopContactUpdateSchema = z.strictObject({
+  whatsapp: PhoneNumberSchema.nullable(),
+  ctaLabel: CtaLabelSchema.nullable(),
+})
+export type ShopContactUpdate = z.infer<typeof ShopContactUpdateSchema>
+
+/** O que o card mostra: só existe com WhatsApp cadastrado. */
+export const ShopPublicContactSchema = z.object({ whatsapp: PhoneNumberSchema, ctaLabel: CtaLabelSchema.nullable() })
+export type ShopPublicContact = z.infer<typeof ShopPublicContactSchema>
+
 /** Vitrine da loja no Descobrir. Tudo opcional: o card só mostra o que existe. */
 export const ShopShowcaseSchema = z.object({
   /** Banner (capa do card). */
@@ -74,6 +100,7 @@ export const ShopSchema = z.object({
   addressLine: z.string().min(1).max(SHOP_ADDRESS_MAX_LENGTH),
   status: ShopStatusSchema,
   showcase: ShopShowcaseSchema.optional(),
+  contact: ShopPublicContactSchema.optional(),
 })
 export type Shop = z.infer<typeof ShopSchema>
 
@@ -85,6 +112,7 @@ export const ShopSummarySchema = ShopSchema.pick({
   neighborhood: true,
   addressLine: true,
   showcase: true,
+  contact: true,
 }).extend({
   program: z.object({
     unit: ProgramUnitSchema,

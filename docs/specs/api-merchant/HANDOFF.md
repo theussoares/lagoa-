@@ -1,6 +1,6 @@
 # API do painel do lojista: handoff
 
-Estado em **2026-10-10**. Spec: [spec.md](./spec.md) (aprovada pelo dono). Desenho:
+Estado em **2026-10-10 (noite)**. Spec: [spec.md](./spec.md) (aprovada pelo dono). Desenho:
 [solution-design.md](./solution-design.md) (aprovado com ajustes do CTO, seção "R"). Plano: [plan.md](./plan.md).
 
 ## Decisão de produto (confirmada com o dono)
@@ -23,6 +23,8 @@ Estado em **2026-10-10**. Spec: [spec.md](./spec.md) (aprovada pelo dono). Desen
 | Pendências do piloto (`isSameProgram`, rascunho do termo, Playwright de fumaça) | Feito | `develop` (#54) |
 | Tela de aceite do termo + Campanhas escondida | Feito | `develop` (#56) |
 | Release `develop` → `main` + produção | **No ar (2026-10-10)** | `main` (#57) |
+| Intervalo "1 vez por dia" (`0022`) + foto da loja | **No ar** | `main` (#59, release #60) |
+| Logo e banner da loja (`0023`) | **No ar** | `main` (#61, release #62) |
 | M4 Início e Clientes | API e BFF existem (do #43), **sem o endurecimento da 4.2/4.3** | `develop` |
 | M5 Campanhas | Não existe na API nem no BFF; **escondida no piloto** (decisão do dono, 2026-10-10) | — |
 | M6 Corte do mock | Não começou (não bloqueia) | — |
@@ -31,10 +33,32 @@ Estado em **2026-10-10**. Spec: [spec.md](./spec.md) (aprovada pelo dono). Desen
   `NUXT_PUBLIC_MERCHANT_BACKEND=mock`.
 - **Testes de integração rodam no CI** contra Postgres 17 (`.github/workflows/ci.yml`: migrations, paridade `--exact`,
   `TEST_DATABASE_URL`). O bloqueio antigo "sem Postgres" acabou.
-- **Produção (2026-10-10):** `main` em #57, deploy de API, web e site prontos. Supabase com 22/22 migrations (`db:migrate:prod`,
-  620 testes de integração passando antes), `db:backfill-visits` rodado (0 cartões). API com `MERCHANT_TERMS_REQUIRED=1` e
-  `CORS_ORIGIN` vazio. Nenhuma loja cadastrada ainda.
+- **Produção (2026-10-10, noite):** `main` em #62, deploy de API, web e site prontos, sem erro nos logs da API. Supabase com
+  **24/24 migrations** (`0022` e `0023` pelo `db:migrate:prod`, 642 testes de integração passando antes de cada uma),
+  `db:backfill-visits` rodado. API com `MERCHANT_TERMS_REQUIRED=1`, `CORS_ORIGIN` vazio e `SUPABASE_SERVICE_ROLE_KEY`
+  (agora obrigatória em production).
+- **Primeira loja:** **Cinderela** (`01a127bb-16cb-7023-a126-be5388b12cb9`), aprovada por `shop:status` como
+  **Fundador Pro** (ator `matheus`), termo `2026-10-pilot` aceito. Programa: carimbos, meta 10, intervalo 24 h corridas e
+  **entrada pelo cartaz desligada** (o lojista precisa ligar em Programa e prêmios para o QR do cartaz funcionar). Ainda
+  sem logo e sem banner.
+- **SMS:** hook Send SMS do Supabase aponta para `https://lagoa-api.vercel.app/v1/auth/hooks/send-sms` e já rodou com
+  sucesso em produção; saldo da Comtele acima de R$ 40 (2026-10-10).
 - Variáveis da Vercel só existem em `production`: os deploys da `develop` (preview) sobem sem env.
+
+## O que subiu em 2026-10-10 (noite)
+
+- **Intervalo antifraude "1 vez por dia"** (#59, `0022`): `checkIn.cooldownMode` = `rolling` (horas corridas: 4 h, 12 h,
+  24 h, 2 dias, 7 dias) ou `calendarDay` (uma visita por dia local, vira à meia-noite: 23h e 3h do dia seguinte valem
+  duas). Coluna `programs.check_in_cooldown_mode` (padrão `rolling`). Regra única em `shared/domain/antifraud.ts`
+  (`cooldownEndsAt`, `checkInAvailableAt`), usada pela API e pelo mock; mudar o modo cria versão nova do programa. O
+  "1 dia" de antes virou "24 horas".
+- **Logo e banner da loja** (#59 e #61, `0023`): em Configurações, cada um com o seu envio. O navegador reduz antes de
+  enviar (`useImageResize`: logo quadrado de 512 px recortado no centro; banner até 1200 px; WebP, JPEG de reserva). A API
+  (`GET /v1/merchant/shop/photo`, `POST /v1/merchant/shop/photo/:kind`) confere até 1 MB, o tipo pelos bytes e as
+  dimensões pelo cabeçalho (teto de 2400 px), grava no bucket `shop-assets` com nome novo a cada troca, apaga o arquivo
+  anterior e troca `shops.logo_path`/`banner_path`. Corpo de 2 MB só nessa rota (`route-body-limit.ts`); o resto da API
+  segue com 100 kB. No Descobrir, banner na capa do card e logo no círculo (sem logo, o carimbo da categoria).
+- **Vercel:** deploy automático só em `main`, `develop` e `stable` (#55); branch de feature não gasta mais o limite diário.
 
 ## O que falta para começar os testes do piloto
 
@@ -102,6 +126,12 @@ Teste do piloto = lojistas e clientes de verdade em Três Lagoas, no ambiente de
 - Toda escrita de saldo passa pelo `LedgerStore`; resgate por `RedemptionLookup` + `settleRedemption`.
 - A loja sai sempre do JWT (guard + `@MerchantSurface()`); nenhuma rota recebe `shopId`.
 - Celular só mascarado, decifrado em lote no service. Token do QR e código de resgate nunca em log.
+
+## Não verificado ainda
+
+- Envio real de logo e banner em produção (só testado no modo mock e por testes). O primeiro envio da Cinderela é a prova.
+- Ensaio ponta a ponta em celular real (roteiro acima) com a loja real.
+- `code-reviewer` não revisou o #61 (logo/banner); o envio de imagem já tinha passado por ele no #59.
 
 ## Próximo passo (nova sessão)
 

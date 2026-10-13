@@ -9,7 +9,7 @@ import { addMinutes, toIso } from '../utils/time'
 import { checkInAvailableAt } from './antifraud'
 import { planEarning } from './earning'
 import type { EarningCard, EarningPlan } from './earning'
-import { acceptsAmount, baseUnitsFor } from './programStrategies'
+import { acceptsAmount, baseUnitsFor, validAmount } from './programStrategies'
 import type { EarnError, EarnInput } from './programStrategies'
 
 /** O QR da visita como está gravado, mais o que a decisão de uso precisa saber da loja agora. */
@@ -59,12 +59,14 @@ export function decideVisitQrUse(qr: VisitQrSnapshot, customerId: string, now: D
   return ok('claim')
 }
 
-/** RN-07: valor obrigatório e válido no modo por real; proibido nos modos por visita. */
+/**
+ * RN-07: o valor da venda é obrigatório e válido em todo QR, em qualquer modo (o lojista e o painel acompanham o que
+ * cada visita vendeu). Só o modo por real converte o valor em pontos; nos modos por visita ele fica registrado e a
+ * visita conta 1 (`resolveVisitEarnInput`). Vale também para o cartão de uma versão anterior que o QR encontrar.
+ */
 export function planVisitQrIssue(rules: ProgramRules, amountCents: number | undefined): Result<VisitQrEarn, EarnError> {
-  if (!acceptsAmount(rules)) {
-    return amountCents === undefined ? ok({ kind: 'visit' }) : err({ code: 'amountNotAccepted' })
-  }
-  if (amountCents === undefined) return err({ code: 'invalidAmount' })
+  if (amountCents === undefined || !validAmount(amountCents)) return err({ code: 'invalidAmount' })
+  if (!acceptsAmount(rules)) return ok({ kind: 'amount', amountCents })
   const units = baseUnitsFor(rules, { kind: 'amount', amountCents })
   return units.ok ? ok({ kind: 'amount', amountCents }) : units
 }
@@ -76,6 +78,11 @@ export function planVisitQrIssue(rules: ProgramRules, amountCents: number | unde
 export function resolveVisitEarnInput(cardRules: ProgramRules, earn: VisitQrEarn): Result<EarnInput, ErrorOf<'visitQrStale'>> {
   if (!acceptsAmount(cardRules)) return ok({ kind: 'visit' })
   return earn.kind === 'amount' ? ok(earn) : err({ code: 'visitQrStale' })
+}
+
+/** Tipo do lançamento: o cartão decide (por real = `amount`; por visita conta 1 visita), mesmo com o valor registrado. */
+export function visitLedgerKindFor(cardRules: ProgramRules): 'visit' | 'amount' {
+  return acceptsAmount(cardRules) ? 'amount' : 'visit'
 }
 
 export interface VisitEarningRequest {

@@ -6,9 +6,13 @@ interface Props {
   card: StampCardModel
   /** Nível do título do nome da loja na página. */
   headingLevel?: 'h2' | 'h3'
+  /** `false` quando a linha da lista já mostra a loja e o progresso (o cartão aberto dentro dela). */
+  header?: boolean
+  /** Sem a moldura de cartão: o cartão vive dentro de outro painel. */
+  flat?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), { headingLevel: 'h2' })
+const props = withDefaults(defineProps<Props>(), { headingLevel: 'h2', header: true, flat: false })
 
 const SLOTS_PER_ROW = 5
 const SLOT_GAP = '0.75rem'
@@ -16,10 +20,10 @@ const slotGrid = computed(() => (props.card.body.kind === 'slots' ? slotGridStyl
 </script>
 
 <template>
-  <article class="rise flex flex-col rounded-(--radius-card) bg-default shadow-(--lagoa-shadow-card)">
-    <header class="flex items-center justify-between gap-3 px-5 pt-5 pb-4">
+  <article class="flex flex-col" :class="flat ? 'pt-1' : 'card rise'">
+    <header v-if="header" class="flex items-center justify-between gap-3 px-5 pt-5 pb-4">
       <div class="flex min-w-0 items-center gap-3">
-        <span class="pop-tilt grid size-12 shrink-0 place-items-center rounded-2xl bg-(--color-lima-100) text-(--color-lima-700) dark:bg-(--color-lima-900) dark:text-(--color-lima-200)" aria-hidden="true">
+        <span class="pop-tilt grid size-12 shrink-0 place-items-center rounded-2xl bg-(--color-sol-100) text-(--color-sol-700) dark:bg-(--color-sol-900) dark:text-(--color-sol-200)" aria-hidden="true">
           <UIcon :name="card.icon" class="size-7" />
         </span>
         <div class="min-w-0">

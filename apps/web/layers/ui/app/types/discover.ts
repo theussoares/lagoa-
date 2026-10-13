@@ -58,6 +58,8 @@ export interface ShopTeaserModel {
   readonly showcase: ShopShowcaseModel
   /** Link para o mapa: o card leva até a loja, que é onde o cartão abre. */
   readonly directions: ExternalLinkModel
+  /** Botão de WhatsApp com o texto que a loja escolheu; `null` sem WhatsApp cadastrado. */
+  readonly contact: ExternalLinkModel | null
 }
 
 export interface ExternalLinkModel {

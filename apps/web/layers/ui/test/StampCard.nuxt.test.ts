@@ -16,6 +16,7 @@ function model(note: string | null): StampCardModel {
     summary: 'Barbearia Navalha: 0 de 10.',
     rewardReady: false,
     note,
+    contact: null,
   }
 }
 

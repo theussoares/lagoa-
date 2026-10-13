@@ -15,7 +15,7 @@ const columns = computed<TableColumn<CustomerRowModel>[]>(() => [
   { id: 'card', header: props.labels.card },
   { accessorKey: 'visits', header: props.labels.visits, meta: { class: { th: 'text-right', td: 'text-right' } } },
   { id: 'lastVisit', header: props.labels.lastVisit },
-  { id: 'notifications', header: props.labels.notifications },
+  { id: 'lastPurchase', header: props.labels.lastPurchase, meta: { class: { th: 'text-right', td: 'text-right' } } },
 ])
 </script>
 
@@ -57,13 +57,9 @@ const columns = computed<TableColumn<CustomerRowModel>[]>(() => [
       </span>
     </template>
 
-    <template #notifications-cell="{ row }">
-      <span v-if="row.original.acceptsNotifications" class="flex items-center gap-1.5 text-success">
-        <UIcon name="i-ph-bell-ringing" class="size-4 shrink-0" aria-hidden="true" />{{ labels.acceptsNotifications }}
-      </span>
-      <span v-else class="flex items-center gap-1.5 text-muted">
-        <UIcon name="i-ph-bell-slash" class="size-4 shrink-0" aria-hidden="true" />{{ labels.noNotifications }}
-      </span>
+    <template #lastPurchase-cell="{ row }">
+      <span v-if="row.original.lastPurchase" class="tabular">{{ row.original.lastPurchase }}</span>
+      <span v-else class="text-muted">{{ labels.noPurchase }}</span>
     </template>
   </UTable>
 </template>

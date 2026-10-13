@@ -20,7 +20,7 @@ export interface ProgramStrategy<R> {
 
 const CENTS_PER_REAL = 100
 
-function validAmount(amountCents: number): boolean {
+export function validAmount(amountCents: number): boolean {
   return Number.isInteger(amountCents) && amountCents > 0 && amountCents <= AMOUNT_MAX_CENTS
 }
 

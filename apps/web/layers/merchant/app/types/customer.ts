@@ -1,6 +1,6 @@
 import type { CustomerId } from '#shared/schemas/ids'
 import type { MaskedPhone } from '#shared/schemas/phone'
-import type { CustomerFilter, MerchantCustomerRow } from '#shared/schemas/customer'
+import type { CustomerFilter, MerchantCustomerPage } from '#shared/schemas/customer'
 import type { TransportError } from '#shared/types/errors'
 import type { AsyncResultState } from '#layers/core/app/types/asyncResult'
 import type { ComputedRef, Ref } from 'vue'
@@ -23,7 +23,8 @@ export interface CustomerRowModel {
   /** "hoje", "há 3 dias", "há 42 dias", "nunca". */
   readonly lastVisit: string
   readonly isLapsed: boolean
-  readonly acceptsNotifications: boolean
+  /** Valor da compra mais recente, "R$ 24,90"; `null` se nenhuma trouxe valor. */
+  readonly lastPurchase: string | null
 }
 
 export interface CustomerTableLabels {
@@ -32,16 +33,21 @@ export interface CustomerTableLabels {
   /** Visitas que deram carimbo ou ponto; resgates não contam. */
   readonly visits: string
   readonly lastVisit: string
-  readonly notifications: string
+  readonly lastPurchase: string
   readonly noName: string
   readonly rewardReady: string
   readonly lapsed: string
-  readonly acceptsNotifications: string
-  readonly noNotifications: string
+  readonly noPurchase: string
 }
 
 export interface MerchantCustomers {
   filter: Ref<CustomerFilter>
-  state: ComputedRef<AsyncResultState<MerchantCustomerRow[], TransportError>>
+  /** Páginas já carregadas juntas em `items`; `total` conta o filtro inteiro. */
+  state: ComputedRef<AsyncResultState<MerchantCustomerPage, TransportError>>
   reload: () => Promise<void>
+  /** Busca a próxima página e junta ao fim; não faz nada sem `nextCursor`. */
+  loadMore: () => Promise<void>
+  loadingMore: Ref<boolean>
+  /** Falha do último "Carregar mais"; a lista já carregada continua na tela. */
+  loadMoreError: Ref<TransportError | null>
 }

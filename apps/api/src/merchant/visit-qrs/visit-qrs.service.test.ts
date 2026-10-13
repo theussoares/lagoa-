@@ -66,13 +66,13 @@ describe('VisitQrsService', () => {
 
   describe('issueVisitQr', () => {
     it('issues an active stamp visit QR with 5-minute TTL, token and visitCode', async () => {
-      const result = await service.issueVisitQr(ownerUserId, {})
+      const result = await service.issueVisitQr(ownerUserId, { amountCents: 3200 })
       expect(result.ok).toBe(true)
       if (!result.ok) return
 
       expect(result.value).toMatchObject({
         status: 'active',
-        earn: { kind: 'visit' },
+        earn: { kind: 'amount', amountCents: 3200 },
         claim: null,
         refusal: null,
       })
@@ -83,13 +83,13 @@ describe('VisitQrsService', () => {
 
     it('answers visitQrLimitReached when the shop already has the maximum of live QRs', async () => {
       visitQrsRepo.activeCount = VISIT_QR_ACTIVE_MAX_PER_SHOP
-      expect(await service.issueVisitQr(ownerUserId, {})).toEqual({ ok: false, error: { code: 'visitQrLimitReached' } })
+      expect(await service.issueVisitQr(ownerUserId, { amountCents: 3200 })).toEqual({ ok: false, error: { code: 'visitQrLimitReached' } })
     })
 
     it('decides on the status the transaction locked, not on the one read before it', async () => {
       // A sessão lida antes ainda diz aprovada; a loja travada na transação já foi suspensa.
       visitQrsRepo.shopStatus = () => 'suspended'
-      expect(await service.issueVisitQr(ownerUserId, {})).toEqual({ ok: false, error: { code: 'shopSuspended' } })
+      expect(await service.issueVisitQr(ownerUserId, { amountCents: 3200 })).toEqual({ ok: false, error: { code: 'shopSuspended' } })
       visitQrsRepo.shopStatus = () => sessionRepo.shop?.status ?? 'approved'
     })
 
@@ -116,33 +116,38 @@ describe('VisitQrsService', () => {
       expect(result).toEqual({ ok: false, error: { code: 'invalidAmount' } })
     })
 
-    it('rejects amount on stamps program with amountNotAccepted', async () => {
+    it('rejects missing amount on stamps program with invalidAmount', async () => {
+      const result = await service.issueVisitQr(ownerUserId, {})
+      expect(result).toEqual({ ok: false, error: { code: 'invalidAmount' } })
+    })
+
+    it('records the amount on a stamps program', async () => {
       const result = await service.issueVisitQr(ownerUserId, { amountCents: 5000 })
-      expect(result).toEqual({ ok: false, error: { code: 'amountNotAccepted' } })
+      expect(result).toMatchObject({ ok: true, value: { earn: { kind: 'amount', amountCents: 5000 } } })
     })
 
     it('rejects when shop is pending approval', async () => {
       sessionRepo.shop = { ...sessionRepo.shop!, status: 'pending' }
-      const result = await service.issueVisitQr(ownerUserId, {})
+      const result = await service.issueVisitQr(ownerUserId, { amountCents: 3200 })
       expect(result).toEqual({ ok: false, error: { code: 'shopPendingApproval' } })
     })
 
     it('rejects when shop is suspended', async () => {
       sessionRepo.shop = { ...sessionRepo.shop!, status: 'suspended' }
-      const result = await service.issueVisitQr(ownerUserId, {})
+      const result = await service.issueVisitQr(ownerUserId, { amountCents: 3200 })
       expect(result).toEqual({ ok: false, error: { code: 'shopSuspended' } })
     })
 
     it('returns notFound when user has no shop', async () => {
       sessionRepo.shop = null
-      const result = await service.issueVisitQr(ownerUserId, {})
+      const result = await service.issueVisitQr(ownerUserId, { amountCents: 3200 })
       expect(result).toEqual({ ok: false, error: { code: 'notFound', entity: 'merchant' } })
     })
   })
 
   describe('getVisitQr', () => {
     it('returns the QR with derived status when active', async () => {
-      const issued = await service.issueVisitQr(ownerUserId, {})
+      const issued = await service.issueVisitQr(ownerUserId, { amountCents: 3200 })
       if (!issued.ok) throw new Error('Failed to issue')
 
       const retrieved = await service.getVisitQr(ownerUserId, issued.value.id)
@@ -156,7 +161,7 @@ describe('VisitQrsService', () => {
     })
 
     it('derives status expired when past expiresAt', async () => {
-      const issued = await service.issueVisitQr(ownerUserId, {})
+      const issued = await service.issueVisitQr(ownerUserId, { amountCents: 3200 })
       if (!issued.ok) throw new Error('Failed to issue')
 
       // Avança o relógio em 6 minutos
@@ -177,7 +182,7 @@ describe('VisitQrsService', () => {
 
   describe('cancelVisitQr', () => {
     it('cancels an active QR', async () => {
-      const issued = await service.issueVisitQr(ownerUserId, {})
+      const issued = await service.issueVisitQr(ownerUserId, { amountCents: 3200 })
       if (!issued.ok) throw new Error('Failed to issue')
 
       const cancelled = await service.cancelVisitQr(ownerUserId, issued.value.id)
@@ -188,7 +193,7 @@ describe('VisitQrsService', () => {
     })
 
     it('is idempotent when already expired or cancelled', async () => {
-      const issued = await service.issueVisitQr(ownerUserId, {})
+      const issued = await service.issueVisitQr(ownerUserId, { amountCents: 3200 })
       if (!issued.ok) throw new Error('Failed to issue')
 
       const firstCancel = await service.cancelVisitQr(ownerUserId, issued.value.id)

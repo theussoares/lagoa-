@@ -54,6 +54,12 @@ describe('check-in components: Notice', () => {
     expect(page.emitted('typeCode')).toHaveLength(1)
   })
 
+  it('makes the recovery the primary action and typing the code the secondary one', async () => {
+    const page = await mountIt(Notice, { notice: notice({}) })
+    expect(button(page, t('checkIn.scanAgain')).classes()).toContain('bg-primary')
+    expect(button(page, t('checkIn.typeVisitCode')).classes()).toContain('ring-accented')
+  })
+
   it('offers retry instead of scan again for a network failure', async () => {
     const page = await mountIt(Notice, { notice: notice({ recovery: 'retry', icon: 'i-ph-wifi-slash' }) })
     await button(page, t('common.retry')).trigger('click')
@@ -112,6 +118,13 @@ describe('check-in components: ScanStep joining', () => {
 
 describe('check-in components: CodeForm', () => {
   const formProps = { kind: 'visit', length: 5, cameraIssue: null, invalid: false, typing: false, focusRequest: null, code: [] } as const
+
+  it('ranks the actions: claim primary, switch code secondary, camera quiet', async () => {
+    const page = await mountIt(CodeForm, formProps)
+    expect(page.get('button[type="submit"]').classes()).toContain('bg-primary')
+    expect(button(page, t('checkIn.typeShopCode')).classes()).toContain('ring-accented')
+    expect(button(page, t('checkIn.useCamera')).classes()).toContain('hover:bg-elevated')
+  })
 
   it('has a labelled group of cells as long as the visit code and a claim button', async () => {
     const page = await mountIt(CodeForm, formProps)
@@ -192,6 +205,8 @@ describe('check-in components: CodeForm', () => {
   })
 })
 
+const IMAGE = '/example/city.svg'
+
 describe('check-in components: JoinedStep', () => {
   const joined = (overrides: Partial<CheckInJoinedView['text']> = {}): CheckInJoinedView => ({
     text: {
@@ -206,7 +221,7 @@ describe('check-in components: JoinedStep', () => {
   })
 
   it('is a section named by its heading, with the lead, the welcome and the next step', async () => {
-    const page = await mountIt(JoinedStep, { joined: joined(), focusRequest: null })
+    const page = await mountIt(JoinedStep, { joined: joined(), image: IMAGE, focusRequest: null })
     expect(page.get('section').attributes('aria-labelledby')).toBe('joined-title')
     expect(page.get('#joined-title').text()).toBe('Você entrou no clube')
     expect(page.text()).toContain('Barbearia Navalha já está na sua carteira.')
@@ -214,19 +229,30 @@ describe('check-in components: JoinedStep', () => {
     expect(page.text()).toContain('Na hora de pagar, peça o QR da visita no caixa.')
   })
 
+  it('draws the city photo as decoration behind the only h1', async () => {
+    const page = await mountIt(JoinedStep, { joined: joined(), image: IMAGE, focusRequest: null })
+    expect(page.findAll('h1')).toHaveLength(1)
+    expect(page.get('header img').attributes('alt')).toBe('')
+  })
+
+  it('does not let anything climb onto the strip when there is no card', async () => {
+    const page = await mountIt(JoinedStep, { joined: joined(), image: IMAGE, focusRequest: null })
+    expect(page.get('header').classes()).toContain('pb-6')
+  })
+
   it('leaves the welcome line out when there is none', async () => {
-    const page = await mountIt(JoinedStep, { joined: joined({ welcome: null }), focusRequest: null })
+    const page = await mountIt(JoinedStep, { joined: joined({ welcome: null }), image: IMAGE, focusRequest: null })
     expect(page.text()).not.toContain('boas-vindas')
   })
 
   it('links the only button to the wallet', async () => {
-    const page = await mountIt(JoinedStep, { joined: joined(), focusRequest: null })
+    const page = await mountIt(JoinedStep, { joined: joined(), image: IMAGE, focusRequest: null })
     expect(page.findAll('a')).toHaveLength(1)
     expect(button(page, t('checkIn.joined.toWallet')).attributes('href')).toBe('/carteira')
   })
 
   it('moves the focus to the heading only for a joined heading request', async () => {
-    const page = await mountIt(JoinedStep, { joined: joined(), focusRequest: null })
+    const page = await mountIt(JoinedStep, { joined: joined(), image: IMAGE, focusRequest: null })
     await page.setProps({ focusRequest: { target: 'earnedHeading', id: 1 } })
     await flushPromises()
     expect(document.activeElement).not.toBe(page.get('#joined-title').element)
@@ -249,14 +275,14 @@ describe('check-in components: EarnedStep', () => {
         announcement: 'Você ganhou 1 carimbo.',
       },
       card: null,
-      heroStamp: { icon: 'i-ph-seal-check-bold', tilt: 1, tone: 'ink' },
+      heroStamp: { icon: 'i-ph-seal-check-bold', tilt: 1, tone: 'light' },
       rewardCardId: null,
       ...rest,
     }
   }
 
   it('is a section named by its heading, which can take the focus', async () => {
-    const page = await mountIt(EarnedStep, { earned: earned(), focusRequest: null })
+    const page = await mountIt(EarnedStep, { earned: earned(), image: IMAGE, focusRequest: null })
     expect(page.get('section').attributes('aria-labelledby')).toBe('earned-title')
     expect(page.get('#earned-title').text()).toBe('Carimbo ganho!')
     expect(page.text()).toContain('Barbearia Navalha')
@@ -264,7 +290,7 @@ describe('check-in components: EarnedStep', () => {
   })
 
   it('moves the focus to the heading only for an earned heading request', async () => {
-    const page = await mountIt(EarnedStep, { earned: earned(), focusRequest: null })
+    const page = await mountIt(EarnedStep, { earned: earned(), image: IMAGE, focusRequest: null })
     await page.setProps({ focusRequest: { target: 'code', id: 1 } })
     await flushPromises()
     expect(document.activeElement).not.toBe(page.get('#earned-title').element)
@@ -273,16 +299,27 @@ describe('check-in components: EarnedStep', () => {
     expect(document.activeElement).toBe(page.get('#earned-title').element)
   })
 
+  it('draws the city photo as decoration behind the only h1', async () => {
+    const page = await mountIt(EarnedStep, { earned: earned(), image: IMAGE, focusRequest: null })
+    expect(page.findAll('h1')).toHaveLength(1)
+    expect(page.get('header img').attributes('alt')).toBe('')
+  })
+
+  it('does not let anything climb onto the strip when there is no card', async () => {
+    const page = await mountIt(EarnedStep, { earned: earned(), image: IMAGE, focusRequest: null })
+    expect(page.get('header').classes()).toContain('pb-6')
+  })
+
   it('shows the cheer only when there is one', async () => {
-    const without = await mountIt(EarnedStep, { earned: earned(), focusRequest: null })
+    const without = await mountIt(EarnedStep, { earned: earned(), image: IMAGE, focusRequest: null })
     expect(without.find('p.letreiro').exists()).toBe(false)
     without.unmount()
-    const withCheer = await mountIt(EarnedStep, { earned: earned({ cheer: 'Falta só 1 carimbo!' }), focusRequest: null })
+    const withCheer = await mountIt(EarnedStep, { earned: earned({ cheer: 'Falta só 1 carimbo!' }), image: IMAGE, focusRequest: null })
     expect(withCheer.get('p.letreiro').text()).toBe('Falta só 1 carimbo!')
   })
 
   it('links the main button to the wallet when there is no reward to redeem', async () => {
-    const page = await mountIt(EarnedStep, { earned: earned(), focusRequest: null })
+    const page = await mountIt(EarnedStep, { earned: earned(), image: IMAGE, focusRequest: null })
     expect(button(page, t('checkIn.toWallet')).attributes('href')).toBe('/carteira')
     expect(page.text()).not.toContain(t('checkIn.earned.redeem'))
   })
@@ -290,11 +327,24 @@ describe('check-in components: EarnedStep', () => {
   it('puts the redeem button first, linking the card, when the reward was unlocked', async () => {
     const page = await mountIt(EarnedStep, {
       earned: earned({ rewardCardId: 'card_1' as CheckInEarnedView['rewardCardId'] }),
+      image: IMAGE,
       focusRequest: null,
     })
     const links = page.findAll('a')
     expect(links[0]?.text()).toBe(t('checkIn.earned.redeem'))
     expect(links[0]?.attributes('href')).toBe('/premios/card_1')
     expect(button(page, t('checkIn.toWallet')).attributes('href')).toBe('/carteira')
+  })
+
+  it('gives the reward the reward look and demotes the wallet link; alone, the wallet link is the primary', async () => {
+    const withReward = await mountIt(EarnedStep, {
+      earned: earned({ rewardCardId: 'card_1' as CheckInEarnedView['rewardCardId'] }),
+      image: IMAGE,
+      focusRequest: null,
+    })
+    expect(button(withReward, t('checkIn.earned.redeem')).classes()).toContain('bg-secondary')
+    expect(button(withReward, t('checkIn.toWallet')).classes()).toContain('ring-accented')
+    const alone = await mountIt(EarnedStep, { earned: earned(), image: IMAGE, focusRequest: null })
+    expect(button(alone, t('checkIn.toWallet')).classes()).toContain('bg-primary')
   })
 })

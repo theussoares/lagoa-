@@ -90,7 +90,9 @@ describe('claiming a visit QR leaves no credential or personal data in the logs'
     repository.state = stateOf({ balance: 1, lastVisitAt: new Date('2026-10-03T08:00:00Z') })
     repository.noteFails = true
     await claim({ token: TOKEN }).expect(429)
-    expect(logged).toHaveLength(1)
+    // A falha ao anotar o QR, mais o evento de segurança da recusa (sem dado: rota-padrão e código).
+    expect(logged).toHaveLength(2)
+    expect(logged.filter((line) => line.startsWith('{"type":"security"'))).toHaveLength(1)
     expectNothingSensitiveLogged()
   })
 

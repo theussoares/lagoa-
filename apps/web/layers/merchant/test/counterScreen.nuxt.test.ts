@@ -76,10 +76,16 @@ async function customerScans(code: string, customerId = EXAMPLE_IDS.customers.jo
   if (!claimed.ok) throw new Error(claimed.error.code)
 }
 
+/** Na venda o lojista digita o valor (todo QR leva) e só então gera. */
+async function issueSale(visitQr: { inputAmount: (value: string) => void; issue: () => Promise<void> }): Promise<void> {
+  visitQr.inputAmount('3200')
+  await visitQr.issue()
+}
+
 describe('useCounterScreen', () => {
-  it('asks to focus the issue button once the program is loaded, with only a target and an id', async () => {
+  it('asks to focus the amount field once the program is loaded, with only a target and an id', async () => {
     const { result } = await mountComposable(useCounterScreen)
-    expect(result.focusRequest).toEqual({ target: 'issueVisitQr', id: 1 })
+    expect(result.focusRequest).toEqual({ target: 'amount', id: 1 })
     expectFocusRequestWithoutPhone(result.focusRequest)
   })
 
@@ -108,7 +114,7 @@ describe('useCounterScreen', () => {
 
   it('issues a QR: shows it active with the code to type and the five-minute countdown, never the phone', async () => {
     const { result } = await mountComposable(useCounterScreen)
-    await result.visitQr.issue()
+    await issueSale(result.visitQr)
     await flushPromises()
     expect(result.visitQr.display).toMatchObject({
       status: 'active',
@@ -125,7 +131,7 @@ describe('useCounterScreen', () => {
   it('simulates the use: the receipt shows the masked phone, the ledger gets a fresh row and the focus goes to "issue another"', async () => {
     const { result } = await mountComposable(useCounterScreen)
     expect(result.visitQr.canSimulate).toBe(true)
-    await result.visitQr.issue()
+    await issueSale(result.visitQr)
     await result.visitQr.simulateClaim()
     await flushPromises()
     expect(result.visitQr.display?.status).toBe('claimed')
@@ -140,7 +146,7 @@ describe('useCounterScreen', () => {
   it('CA-22: polls the server and turns the QR into "used" and a ledger row when the customer scans', async () => {
     fakeClock()
     const { result } = await mountComposable(useCounterScreen)
-    await result.visitQr.issue()
+    await issueSale(result.visitQr)
     await flushPromises()
     const code = result.visitQr.display?.visitCode ?? ''
     await customerScans(code)
@@ -157,7 +163,7 @@ describe('useCounterScreen', () => {
   it('counts down every second and asks for the focus on "issue another" once the QR expires (CA-23)', async () => {
     fakeClock()
     const { result } = await mountComposable(useCounterScreen)
-    await result.visitQr.issue()
+    await issueSale(result.visitQr)
     await flushPromises()
     await vi.advanceTimersByTimeAsync(1000)
     expect(result.visitQr.display?.countdown).toBe(t('counter.visitQr.expiresIn', { time: '4:59' }))
@@ -169,7 +175,7 @@ describe('useCounterScreen', () => {
 
   it('cancels the QR and offers another', async () => {
     const { result } = await mountComposable(useCounterScreen)
-    await result.visitQr.issue()
+    await issueSale(result.visitQr)
     await result.visitQr.cancel()
     await flushPromises()
     expect(result.visitQr.display?.status).toBe('cancelled')
@@ -178,12 +184,12 @@ describe('useCounterScreen', () => {
 
   it('goes back to the form and focuses the issue button on "issue another"', async () => {
     const { result } = await mountComposable(useCounterScreen)
-    await result.visitQr.issue()
+    await issueSale(result.visitQr)
     await result.visitQr.cancel()
     await result.visitQr.issueAnother()
     await flushPromises()
     expect(result.visitQr.display).toBeNull()
-    expect(result.focusRequest).toEqual({ target: 'issueVisitQr', id: 3 })
+    expect(result.focusRequest).toEqual({ target: 'amount', id: 3 })
   })
 
   it('prints through the print composable', async () => {
@@ -195,17 +201,17 @@ describe('useCounterScreen', () => {
   it('reports a non-field error as an alert code, without refocusing', async () => {
     resetWorld({ merchant: gymSession })
     const { result } = await mountComposable(useCounterScreen)
-    await result.visitQr.issue()
+    await issueSale(result.visitQr)
     expect(result.visitQr.alertCode).toBe('shopPendingApproval')
     expect(result.visitQr.amountErrorCode).toBeNull()
     expect(result.visitQr.display).toBeNull()
-    expect(result.focusRequest).toEqual({ target: 'issueVisitQr', id: 1 })
+    expect(result.focusRequest).toEqual({ target: 'amount', id: 1 })
   })
 
   it('refreshes the shop status when the shop is still pending approval (session guard on)', async () => {
     resetWorld({ merchant: gymSession })
     const { result } = await mountComposable(useCounterScreen)
-    await result.visitQr.issue()
+    await issueSale(result.visitQr)
     await vi.waitFor(() => expect(refreshShopStatusMock).toHaveBeenCalled())
     expect(navigateToMock).not.toHaveBeenCalled()
   })
@@ -213,7 +219,7 @@ describe('useCounterScreen', () => {
   it('signs the merchant out when a service answers unauthorized (session guard on)', async () => {
     const { result } = await mountComposable(useCounterScreen)
     useMerchantSessionStore().endMerchant()
-    await result.visitQr.issue()
+    await issueSale(result.visitQr)
     await vi.waitFor(() => expect(navigateToMock).toHaveBeenCalledWith('/balcao/entrar', { replace: true }))
   })
 
@@ -224,7 +230,7 @@ describe('useCounterScreen', () => {
     expect(result.visitQr.action).toBeNull()
     expect(result.ledger.status).toBe('error')
     expect(result.ledger.errorCode).toBe('unauthorized')
-    await result.visitQr.issue()
+    await issueSale(result.visitQr)
     expect(result.visitQr.display).toBeNull()
   })
 
@@ -401,13 +407,13 @@ describe('useVisitQrPanel', () => {
     }
   }
 
-  it('focuses the amount in the amount mode and the issue button otherwise, once', async () => {
+  it('focuses the sale amount in every mode, once', async () => {
     const perRealFocus = vi.fn()
     await mountComposable(() => useVisitQrPanel(fakeProgram(perReal(1)), fakeControl(), fakeLedger(), perRealFocus))
     expect(perRealFocus).toHaveBeenCalledExactlyOnceWith('amount')
     const visitFocus = vi.fn()
     await mountComposable(() => useVisitQrPanel(fakeProgram({ mode: 'stamps', target: 10 }), fakeControl(), fakeLedger(), visitFocus))
-    expect(visitFocus).toHaveBeenCalledExactlyOnceWith('issueVisitQr')
+    expect(visitFocus).toHaveBeenCalledExactlyOnceWith('amount')
   })
 
   it('keeps only digits when the amount is typed and shows no text for an empty amount', async () => {
@@ -463,7 +469,7 @@ describe('useVisitQrPanel', () => {
     const { result } = await mountComposable(() => useVisitQrPanel(fakeProgram(perReal(1)), control, fakeLedger(), focus))
     focus.mockClear()
     await result.issue()
-    expect(control.issue).toHaveBeenCalledWith({ kind: 'amount', pointsPerReal: 1 })
+    expect(control.issue).toHaveBeenCalledTimes(1)
     expect(focus).toHaveBeenCalledWith('amount')
   })
 
@@ -519,24 +525,25 @@ describe('useVisitQr', () => {
     const { result } = await mountComposable(useVisitQr)
     expect(result.state.value).toEqual({ status: 'idle' })
     expect(result.remaining.value).toBe(0)
-    await result.issue({ kind: 'visit', unit: 'stamp', units: 1 })
+    result.amount.value = '3200'
+    await result.issue()
     const state = result.state.value
     if (state.status !== 'showing') throw new Error(`expected showing, got ${state.status}`)
     expect(state.token).toMatch(/^[A-Za-z0-9_-]{43}$/)
-    expect(state.qr).toMatchObject({ status: 'active', earn: { kind: 'visit' } })
+    expect(state.qr).toMatchObject({ status: 'active', earn: { kind: 'amount', amountCents: 3200 } })
     expect(Object.keys(state.qr)).not.toContain('token')
     expect(result.remaining.value).toBe(VISIT_QR_TTL_MINUTES * 60)
   })
 
-  it('does not call the service for a missing amount in the amount mode', async () => {
+  it('does not call the service for a missing amount, in any mode', async () => {
     resetWorld({ merchant: cafeSession })
     const issue = vi.spyOn(visitQrService(), 'issueVisitQr')
     const { result } = await mountComposable(useVisitQr)
-    await result.issue({ kind: 'amount', pointsPerReal: 1 })
+    await result.issue()
     expect(result.state.value).toEqual({ status: 'error', code: 'invalidAmount' })
     expect(issue).not.toHaveBeenCalled()
     result.amount.value = '2500'
-    await result.issue({ kind: 'amount', pointsPerReal: 1 })
+    await result.issue()
     expect(issue).toHaveBeenCalledWith({ amountCents: 2500 })
     expect(result.amount.value).toBe('')
     issue.mockRestore()
@@ -545,8 +552,8 @@ describe('useVisitQr', () => {
   it('refuses a second issue while one is in flight', async () => {
     const issue = vi.spyOn(visitQrService(), 'issueVisitQr')
     const { result } = await mountComposable(useVisitQr)
-    const action = { kind: 'visit', unit: 'stamp', units: 1 } as const
-    await Promise.all([result.issue(action), result.issue(action)])
+    result.amount.value = '3200'
+    await Promise.all([result.issue(), result.issue()])
     expect(issue).toHaveBeenCalledTimes(1)
     issue.mockRestore()
   })
@@ -555,7 +562,8 @@ describe('useVisitQr', () => {
     fakeClock()
     const lookup = vi.spyOn(visitQrService(), 'getVisitQr')
     const { result } = await mountComposable(useVisitQr)
-    await result.issue({ kind: 'visit', unit: 'stamp', units: 1 })
+    result.amount.value = '3200'
+    await result.issue()
     await vi.advanceTimersByTimeAsync(2000)
     expect(result.remaining.value).toBe(298)
     expect(lookup).not.toHaveBeenCalled()
@@ -568,12 +576,15 @@ describe('useVisitQr', () => {
     fakeClock()
     const lookup = vi.spyOn(visitQrService(), 'getVisitQr')
     const { result, wrapper } = await mountComposable(useVisitQr)
-    await result.issue({ kind: 'visit', unit: 'stamp', units: 1 })
+    result.amount.value = '3200'
+    await result.issue()
     await result.cancel()
     await vi.advanceTimersByTimeAsync(VISIT_QR_STATUS_POLL_MS * 3)
     expect(lookup).not.toHaveBeenCalled()
 
-    await result.issue({ kind: 'visit', unit: 'stamp', units: 1 })
+    result.amount.value = '3200'
+
+    await result.issue()
     wrapper.unmount()
     await vi.advanceTimersByTimeAsync(VISIT_QR_STATUS_POLL_MS * 3)
     expect(lookup).not.toHaveBeenCalled()
@@ -584,7 +595,8 @@ describe('useVisitQr', () => {
     fakeClock()
     const lookup = vi.spyOn(visitQrService(), 'getVisitQr')
     const { result } = await mountComposable(useVisitQr)
-    await result.issue({ kind: 'visit', unit: 'stamp', units: 1 })
+    result.amount.value = '3200'
+    await result.issue()
     lookup.mockResolvedValueOnce({ ok: false, error: { code: 'network' } })
     await vi.advanceTimersByTimeAsync(VISIT_QR_STATUS_POLL_MS)
     expect(result.state.value.status).toBe('showing')
@@ -598,7 +610,8 @@ describe('useVisitQr', () => {
     fakeClock()
     const lookup = vi.spyOn(visitQrService(), 'getVisitQr')
     const { result } = await mountComposable(useVisitQr)
-    await result.issue({ kind: 'visit', unit: 'stamp', units: 1 })
+    result.amount.value = '3200'
+    await result.issue()
     const current = result.state.value
     if (current.status !== 'showing') throw new Error('expected showing')
     let answer: (value: Awaited<ReturnType<typeof lookup>>) => void = () => undefined
@@ -614,7 +627,8 @@ describe('useVisitQr', () => {
   it('asks the server when the countdown reaches zero, and the server has the last word', async () => {
     fakeClock()
     const { result } = await mountComposable(useVisitQr)
-    await result.issue({ kind: 'visit', unit: 'stamp', units: 1 })
+    result.amount.value = '3200'
+    await result.issue()
     await vi.advanceTimersByTimeAsync(VISIT_QR_TTL_MINUTES * MS_PER_MINUTE)
     await flushPromises()
     expect(result.remaining.value).toBe(0)
@@ -631,7 +645,8 @@ describe('useVisitQr', () => {
     })
     issue.mockResolvedValueOnce({ ok: true, value: { ...issued, token: TOKEN } })
     const { result } = await mountComposable(useVisitQr)
-    await result.issue({ kind: 'visit', unit: 'stamp', units: 1 })
+    result.amount.value = '3200'
+    await result.issue()
     expect(result.remaining.value).toBe(VISIT_QR_TTL_MINUTES * 60)
     await vi.advanceTimersByTimeAsync(1000)
     expect(result.remaining.value).toBe(VISIT_QR_TTL_MINUTES * 60 - 1)
@@ -641,7 +656,8 @@ describe('useVisitQr', () => {
   it('simulates the claim only in the mock, and the result turns the QR into used', async () => {
     const { result } = await mountComposable(useVisitQr)
     expect(result.simulateClaim).not.toBeNull()
-    await result.issue({ kind: 'visit', unit: 'stamp', units: 1 })
+    result.amount.value = '3200'
+    await result.issue()
     await result.simulateClaim?.()
     expect(result.state.value).toMatchObject({ status: 'showing', qr: { status: 'claimed' } })
   })

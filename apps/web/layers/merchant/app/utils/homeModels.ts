@@ -1,5 +1,6 @@
 import { WEEK_SUMMARY_DAYS } from '#shared/constants/domain'
 import type { WeekSummary } from '#shared/schemas/weekSummary'
+import { formatCurrency } from '#shared/utils/currency'
 import { formatWeekdayShortDate } from '#shared/utils/dateFormat'
 import type { Translate } from '#layers/core/app/types/i18n'
 import type { WeekDayRow } from '../types/home'
@@ -16,13 +17,14 @@ export function toWeekHeadline(week: WeekSummary, t: Translate): string {
       redemptions: t('home.week.redemptions', { count: week.redemptions }, week.redemptions),
     })
   }
-  return t('home.week.headline', {
+  const headline = t('home.week.headline', {
     days: WEEK_SUMMARY_DAYS,
     visits: t('home.week.visits', { count: week.visits }, week.visits),
     customers: t('home.week.customers', { count: week.customers }, week.customers),
     newCustomers: t('home.week.newCustomers', { count: week.newCustomers }, week.newCustomers),
     redemptions: t('home.week.redemptions', { count: week.redemptions }, week.redemptions),
   })
+  return week.amountCents > 0 ? `${headline} ${t('home.week.sold', { amount: formatCurrency(week.amountCents) })}` : headline
 }
 
 export function toWeekDayRows(week: WeekSummary, t: Translate): WeekDayRow[] {
@@ -32,6 +34,7 @@ export function toWeekDayRows(week: WeekSummary, t: Translate): WeekDayRow[] {
     const details = [
       day.newCustomers > 0 ? t('home.week.newCustomers', { count: day.newCustomers }, day.newCustomers) : null,
       day.redemptions > 0 ? t('home.week.redemptions', { count: day.redemptions }, day.redemptions) : null,
+      day.amountCents > 0 ? t('home.week.soldDay', { amount: formatCurrency(day.amountCents) }) : null,
     ].filter((detail): detail is string => detail !== null)
     const date = formatWeekdayShortDate(new Date(`${day.isoDate}${NOON_UTC}`))
     return {

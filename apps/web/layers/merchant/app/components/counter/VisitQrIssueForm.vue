@@ -33,7 +33,7 @@ useFocusTarget(() => props.focusRequest, 'issueVisitQr', () => focusElement(issu
     <p class="text-pretty text-toned">{{ $t('counter.visitQr.lead', { minutes: VISIT_QR_TTL_MINUTES }) }}</p>
 
     <CounterAmountField
-      v-if="action?.kind === 'amount'"
+      v-if="action !== null"
       :amount-text="amountText"
       :hint="amountHint"
       :error-code="amountErrorCode"

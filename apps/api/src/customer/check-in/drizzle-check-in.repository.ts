@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { and, eq, lt, lte, or, sql } from 'drizzle-orm'
 import { CHECK_IN_COOLDOWN_MAX_HOURS } from '#shared/constants/domain'
+import { visitLedgerKindFor } from '#shared/domain/visitQr'
 import { CheckInCooldownModeSchema } from '#shared/schemas/program'
 import { VisitQrEarnSchema } from '#shared/schemas/visitQr'
 import type { ErrorOf } from '#shared/types/errors'
@@ -137,7 +138,8 @@ export class DrizzleCheckInRepository extends CheckInRepository {
           shopId: target.shop.id,
           customerId,
           plan: decision.value,
-          kind: target.earn.kind,
+          // O cartão decide o tipo (cartão por visita conta 1 visita); o valor da venda fica registrado nos dois.
+          kind: visitLedgerKindFor(target.shop.program.rules),
           now,
           idempotencyKey: `visit-qr:${target.visitQrId}`,
           recordedBy: target.issuedBy,

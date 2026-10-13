@@ -142,7 +142,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
     expect(approvalResult.value).toBe('approved')
 
     // 3. Lojista emite um VisitQr dinâmico no Balcão
-    const issuedResult = await visitQrsService.issueVisitQr(merchantUserId, {})
+    const issuedResult = await visitQrsService.issueVisitQr(merchantUserId, { amountCents: 3200 })
     expect(issuedResult.ok).toBe(true)
     if (!issuedResult.ok) throw new Error('Failed to issue visit QR')
     const issuedQr = issuedResult.value
@@ -206,7 +206,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
     clock.setTime(new Date(clock.now().getTime() + 2 * 3600_000))
 
     // 2ª visita via novo VisitQr dinâmico
-    const secondIssued = await visitQrsService.issueVisitQr(merchantUserId, {})
+    const secondIssued = await visitQrsService.issueVisitQr(merchantUserId, { amountCents: 3200 })
     expect(secondIssued.ok).toBe(true)
     if (!secondIssued.ok) throw new Error('Failed to issue 2nd visit QR')
 
@@ -251,8 +251,8 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
     const customersResult = await customersService.listCustomers(merchantUserId, 'all')
     expect(customersResult.ok).toBe(true)
     if (!customersResult.ok) throw new Error('Failed to list customers')
-    expect(customersResult.value.length).toBeGreaterThanOrEqual(1)
-    for (const cust of customersResult.value) {
+    expect(customersResult.value.items.length).toBeGreaterThanOrEqual(1)
+    for (const cust of customersResult.value.items) {
       expect(cust.maskedPhone).toMatch(/^\(\d{2}\)\s\d••••-\d{4}$/)
       expect(JSON.stringify(cust)).not.toContain('67999887766')
     }
@@ -266,7 +266,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
     expect(homeResult.value.customers).toBe(1)
 
     // 9. Troca de programa: nova versão cancela o QR aberto; trocar a modalidade com cartões é recusado
-    const openQr = await visitQrsService.issueVisitQr(merchantUserId, {})
+    const openQr = await visitQrsService.issueVisitQr(merchantUserId, { amountCents: 3200 })
     if (!openQr.ok) throw new Error('Failed to issue QR before program change')
 
     const current = await programService.getProgram(merchantUserId)

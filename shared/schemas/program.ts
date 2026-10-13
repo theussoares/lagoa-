@@ -72,10 +72,11 @@ export type ExpirationPolicy = z.infer<typeof ExpirationPolicySchema>
 
 /**
  * Como a janela antifraude conta: `rolling` = `cooldownHours` corridas desde a última visita; `calendarDay` = uma
- * visita por dia local do piloto, que vira à meia-noite (23h e 3h do dia seguinte valem duas). No `calendarDay` as horas
- * ficam guardadas, mas não contam.
+ * visita por dia local do piloto, que vira à meia-noite (23h e 3h do dia seguinte valem duas); `unlimited` = sem janela,
+ * o cliente ganha quantas vezes for (cada QR da visita ainda é de uso único). Fora do `rolling` as horas ficam guardadas,
+ * mas não contam.
  */
-export const CheckInCooldownModeSchema = z.enum(['rolling', 'calendarDay'])
+export const CheckInCooldownModeSchema = z.enum(['rolling', 'calendarDay', 'unlimited'])
 export type CheckInCooldownMode = z.infer<typeof CheckInCooldownModeSchema>
 
 export const CheckInPolicySchema = z.object({

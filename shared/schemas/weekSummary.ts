@@ -9,6 +9,8 @@ export const DaySummarySchema = z.object({
   visits: count,
   newCustomers: count,
   redemptions: count,
+  /** Soma do valor das vendas lançadas pelos QRs do dia (só as que trazem valor). */
+  amountCents: count,
 })
 export type DaySummary = z.infer<typeof DaySummarySchema>
 
@@ -21,5 +23,6 @@ export const WeekSummarySchema = z.object({
   customers: count,
   newCustomers: count,
   redemptions: count,
+  amountCents: count,
 })
 export type WeekSummary = z.infer<typeof WeekSummarySchema>

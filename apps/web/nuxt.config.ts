@@ -1,6 +1,7 @@
 // As layers em ./layers (core, ui, customer, merchant, admin) são registradas
 // automaticamente pelo Nuxt 4 e ganham os aliases #layers/<nome>.
 import { fileURLToPath } from 'node:url'
+import { SECURITY_HEADERS } from './server/utils/securityHeaders'
 
 /** Rotas do lojista (layer `merchant`): SPA, sem SSR (desktop, sessão conferida no servidor pelos middlewares). */
 const MERCHANT_SPA_ROUTES = ['/painel', '/configuracoes', '/campanhas', '/balcao/**', '/programa', '/clientes']
@@ -12,7 +13,10 @@ export default defineNuxtConfig({
   // O app do cliente renderiza no servidor (cookie httpOnly -> BFF -> API). O painel do lojista usa o mesmo BFF, mas
   // fica como SPA (só desktop, nada a indexar).
   ssr: true,
-  routeRules: Object.fromEntries(MERCHANT_SPA_ROUTES.map((route) => [route, { ssr: false }])),
+  routeRules: {
+    '/**': { headers: SECURITY_HEADERS },
+    ...Object.fromEntries(MERCHANT_SPA_ROUTES.map((route) => [route, { ssr: false }])),
+  },
   devtools: { enabled: true },
   modules: ['@vite-pwa/nuxt'],
   runtimeConfig: {
@@ -43,7 +47,7 @@ export default defineNuxtConfig({
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
         { name: 'theme-color', content: '#FFFFFF', media: '(prefers-color-scheme: light)' },
-        { name: 'theme-color', content: '#08201F', media: '(prefers-color-scheme: dark)' },
+        { name: 'theme-color', content: '#061C24', media: '(prefers-color-scheme: dark)' },
       ],
     },
   },
@@ -62,8 +66,8 @@ export default defineNuxtConfig({
       scope: '/',
       display: 'standalone',
       orientation: 'portrait',
-      background_color: '#08201F',
-      theme_color: '#08201F',
+      background_color: '#061C24',
+      theme_color: '#061C24',
       // Ícones entram quando existir logo (PRODUCT.md: nada de marca inventada).
       icons: [],
     },

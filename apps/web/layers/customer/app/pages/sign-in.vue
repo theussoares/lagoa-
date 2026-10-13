@@ -64,12 +64,18 @@ function backToPhone(): void {
 </script>
 
 <template>
-  <div class="flex flex-1 flex-col gap-8">
-    <SignInHero v-if="step.name === 'phone'" :brand="t('app.name')" :caption="t('signIn.heroCaption')" />
+  <div class="flex flex-1 flex-col gap-6">
+    <SignInHero
+      v-if="step.name === 'phone'"
+      :brand="t('app.name')"
+      :city="t('signIn.city')"
+      :title="t('signIn.title')"
+      :lead="t('signIn.lead')"
+      :caption="t('signIn.heroCaption')"
+      image="/city/tres-lagoas.jpg"
+    />
 
     <form v-if="step.name === 'phone'" class="flex flex-1 flex-col gap-6" novalidate @submit.prevent="requestCode(phoneDraft)">
-      <PageTitle :title="t('signIn.title')" :lead="t('signIn.lead')" />
-
       <UFormField :label="t('signIn.phoneLabel')" :hint="t('signIn.phoneHint')" :error="phoneError" name="phone" size="xl">
         <template #error="{ error: message }">
           <span v-if="message" class="flex items-start gap-1.5"><UIcon name="i-ph-warning-circle" class="mt-0.5 size-4 shrink-0" aria-hidden="true" />{{ message }}</span>
@@ -88,7 +94,7 @@ function backToPhone(): void {
         />
       </UFormField>
 
-      <UButton type="submit" size="xl" block :loading="pending" :label="t('signIn.sendCode')" class="mt-auto" />
+      <ActionButton role="primary" type="submit" block :loading="pending" :label="t('signIn.sendCode')" class="mt-auto" />
     </form>
 
     <SignInProfileStep
@@ -111,7 +117,7 @@ function backToPhone(): void {
             </template>
           </i18n-t>
           {{ ' ' }}
-          <UButton variant="link" class="relative min-h-0 p-0 align-baseline text-base after:absolute after:-inset-x-1 after:-inset-y-2.5 after:content-['']" :label="t('signIn.changePhone')" @click="backToPhone" />
+          <ActionButton role="inline" class="relative min-h-0 p-0 align-baseline text-base after:absolute after:-inset-x-1 after:-inset-y-2.5 after:content-['']" :label="t('signIn.changePhone')" @click="backToPhone" />
         </p>
       </PageTitle>
 
@@ -136,10 +142,9 @@ function backToPhone(): void {
       <div class="mt-auto flex flex-col gap-3">
         <p class="text-base text-muted">{{ t('signIn.codeDelayHint') }}</p>
         <p class="text-base text-muted">{{ t('signIn.terms') }}</p>
-        <UButton type="submit" size="xl" block :loading="pending" :label="t('signIn.submit')" />
-        <UButton
-          variant="ghost"
-          color="neutral"
+        <ActionButton role="primary" type="submit" block :loading="pending" :label="t('signIn.submit')" />
+        <ActionButton
+          role="quiet"
           block
           :disabled="resendIn > 0 || pending"
           :label="resendIn > 0 ? t('signIn.resendIn', { seconds: resendIn }) : t('signIn.resend')"

@@ -23,6 +23,15 @@ export function transportCodeOf(error: ProviderError): AuthErrorCode {
   return isOffline(error) ? 'network' : 'internal'
 }
 
+const REFUSED_STATUSES: readonly number[] = [400, 401, 403]
+
+/** Só a recusa explícita do refresh token derruba a sessão; 5xx, limite ou rede do provedor não. */
+export function refreshErrorCodeOf(error: ProviderError): AuthErrorCode {
+  if (isRateLimited(error)) return 'rateLimited'
+  if (error.status !== undefined && REFUSED_STATUSES.includes(error.status)) return 'unauthorized'
+  return transportCodeOf(error)
+}
+
 export function verifyErrorCodeOf(error: ProviderError): AuthErrorCode {
   if (isRateLimited(error) || isOffline(error)) return transportCodeOf(error)
   return error.code === 'otp_expired' ? 'loginCodeExpired' : 'invalidLoginCode'

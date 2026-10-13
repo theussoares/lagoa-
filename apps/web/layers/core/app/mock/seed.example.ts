@@ -164,7 +164,7 @@ function buildHistory(now: Date, history: CardHistory, ledgerIds: { next(): stri
       kind: source === 'checkIn' ? 'checkIn' : isAmount ? 'amount' : 'visit',
       unit,
       units,
-      amountCents: isAmount ? amountCents : null,
+      amountCents: source === 'checkIn' ? null : (history.amountCents ?? null),
       rewardTitle: null,
       isNewCustomer: index === 0,
       createdAt: toIso(at),

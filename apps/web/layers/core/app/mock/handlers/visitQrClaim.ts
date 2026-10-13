@@ -1,6 +1,6 @@
 import { checkInAvailableAt, cooldownEndsAt } from '#shared/domain/antifraud'
 import { toCardProgress } from '#shared/domain/loyaltyCard'
-import { decideVisitEarning, decideVisitQrUse } from '#shared/domain/visitQr'
+import { decideVisitEarning, decideVisitQrUse, visitLedgerKindFor } from '#shared/domain/visitQr'
 import type { EarningCard } from '#shared/domain/earning'
 import type { CustomerId, ShopId, VisitQrId } from '#shared/schemas/ids'
 import type { CheckInCooldown, Program } from '#shared/schemas/program'
@@ -102,12 +102,12 @@ export function claimVisitQr(
     return plan
   }
 
-  const isAmount = record.earn.kind === 'amount'
-  const credited = applyEarningPlan(ctx, customer, program, plan.value, isAmount ? 'counterAmount' : 'counter')
+  const kind = visitLedgerKindFor(program.rules)
+  const credited = applyEarningPlan(ctx, customer, program, plan.value, kind === 'amount' ? 'counterAmount' : 'counter')
   const ledgerRecord = appendLedger(ctx, {
     shopId: record.shopId,
     customerId,
-    kind: isAmount ? 'amount' : 'visit',
+    kind,
     unit: credited.unit,
     units: plan.value.units,
     amountCents: record.earn.kind === 'amount' ? record.earn.amountCents : null,

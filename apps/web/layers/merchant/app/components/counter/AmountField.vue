@@ -25,7 +25,7 @@ useFocusTarget(() => props.focusRequest, 'amount', () => focusFirstInput(field.v
 <template>
   <UFormField
     :label="$t('counter.visitQr.amountLabel')"
-    :hint="hint"
+    :description="hint"
     :error="errorCode ? $t('errors.invalidAmount') : undefined"
     name="amount"
     size="xl"

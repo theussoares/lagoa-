@@ -22,7 +22,10 @@ const EnvSchema = z
     WHATSAPP_GRAPH_VERSION: z.string().regex(/^v\d+\.\d+$/).default('v23.0'),
     /** Segredo do Send SMS Hook do Supabase (`v1,whsec_...`): só quem o tem pode mandar a API disparar o código. */
     SEND_SMS_HOOK_SECRET: z.string().regex(/^v1,whsec_\S+$/).optional(),
-    /** Segredo que o BFF do Nuxt manda em `x-bff-secret`: com ele a API aceita o IP do cliente em `x-client-ip`. Sem ele o limite por IP vê só o IP do BFF. */
+    /**
+     * Segredo que o BFF do Nuxt manda em `x-bff-secret`: com ele a API aceita o IP do cliente em `x-client-ip` e o BFF
+     * reserva tentativas de login (`POST /auth/login-attempts`). Obrigatório em produção: sem ele ninguém entra.
+     */
     BFF_SHARED_SECRET: z.string().min(32).optional(),
     /** Liga `POST /merchant/shop/test-approve` (auto-aprovação para teste). Desligado por padrão; proibido em production. */
     ENABLE_TEST_APPROVE: z.enum(['0', '1']).default('0'),

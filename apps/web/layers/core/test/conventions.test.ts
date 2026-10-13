@@ -27,11 +27,7 @@ const TRANSITIONAL_BROWSER_API: readonly string[] = [
 
 /** Página com mais de 30 linhas de script. */
 const TRANSITIONAL_PAGE_SCRIPT: readonly string[] = [
-  'layers/customer/app/pages/discover.vue',
-  'layers/customer/app/pages/profile.vue',
-  'layers/customer/app/pages/reward-redemption.vue',
   'layers/customer/app/pages/sign-in.vue',
-  'layers/customer/app/pages/wallet.vue',
   'layers/merchant/app/pages/campaigns.vue',
   'layers/merchant/app/pages/customers.vue',
   'layers/merchant/app/pages/merchant-sign-in.vue',
@@ -40,8 +36,6 @@ const TRANSITIONAL_PAGE_SCRIPT: readonly string[] = [
 
 /** Página com mais de 60 linhas de template. */
 const TRANSITIONAL_PAGE_TEMPLATE: readonly string[] = [
-  'layers/customer/app/pages/discover.vue',
-  'layers/customer/app/pages/rewards.vue',
   'layers/customer/app/pages/sign-in.vue',
   'layers/merchant/app/pages/campaigns.vue',
   'layers/merchant/app/pages/customers.vue',
@@ -50,8 +44,11 @@ const TRANSITIONAL_PAGE_TEMPLATE: readonly string[] = [
   'layers/merchant/app/pages/program.vue',
 ]
 
+/** Tela do cliente com `<UButton>` cru: use `ActionButton` (papéis em layers/ui). */
+const TRANSITIONAL_RAW_BUTTON: readonly string[] = []
+
 /** Composables dedicados a API de navegador (CLAUDE.md, "Browser API"). */
-const BROWSER_COMPOSABLES: readonly string[] = ['useFocus', 'useHaptics', 'useFileDownload', 'useImageResize', 'useInputCaret', 'useLeaveGuard', 'usePrint', 'useQrScanner']
+const BROWSER_COMPOSABLES: readonly string[] = ['useFocus', 'useHaptics', 'useFileDownload', 'useImageResize', 'useQrDownload', 'useInputCaret', 'useLeaveGuard', 'usePrint', 'useQrScanner', 'useSwipeNavigation']
 
 const PAGE_SCRIPT_MAX_LINES = 30
 const PAGE_TEMPLATE_MAX_LINES = 60
@@ -201,6 +198,26 @@ describe('layer layout', () => {
 
 describeRule('exported types live in types/', TRANSITIONAL_EXPORTED_TYPES, hasExportedType, 'export interface/type only in types/ and services/')
 describeRule('browser APIs live in browser composables', TRANSITIONAL_BROWSER_API, usesBrowserApi, 'window/navigator/document only in browser composables')
+function usesRawButton(path: string): boolean {
+  return path.startsWith('layers/customer/app/') && /<UButton\b/.test(stripComments(read(path)))
+}
+
+describeRule('customer screens use ActionButton', TRANSITIONAL_RAW_BUTTON, usesRawButton, 'no <UButton> in layers/customer; pick an ActionButton role')
+
+describe('action roles', () => {
+  it('are not overridden with color or variant on ActionButton', () => {
+    const offenders = appFiles().filter((path) => /<ActionButton\b[^>]*\s(color|variant)=/.test(stripComments(read(path))))
+    expect(offenders, 'pick another role instead of overriding color/variant').toEqual([])
+  })
+})
+
+describe('white focus ring', () => {
+  it('lives only in ActionButton and HeaderIconLink', () => {
+    const allowed = ['layers/ui/app/components/ActionButton.vue', 'layers/ui/app/components/HeaderIconLink.vue']
+    const offenders = appFiles().filter((path) => !allowed.includes(path) && /focus-visible:outline-white/.test(stripComments(read(path))))
+    expect(offenders, 'use ActionButton surface="dark" or HeaderIconLink').toEqual([])
+  })
+})
 
 describe('page size limits', () => {
   const pages = appFiles().filter(isPage)

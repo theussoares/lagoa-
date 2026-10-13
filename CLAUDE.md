@@ -12,6 +12,9 @@ Design system: [`design-system/lagoa/MASTER.md`](./design-system/lagoa/MASTER.md
 Design de referência antigo (vale só como evidência de conteúdo e fluxo, não
 como identidade visual): https://claude.ai/artifact/BkmsXbbcBXZTe9GStye6Ui
 Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
+Regras de segurança (obrigatórias em toda mudança; tiers Grave/Médio/Moderado e
+política de bloqueio): [`docs/security/SECURITY_RULES.md`](./docs/security/SECURITY_RULES.md).
+Onde ele fala em "CLAUDE.md", leia este arquivo de regras.
 
 ## Estado do projeto
 
@@ -47,7 +50,7 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
   (`shared/domain/antifraud.ts`): API e mock usam as mesmas, nunca uma cópia.
   **QR da visita** ([spec](./docs/specs/dynamic-visit-qr/spec.md)): o QR da loja (`?loja=`) só **entra no
   clube** (`POST /v1/shop-join`, cartão zerado); ganhar é só pelo QR da visita que o lojista gera na venda
-  (`POST /v1/check-in` com o token, `POST /v1/check-in/code` com o código curto), uso único e 5 min.
+  (`POST /v1/check-in` com o token, `POST /v1/check-in/code` com o código curto), uso único e 5 min. **Todo QR da visita leva o valor da venda** (obrigatório em qualquer modo; `planVisitQrIssue`): só o modo por real converte o valor em pontos, nos outros ele fica registrado (Início soma as vendas da semana, Clientes mostra a última compra) e a visita conta 1. Por isso um QR serve a qualquer versão do programa: o cartão antigo credita pelas regras da versão dele (`visitLedgerKindFor`).
   Validade e uso único moram em `shared/domain/visitQr.ts`. O token vai no **fragmento**
   (`/check-in#visita=<token>`), nunca em query: não chega ao servidor, ao `Referer` nem ao `?para=` do login.
   O Balcão não recebe mais celular.
@@ -56,7 +59,11 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
   path `/api`); cada rota de `server/api/**` é um handler explícito (método + caminho fixo da API, entrada validada com
   o schema do `shared`) que troca o cookie por `Bearer` via `callApi` (`NUXT_API_BASE_URL`, só no servidor); não há
   proxy genérico: rota que não existe lá devolve 404 e os caminhos reais da API nunca aparecem no navegador. Escrita em `/api/**` exige `Origin` do próprio host ou de `NUXT_ALLOWED_ORIGINS`. Peças puras
-  em `server/utils/*` com testes em `server/test`; as rotas só compõem.
+  em `server/utils/*` com testes em `server/test`; as rotas só compõem. Headers de segurança (CSP, HSTS,
+  `frame-ancestors`) valem para app e LP via `server/utils/securityHeaders.ts`; o `script-src` é por nonce no app
+  (`server/plugins/scriptNonce.ts`, novo a cada HTML, com `strict-dynamic`) e por hash na LP pré-renderizada
+  (`apps/site/server/plugins/scriptHashes.ts`, numa `<meta>`). Script inline novo precisa sair pelo `useHead`/renderer, nunca colado no HTML. Antes de mandar o código de login ao Supabase, o BFF reserva a tentativa na API (`POST /v1/auth/login-attempts`, só com o `BFF_SHARED_SECRET`): teto por celular, fail-closed, porque o limite do Supabase é por IP e lá chega o IP do BFF. Evento de segurança (login, logout,
+  401/403/429 da API) é uma linha `securityLogLine` (`shared/utils/securityEvent.ts`), sem celular, token, IP nem URL real.
 - **SSR e sessão do cliente:** `ssr: true`. O cliente não tem mock nem `localStorage`: o plugin `lagoa:backend`
   monta o `ApiClient` sobre `/api` (BFF). No servidor o fetcher chama o próprio `/api` em memória com o cookie do
   pedido (`createServerFetcher`) e repassa o `Set-Cookie` do refresh; no navegador é o `fetch`. A sessão
@@ -70,7 +77,7 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
   se falta o Criar o clube (`signUp`, sem ticket: o cookie identifica o dono). A sessão (`useMerchantSessionStore`) fica só
   na memória e é conferida no servidor pelos middlewares (`useMerchantSession().check()`). `runtimeConfig.public.merchantBackend`
   (`NUXT_PUBLIC_MERCHANT_BACKEND`) é `http` por padrão; `mock` (navegador, `localStorage`, código `246810`) só para testes e
-  demonstração offline, e some na M6.
+  demonstração offline (o servidor de um build de produção recusa subir com ele), e some na M6.
   **Cookie compartilhado com o app do cliente** (mesma conta Supabase): entrar ou sair pelo painel zera o cache do cliente
   (`resetCustomer`) e o logout é `scope: 'local'`; outra aba aberta só descobre a troca na próxima navegação (risco aceito).
   Sair só deixa o painel depois que o servidor confirma (`signOut`); `expire()` é o logout só local, para `unauthorized`. **Ainda sem API:** Campanhas (M5); no `http` a tela fica escondida (`useCampaignsEnabled`, `NUXT_PUBLIC_CAMPAIGNS_ENABLED`). Termo do lojista: a sessão traz `termsAccepted` e o Início pede o aceite (`HomeTermsAcceptance`). Plano: `docs/specs/api-merchant/`.
@@ -125,6 +132,8 @@ Equipe de agentes e regras de uso dos modelos: [`EQUIPE.md`](./EQUIPE.md).
 | Validade do QR da visita  | `VISIT_QR_TTL_MINUTES`         |
 | Link do QR da visita      | `VISIT_QR_LINK_PARAM` (fragmento `/check-in#visita=<token>`, nunca query) |
 | Antifraude (janela)       | `checkInCooldown`              |
+| Sem limite de visitas (modo da janela, não há antifraude) | `unlimited` (`cooldownMode`) |
+| WhatsApp e texto do botão nos cards da loja | `shopContact` (`whatsapp`, `ctaLabel`) |
 | Uma vez por dia (vira à meia-noite) | `calendarDay` (`cooldownMode`; o outro modo é `rolling`, horas corridas) |
 | Regras bônus              | `bonusRules` (`welcomeBonus`, `birthdayMultiplier`, `referralBonus`, `surpriseDay`) |
 | Expiração                 | `expirationPolicy`             |
@@ -277,8 +286,8 @@ composables  → stores (Pinia, estado)
   digita o código curto) para ganhar. Sem cartão, o QR da visita já cria. Não há
   mais lançamento por celular no Balcão.
 - **Antifraude:** no máximo 1 visita que rende por cliente/loja a cada janela
-  configurável: horas corridas (4 h, 12 h, 24 h, 2 dias, 7 dias) ou **1 vez por dia**, que vira à
-  meia-noite local (23h e 3h do dia seguinte valem duas). A recusa não consome o QR da visita.
+  configurável: horas corridas (4 h, 12 h, 24 h, 2 dias, 7 dias), **1 vez por dia**, que vira à
+  meia-noite local (23h e 3h do dia seguinte valem duas), ou **sem limite** (o cliente ganha a cada QR da visita; cada QR continua de uso único e 5 min). A recusa não consome o QR da visita.
 - **Regras bônus:** boas-vindas (cartão começa com 2 carimbos), aniversário em
   dobro, traga um amigo (+1 quando o amigo faz a 1ª visita), dia surpresa em dobro.
   Multiplicadores não se somam: vale o maior (aniversário no dia surpresa = 2×,

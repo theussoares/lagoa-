@@ -14,7 +14,7 @@ defineProps<Props>()
   <!-- O canhoto inteiro é o link: o alvo de toque é o prêmio, não um botão escondido no canto. -->
   <NuxtLink
     :to="reward.to"
-    class="group block rounded-(--radius-card) bg-default shadow-(--lagoa-shadow-card) transition-transform duration-(--lagoa-dur-fast) active:scale-[0.99]"
+    class="card-tap group block"
   >
     <div class="flex items-center gap-4 p-5">
       <span class="size-14 shrink-0">

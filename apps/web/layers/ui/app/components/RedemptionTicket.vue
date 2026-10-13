@@ -15,7 +15,7 @@ const titleId = useId()
 </script>
 
 <template>
-  <section :aria-labelledby="titleId" class="rounded-(--radius-card) bg-default shadow-(--lagoa-shadow-card)">
+  <section :aria-labelledby="titleId" class="card">
     <header class="flex items-center gap-4 px-5 pt-5 pb-5">
       <span class="size-12 shrink-0">
         <StampImpression :icon="icon" :tilt="-5" tone="reward" />

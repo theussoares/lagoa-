@@ -10,7 +10,7 @@ defineProps<Props>()
 </script>
 
 <template>
-  <ol class="flex flex-col rounded-(--radius-card) bg-default px-4 shadow-(--lagoa-shadow-card)" :aria-label="label">
+  <ol class="card flex flex-col px-4" :aria-label="label">
     <li
       v-for="(row, index) in rows"
       :key="row.position"

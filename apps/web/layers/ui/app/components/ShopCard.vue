@@ -11,7 +11,7 @@ const titleId = useId()
 </script>
 
 <template>
-  <article :aria-labelledby="titleId" class="rise flex flex-col overflow-hidden rounded-(--radius-card) bg-default shadow-(--lagoa-shadow-card)">
+  <article :aria-labelledby="titleId" class="card rise flex flex-col overflow-hidden">
     <ShopCardMedia :showcase="shop.showcase" :icon="shop.icon" :tag="shop.tag" />
 
     <div class="flex flex-col gap-4 px-5 pb-5">
@@ -41,6 +41,19 @@ const titleId = useId()
         <span>{{ shop.earn }}<template v-if="shop.welcome"> · {{ shop.welcome }}</template></span>
       </p>
 
+      <ActionButton
+        v-if="shop.contact"
+        role="primary"
+        :to="shop.contact.href"
+        target="_blank"
+        external
+        block
+        icon="i-ph-whatsapp-logo"
+        trailing-icon="i-ph-arrow-up-right"
+        :label="shop.contact.label"
+        :aria-label="shop.contact.accessibleLabel"
+        class="min-h-11"
+      />
       <UButton
         :to="shop.directions.href"
         target="_blank"
