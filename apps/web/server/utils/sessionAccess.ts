@@ -1,6 +1,6 @@
 import { deleteCookie, getCookie, setCookie, type H3Event } from 'h3'
 import type { AuthOutcome, CookieSettings, TokenPair } from '../types/auth'
-import { ACCESS_COOKIE, REFRESH_COOKIE, expiredCookiesFor, sessionCookiesFor, type CookieWrite } from './sessionCookies'
+import { ACCESS_COOKIE, REFRESH_COOKIE, expiredCookiesFor, legacyExpiredCookiesFor, sessionCookiesFor, type CookieWrite } from './sessionCookies'
 import { createPhoneLogin } from './serverConfig'
 
 function write(event: H3Event, cookies: readonly CookieWrite[]): void {
@@ -8,11 +8,11 @@ function write(event: H3Event, cookies: readonly CookieWrite[]): void {
 }
 
 export function startSession(event: H3Event, tokens: TokenPair, settings: CookieSettings): void {
-  write(event, sessionCookiesFor(tokens, settings))
+  write(event, [...legacyExpiredCookiesFor(settings), ...sessionCookiesFor(tokens, settings)])
 }
 
 export function endSession(event: H3Event, settings: CookieSettings): void {
-  for (const cookie of expiredCookiesFor(settings)) deleteCookie(event, cookie.name, cookie.options)
+  for (const cookie of [...expiredCookiesFor(settings), ...legacyExpiredCookiesFor(settings)]) deleteCookie(event, cookie.name, cookie.options)
 }
 
 export function storedTokens(event: H3Event): { accessToken: string | undefined; refreshToken: string | undefined } {

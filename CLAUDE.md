@@ -56,7 +56,7 @@ Onde ele fala em "CLAUDE.md", leia este arquivo de regras.
   O Balcão não recebe mais celular.
 - **BFF (`apps/web/server`, modo `http`):** o navegador só fala com o próprio domínio. `/api/auth/*`
   faz o login por SMS no Supabase e guarda o token em cookie httpOnly (`lagoa_at`/`lagoa_rt`, SameSite=Lax,
-  path `/api`); cada rota de `server/api/**` é um handler explícito (método + caminho fixo da API, entrada validada com
+  path `/`: o SSR só vê o cookie se ele for junto do pedido da página; os antigos em `/api` são apagados); cada rota de `server/api/**` é um handler explícito (método + caminho fixo da API, entrada validada com
   o schema do `shared`) que troca o cookie por `Bearer` via `callApi` (`NUXT_API_BASE_URL`, só no servidor); não há
   proxy genérico: rota que não existe lá devolve 404 e os caminhos reais da API nunca aparecem no navegador. Escrita em `/api/**` exige `Origin` do próprio host ou de `NUXT_ALLOWED_ORIGINS`. Peças puras
   em `server/utils/*` com testes em `server/test`; as rotas só compõem. Headers de segurança (CSP, HSTS,
