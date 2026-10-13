@@ -19,7 +19,8 @@ continua sendo a assinatura (casas, impressão, batida); o que muda é a moldura
 mais imagem, cantos maiores, tipografia de produto.
 
 **Recusamos:** carteira fintech com anel de progresso, dashboard SaaS de cards
-de métrica, gradiente decorativo, glass, emoji, roxo de IA, skeuomorfismo de
+de métrica (exceção: os cards de número do Início do lojista, ver Cards),
+gradiente decorativo (mesma exceção), glass, emoji, roxo de IA, skeuomorfismo de
 textura falsa (sem papel envelhecido, sem grão, sem sombra de couro). Foto só
 com função (a cidade no topo, a vitrine da loja); nunca como papel de parede.
 
@@ -178,6 +179,8 @@ Tokens por função em `main.css`: `--lagoa-dur-fast` 120ms (feedback de toque),
 ### Cards
 
 Três níveis, definidos uma vez em `main.css`: `card` (leitura), `card-tap` (card inteiro que é link: pressiona em `scale` e sobe a sombra) e `card-raised` (o destaque da tela, que sobe sobre a faixa). Não repetir `rounded-(--radius-card) bg-default shadow-(--lagoa-shadow-card)` (teste `cardSurface`). Um card tem uma ação principal; se leva a algum lugar, ele todo é o link.
+
+**Cards de número (out/2026, só no Início do lojista, `HomeStatCard`):** uma fileira de até 4 cards com rótulo, número e uma nota curta (vendas, visitas, prêmios entregues, clientes sumidos). Cada card leva um gradiente suave na diagonal (`bg-linear-to-br`), da cor dele no canto até sumir no fundo do card: `sol` (vendas), `tinta` (visitas), `folha` (prêmios), `carimbo` (sumidos). No claro, do `-200` ao `-50`; no escuro, `-400/30` ao `-400/5`. O gradiente fica só no fundo: texto nunca em gradiente e o contraste do texto continua 4.5:1. Fora dessa fileira, card não ganha gradiente nem vira card de métrica.
 
 ### Papéis de ação
 
