@@ -3,9 +3,9 @@ import type { CookieSettings, TokenPair } from '../types/auth'
 export const ACCESS_COOKIE = 'lagoa_at'
 export const REFRESH_COOKIE = 'lagoa_rt'
 
-/** Raiz, não `/api`: o SSR da página (`/carteira`, `/painel`) precisa receber o cookie para restaurar a sessão ao recarregar. */
+/** Raiz, não `/api`: o SSR só enxerga o cookie se o navegador o mandar junto do pedido da página (ex.: `/carteira` no reload). */
 const COOKIE_PATH = '/'
-/** Caminho antigo: cookies emitidos antes da mudança ainda existem lá e precisam ser limpos no logout. */
+/** Caminho antigo: um cookie velho em `/api` chega antes do novo e sobrepõe a sessão, então é apagado. */
 const LEGACY_COOKIE_PATH = '/api'
 const REFRESH_MAX_AGE_SECONDS = 60 * 60 * 24 * 30
 /** O cookie some um pouco antes do token vencer, para a API nunca receber um token no limite. */
@@ -38,7 +38,9 @@ export function sessionCookiesFor(tokens: TokenPair, settings: CookieSettings): 
 }
 
 export function expiredCookiesFor(settings: CookieSettings): CookieWrite[] {
-  return [COOKIE_PATH, LEGACY_COOKIE_PATH].flatMap((path) =>
-    [ACCESS_COOKIE, REFRESH_COOKIE].map((name) => ({ name, value: '', options: options(settings, 0, path) })),
-  )
+  return [ACCESS_COOKIE, REFRESH_COOKIE].map((name) => ({ name, value: '', options: options(settings, 0) }))
+}
+
+export function legacyExpiredCookiesFor(settings: CookieSettings): CookieWrite[] {
+  return [ACCESS_COOKIE, REFRESH_COOKIE].map((name) => ({ name, value: '', options: options(settings, 0, LEGACY_COOKIE_PATH) }))
 }

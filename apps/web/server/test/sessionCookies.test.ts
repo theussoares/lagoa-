@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { ACCESS_COOKIE, REFRESH_COOKIE, expiredCookiesFor, sessionCookiesFor } from '../utils/sessionCookies'
+import { ACCESS_COOKIE, REFRESH_COOKIE, expiredCookiesFor, legacyExpiredCookiesFor, sessionCookiesFor } from '../utils/sessionCookies'
 
 const tokens = { accessToken: 'at', refreshToken: 'rt', expiresIn: 3600, userId: 'user-1' }
 
 describe('session cookies', () => {
-  it('are httpOnly, SameSite=Lax and scoped to the site root', () => {
+  it('are httpOnly, SameSite=Lax and scoped to the site root, so the page request carries them (SSR on reload)', () => {
     for (const cookie of sessionCookiesFor(tokens, { secure: true })) {
       expect(cookie.options).toMatchObject({ httpOnly: true, secure: true, sameSite: 'lax', path: '/' })
     }
@@ -21,12 +21,17 @@ describe('session cookies', () => {
     expect(refresh?.options.maxAge).toBeGreaterThan(access?.options.maxAge ?? 0)
   })
 
-  it('expire both, on the root and on the legacy /api path, on sign out', () => {
-    expect(expiredCookiesFor({ secure: false }).map((cookie) => [cookie.name, cookie.value, cookie.options.maxAge, cookie.options.path])).toEqual([
-      [ACCESS_COOKIE, '', 0, '/'],
-      [REFRESH_COOKIE, '', 0, '/'],
-      [ACCESS_COOKIE, '', 0, '/api'],
-      [REFRESH_COOKIE, '', 0, '/api'],
+  it('expire both on sign out', () => {
+    expect(expiredCookiesFor({ secure: false }).map((cookie) => [cookie.name, cookie.value, cookie.options.maxAge])).toEqual([
+      [ACCESS_COOKIE, '', 0],
+      [REFRESH_COOKIE, '', 0],
+    ])
+  })
+
+  it('clear the old /api-scoped cookies', () => {
+    expect(legacyExpiredCookiesFor({ secure: false }).map((cookie) => [cookie.name, cookie.options.path, cookie.options.maxAge])).toEqual([
+      [ACCESS_COOKIE, '/api', 0],
+      [REFRESH_COOKIE, '/api', 0],
     ])
   })
 })
