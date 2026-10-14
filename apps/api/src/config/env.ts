@@ -20,6 +20,10 @@ const EnvSchema = z
     WHATSAPP_TEMPLATE_LANGUAGE: z.string().min(2).default('pt_BR'),
     /** Versão da Graph API; a Meta descontinua as antigas (revisar a cada ~6 meses). */
     WHATSAPP_GRAPH_VERSION: z.string().regex(/^v\d+\.\d+$/).default('v23.0'),
+    /** Chave da Comtele (SMS): canal alternativo que a pessoa escolhe no login. Obrigatória em produção. */
+    COMTELE_AUTH_KEY: z.string().min(1).optional(),
+    /** Rota de envio da Comtele (padrão 17, a do exemplo da documentação). */
+    COMTELE_ROUTE: z.coerce.number().int().positive().default(17),
     /** Segredo do Send SMS Hook do Supabase (`v1,whsec_...`): só quem o tem pode mandar a API disparar o código. */
     SEND_SMS_HOOK_SECRET: z.string().regex(/^v1,whsec_\S+$/).optional(),
     /**
@@ -40,7 +44,7 @@ const EnvSchema = z
     // Sem isso, atrás de um load balancer todo mundo parece vir do mesmo IP e o limite por IP vira global.
     if (env.TRUST_PROXY_HOPS === undefined) context.addIssue({ code: 'custom', path: ['TRUST_PROXY_HOPS'], message: 'required in production' })
     if (env.ENABLE_TEST_APPROVE === '1') context.addIssue({ code: 'custom', path: ['ENABLE_TEST_APPROVE'], message: 'must be off in production' })
-    for (const key of ['WHATSAPP_ACCESS_TOKEN', 'WHATSAPP_PHONE_NUMBER_ID', 'SEND_SMS_HOOK_SECRET', 'SUPABASE_SERVICE_ROLE_KEY'] as const) {
+    for (const key of ['WHATSAPP_ACCESS_TOKEN', 'WHATSAPP_PHONE_NUMBER_ID', 'COMTELE_AUTH_KEY', 'SEND_SMS_HOOK_SECRET', 'SUPABASE_SERVICE_ROLE_KEY', 'BFF_SHARED_SECRET'] as const) {
       if (env[key] === undefined) context.addIssue({ code: 'custom', path: [key], message: 'required in production' })
     }
     // O JWKS é buscado nesta URL: sem TLS, quem está no caminho troca a chave e assina o que quiser.

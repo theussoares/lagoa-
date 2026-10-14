@@ -13,6 +13,11 @@ export type LoginCode = z.infer<typeof LoginCodeSchema>
 export const LoginChallengeSchema = z.object({ expiresAt: IsoDateTimeSchema })
 export type LoginChallenge = z.infer<typeof LoginChallengeSchema>
 
+/** Por onde a pessoa recebe o código de login: ela escolhe; não há fallback automático entre os canais. */
+export const OtpChannelSchema = z.enum(['whatsapp', 'sms'])
+export type OtpChannel = z.infer<typeof OtpChannelSchema>
+export const DEFAULT_OTP_CHANNEL: OtpChannel = 'whatsapp'
+
 export const CustomerSessionSchema = z.object({
   role: z.literal('customer'),
   customerId: CustomerIdSchema,

@@ -183,6 +183,13 @@
       "when": 1791856880263,
       "tag": "0025_shop_contact",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1791950106804,
+      "tag": "0026_otp_channel_choices",
+      "breakpoints": true
     }
   ]
 }

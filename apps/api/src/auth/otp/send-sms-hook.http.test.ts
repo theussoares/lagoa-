@@ -5,9 +5,12 @@ import request from 'supertest'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import type { PhoneNumber } from '#shared/schemas/phone'
 import { ENV } from '../../config/config.module'
+import { OtpChannelChoice } from './otp-channel-choice'
 import { OtpSendGate } from './otp-send-gate'
 import { OtpSender, type OtpSendResult } from './otp-sender'
+import { OtpSenders } from './otp-senders'
 import { SendSmsHookController } from './send-sms-hook.controller'
+import type { OtpChannel } from '#shared/schemas/session'
 
 const KEY = Buffer.from('hook-test-secret-hook-test-secret')
 const SECRET = `v1,whsec_${KEY.toString('base64')}`
@@ -30,22 +33,36 @@ const PAYLOAD = JSON.stringify({ user: { phone: '5567991230374' }, sms: { otp: '
 
 class ScriptedGate {
   allowed = true
+  calls = 0
   async allow(): Promise<boolean> {
+    this.calls += 1
     return this.allowed
+  }
+}
+
+class ScriptedChannels {
+  channel: OtpChannel = 'whatsapp'
+  fails = false
+  async current(): Promise<OtpChannel> {
+    if (this.fails) throw new Error('db down')
+    return this.channel
   }
 }
 
 describe('Send SMS hook', () => {
   let app: INestApplication
   const sender = new RecordingOtpSender()
+  const sms = new RecordingOtpSender()
   const gate = new ScriptedGate()
+  const channels = new ScriptedChannels()
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [SendSmsHookController],
       providers: [
         { provide: ENV, useValue: { SEND_SMS_HOOK_SECRET: SECRET } },
-        { provide: OtpSender, useValue: sender },
+        { provide: OtpSenders, useValue: { for: (channel: OtpChannel) => (channel === 'sms' ? sms : sender) } },
+        { provide: OtpChannelChoice, useValue: channels },
         { provide: OtpSendGate, useValue: gate },
       ],
     }).compile()
@@ -56,7 +73,12 @@ describe('Send SMS hook', () => {
   beforeEach(() => {
     sender.sent = []
     sender.result = 'sent'
+    sms.sent = []
+    sms.result = 'sent'
     gate.allowed = true
+    gate.calls = 0
+    channels.channel = 'whatsapp'
+    channels.fails = false
   })
 
   it('sends the code to the 11-digit phone when the signature is valid', async () => {
@@ -97,5 +119,45 @@ describe('Send SMS hook', () => {
     const response = await request(app.getHttpServer()).post('/auth/hooks/send-sms').set(signed(PAYLOAD)).send(PAYLOAD).expect(200)
     expect(response.body).toEqual({ error: { http_code: 429, message: 'too many code requests' } })
     expect(sender.sent).toHaveLength(0)
+  })
+
+  it('delivers by SMS only when the person chose SMS', async () => {
+    channels.channel = 'sms'
+    await request(app.getHttpServer()).post('/auth/hooks/send-sms').set(signed(PAYLOAD)).send(PAYLOAD).expect(200, {})
+    expect(sms.sent).toHaveLength(1)
+    expect(sms.sent[0]?.code).toBe('123456')
+    expect(sender.sent).toHaveLength(0)
+  })
+
+  it.each([
+    ['whatsapp', 'throttled'],
+    ['whatsapp', 'failed'],
+    ['sms', 'failed'],
+  ] as const)('never falls back to the other channel when %s answers %s', async (channel, result) => {
+    channels.channel = channel
+    const chosen = channel === 'sms' ? sms : sender
+    const other = channel === 'sms' ? sender : sms
+    chosen.result = result
+    const response = await request(app.getHttpServer()).post('/auth/hooks/send-sms').set(signed(PAYLOAD)).send(PAYLOAD).expect(200)
+    expect(response.body.error.http_code).toBe(result === 'throttled' ? 429 : 502)
+    expect(chosen.sent).toHaveLength(1)
+    expect(other.sent).toHaveLength(0)
+  })
+
+  it('runs both channels through the same send gate', async () => {
+    for (const channel of ['whatsapp', 'sms'] as const) {
+      channels.channel = channel
+      await request(app.getHttpServer()).post('/auth/hooks/send-sms').set(signed(PAYLOAD)).send(PAYLOAD).expect(200)
+    }
+    expect(gate.calls).toBe(2)
+  })
+
+  it('answers 502 without sending or consuming the limit when the channel cannot be read', async () => {
+    channels.fails = true
+    const response = await request(app.getHttpServer()).post('/auth/hooks/send-sms').set(signed(PAYLOAD)).send(PAYLOAD).expect(200)
+    expect(response.body).toEqual({ error: { http_code: 502, message: 'code provider failed' } })
+    expect(sender.sent).toHaveLength(0)
+    expect(sms.sent).toHaveLength(0)
+    expect(gate.calls).toBe(0)
   })
 })
