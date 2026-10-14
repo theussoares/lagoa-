@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common'
 import { APP_FILTER, APP_GUARD } from '@nestjs/core'
 import { ThrottlerModule } from '@nestjs/throttler'
 import { AuthModule } from './auth/auth.module'
+import { LoginAttemptsModule } from './auth/login-attempts/login-attempts.module'
 import { OtpModule } from './auth/otp/otp.module'
 import { SupabaseAuthGuard } from './auth/supabase-auth.guard'
 import { UserThrottlerGuard } from './auth/user-throttler.guard'
@@ -36,6 +37,7 @@ import { PostgresThrottlerStorage } from './throttling/postgres-throttler.storag
     CustomerModule,
     MerchantModule,
     OtpModule,
+    LoginAttemptsModule,
   ],
   controllers: [HealthController],
   providers: [
