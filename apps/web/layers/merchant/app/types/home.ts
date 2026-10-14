@@ -5,16 +5,20 @@ import type { AsyncResultState } from '#layers/core/app/types/asyncResult'
 import type { ComputedRef } from 'vue'
 import type { CheckInPosterModel } from './poster'
 
-export interface WeekDayRow {
-  readonly isoDate: string
+export interface HomeStatCard {
+  readonly id: 'sales' | 'visits' | 'redemptions' | 'lapsed'
+  /** "Vendas da semana". */
   readonly label: string
-  readonly isToday: boolean
-  /** "3 visitas". */
-  readonly visits: string
-  /** Visitas do dia, desenhadas como risquinhos de caderneta. */
-  readonly count: number
-  /** "1 cliente novo · 1 prêmio entregue"; `null` sem nada além de visitas. */
-  readonly detail: string | null
+  /** Já formatado: "R$ 120,50" ou "3". */
+  readonly value: string
+  /** "2 clientes" embaixo do número; `null` quando não há nota. */
+  readonly note: string | null
+}
+
+export interface HomeStatInput {
+  readonly week: WeekSummary
+  readonly lapsedTotal: number
+  readonly reachable: number | null
 }
 
 export interface LapsedPreviewLabels {

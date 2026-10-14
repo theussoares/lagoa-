@@ -1,49 +1,33 @@
-import { WEEK_SUMMARY_DAYS } from '#shared/constants/domain'
-import type { WeekSummary } from '#shared/schemas/weekSummary'
 import { formatCurrency } from '#shared/utils/currency'
-import { formatWeekdayShortDate } from '#shared/utils/dateFormat'
 import type { Translate } from '#layers/core/app/types/i18n'
-import type { WeekDayRow } from '../types/home'
+import type { HomeStatCard, HomeStatInput } from '../types/home'
 
-/** Meio-dia UTC cai no mesmo dia em Três Lagoas (UTC−4). */
-const NOON_UTC = 'T12:00:00Z'
-
-/** Os números da semana numa frase, não em cards de métrica. */
-export function toWeekHeadline(week: WeekSummary, t: Translate): string {
-  if (week.visits === 0 && week.redemptions === 0) return t('home.week.headlineEmpty', { days: WEEK_SUMMARY_DAYS })
-  if (week.visits === 0) {
-    return t('home.week.headlineOnlyRedemptions', {
-      days: WEEK_SUMMARY_DAYS,
-      redemptions: t('home.week.redemptions', { count: week.redemptions }, week.redemptions),
-    })
-  }
-  const headline = t('home.week.headline', {
-    days: WEEK_SUMMARY_DAYS,
-    visits: t('home.week.visits', { count: week.visits }, week.visits),
-    customers: t('home.week.customers', { count: week.customers }, week.customers),
-    newCustomers: t('home.week.newCustomers', { count: week.newCustomers }, week.newCustomers),
-    redemptions: t('home.week.redemptions', { count: week.redemptions }, week.redemptions),
-  })
-  return week.amountCents > 0 ? `${headline} ${t('home.week.sold', { amount: formatCurrency(week.amountCents) })}` : headline
-}
-
-export function toWeekDayRows(week: WeekSummary, t: Translate): WeekDayRow[] {
-  const today = week.days.at(-1)?.isoDate
-  return week.days.map((day) => {
-    const isToday = day.isoDate === today
-    const details = [
-      day.newCustomers > 0 ? t('home.week.newCustomers', { count: day.newCustomers }, day.newCustomers) : null,
-      day.redemptions > 0 ? t('home.week.redemptions', { count: day.redemptions }, day.redemptions) : null,
-      day.amountCents > 0 ? t('home.week.soldDay', { amount: formatCurrency(day.amountCents) }) : null,
-    ].filter((detail): detail is string => detail !== null)
-    const date = formatWeekdayShortDate(new Date(`${day.isoDate}${NOON_UTC}`))
-    return {
-      isoDate: day.isoDate,
-      label: isToday ? t('home.week.today', { date }) : date,
-      isToday,
-      visits: t('home.week.visits', { count: day.visits }, day.visits),
-      count: day.visits,
-      detail: details.length > 0 ? details.join(' · ') : null,
-    }
-  })
+/** Os números do Início em cards: vendas, visitas, prêmios e sumidos. Cada card tem uma nota curta embaixo. */
+export function toHomeStatCards({ week, lapsedTotal, reachable }: HomeStatInput, t: Translate): HomeStatCard[] {
+  return [
+    {
+      id: 'sales',
+      label: t('home.stats.sales'),
+      value: formatCurrency(week.amountCents),
+      note: t('home.week.customers', { count: week.customers }, week.customers),
+    },
+    {
+      id: 'visits',
+      label: t('home.stats.visits'),
+      value: String(week.visits),
+      note: t('home.week.newCustomers', { count: week.newCustomers }, week.newCustomers),
+    },
+    {
+      id: 'redemptions',
+      label: t('home.stats.redemptions'),
+      value: String(week.redemptions),
+      note: null,
+    },
+    {
+      id: 'lapsed',
+      label: t('home.lapsed.title'),
+      value: String(lapsedTotal),
+      note: reachable === null ? null : t('home.lapsed.reachable', { count: reachable }, reachable),
+    },
+  ]
 }

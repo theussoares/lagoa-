@@ -517,19 +517,14 @@
     "title": "Início",
     "lead": "O que aconteceu na loja nos últimos {days} dias e quem vale chamar de volta.",
     "counterAction": "Ir para o Balcão",
+    "stats": {
+      "sales": "Vendas da semana",
+      "visits": "Visitas da semana",
+      "redemptions": "Prêmios entregues"
+    },
     "week": {
-      "title": "Caderneta da semana",
-      "caption": "Visitas por dia, dos últimos {days} dias até hoje",
-      "headline": "Nos últimos {days} dias: {visits} de {customers}, {newCustomers} e {redemptions}.",
-      "headlineEmpty": "Nenhuma visita nos últimos {days} dias. Lance a próxima no Balcão.",
-      "headlineOnlyRedemptions": "Nenhuma visita nos últimos {days} dias, mas {redemptions}.",
-      "visits": "nenhuma visita | 1 visita | {count} visitas",
       "customers": "nenhum cliente | 1 cliente | {count} clientes",
-      "newCustomers": "nenhum cliente novo | 1 cliente novo | {count} clientes novos",
-      "redemptions": "nenhum prêmio entregue | 1 prêmio entregue | {count} prêmios entregues",
-      "today": "Hoje, {date}",
-      "sold": "Vendas lançadas: {amount}.",
-      "soldDay": "{amount} em vendas"
+      "newCustomers": "nenhum cliente novo | 1 cliente novo | {count} clientes novos"
     },
     "lapsed": {
       "title": "Clientes sumidos",

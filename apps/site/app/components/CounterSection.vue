@@ -28,7 +28,7 @@ const BULLETS = [
 
         <!-- A ordem importa (gerar, escanear): por isso é lista numerada. -->
         <ol :aria-label="t('counter.stepsLabel')" class="flex flex-col gap-6">
-          <li v-for="(step, index) in STEPS" :key="step" class="flex gap-5 rounded-(--radius-card) border border-(--lagoa-rule) p-6">
+          <li v-for="(step, index) in STEPS" :key="step" class="scroll-step flex gap-5 rounded-(--radius-card) border border-(--lagoa-rule) p-6">
             <span class="letreiro tabular grid size-12 shrink-0 place-items-center rounded-full border-2 border-current text-xl text-(--color-sol-200)" aria-hidden="true">
               {{ index + 1 }}
             </span>

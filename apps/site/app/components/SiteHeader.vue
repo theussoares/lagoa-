@@ -6,10 +6,11 @@ const menuOpen = ref(false)
 const menuId = useId()
 
 const links = computed(() => [
-  { href: '#balcao', label: t('nav.counter') },
-  { href: '#sumidos', label: t('nav.lapsed') },
-  { href: '#preco', label: t('nav.pricing') },
-  { href: '#duvidas', label: t('nav.faq') },
+  { href: '/#balcao', label: t('nav.counter') },
+  { href: '/#sumidos', label: t('nav.lapsed') },
+  { href: '/#preco', label: t('nav.pricing') },
+  { href: '/blog', label: t('nav.blog') },
+  { href: '/guia', label: t('nav.guide') },
 ])
 
 function closeMenu(): void {
@@ -19,10 +20,10 @@ function closeMenu(): void {
 
 <template>
   <!-- Barra sempre de tinta escura: os tokens do .dark valem só aqui dentro. -->
-  <header class="dark fixed inset-x-0 top-3 z-50 px-4" @keydown.esc="closeMenu">
+  <header class="header-shell dark fixed inset-x-0 top-3 z-50 px-4" @keydown.esc="closeMenu">
     <div class="mx-auto max-w-6xl rounded-[1.75rem] bg-(--lagoa-header) text-default shadow-(--lagoa-shadow-card)">
       <div class="flex items-center justify-between gap-3 py-2 pr-2 pl-5">
-        <a href="#inicio" class="inline-flex min-h-11 items-center font-display text-2xl font-bold text-highlighted" :aria-label="t('nav.home')">
+        <a href="/" class="inline-flex min-h-11 items-center font-display text-2xl font-bold text-highlighted" :aria-label="t('nav.home')">
           Lagoa<span class="text-(--color-sol-200)">+</span>
         </a>
 

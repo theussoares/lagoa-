@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { WeekSummary } from '#shared/schemas/weekSummary'
 import type { Translate } from '#layers/core/app/types/i18n'
 import { customerFilterFromSlug, customerFilterSlug } from '../app/utils/customerFilterQuery'
-import { toWeekDayRows, toWeekHeadline } from '../app/utils/homeModels'
+import { toHomeStatCards } from '../app/utils/homeModels'
 
 const t: Translate = (key, named = {}, plural) =>
   [key, ...Object.entries(named).map(([name, value]) => `${name}=${String(value)}`), plural === undefined ? '' : `#${plural}`]
@@ -20,42 +20,28 @@ function week(overrides: Partial<WeekSummary> = {}): WeekSummary {
   return { days, visits: 0, customers: 0, newCustomers: 0, redemptions: 0, amountCents: 0, ...overrides }
 }
 
-describe('toWeekHeadline', () => {
-  it('says the week numbers in one sentence', () => {
-    const headline = toWeekHeadline(week({ visits: 3, customers: 2, newCustomers: 1, redemptions: 0 }), t)
-    expect(headline).toContain('home.week.headline days=7')
-    expect(headline).toContain('visits=home.week.visits count=3 #3')
-    expect(headline).toContain('redemptions=home.week.redemptions count=0 #0')
+describe('toHomeStatCards', () => {
+  it('shows sales, visits, rewards and lapsed customers in that order', () => {
+    const cards = toHomeStatCards({ week: week({ visits: 3, customers: 2, newCustomers: 1, redemptions: 1, amountCents: 12_050 }), lapsedTotal: 5, reachable: 2 }, t)
+    expect(cards.map((card) => card.id)).toEqual(['sales', 'visits', 'redemptions', 'lapsed'])
+    expect(cards.map((card) => card.value)).toEqual([expect.stringMatching(/120,50/), '3', '1', '5'])
   })
 
-  it('adds the sales total when the QRs carried amounts', () => {
-    const headline = toWeekHeadline(week({ visits: 3, customers: 2, amountCents: 12_050 }), t)
-    expect(headline).toMatch(/home\.week\.sold amount=R\$.*120,50/)
+  it('puts the unique customers under sales and new customers under visits', () => {
+    const [sales, visits] = toHomeStatCards({ week: week({ visits: 3, customers: 2, newCustomers: 1 }), lapsedTotal: 0, reachable: null }, t)
+    expect(sales?.note).toBe('home.week.customers count=2 #2')
+    expect(visits?.note).toBe('home.week.newCustomers count=1 #1')
   })
 
-  it('has its own sentence for a week with no visits', () => {
-    expect(toWeekHeadline(week(), t)).toBe('home.week.headlineEmpty days=7')
+  it('tells how many lapsed customers can get a reminder now', () => {
+    const [, , , lapsed] = toHomeStatCards({ week: week(), lapsedTotal: 5, reachable: 2 }, t)
+    expect(lapsed?.note).toBe('home.lapsed.reachable count=2 #2')
   })
 
-  it('still mentions rewards handed out in a week with no visits', () => {
-    expect(toWeekHeadline(week({ redemptions: 1 }), t)).toBe(
-      'home.week.headlineOnlyRedemptions days=7 redemptions=home.week.redemptions count=1 #1',
-    )
-  })
-})
-
-describe('toWeekDayRows', () => {
-  it('counts each day\'s visits and marks today', () => {
-    const base = week()
-    const days = base.days.map((day, index) => (index === 4 ? { ...day, visits: 4, redemptions: 1 } : index === 6 ? { ...day, visits: 2, newCustomers: 1 } : day))
-    const rows = toWeekDayRows({ ...base, days }, t)
-    expect(rows[4]).toMatchObject({ count: 4, isToday: false, detail: 'home.week.redemptions count=1 #1' })
-    expect(rows[6]).toMatchObject({ count: 2, isToday: true,  detail: 'home.week.newCustomers count=1 #1' })
-    expect(rows[0]).toMatchObject({ count: 0, detail: null })
-    expect(rows[0]?.label).toMatch(/26/)
-    const sold = toWeekDayRows({ ...base, days: base.days.map((day, index) => (index === 6 ? { ...day, visits: 1, amountCents: 4590 } : day)) }, t)
-    expect(sold[6]?.detail).toMatch(/home\.week\.soldDay amount=R\$.*45,90/)
-    expect(rows[6]?.label).toMatch(/^home\.week\.today date=.*2/)
+  it('keeps every card with zeros on an empty week, and drops the reachable note when the count did not come', () => {
+    const cards = toHomeStatCards({ week: week(), lapsedTotal: 0, reachable: null }, t)
+    expect(cards.map((card) => card.value)).toEqual([expect.stringMatching(/0,00/), '0', '0', '0'])
+    expect(cards[3]?.note).toBeNull()
   })
 })
 
