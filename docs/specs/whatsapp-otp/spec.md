@@ -259,13 +259,16 @@ e abuso. Não mexer. Opcional: renomear para `OtpSendGate`/`otp_sends` numa migr
 | Termos/Privacidade | Informar que o celular é compartilhado com a Meta/WhatsApp para entrega do código (LGPD). |
 | `CLAUDE.md`, `docs/database-model.md` | Trocar menções a "SMS/Comtele" pelo canal real após a virada. |
 
-## 8. Decisão tomada: SMS removido sem fallback
+## 8. Decisão tomada: WhatsApp padrão + SMS como escolha do usuário (sem fallback automático)
 
-O SMS foi **completamente removido** da aplicação:
-- `ComteleSmsSender` e suas variáveis de ambiente (`COMTELE_*`) foram excluídos.
-- O canal de entrega é unicamente a WhatsApp Cloud API (`WhatsAppOtpSender`).
-- O contrato de envio `OtpSender.send` retorna `'sent' | 'throttled' | 'failed'`, permitindo mapear limite da Meta (`131056`) diretamente para `429` (muitas requisições) sem passar por fallback.
-- Se o usuário não possuir WhatsApp ou se houver indisponibilidade da Meta, a alternativa de recuperação é o login por e-mail.
+O login por celular suporta dois canais com entrega de código OTP:
+- **WhatsApp (Meta Cloud API, `WhatsAppOtpSender`):** canal principal, pré-selecionado por padrão.
+- **SMS (Comtele, `ComteleSmsSender`):** canal alternativo mantido para quem não tem WhatsApp no número.
+- **Escolha do usuário:** na tela inicial de login (cliente e lojista), a pessoa escolhe o canal junto ao celular (WhatsApp vem marcado). Na tela de confirmação do código, "Reenviar" mantém o canal atual, e um link ("Receber por SMS" / "Receber pelo WhatsApp") permite trocar de canal e reenviar.
+- **Sem fallback automático:** não há chaveamento automático entre canais. Se o WhatsApp devolver `throttled` (código Meta `131056`), a API responde `429` (muitas requisições); se devolver `failed`, responde `502` (falha no provedor) e **nunca** cai para SMS (o que abriria brecha de bypass de limite ou surpresa de cobrança).
+- **Limite compartilhado:** ambos os canais passam pelo mesmo `OtpSendGate` (máximo de 3 envios por hora por celular na tabela `sms_sends`). Trocar de canal não zera nem burla o teto.
+- **Passagem do canal ao Hook:** como o Send SMS Hook do Supabase entrega apenas `user.phone` e `sms.otp`, o BFF registra a escolha do usuário na API via `POST /v1/auth/otp-channel` (autenticado por `BFF_SHARED_SECRET`, mesmo padrão de `login-attempts`) na tabela `otp_channel_choices`. O hook lê essa escolha antes de disparar o código.
+- **Produção:** ambos os provedores são obrigatórios em produção (`WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `COMTELE_AUTH_KEY`), além do `BFF_SHARED_SECRET` e `SEND_SMS_HOOK_SECRET`.
 
 ## 9. Webhook de status (opcional — fase 2)
 

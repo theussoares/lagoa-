@@ -55,7 +55,7 @@ Onde ele fala em "CLAUDE.md", leia este arquivo de regras.
   (`/check-in#visita=<token>`), nunca em query: não chega ao servidor, ao `Referer` nem ao `?para=` do login.
   O Balcão não recebe mais celular.
 - **BFF (`apps/web/server`, modo `http`):** o navegador só fala com o próprio domínio. `/api/auth/*`
-  faz o login por código no WhatsApp no Supabase e guarda o token em cookie httpOnly (`lagoa_at`/`lagoa_rt`, SameSite=Lax,
+  faz o login por código (WhatsApp por padrão ou SMS via Comtele) no Supabase e guarda o token em cookie httpOnly (`lagoa_at`/`lagoa_rt`, SameSite=Lax,
   path `/api`); cada rota de `server/api/**` é um handler explícito (método + caminho fixo da API, entrada validada com
   o schema do `shared`) que troca o cookie por `Bearer` via `callApi` (`NUXT_API_BASE_URL`, só no servidor); não há
   proxy genérico: rota que não existe lá devolve 404 e os caminhos reais da API nunca aparecem no navegador. Escrita em `/api/**` exige `Origin` do próprio host ou de `NUXT_ALLOWED_ORIGINS`. Peças puras
