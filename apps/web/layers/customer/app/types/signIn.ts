@@ -1,5 +1,6 @@
 import type { Ref } from 'vue'
 import type { PhoneSignInStep } from '#layers/core/app/types/signIn'
+import type { OtpChannel } from '#shared/schemas/session'
 import type { DomainErrorCode } from '#shared/types/errors'
 
 /** Telefone, código e, só para número sem cadastro, o nome (e e-mail opcional). */
@@ -25,14 +26,16 @@ export interface SignUpDraft {
 
 export interface CustomerSignIn {
   step: Readonly<Ref<SignInStep>>
+  channel: Ref<OtpChannel>
   pending: Readonly<Ref<boolean>>
   error: Readonly<Ref<DomainErrorCode | null>>
   fieldError: Readonly<Ref<SignUpFieldError | null>>
   greeting: Readonly<Ref<SignInGreeting | null>>
   /** Segundos até liberar "Reenviar código" (0 = liberado). */
   resendIn: Readonly<Ref<number>>
-  requestCode: (rawPhone: string) => Promise<void>
+  requestCode: (rawPhone: string, channel?: OtpChannel) => Promise<void>
   resendCode: () => Promise<void>
+  switchChannel: () => Promise<void>
   verify: (rawCode: string) => Promise<VerifyOutcome>
   signUp: (draft: SignUpDraft) => Promise<boolean>
   changePhone: () => void

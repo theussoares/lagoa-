@@ -108,4 +108,32 @@ describe('useCustomerSignIn', () => {
     expect(signInFlow.step.value).toEqual({ name: 'profile' })
     expect(useSessionStore().customer).toBeNull()
   })
+
+  it('defaults to WhatsApp and delivers via the chosen channel', async () => {
+    const { $auth } = useNuxtApp()
+    const mounted = await mountComposable(() => useCustomerSignIn())
+    expect(mounted.result.channel.value).toBe('whatsapp')
+    mounted.result.channel.value = 'sms'
+    await mounted.result.requestCode('(67) 99123-0374')
+    expect($auth.requestLoginCode).toHaveBeenCalledWith(PHONE, 'sms')
+    expect(mounted.result.step.value).toEqual({ name: 'code', phone: PHONE, channel: 'sms' })
+  })
+
+  it('switches channel on the code step and resends once countdown elapses', async () => {
+    vi.useFakeTimers()
+    try {
+      const { $auth } = useNuxtApp()
+      const signInFlow = await atCodeStep()
+      expect(signInFlow.step.value).toEqual({ name: 'code', phone: PHONE, channel: 'whatsapp' })
+      expect(signInFlow.resendIn.value).toBe(60)
+      await vi.advanceTimersByTimeAsync(60_000)
+      expect(signInFlow.resendIn.value).toBe(0)
+      await signInFlow.switchChannel()
+      expect($auth.requestLoginCode).toHaveBeenLastCalledWith(PHONE, 'sms')
+      expect(signInFlow.step.value).toEqual({ name: 'code', phone: PHONE, channel: 'sms' })
+      expect(signInFlow.channel.value).toBe('sms')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
 })

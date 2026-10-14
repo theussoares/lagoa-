@@ -9,7 +9,7 @@ const { t } = useI18n()
 const route = useRoute()
 useHead({ title: () => `${t('signIn.pageTitle')} · ${t('app.name')}` })
 
-const { step, pending, error, fieldError, greeting, resendIn, requestCode, resendCode, verify, signUp, changePhone } = useCustomerSignIn()
+const { step, channel, pending, error, fieldError, greeting, resendIn, requestCode, resendCode, switchChannel, verify, signUp, changePhone } = useCustomerSignIn()
 const toast = useToast()
 
 const phoneDraft = ref('')
@@ -94,6 +94,8 @@ function backToPhone(): void {
         />
       </UFormField>
 
+      <OtpChannelPicker v-model="channel" :disabled="pending" />
+
       <ActionButton role="primary" type="submit" block :loading="pending" :label="t('signIn.sendCode')" class="mt-auto" />
     </form>
 
@@ -111,7 +113,7 @@ function backToPhone(): void {
     <form v-else class="flex flex-1 flex-col gap-6" novalidate @submit.prevent="submitCode">
       <PageTitle :title="t('signIn.codeTitle')">
         <p class="type-lead">
-          <i18n-t keypath="signIn.codeLead" scope="global">
+          <i18n-t :keypath="step.channel === 'sms' ? 'signIn.codeLeadSms' : 'signIn.codeLeadWhatsapp'" scope="global">
             <template #phone>
               <span class="tabular font-semibold whitespace-nowrap text-highlighted">{{ sentTo }}</span>
             </template>
@@ -121,7 +123,12 @@ function backToPhone(): void {
         </p>
       </PageTitle>
 
-      <UFormField ref="codeField" :label="t('signIn.codeLabel')" :error="codeError" name="code">
+      <UFormField
+        ref="codeField"
+        :label="step.channel === 'sms' ? t('signIn.codeLabelSms') : t('signIn.codeLabelWhatsapp')"
+        :error="codeError"
+        name="code"
+      >
         <template #error="{ error: message }">
           <span v-if="message" class="flex items-start gap-1.5"><UIcon name="i-ph-warning-circle" class="mt-0.5 size-4 shrink-0" aria-hidden="true" />{{ message }}</span>
         </template>
@@ -140,7 +147,7 @@ function backToPhone(): void {
       </UFormField>
 
       <div class="mt-auto flex flex-col gap-3">
-        <p class="text-base text-muted">{{ t('signIn.codeDelayHint') }}</p>
+        <p class="text-base text-muted">{{ step.channel === 'sms' ? t('signIn.codeDelayHintSms') : t('signIn.codeDelayHintWhatsapp') }}</p>
         <p class="text-base text-muted">{{ t('signIn.terms') }}</p>
         <ActionButton role="primary" type="submit" block :loading="pending" :label="t('signIn.submit')" />
         <ActionButton
@@ -149,6 +156,13 @@ function backToPhone(): void {
           :disabled="resendIn > 0 || pending"
           :label="resendIn > 0 ? t('signIn.resendIn', { seconds: resendIn }) : t('signIn.resend')"
           @click="resendCode"
+        />
+        <ActionButton
+          role="inline"
+          class="self-center text-sm py-1"
+          :disabled="resendIn > 0 || pending"
+          :label="step.channel === 'sms' ? t('signIn.switchChannel.whatsapp') : t('signIn.switchChannel.sms')"
+          @click="switchChannel"
         />
       </div>
     </form>

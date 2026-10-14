@@ -39,6 +39,13 @@ describe('HttpAuthService', () => {
     expect(result).toEqual({ ok: true, value: { expiresAt: '2026-10-01T16:05:00.000Z' } })
   })
 
+  it('asks for the code with an explicit SMS channel', async () => {
+    const { auth, gateway } = setup({ ok: true, value: true }, {})
+    const result = await auth.requestLoginCode(PHONE, 'sms')
+    expect(gateway.sendCode).toHaveBeenCalledWith(PHONE, 'sms')
+    expect(result).toEqual({ ok: true, value: { expiresAt: '2026-10-01T16:05:00.000Z' } })
+  })
+
   it('signs in an existing customer with the session of the API', async () => {
     const session = { role: 'customer', customerId: CUSTOMER_ID, isNewCustomer: false }
     const { auth, calls } = setup({ ok: true, value: true }, { 'GET /session': () => json(200, session) })

@@ -9,7 +9,7 @@ const { t } = useI18n()
 const route = useRoute()
 useHead({ title: () => `${t('merchantSignIn.pageTitle')} · ${t('app.name')}` })
 
-const { step, pending, error, resendIn, requestCode, resendCode, verify, changePhone } = useMerchantSignIn()
+const { step, channel, pending, error, resendIn, requestCode, resendCode, switchChannel, verify, changePhone } = useMerchantSignIn()
 const { session } = useMerchantSession()
 const mockCode = useMockLoginHint()
 const mockPhone = useMockMerchantPhone()
@@ -96,13 +96,15 @@ function backToPhone(): void {
             />
           </UFormField>
 
+          <OtpChannelPicker v-model="channel" :disabled="pending" />
+
           <UButton type="submit" size="xl" block :loading="pending" :label="t('merchantSignIn.sendCode')" />
         </form>
 
         <form v-else class="flex flex-col gap-6" novalidate @submit.prevent="submitCode">
           <PageTitle :title="t('merchantSignIn.codeTitle')">
             <p class="type-lead">
-              <i18n-t keypath="merchantSignIn.codeLead" scope="global">
+              <i18n-t :keypath="step.channel === 'sms' ? 'merchantSignIn.codeLeadSms' : 'merchantSignIn.codeLeadWhatsapp'" scope="global">
                 <template #phone>
                   <span class="tabular font-semibold whitespace-nowrap text-highlighted">{{ sentTo }}</span>
                 </template>
@@ -118,7 +120,12 @@ function backToPhone(): void {
             :description="t('signIn.mockHint', { code: mockCode })"
           />
 
-          <UFormField ref="codeField" :label="t('merchantSignIn.codeLabel')" :error="codeError" name="code">
+          <UFormField
+            ref="codeField"
+            :label="step.channel === 'sms' ? t('merchantSignIn.codeLabelSms') : t('merchantSignIn.codeLabelWhatsapp')"
+            :error="codeError"
+            name="code"
+          >
             <template #error="{ error: message }">
               <span v-if="message" class="flex items-start gap-1.5"><UIcon name="i-ph-warning-circle" class="mt-0.5 size-4 shrink-0" aria-hidden="true" />{{ message }}</span>
             </template>
@@ -137,6 +144,7 @@ function backToPhone(): void {
           </UFormField>
 
           <div class="flex flex-col gap-3">
+            <p class="text-base text-muted">{{ step.channel === 'sms' ? t('merchantSignIn.codeDelayHintSms') : t('merchantSignIn.codeDelayHintWhatsapp') }}</p>
             <UButton type="submit" size="xl" block :loading="pending" :label="t('merchantSignIn.submit')" />
             <UButton
               variant="ghost"
@@ -145,6 +153,15 @@ function backToPhone(): void {
               :disabled="resendIn > 0 || pending"
               :label="resendIn > 0 ? t('merchantSignIn.resendIn', { seconds: resendIn }) : t('merchantSignIn.resend')"
               @click="resendCode"
+            />
+            <UButton
+              variant="link"
+              color="neutral"
+              size="sm"
+              class="self-center"
+              :disabled="resendIn > 0 || pending"
+              :label="step.channel === 'sms' ? t('merchantSignIn.switchChannel.whatsapp') : t('merchantSignIn.switchChannel.sms')"
+              @click="switchChannel"
             />
           </div>
         </form>

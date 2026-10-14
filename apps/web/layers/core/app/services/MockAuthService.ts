@@ -1,6 +1,6 @@
 import type { PhoneNumber } from '#shared/schemas/phone'
 import type { LoginCode } from '#shared/schemas/session'
-import type { LoginChallenge, MerchantSession, MerchantSignInResult } from '#shared/schemas/session'
+import type { LoginChallenge, MerchantSession, MerchantSignInResult, OtpChannel } from '#shared/schemas/session'
 import type { TransportError } from '#shared/types/errors'
 import { err, ok } from '#shared/types/result'
 import type { Result } from '#shared/types/result'
@@ -11,7 +11,7 @@ import type { MerchantAuthService, MerchantSessionError, MerchantSignInError } f
 export class MockAuthService implements MerchantAuthService {
   constructor(private readonly backend: MockBackend) {}
 
-  requestLoginCode(phone: PhoneNumber): Promise<Result<LoginChallenge, TransportError>> {
+  requestLoginCode(phone: PhoneNumber, _channel?: OtpChannel): Promise<Result<LoginChallenge, TransportError>> {
     return this.backend.run((ctx) => ok(requestLoginCode(ctx, phone, this.backend.loginCode)))
   }
 
