@@ -3,6 +3,8 @@ import type { StampCardModel } from '#layers/ui/app/types/wallet'
 
 const { t } = useI18n()
 
+const SEGMENTS = ['barber', 'cafe', 'pizza', 'pet', 'gym'] as const
+
 const TOTAL_SLOTS = 10
 const STAMPED_SLOTS = 8
 const FRESH_STAMP_DELAY_MS = 500
@@ -48,10 +50,16 @@ const sampleCard = computed<StampCardModel>(() => ({
         </div>
 
         <p class="text-[0.9375rem] text-muted">{{ t('hero.note', COPY_PARAMS) }}</p>
+
+        <ul :aria-label="t('hero.segmentsLabel')" class="rise flex flex-wrap gap-2" style="--i: 2">
+          <li v-for="segment in SEGMENTS" :key="segment" class="rounded-full border border-(--lagoa-rule) px-4 py-2 text-[0.9375rem] text-toned">
+            {{ t(`hero.segments.${segment}`) }}
+          </li>
+        </ul>
       </div>
 
       <!-- Ilustração: o figure fala a frase inteira, o desenho dentro fica fora da árvore. -->
-      <figure role="img" class="relative mx-auto w-full max-w-[25rem] pb-12 lg:mr-0" :aria-label="t('hero.visualLabel')">
+      <figure role="img" class="scroll-drift relative mx-auto w-full max-w-[25rem] pb-12 lg:mr-0" :aria-label="t('hero.visualLabel')">
         <StampCard :card="sampleCard" heading-level="h3" />
 
         <!-- O canhoto do Balcão: o que o lojista vê no mesmo instante. -->
