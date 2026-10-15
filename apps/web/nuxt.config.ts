@@ -34,6 +34,10 @@ export default defineNuxtConfig({
       supabaseUrl: '',
       /** Painel do lojista: `http` (BFF + API, padrão) ou `mock` (navegador; só testes e demonstração offline). Env: NUXT_PUBLIC_MERCHANT_BACKEND. */
       merchantBackend: 'http',
+      /** Origem do app do cliente (https://app.lagoamais.com.br): destino dos QR codes e do redirecionamento por host. Vazio = o próprio host. Env: NUXT_PUBLIC_CUSTOMER_URL. */
+      customerUrl: '',
+      /** Origem do Balcão (https://balcao.lagoamais.com.br). Com as duas preenchidas, cada host só atende a sua superfície. Env: NUXT_PUBLIC_MERCHANT_URL. */
+      merchantUrl: '',
       /** Campanhas do lojista (M5, sem API ainda). Env: NUXT_PUBLIC_CAMPAIGNS_ENABLED. */
       campaignsEnabled: false,
       /** Atraso artificial do mock para a UI exercitar carregamento. */

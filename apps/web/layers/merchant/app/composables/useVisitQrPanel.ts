@@ -16,7 +16,7 @@ export function useVisitQrPanel(
 ): CounterVisitQrView {
   const translate = useTranslate()
   const { print } = usePrint()
-  const origin = useRequestURL().origin
+  const origin = useCustomerOrigin()
 
   const action = computed<CounterAction | null>(() =>
     program.state.value.status === 'success' ? counterActionFor(program.state.value.value.rules) : null,
