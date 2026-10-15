@@ -25,17 +25,10 @@ const SAMPLE_LAPSED = [
       <p class="type-h2 ledger-rule">{{ t('lapsed.listTitle', COPY_PARAMS) }}</p>
       <ul>
         <li v-for="customer in SAMPLE_LAPSED" :key="customer.phone" class="flex flex-wrap items-center justify-between gap-3 border-b border-(--lagoa-rule) py-4">
-          <span class="flex flex-col">
-            <span class="tabular text-lg font-semibold text-highlighted">{{ customer.phone }}</span>
-            <span class="text-[0.9375rem] text-muted">{{ t('lapsed.daysAgo', { days: customer.days }) }}</span>
-          </span>
-          <StampTag :label="t('lapsed.consentTag')" tone="success" icon="i-ph-check-bold" />
+          <span class="tabular text-lg font-semibold text-highlighted">{{ customer.phone }}</span>
+          <span class="text-[0.9375rem] text-muted">{{ t('lapsed.daysAgo', { days: customer.days }) }}</span>
         </li>
       </ul>
-      <p class="mt-5 flex items-start gap-3 rounded-2xl bg-(--ui-bg-muted) p-4 text-toned">
-        <UIcon name="i-ph-paper-plane-tilt" class="mt-0.5 size-5 shrink-0 text-primary" />
-        {{ t('lapsed.reminder') }}
-      </p>
       <figcaption class="mt-4 text-sm text-muted">{{ t('lapsed.sample') }}</figcaption>
     </figure>
   </section>

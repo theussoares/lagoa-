@@ -2,10 +2,10 @@
 const { t } = useI18n()
 
 const RULES = [
-  { key: 'surprise', icon: 'i-ph-calendar-star-bold', tilt: 2, span: 'bento-wide', featured: true },
-  { key: 'referral', icon: 'i-ph-users-three-bold', tilt: -5, span: 'bento-third', featured: false },
-  { key: 'welcome', icon: 'i-ph-hand-waving-bold', tilt: -3, span: 'bento-third', featured: false },
-  { key: 'birthday', icon: 'i-ph-cake-bold', tilt: 4, span: 'bento-wide', featured: false },
+  { key: 'surprise', pro: true, icon: 'i-ph-calendar-star-bold', tilt: 2, span: 'bento-wide', featured: true },
+  { key: 'referral', pro: true, icon: 'i-ph-users-three-bold', tilt: -5, span: 'bento-third', featured: false },
+  { key: 'welcome', pro: true, icon: 'i-ph-hand-waving-bold', tilt: -3, span: 'bento-third', featured: false },
+  { key: 'birthday', pro: false, icon: 'i-ph-cake-bold', tilt: 4, span: 'bento-wide', featured: false },
 ] as const
 </script>
 
@@ -30,6 +30,7 @@ const RULES = [
           </span>
         </span>
         <div class="flex flex-col gap-2">
+          <StampTag v-if="rule.pro" :label="t('bonus.proTag')" tone="reward" icon="i-ph-star-bold" class="self-start" />
           <h3 :class="rule.featured ? 'type-section' : 'type-card-title'">{{ t(`bonus.${rule.key}.title`) }}</h3>
           <p class="text-toned">{{ t(`bonus.${rule.key}.body`) }}</p>
         </div>
