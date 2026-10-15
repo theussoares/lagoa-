@@ -312,7 +312,7 @@ composables  → stores (Pinia, estado)
   (`discoverFeatured`).
 - **Clientes sumidos:** sem visita há mais de 30 dias; alvo de lembrete com
   carimbo bônus, só para quem aceitou avisos.
-- **Planos Fundador:** Fundador R$ 79,90/mês (de R$ 119,90) e Fundador Pro R$ 89,90/mês (de R$ 249,90; inclui clientes sumidos, campanhas e destaque no Descobrir). Preço de Fundador só para as 10 primeiras lojas, preço travado e sem fidelidade; lojas entram por aprovação
+- **Planos Fundador:** Fundador R$ 79,90/mês (de R$ 119,90; carimbo, resgate e bônus de aniversário, até 300 clientes) e Fundador Pro R$ 99,90/mês (de R$ 249,90; soma boas-vindas, indicação, dia surpresa, clientes sumidos e destaque no Descobrir, até 1.000 clientes, sem limite para as 10 primeiras lojas Pro). Preço de Fundador só para as 10 primeiras lojas, preço travado e sem fidelidade; lojas entram por aprovação
   do admin da rede.
 
 ## Regras que não se negociam

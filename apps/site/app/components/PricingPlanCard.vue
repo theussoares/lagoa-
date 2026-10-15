@@ -38,7 +38,7 @@ const { t } = useI18n()
     <ul class="flex flex-col gap-2" :aria-label="t('pricing.includesLabel')">
       <li v-for="item in items" :key="item" class="flex items-start gap-3">
         <UIcon name="i-ph-check-bold" class="mt-1 size-5 shrink-0 text-primary" aria-hidden="true" />
-        <span class="text-toned">{{ t(`pricing.plans.${plan}.items.${item}`) }}</span>
+        <span class="text-toned">{{ t(`pricing.plans.${plan}.items.${item}`, COPY_PARAMS) }}</span>
       </li>
     </ul>
 
