@@ -9,7 +9,7 @@ import { MERCHANT_SIGN_IN_PATH } from './useMerchantSession'
 export function useClubSetupScreen(): ClubSetupScreen {
   const { t } = useI18n()
   const translate = useTranslate()
-  const origin = useRequestURL().origin
+  const origin = useCustomerOrigin()
   const setup = useClubSetup()
   const { step, form, shopErrors, programErrors, submitState, posterState } = setup
   const { approveForTesting } = useShopStatus()

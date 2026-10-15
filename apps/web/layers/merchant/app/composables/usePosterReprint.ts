@@ -7,7 +7,7 @@ export function usePosterReprint(onPrinted: () => Promise<void>): PosterReprint 
   const { poster: posterService, posterReprint } = useMerchantServices()
   const { print: openPrintDialog } = usePrint()
   const translate = useTranslate()
-  const origin = useRequestURL().origin
+  const origin = useCustomerOrigin()
   const poster = shallowRef<CheckInPosterModel | null>(null)
   const printing = ref(false)
 
