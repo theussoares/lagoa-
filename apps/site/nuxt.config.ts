@@ -35,6 +35,8 @@ export default defineNuxtConfig({
       whatsappNumber: '5567992171768',
       /** Onde o lojista já aprovado entra no Balcão. */
       appUrl: 'http://localhost:3000',
+      /** App do cliente (carteira de carimbos), destino do link da bio. */
+      customerUrl: 'https://app.lagoamais.com.br',
       /** Endereço público da LP, para canonical e og:url. Vazio omite as duas. */
       siteUrl: '',
     },

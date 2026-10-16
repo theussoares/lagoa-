@@ -23,7 +23,8 @@
     "forPlan": "plano {plan}",
     "whatsappMessage": "Olá! Tenho uma loja em Três Lagoas e quero saber mais sobre o Lagoa+.",
     "whatsappMessageFounder": "Olá! Tenho uma loja em Três Lagoas e quero saber mais sobre o plano Fundador do Lagoa+.",
-    "whatsappMessagePro": "Olá! Tenho uma loja em Três Lagoas e quero saber mais sobre o plano Fundador Pro do Lagoa+."
+    "whatsappMessagePro": "Olá! Tenho uma loja em Três Lagoas e quero saber mais sobre o plano Fundador Pro do Lagoa+.",
+    "whatsappMessageInstagram": "Olá! Vim pelo Instagram e quero saber mais sobre o Lagoa+."
   },
   "hero": {
     "titleLead": "Todo dia sai cliente da sua loja que nunca mais volta.",
@@ -300,5 +301,37 @@
     "covers": "A venda extra cobre o plano e sobram {net}.",
     "short": "Faltam {count} voltas para cobrir o plano.",
     "note": "Exemplo ilustrativo. O resultado real depende da sua loja."
+  },
+  "bio": {
+    "tagline": "Clube de fidelidade do comércio de Três Lagoas/MS",
+    "newTab": "(abre em outra aba)",
+    "partner": {
+      "label": "Quero ser loja parceira",
+      "hint": "Faça seu cliente voltar e comprar de novo"
+    },
+    "wallet": {
+      "label": "Abrir minha carteira",
+      "hint": "Seus carimbos e prêmios nas lojas da cidade"
+    },
+    "whatsapp": {
+      "label": "Falar no WhatsApp",
+      "hint": "Tire dúvidas direto com a gente"
+    },
+    "sections": {
+      "learn": "Para aprender"
+    },
+    "guide": {
+      "label": "Como o Lagoa+ funciona",
+      "hint": "Passo a passo para lojistas"
+    },
+    "post": {
+      "reading": "{minutes} min de leitura"
+    },
+    "merchantSignIn": "Já sou parceiro: entrar no Balcão",
+    "footer": "© Lagoa+ · Três Lagoas/MS",
+    "seo": {
+      "title": "Lagoa+ · Links",
+      "description": "Clube de fidelidade do comércio de Três Lagoas/MS. Seja uma loja parceira, abra sua carteira de carimbos ou fale com a gente."
+    }
   }
 }
