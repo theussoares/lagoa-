@@ -262,3 +262,8 @@ html {
   font-weight: 650;
   color: var(--ui-text-highlighted);
 }
+
+/* ---- Link da bio (/links): sem a barra clara da LP, o overscroll também fica de tinta ---- */
+html.bio-page {
+  background: var(--color-tinta-950);
+}

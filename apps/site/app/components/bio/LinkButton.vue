@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { LinkItem } from '../types/link'
+import type { BioLinkItem } from '../../types/bioLink'
 
 interface Props {
-  link: LinkItem
+  link: BioLinkItem
 }
 
 defineProps<Props>()
@@ -23,6 +23,6 @@ const { t } = useI18n()
       <span class="mt-0.5 text-[0.9375rem] leading-snug" :class="link.tone === 'primary' ? 'text-(--color-tinta-900)' : 'text-muted'">{{ link.hint }}</span>
     </span>
     <UIcon name="i-ph-arrow-up-right-bold" class="size-5 shrink-0 transition-transform duration-(--lagoa-dur-base) group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
-    <span v-if="link.newTab" class="sr-only">{{ t('links.newTab') }}</span>
+    <span v-if="link.newTab" class="sr-only">{{ t('bio.newTab') }}</span>
   </a>
 </template>

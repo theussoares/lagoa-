@@ -1,18 +1,18 @@
-export type LinkTone = 'primary' | 'default'
+export type BioLinkTone = 'primary' | 'default'
 
-export interface LinkItem {
+export interface BioLinkItem {
   id: string
   href: string
   label: string
   hint: string
   icon: string
-  tone: LinkTone
+  tone: BioLinkTone
   /** Abre fora do navegador embutido do Instagram (WhatsApp). */
   newTab: boolean
 }
 
-export interface LinkSection {
+export interface BioLinkSection {
   id: string
   title: string | null
-  items: LinkItem[]
+  items: BioLinkItem[]
 }
