@@ -26,32 +26,33 @@ const footerItems = computed<SpineNavItem[]>(() => [{ label: t('merchantNav.sett
 </script>
 
 <template>
-  <div class="grid min-h-dvh grid-cols-[var(--merchant-sidebar-width)_minmax(0,1fr)] text-base [--merchant-sidebar-width:220px] print:block">
-    <!-- A barra é sempre "caderneta à noite", no claro e no escuro: os tokens escuros valem aqui dentro. -->
-    <aside class="dark print:hidden sticky top-0 flex h-dvh flex-col bg-(--lagoa-desk) px-3 py-5 text-default">
-      <div class="flex flex-col items-start gap-2 px-2.5 pb-7">
-        <!-- Marca batida como carimbo de borracha na capa da caderneta. -->
-        <p class="letreiro -rotate-3 rounded-[6px] px-2.5 py-1 text-xl text-primary ring-2 ring-current outline-1 outline-offset-2 outline-current/50">
-          {{ t('app.name') }}
+  <div class="grid min-h-dvh grid-cols-[var(--merchant-sidebar-width)_minmax(0,1fr)] bg-[#f8fafc] dark:bg-(--lagoa-desk) text-base [--merchant-sidebar-width:230px] print:block">
+    <!-- A barra lateral em azul-petróleo muito escuro, seguindo a referência visual -->
+    <aside class="dark print:hidden sticky top-0 flex h-dvh flex-col bg-[#071d24] px-3.5 py-6 text-default">
+      <div class="flex flex-col items-start px-2 pb-6">
+        <div class="rounded-lg border-[1.5px] border-cyan-400/90 px-2.5 py-1 text-sm font-extrabold tracking-wider text-cyan-400">
+          LAGOA+
+        </div>
+        <p v-if="session" class="mt-2.5 w-full truncate text-[0.875rem] font-medium text-slate-300/70" :title="session.shopName">
+          {{ session.shopName }}
         </p>
-        <p v-if="session" class="mt-2 w-full truncate text-[0.9375rem] text-toned" :title="session.shopName">{{ session.shopName }}</p>
       </div>
       <SpineNav :items="items" :footer-items="footerItems" :label="t('merchantNav.label')" />
       <button
         type="button"
-        class="flex min-h-12 items-center gap-3 px-2.5 text-[0.9375rem] text-toned transition-colors duration-(--lagoa-dur-fast) hover:text-highlighted"
+        class="mt-1 flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-[0.9375rem] font-medium text-slate-300/80 transition-all duration-(--lagoa-dur-fast) hover:bg-white/5 hover:text-white"
         @click="signOut"
       >
-        <UIcon name="i-ph-sign-out" class="size-5 shrink-0 text-muted" aria-hidden="true" />
+        <UIcon name="i-ph-sign-out" class="size-5 shrink-0 text-slate-400" aria-hidden="true" />
         {{ t('merchantNav.signOut') }}
       </button>
     </aside>
-    <main id="main" class="min-w-0 px-8 py-6">
+    <main id="main" class="min-w-0 px-6 sm:px-8 py-7">
       <InkNote
         v-if="shopStatus.status.value === 'pending'"
         tone="warning"
         icon="i-ph-hourglass-medium"
-        class="mx-auto mb-5 max-w-[1200px] print:hidden"
+        class="mx-auto mb-5 max-w-[1300px] print:hidden"
         :title="t('merchantNav.pending.title')"
         :description="t('merchantNav.pending.description')"
         :actions="approveForTesting ? [{ label: t('merchantNav.pending.approveForTesting'), onClick: approve }] : []"
@@ -60,7 +61,7 @@ const footerItems = computed<SpineNavItem[]>(() => [{ label: t('merchantNav.sett
         v-else-if="shopStatus.status.value === 'suspended'"
         tone="error"
         icon="i-ph-prohibit"
-        class="mx-auto mb-5 max-w-[1200px] print:hidden"
+        class="mx-auto mb-5 max-w-[1300px] print:hidden"
         :title="t('merchantNav.suspended.title')"
         :description="t('errors.shopSuspended')"
       />
