@@ -3,6 +3,7 @@ import type { Translate } from '#layers/core/app/types/i18n'
 import type { LedgerEntryModel, StampCardModel } from '#layers/ui/app/types/wallet'
 import type { WalletCard } from '#shared/schemas/loyaltyCard'
 import type { WalletActivity } from '#shared/schemas/visit'
+import type { InstallInviteScreen } from './installInvite'
 import type { TransportError } from '#shared/types/errors'
 
 /** Abas da carteira: todos, com prêmio liberado, ainda juntando. */
@@ -45,4 +46,5 @@ export interface WalletScreen {
   readonly greeting: string
   readonly ledger: LedgerEntryModel[]
   readonly cityHeaderImage: string
+  readonly installInvite: InstallInviteScreen
 }
