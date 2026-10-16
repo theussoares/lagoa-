@@ -1,5 +1,6 @@
 import type { SeenBalances, WalletFilter, WalletScreen } from '../types/wallet'
 import { countWalletCards, filterWalletCards } from '../utils/walletFilter'
+import { countEarnings } from '../utils/installInviteRule'
 import { formatShortDate } from '#shared/utils/dateFormat'
 
 /** Carteira: lista de cartões com abas e busca, caderneta recente e saudação. */
@@ -12,6 +13,7 @@ export function useWalletScreen(): WalletScreen {
   const { state: profileState } = useCustomerProfile()
   const seenStamps = useSeenStamps()
   const cityHeaderImage = useCityHeaderImage()
+  const installInvite = useInstallPrompt(() => countEarnings(activityState.value.status === 'success' ? activityState.value.value : []))
 
   const filter = ref<WalletFilter>('all')
   const query = ref('')
@@ -72,5 +74,5 @@ export function useWalletScreen(): WalletScreen {
     return activityState.value.value.map((activity) => toLedgerEntryModel(activity, now, translate, iconByShop))
   })
 
-  return reactive({ cardsState, reloadCards, activityState, cards, visibleCards, filter, query, filterCounts, expandedId, toggleCard, greeting, ledger, cityHeaderImage })
+  return reactive({ cardsState, reloadCards, activityState, cards, visibleCards, filter, query, filterCounts, expandedId, toggleCard, greeting, ledger, cityHeaderImage, installInvite })
 }

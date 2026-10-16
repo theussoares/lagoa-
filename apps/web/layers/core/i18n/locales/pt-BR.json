@@ -9,6 +9,20 @@
     "stampNoun": "carimbo | carimbos",
     "pointNoun": "ponto | pontos"
   },
+  "install": {
+    "title": "Guarde seu cartão na tela inicial",
+    "lead": "Na próxima compra, abra com um toque.",
+    "leadIos": "Na próxima compra, abra com um toque. O app pode pedir seu código por SMS uma vez.",
+    "action": "Guardar",
+    "actionIos": "Como guardar",
+    "dismiss": "Agora não",
+    "stepsTitle": "Como guardar no iPhone",
+    "steps": {
+      "share": "Toque em Compartilhar, o quadrado com a seta, na barra do Safari.",
+      "add": "Escolha Adicionar à Tela de Início.",
+      "confirm": "Toque em Adicionar."
+    }
+  },
   "wallet": {
     "title": "Carteira",
     "greeting": "Olá, {name}",
@@ -108,7 +122,7 @@
       "truncated": "Mostrando só os {count} lançamentos mais recentes de hoje.",
       "earned": "+{units}",
       "earnedAmount": "+{units} · {amount}",
-      "earnedCheckIn": "+{units} · check-in",
+      "earnedCheckIn": "+{units} · QR da visita",
       "redeemed": "Prêmio entregue: {reward}",
       "earnedCampaign": "+{units} · presente de lembrete"
     }
@@ -116,7 +130,7 @@
   "nav": {
     "wallet": "Carteira",
     "discover": "Descobrir",
-    "checkIn": "Check-in",
+    "checkIn": "Carimbar",
     "rewards": "Prêmios",
     "profile": "Perfil",
     "home": "Início",
@@ -178,7 +192,7 @@
     "kind": {
       "visit": "No balcão",
       "amount": "Compra no balcão",
-      "checkIn": "Check-in",
+      "checkIn": "QR da visita",
       "redemption": "Prêmio resgatado",
       "campaignBonus": "Presente de lembrete"
     }
@@ -299,7 +313,7 @@
     "settings": "Configurações",
     "pending": {
       "title": "Loja aguardando aprovação da rede",
-      "description": "Você já pode conferir o clube e imprimir o cartaz. O Balcão e o check-in passam a valer quando a rede Lagoa+ aprovar a loja.",
+      "description": "Você já pode conferir o clube e imprimir o cartaz. O Balcão e o carimbo pelo QR passam a valer quando a rede Lagoa+ aprovar a loja.",
       "approveForTesting": "Aprovar agora (só no teste)"
     },
     "suspended": {
@@ -589,7 +603,7 @@
     "mapLink": "Ver mapa",
     "mapLinkLabel": "Ver as lojas da rede no mapa (abre o mapa)",
     "freshTitle": "Perto de você",
-    "howTo": "Peça o carimbo no balcão ou faça check-in pelo QR da loja.",
+    "howTo": "Peça o carimbo no balcão ou entre no clube pelo QR da loja.",
     "showcase": {
       "openNow": "Aberta agora",
       "distance": "{distance} km"
@@ -609,8 +623,8 @@
     "empty": "Nenhuma loja na rede por enquanto. Volte em breve."
   },
   "checkIn": {
-    "pageTitle": "Check-in",
-    "title": "Fazer check-in",
+    "pageTitle": "Carimbar",
+    "title": "Carimbar minha visita",
     "leadScan": "Aponte a câmera para o QR da visita que o caixa mostrar. O carimbo cai na hora.",
     "leadType": "Digite o código de {length} letras e números que aparece embaixo do QR.",
     "viewfinderLabel": "Câmera lendo o QR da visita",
