@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { PhoneNumberSchema } from '#shared/schemas/phone'
 import { contactFromColumns, columnsFromContact, type ShopContactColumns } from './shop-contact-columns'
 
 const empty: ShopContactColumns = { ctaKind: null, whatsapp: null, whatsappMessage: null, ctaUrl: null, ctaLabel: null }
@@ -36,7 +37,7 @@ describe('columnsFromContact', () => {
       ...empty, ctaKind: 'url', ctaUrl: 'https://loja.com', ctaLabel: 'Comprar agora',
     })
     expect(
-      columnsFromContact({ kind: 'whatsapp', whatsapp: '67991234567' as never, message: 'Oi', ctaLabel: null }),
+      columnsFromContact({ kind: 'whatsapp', whatsapp: PhoneNumberSchema.parse('67991234567'), message: 'Oi', ctaLabel: null }),
     ).toEqual({ ...empty, ctaKind: 'whatsapp', whatsapp: '67991234567', whatsappMessage: 'Oi' })
   })
 })

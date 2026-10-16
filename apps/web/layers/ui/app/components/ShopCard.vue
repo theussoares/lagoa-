@@ -48,7 +48,7 @@ const titleId = useId()
         target="_blank"
         external
         block
-        icon="i-ph-whatsapp-logo"
+        :icon="shop.contact.icon"
         trailing-icon="i-ph-arrow-up-right"
         :label="shop.contact.label"
         :aria-label="shop.contact.accessibleLabel"

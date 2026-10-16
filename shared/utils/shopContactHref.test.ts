@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest'
+import { PhoneNumberSchema } from '../schemas/phone'
 import { shopContactHref } from './shopContactHref'
 
 describe('shopContactHref', () => {
   it('builds the wa.me link with the message for the whatsapp kind', () => {
     expect(
-      shopContactHref({ kind: 'whatsapp', whatsapp: '67991234567', message: 'Oi', ctaLabel: null }),
+      shopContactHref({ kind: 'whatsapp', whatsapp: PhoneNumberSchema.parse('67991234567'), message: 'Oi', ctaLabel: null }),
     ).toBe('https://wa.me/5567991234567?text=Oi')
   })
   it('returns the pasted url for the url kind', () => {

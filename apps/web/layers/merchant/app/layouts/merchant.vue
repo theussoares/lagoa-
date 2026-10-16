@@ -19,6 +19,7 @@ const items = computed<SpineNavItem[]>(() => [
   { label: t('nav.counter'), icon: 'i-ph-storefront', to: '/balcao' },
   { label: t('nav.customers'), icon: 'i-ph-users', to: '/clientes' },
   { label: t('nav.program'), icon: 'i-ph-seal', to: '/programa' },
+  { label: t('nav.shopLink'), icon: 'i-ph-cursor-click', to: '/botao-do-card' },
   ...(campaignsEnabled ? [{ label: t('nav.campaigns'), icon: 'i-ph-megaphone', to: '/campanhas' }] : []),
 ])
 const footerItems = computed<SpineNavItem[]>(() => [{ label: t('merchantNav.settings'), icon: 'i-ph-gear-six', to: '/configuracoes' }])

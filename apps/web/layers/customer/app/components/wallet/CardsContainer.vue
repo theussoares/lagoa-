@@ -56,7 +56,7 @@ const filterOptions = (screen: WalletScreen) =>
           target="_blank"
           external
           block
-          icon="i-ph-whatsapp-logo"
+          :icon="card.contact.icon"
           :label="card.contact.label"
           :aria-label="card.contact.accessibleLabel"
         />
