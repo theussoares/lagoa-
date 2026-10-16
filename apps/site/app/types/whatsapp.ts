@@ -1,1 +1,1 @@
-export type WhatsAppMessage = 'whatsappMessage' | 'whatsappMessageFounder' | 'whatsappMessagePro'
+export type WhatsAppMessage = 'whatsappMessage' | 'whatsappMessageInstagram' | 'whatsappMessageFounder' | 'whatsappMessagePro'
