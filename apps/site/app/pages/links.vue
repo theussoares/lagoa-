@@ -5,6 +5,7 @@ definePageMeta({ layout: 'bare', colorMode: 'dark' })
 const { t } = useI18n()
 const { siteUrl } = useRuntimeConfig().public
 const { sections, merchantSignIn } = useBioLinks()
+const { trackClick } = useBioTracking()
 
 useSeoMeta({
   title: () => t('bio.seo.title'),
@@ -23,15 +24,15 @@ useHead({
 </script>
 
 <template>
-  <main class="dark min-h-dvh bg-(--lagoa-header) px-4 py-10 text-default">
-    <div class="mx-auto flex w-full max-w-md flex-col gap-8">
+  <main class="dark min-h-dvh bg-(--lagoa-header) px-4 py-6 text-default">
+    <div class="mx-auto flex w-full max-w-md flex-col gap-5">
       <BioProfile class="rise" />
 
-      <section v-for="(section, index) in sections" :key="section.id" :aria-labelledby="section.title ? `bio-${section.id}` : undefined" class="rise flex flex-col gap-3" :style="{ '--i': index + 1 }">
+      <section v-for="(section, index) in sections" :key="section.id" :aria-labelledby="section.title ? `bio-${section.id}` : undefined" class="rise flex flex-col gap-2.5" :style="{ '--i': index + 1 }">
         <h2 v-if="section.title" :id="`bio-${section.id}`" class="px-1 text-sm font-semibold tracking-wide text-muted uppercase">{{ section.title }}</h2>
-        <ul class="flex flex-col gap-3">
+        <ul class="flex flex-col gap-2.5">
           <li v-for="link in section.items" :key="link.id">
-            <BioLinkButton :link="link" />
+            <BioLinkButton :link="link" @select="trackClick" />
           </li>
         </ul>
       </section>

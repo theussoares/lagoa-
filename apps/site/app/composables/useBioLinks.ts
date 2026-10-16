@@ -1,7 +1,7 @@
 import { POSTS } from '~/content/posts'
 import type { BioLinkItem, BioLinkSection } from '../types/bioLink'
 
-const LATEST_POSTS = 3
+const LATEST_POSTS = 2
 
 interface BioLinks {
   readonly sections: ComputedRef<BioLinkSection[]>
@@ -20,16 +20,19 @@ export function useBioLinks(): BioLinks {
     hint: t('bio.partner.hint'),
     icon: 'i-ph-storefront-bold',
     tone: 'primary',
+    cta: t('bio.partner.cta'),
     newTab: false,
   }))
 
+  // Direto na carteira: quem ainda não entrou cai no login e volta para ela (middleware customer-auth).
   const wallet = computed<BioLinkItem>(() => ({
     id: 'wallet',
-    href: withBioUtm(customerUrl, 'wallet'),
+    href: withBioUtm(`${customerUrl}/carteira`, 'wallet'),
     label: t('bio.wallet.label'),
     hint: t('bio.wallet.hint'),
     icon: 'i-ph-wallet-bold',
-    tone: 'default',
+    tone: 'secondary',
+    cta: t('bio.wallet.cta'),
     newTab: false,
   }))
 
@@ -40,6 +43,7 @@ export function useBioLinks(): BioLinks {
     hint: t('bio.whatsapp.hint'),
     icon: 'i-ph-whatsapp-logo-bold',
     tone: 'default',
+    cta: null,
     newTab: true,
   }))
 
@@ -50,6 +54,7 @@ export function useBioLinks(): BioLinks {
     hint: t('bio.guide.hint'),
     icon: 'i-ph-book-open-bold',
     tone: 'default',
+    cta: null,
     newTab: false,
   }))
 
@@ -64,12 +69,14 @@ export function useBioLinks(): BioLinks {
         hint: t('bio.post.reading', { minutes: post.readingMinutes }),
         icon: 'i-ph-newspaper-bold',
         tone: 'default',
+        cta: null,
         newTab: false,
       })),
   )
 
   const sections = computed<BioLinkSection[]>(() => [
-    { id: 'main', title: null, items: [partner.value, wallet.value, whatsapp.value] },
+    { id: 'main', title: null, items: [partner.value, wallet.value] },
+    { id: 'contact', title: null, items: [whatsapp.value] },
     { id: 'learn', title: t('bio.sections.learn'), items: [guide.value, ...posts.value] },
   ])
 
