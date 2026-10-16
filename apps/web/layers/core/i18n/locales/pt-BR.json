@@ -531,6 +531,7 @@
   "home": {
     "title": "Início",
     "lead": "O que aconteceu na loja nos últimos {days} dias e quem vale chamar de volta.",
+    "subtitle": "Acompanhe o desempenho do seu clube e gerencie o dia a dia da sua loja.",
     "counterAction": "Ir para o Balcão",
     "stats": {
       "sales": "Vendas da semana",
@@ -540,6 +541,68 @@
     "week": {
       "customers": "nenhum cliente | 1 cliente | {count} clientes",
       "newCustomers": "nenhum cliente novo | 1 cliente novo | {count} clientes novos"
+    },
+    "indicators": {
+      "activeCustomers": "Clientes ativos",
+      "ofRegistered": "de {total} cadastrados",
+      "registered": "cadastrados",
+      "pointsRedeemed": "Pontos resgatados",
+      "stampsRedeemed": "Carimbos resgatados",
+      "deliveredRewards": "Prêmios entregues",
+      "pointsBalance": "Saldo de pontos (total)",
+      "stampsBalance": "Saldo de carimbos (total)",
+      "pointsAvailable": "pontos disponíveis",
+      "stampsAvailable": "carimbos disponíveis",
+      "thisMonth": "este mês",
+      "thisWeek": "esta semana",
+      "vsLastMonth": "vs. mês anterior",
+      "newThisMonth": "+{count} este mês",
+      "newThisWeek": "+{count} novos"
+    },
+    "recentCustomers": {
+      "title": "Últimos clientes",
+      "seeAll": "Ver todos",
+      "columns": {
+        "customer": "Cliente",
+        "points": "Pontos",
+        "stamps": "Carimbos",
+        "lastVisit": "Última visita"
+      },
+      "empty": "Nenhum cliente cadastrado ainda.",
+      "emptyHint": "Quando os clientes fizerem check-in no balcão, eles aparecerão aqui."
+    },
+    "shopSummary": {
+      "title": "Resumo da loja",
+      "details": "Detalhes",
+      "accumulatedPoints": "Pontos acumulados",
+      "accumulatedVisits": "Visitas acumuladas",
+      "last7Days": "Últimos 7 dias",
+      "today": "Hoje",
+      "noActivity": "Sem movimentação nos últimos 7 dias"
+    },
+    "activeCampaigns": {
+      "title": "Campanhas ativas",
+      "seeAll": "Ver todas",
+      "statusOngoing": "Em andamento",
+      "birthdayTitle": "Aniversário do clube",
+      "birthdayDesc": "Cliente ganha dobro de pontos na visita durante o mês do aniversário.",
+      "welcomeTitle": "Boas-vindas",
+      "welcomeDesc": "Cliente ganha {units} de boas-vindas no primeiro check-in.",
+      "surpriseTitle": "Dia surpresa",
+      "surpriseDesc": "Pontuação em dobro no dia especial da loja.",
+      "empty": "Nenhuma campanha ativa no momento.",
+      "emptyHint": "Ative regras de bônus ou envie campanhas para atrair clientes.",
+      "configureAction": "Configurar clube"
+    },
+    "upcomingRedemptions": {
+      "title": "Próximos resgates",
+      "seeAll": "Ver todos",
+      "statusAvailable": "Disponível",
+      "statusInProgress": "Em progresso",
+      "empty": "Nenhum resgate disponível no momento.",
+      "emptyHint": "Os prêmios prontos para entrega aparecerão aqui quando os clientes completarem a meta.",
+      "pointsRequired": "{count} pontos",
+      "stampsRequired": "{count} carimbos"
     },
     "lapsed": {
       "title": "Clientes sumidos",
