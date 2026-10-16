@@ -1,5 +1,5 @@
 {
-  "id": "a7084fea-4d1a-47fc-8810-0e8428396aba",
+  "id": "ba4ad0fb-876d-4849-a4f6-e4ab2d31bd02",
   "prevId": "7886b87d-5203-4e24-962b-fc421507f36c",
   "version": "7",
   "dialect": "postgresql",
@@ -500,26 +500,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "cta_kind": {
-          "name": "cta_kind",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "whatsapp": {
           "name": "whatsapp",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "whatsapp_message": {
-          "name": "whatsapp_message",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cta_url": {
-          "name": "cta_url",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -635,13 +617,9 @@
           "name": "shops_whatsapp_check",
           "value": "\"shops\".\"whatsapp\" IS NULL OR \"shops\".\"whatsapp\" ~ '^[1-9]{2}9[0-9]{8}$'"
         },
-        "shops_cta_kind_check": {
-          "name": "shops_cta_kind_check",
-          "value": "\"shops\".\"cta_kind\" IS NULL OR \"shops\".\"cta_kind\" IN ('whatsapp', 'url')"
-        },
-        "shops_cta_modes_check": {
-          "name": "shops_cta_modes_check",
-          "value": "COALESCE((\"shops\".\"cta_kind\" IS NULL AND \"shops\".\"whatsapp\" IS NULL AND \"shops\".\"cta_url\" IS NULL AND \"shops\".\"whatsapp_message\" IS NULL AND \"shops\".\"cta_label\" IS NULL)\n        OR (\"shops\".\"cta_kind\" = 'whatsapp' AND \"shops\".\"whatsapp\" IS NOT NULL AND \"shops\".\"cta_url\" IS NULL\n          AND (\"shops\".\"whatsapp_message\" IS NULL OR char_length(\"shops\".\"whatsapp_message\") BETWEEN 1 AND 300)\n          AND (\"shops\".\"cta_label\" IS NULL OR char_length(\"shops\".\"cta_label\") BETWEEN 1 AND 24))\n        OR (\"shops\".\"cta_kind\" = 'url' AND \"shops\".\"cta_url\" ~ '^https://' AND char_length(\"shops\".\"cta_url\") <= 500\n          AND \"shops\".\"whatsapp\" IS NULL AND \"shops\".\"whatsapp_message\" IS NULL\n          AND char_length(\"shops\".\"cta_label\") BETWEEN 1 AND 24), false)"
+        "shops_cta_label_check": {
+          "name": "shops_cta_label_check",
+          "value": "\"shops\".\"cta_label\" IS NULL OR (\"shops\".\"whatsapp\" IS NOT NULL AND char_length(\"shops\".\"cta_label\") BETWEEN 1 AND 24)"
         }
       },
       "isRLSEnabled": false
@@ -1410,6 +1388,38 @@
           "onUpdate": "no action"
         }
       },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.otp_channel_choices": {
+      "name": "otp_channel_choices",
+      "schema": "",
+      "columns": {
+        "phone_hash": {
+          "name": "phone_hash",
+          "type": "bytea",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "channel": {
+          "name": "channel",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "chosen_at": {
+          "name": "chosen_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},

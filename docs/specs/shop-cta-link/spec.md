@@ -79,7 +79,7 @@ regras do item 6). Testes cobrindo cada recusa e `www.` / `HTTPS://` / espaço e
 
 ## API (`apps/api`)
 
-- Migration `0026_shop_cta_link` (gerar com `pnpm --filter @lagoa/api db:generate` e conferir):
+- Migration `0027_shop_cta_link` (gerar com `pnpm --filter @lagoa/api db:generate` e conferir):
   - colunas `cta_kind text`, `cta_url text`, `whatsapp_message text` em `shops`;
   - `UPDATE shops SET cta_kind = 'whatsapp' WHERE whatsapp IS NOT NULL`;
   - troca `shops_cta_label_check` por um CHECK por modo:
@@ -169,7 +169,7 @@ alvos ≥ 44px), se o preview fica ao lado (desktop) ou abaixo dos campos, e o f
 
 ## Estado (2026-10-16, implementação)
 
-Passos 1 a 7 feitos na branch `claude/shop-cta-link-2f55e8`. Migration `0026_shop_cta_link` aplicada **só** no `lagoa_test` local
+Passos 1 a 7 feitos na branch `claude/shop-cta-link-2f55e8`. Migration `0027_shop_cta_link` aplicada **só** no `lagoa_test` local
 (container `lagoa-postgres`); produção não foi tocada e segue o `db:migrate:prod`.
 
 **Desvios do desenho, com o porquê:**
@@ -200,7 +200,7 @@ ambos `target="_blank"` e rótulo de leitor de tela distinto ("abre o WhatsApp" 
   Teste de integração: `HTTPS://Loja.com/Cardapio` salva como `https://loja.com/Cardapio`.
 - **Erro ao carregar** o botão aparece na mensagem da tela e não deixa salvar às cegas; `unauthorized` derruba a sessão.
 - `MOCK_STATE_VERSION` 9 → 10 (o formato de `contact` mudou).
-- **Ordem de deploy obrigatória: migration `0026` → API → web.** O web novo valida `contact` com `kind`: contra a API antiga, a
+- **Ordem de deploy obrigatória: migration `0027` → API → web.** O web novo valida `contact` com `kind`: contra a API antiga, a
   Carteira/Descobrir de lojas com WhatsApp falhariam. Entre a migration e a API nova, o PUT antigo (grava `whatsapp` sem `cta_kind`)
   recusa no CHECK: manter a janela curta.
 - Segunda rodada (revisão do PR): `contact` inválido vira "sem botão" só da loja; corte de texto por code point e `whatsappLink` troca
@@ -213,7 +213,7 @@ ambos `target="_blank"` e rótulo de leitor de tela distinto ("abre o WhatsApp" 
 
 O contrato de `ShopSummary.contact` e de `GET/PUT /merchant/shop/contact` mudou sem fase de compatibilidade. **Ordem obrigatória:**
 
-1. **Migration `0026`** em produção, só pelo `db:migrate:prod` (teste primeiro, como manda o CLAUDE.md).
+1. **Migration `0027`** em produção, só pelo `db:migrate:prod` (teste primeiro, como manda o CLAUDE.md).
 2. **Deploy da API.**
 3. **Deploy do web.**
 
@@ -224,3 +224,10 @@ Por quê:
   `ShopSummarySchema` agora trata `contact` fora do contrato (formato antigo `{ whatsapp, ctaLabel }`, sem `kind`) como "sem botão" **só daquela
   loja** (`.catch(undefined)`), então Descobrir e Carteira não caem: as lojas com WhatsApp só ficam sem o botão até a API nova subir.
 - **Migration com a API antiga no ar**: o PUT antigo grava `whatsapp` sem `cta_kind` e o CHECK recusa. Manter a janela entre os passos 1 e 2 curta.
+
+### Renumeração (0026 → 0027)
+
+A produção já tem outra `0026` (`0026_otp_channel_choices`, PR 74, aplicada em 14/10), então a paridade recusou a nossa. O PR traz só a migration, o snapshot
+e a tabela `otp_channel_choices` (schema `sms.ts`) daquela `0026`, na versão do commit `c8febd5` de `origin/feat/whatsapp-otp` (a que a produção aplicou, hash
+`3517efac…`); a nossa virou `0027_shop_cta_link`. **Atenção:** o commit `552e9e5` dessa branch editou depois a `0026` já aplicada (acrescentou `ENABLE ROW LEVEL SECURITY`),
+o que muda o hash e a paridade vai recusar quando ela for integrada; precisa virar uma migration nova lá.

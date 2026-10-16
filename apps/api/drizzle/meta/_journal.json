@@ -187,8 +187,15 @@
     {
       "idx": 26,
       "version": "7",
-      "when": 1792183330108,
-      "tag": "0026_shop_cta_link",
+      "when": 1791950106804,
+      "tag": "0026_otp_channel_choices",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1792187473698,
+      "tag": "0027_shop_cta_link",
       "breakpoints": true
     }
   ]
