@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ShopContactSchema, ShopContactUpdateSchema, ShopPublicContactSchema } from './shop'
+import { ShopContactSchema, ShopContactUpdateSchema, ShopPublicContactSchema, ShopSummarySchema } from './shop'
 
 const whatsapp = { kind: 'whatsapp', whatsapp: '67991234567', message: null, ctaLabel: null }
 const url = { kind: 'url', url: 'https://loja.com/x', ctaLabel: 'Comprar agora' }
@@ -17,6 +17,25 @@ describe('ShopPublicContactSchema', () => {
   })
   it('caps the whatsapp message', () => {
     expect(ShopPublicContactSchema.safeParse({ ...whatsapp, message: 'a'.repeat(301) }).success).toBe(false)
+  })
+})
+
+describe('ShopSummarySchema', () => {
+  const summary = {
+    id: 'shop_a',
+    name: 'Loja',
+    category: 'bakery',
+    neighborhood: 'Centro',
+    addressLine: 'Rua A',
+    program: { unit: 'stamp', target: 10, rewardTitle: 'Pão', earnRate: { per: 'visit', units: 1 }, welcomeUnits: 0 },
+  }
+  it('keeps a valid card button', () => {
+    expect(ShopSummarySchema.parse({ ...summary, contact: url }).contact).toEqual(url)
+  })
+  it('drops only the button of a shop whose contact is not valid (old API shape), never the whole list', () => {
+    const parsed = ShopSummarySchema.parse({ ...summary, contact: { whatsapp: '67991234567', ctaLabel: null } })
+    expect(parsed.contact).toBeUndefined()
+    expect(parsed.name).toBe('Loja')
   })
 })
 

@@ -1,7 +1,9 @@
 import { SHOP_CTA_LABEL_MAX_LENGTH, SHOP_WHATSAPP_MESSAGE_MAX_LENGTH } from '#shared/constants/domain'
 import { PhoneNumberSchema } from '#shared/schemas/phone'
-import { type ShopPublicContact, ShopContactUpdateSchema } from '#shared/schemas/shop'
-import { shopContactHref } from '#shared/utils/shopContactHref'
+import type { ShopPublicContact } from '#shared/schemas/shop'
+import { canonicalShopCtaUrl } from '#shared/utils/shopCtaUrl'
+import { shopContactHref, shopContactIcon } from '#shared/utils/shopContactHref'
+import { truncateCodePoints } from '#shared/utils/truncate'
 import type {
   ShopContactForm,
   ShopContactFormErrorCode,
@@ -47,18 +49,18 @@ export function formFromContact(contact: ShopPublicContact | null): ShopContactF
   }
 }
 
-/** O que o formulário vira para salvar; a URL passa pelo mesmo schema do BFF e da API. Texto e mensagem longos são cortados. */
+/** O que o formulário vira para salvar; texto e mensagem longos são cortados (por code point). */
 export function toContactUpdate(form: ShopContactForm): ShopContactUpdateResult {
-  const label = form.ctaLabel.trim().slice(0, SHOP_CTA_LABEL_MAX_LENGTH)
+  const label = truncateCodePoints(form.ctaLabel.trim(), SHOP_CTA_LABEL_MAX_LENGTH)
   if (form.kind === 'url') {
-    const parsed = ShopContactUpdateSchema.safeParse({ contact: { kind: 'url', url: form.url, ctaLabel: label || 'x' } })
-    if (!parsed.success) return { ok: false, code: 'invalidUrl' }
+    const url = canonicalShopCtaUrl(form.url)
+    if (url === null) return { ok: false, code: 'invalidUrl' }
     if (label === '') return { ok: false, code: 'missingLabel' }
-    return { ok: true, update: parsed.data }
+    return { ok: true, update: { contact: { kind: 'url', url, ctaLabel: label } } }
   }
   const whatsapp = PhoneNumberSchema.safeParse(whatsappDigits(form.whatsapp))
   if (!whatsapp.success) return { ok: false, code: 'invalidWhatsapp' }
-  const message = form.message.trim().slice(0, SHOP_WHATSAPP_MESSAGE_MAX_LENGTH)
+  const message = truncateCodePoints(form.message.trim(), SHOP_WHATSAPP_MESSAGE_MAX_LENGTH)
   return {
     ok: true,
     update: { contact: { kind: 'whatsapp', whatsapp: whatsapp.data, message: message || null, ctaLabel: label || null } },
@@ -72,11 +74,13 @@ export function toContactPreview(form: ShopContactForm, whatsappDefaultLabel: st
   const { contact } = result.update
   return {
     label: contact.ctaLabel ?? whatsappDefaultLabel,
-    icon: contact.kind === 'whatsapp' ? 'i-ph-whatsapp-logo' : 'i-ph-arrow-square-out',
+    icon: shopContactIcon(contact),
     href: shopContactHref(contact),
   }
 }
 
+export const SHOP_CONTACT_FORM_ERROR_CODES = ['invalidWhatsapp', 'invalidUrl', 'missingLabel'] as const
+
 export function isFormErrorCode(code: string): code is ShopContactFormErrorCode {
-  return code === 'invalidWhatsapp' || code === 'invalidUrl' || code === 'missingLabel'
+  return SHOP_CONTACT_FORM_ERROR_CODES.some((known) => known === code)
 }

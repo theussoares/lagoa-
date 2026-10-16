@@ -13,17 +13,10 @@ const { t } = useI18n()
   <div class="flex flex-col gap-3">
     <p class="text-toned">{{ t('merchantShopLink.preview.lead') }}</p>
     <div v-if="preview" class="flex flex-col gap-3">
-      <!-- Mesmo botão do card do cliente, sem clique: aqui só se vê. -->
-      <ActionButton
-        role="primary"
-        block
-        disabled
-        tabindex="-1"
-        :icon="preview.icon"
-        trailing-icon="i-ph-arrow-up-right"
-        :label="preview.label"
-        class="min-h-11"
-      />
+      <!-- Mesmo botão do card do cliente (não apagado): `inert` tira o clique e o foco, aqui só se vê. -->
+      <div inert aria-hidden="true">
+        <ActionButton role="primary" block :icon="preview.icon" trailing-icon="i-ph-arrow-up-right" :label="preview.label" class="min-h-11" />
+      </div>
       <UButton
         :to="preview.href"
         target="_blank"

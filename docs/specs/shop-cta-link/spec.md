@@ -203,5 +203,24 @@ ambos `target="_blank"` e rótulo de leitor de tela distinto ("abre o WhatsApp" 
 - **Ordem de deploy obrigatória: migration `0026` → API → web.** O web novo valida `contact` com `kind`: contra a API antiga, a
   Carteira/Descobrir de lojas com WhatsApp falhariam. Entre a migration e a API nova, o PUT antigo (grava `whatsapp` sem `cta_kind`)
   recusa no CHECK: manter a janela curta.
+- Segunda rodada (revisão do PR): `contact` inválido vira "sem botão" só da loja; corte de texto por code point e `whatsappLink` troca
+  surrogate solto por U+FFFD (antes `encodeURIComponent` lançava); prévia sem `disabled` (mesmo visual do card, `inert`); ícone por modo
+  em `shopContactIcon` (shared); códigos de erro do form derivados de um `as const`.
 - Não feito (decisão): confirmação em "Tirar o botão" (é reversível em segundos: o lojista refaz o botão); sem teste de composável
   nem de BFF `contact.put` (cobertos pelos testes de schema e do mock; `useAsyncResult` exige montagem Nuxt).
+
+## Deploy
+
+O contrato de `ShopSummary.contact` e de `GET/PUT /merchant/shop/contact` mudou sem fase de compatibilidade. **Ordem obrigatória:**
+
+1. **Migration `0026`** em produção, só pelo `db:migrate:prod` (teste primeiro, como manda o CLAUDE.md).
+2. **Deploy da API.**
+3. **Deploy do web.**
+
+Por quê:
+
+- **API antes da migration** quebra o `SELECT` do catálogo (as colunas `cta_kind`, `cta_url`, `whatsapp_message` não existem).
+- **Web antes da API** quebra a tela do painel (o `GET /merchant/shop/contact` antigo não vem no envelope `{ contact }`). No cliente, o
+  `ShopSummarySchema` agora trata `contact` fora do contrato (formato antigo `{ whatsapp, ctaLabel }`, sem `kind`) como "sem botão" **só daquela
+  loja** (`.catch(undefined)`), então Descobrir e Carteira não caem: as lojas com WhatsApp só ficam sem o botão até a API nova subir.
+- **Migration com a API antiga no ar**: o PUT antigo grava `whatsapp` sem `cta_kind` e o CHECK recusa. Manter a janela entre os passos 1 e 2 curta.

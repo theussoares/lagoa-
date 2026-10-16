@@ -1,10 +1,10 @@
-import { contactFromColumns } from './shop-contact-columns'
 import { Logger } from '@nestjs/common'
 import { BonusRulesSchema, type ProgramMode } from '#shared/schemas/program'
 import type { ShopCategory } from '#shared/schemas/shop'
 import { programs, shops } from '../database/schema'
 import { toExpirationPolicy, toProgramRules } from '../programs/program-rules.mapper'
 import type { CatalogShop } from './catalog-shop'
+import { contactFromColumns } from './shop-contact-columns'
 
 /** Colunas de `shops` + `programs` que formam um `CatalogShop`; entram em qualquer select com join. */
 export const CATALOG_COLUMNS = {

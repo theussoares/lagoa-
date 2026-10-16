@@ -1,4 +1,5 @@
 import type { ShopContactUpdate, ShopPublicContact } from '#shared/schemas/shop'
+import type { SHOP_CONTACT_FORM_ERROR_CODES } from '../utils/shopContactForm'
 import type { ShopContactError } from '../services/ShopContactService'
 
 export type ShopContactKind = ShopPublicContact['kind']
@@ -13,7 +14,7 @@ export interface ShopContactForm {
   readonly ctaLabel: string
 }
 
-export type ShopContactFormErrorCode = 'invalidWhatsapp' | 'invalidUrl' | 'missingLabel'
+export type ShopContactFormErrorCode = (typeof SHOP_CONTACT_FORM_ERROR_CODES)[number]
 
 export type ShopContactUpdateResult =
   | { readonly ok: true; readonly update: ShopContactUpdate }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { PhoneNumberSchema } from '#shared/schemas/phone'
-import { ctaLabelPresets, emptyContactForm, formFromContact, formatWhatsapp, toContactPreview, toContactUpdate, whatsappDigits } from '../app/utils/shopContactForm'
+import { ctaLabelPresets, isFormErrorCode, emptyContactForm, formFromContact, formatWhatsapp, toContactPreview, toContactUpdate, whatsappDigits } from '../app/utils/shopContactForm'
 
 describe('whatsappDigits', () => {
   it('keeps only the digits and drops the country code of a pasted number', () => {
@@ -75,6 +75,12 @@ describe('toContactUpdate', () => {
     expect(toContactUpdate({ ...urlForm, ctaLabel: '   ' })).toEqual({ ok: false, code: 'missingLabel' })
   })
 
+  it('cuts message and text by code point, so an emoji is never split', () => {
+    const emoji = toContactUpdate({ ...whatsappForm, message: '😀'.repeat(301), ctaLabel: '😀'.repeat(30) })
+    expect(emoji.ok && emoji.update.contact?.kind === 'whatsapp' && Array.from(emoji.update.contact.message ?? '')).toHaveLength(300)
+    expect(emoji.ok && Array.from(emoji.update.contact?.ctaLabel ?? '')).toHaveLength(24)
+  })
+
   it('cuts the text at the limit instead of failing', () => {
     const result = toContactUpdate({ ...urlForm, ctaLabel: 'x'.repeat(40) })
     expect(result.ok && result.update.contact?.ctaLabel).toHaveLength(24)
@@ -100,6 +106,13 @@ describe('toContactPreview', () => {
       icon: 'i-ph-arrow-square-out',
       href: 'https://www.loja.com.br/cardapio',
     })
+  })
+})
+
+describe('isFormErrorCode', () => {
+  it('knows exactly the form error codes', () => {
+    expect(isFormErrorCode('invalidUrl')).toBe(true)
+    expect(isFormErrorCode('notFound')).toBe(false)
   })
 })
 

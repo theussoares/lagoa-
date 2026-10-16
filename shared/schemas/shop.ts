@@ -128,7 +128,8 @@ export const ShopSchema = z.object({
   addressLine: z.string().min(1).max(SHOP_ADDRESS_MAX_LENGTH),
   status: ShopStatusSchema,
   showcase: ShopShowcaseSchema.optional(),
-  contact: ShopPublicContactSchema.optional(),
+  /** Contato fora do contrato (ex.: formato antigo durante o deploy) some só desta loja, nunca derruba a lista. */
+  contact: ShopPublicContactSchema.optional().catch(undefined),
 })
 export type Shop = z.infer<typeof ShopSchema>
 

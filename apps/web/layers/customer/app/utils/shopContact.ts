@@ -1,5 +1,5 @@
 import type { ShopSummary } from '#shared/schemas/shop'
-import { shopContactHref } from '#shared/utils/shopContactHref'
+import { shopContactHref, shopContactIcon } from '#shared/utils/shopContactHref'
 import type { ExternalLinkModel } from '#layers/ui/app/types/discover'
 import type { Translate } from '#layers/core/app/types/i18n'
 
@@ -13,6 +13,6 @@ export function shopContactLink(shop: Pick<ShopSummary, 'name' | 'contact'>, t: 
     label,
     accessibleLabel: t(isWhatsapp ? 'shopContact.accessibleLabel' : 'shopContact.accessibleLabelUrl', { label, shop: shop.name }),
     href: shopContactHref(contact),
-    icon: isWhatsapp ? 'i-ph-whatsapp-logo' : 'i-ph-arrow-square-out',
+    icon: shopContactIcon(contact),
   }
 }
