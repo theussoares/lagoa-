@@ -26,7 +26,7 @@ const TONES = {
     :href="link.href"
     :target="link.newTab ? '_blank' : undefined"
     rel="noopener"
-    class="link-button group flex gap-3.5 rounded-3xl px-4 py-3 text-left transition-[transform,background-color,filter] duration-(--lagoa-dur-base) ease-(--ease-elegant) active:scale-[0.985]"
+    class="link-button group flex gap-3.5 rounded-xl px-4 py-3 text-left transition-[transform,background-color,filter] duration-(--lagoa-dur-base) ease-(--ease-elegant) active:scale-[0.985]"
     :class="[TONES[link.tone], FOCUS, link.cta ? 'flex-wrap items-start' : 'items-center']"
     @click="$emit('select', link)"
   >
