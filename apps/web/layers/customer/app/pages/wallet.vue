@@ -19,6 +19,19 @@ const screen = useWalletScreen()
         <WalletCardsContainer :screen="screen" />
       </section>
 
+      <WalletInstallInvite
+        v-if="screen.installInvite.platform"
+        :platform="screen.installInvite.platform"
+        :title="t('install.title')"
+        :lead="screen.installInvite.platform === 'ios' ? t('install.leadIos') : t('install.lead')"
+        :action="screen.installInvite.platform === 'ios' ? t('install.actionIos') : t('install.action')"
+        :dismiss-label="t('install.dismiss')"
+        :steps-title="t('install.stepsTitle')"
+        :steps="[t('install.steps.share'), t('install.steps.add'), t('install.steps.confirm')]"
+        @install="screen.installInvite.install()"
+        @dismiss="screen.installInvite.dismiss()"
+      />
+
       <section v-if="screen.cards.length > 0 || screen.ledger.length > 0" class="flex flex-col gap-3" aria-labelledby="ledger-title">
         <h2 id="ledger-title" class="type-h2">
           {{ t('wallet.ledgerTitle') }}
