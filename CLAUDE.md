@@ -136,7 +136,7 @@ Onde ele fala em "CLAUDE.md", leia este arquivo de regras.
 | Convite para guardar na tela inicial | `installInvite` (`useInstallPrompt`) |
 | Carimbar (nome do check-in na tela do cliente) | texto de UI; código segue `checkIn` |
 | Sem limite de visitas (modo da janela, não há antifraude) | `unlimited` (`cooldownMode`) |
-| WhatsApp e texto do botão nos cards da loja | `shopContact` (`whatsapp`, `ctaLabel`) |
+| Botão do card da loja (WhatsApp com mensagem pronta ou link de um site), Descobrir + Carteira | `shopContact` (`kind: 'whatsapp' \| 'url'`, `whatsapp`, `message`, `url`, `ctaLabel`) |
 | Uma vez por dia (vira à meia-noite) | `calendarDay` (`cooldownMode`; o outro modo é `rolling`, horas corridas) |
 | Regras bônus              | `bonusRules` (`welcomeBonus`, `birthdayMultiplier`, `referralBonus`, `surpriseDay`) |
 | Expiração                 | `expirationPolicy`             |

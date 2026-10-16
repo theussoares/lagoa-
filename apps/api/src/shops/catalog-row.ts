@@ -4,6 +4,7 @@ import type { ShopCategory } from '#shared/schemas/shop'
 import { programs, shops } from '../database/schema'
 import { toExpirationPolicy, toProgramRules } from '../programs/program-rules.mapper'
 import type { CatalogShop } from './catalog-shop'
+import { contactFromColumns } from './shop-contact-columns'
 
 /** Colunas de `shops` + `programs` que formam um `CatalogShop`; entram em qualquer select com join. */
 export const CATALOG_COLUMNS = {
@@ -14,7 +15,10 @@ export const CATALOG_COLUMNS = {
   addressLine: shops.addressLine,
   logoPath: shops.logoPath,
   bannerPath: shops.bannerPath,
+  ctaKind: shops.ctaKind,
   whatsapp: shops.whatsapp,
+  whatsappMessage: shops.whatsappMessage,
+  ctaUrl: shops.ctaUrl,
   ctaLabel: shops.ctaLabel,
   mode: programs.mode,
   earnUnits: programs.earnUnits,
@@ -33,7 +37,10 @@ export interface CatalogRow {
   readonly addressLine: string
   readonly logoPath: string | null
   readonly bannerPath: string | null
+  readonly ctaKind: string | null
   readonly whatsapp: string | null
+  readonly whatsappMessage: string | null
+  readonly ctaUrl: string | null
   readonly ctaLabel: string | null
   readonly mode: ProgramMode
   readonly earnUnits: number
@@ -66,8 +73,7 @@ export function toCatalogShop(row: CatalogRow): CatalogShop | null {
     addressLine: row.addressLine,
     logoPath: row.logoPath,
     bannerPath: row.bannerPath,
-    whatsapp: row.whatsapp,
-    ctaLabel: row.ctaLabel,
+    contact: contactFromColumns(row),
     program: { rules: rules.value, rewardTitle: row.rewardTitle, bonusRules: bonusRules.data, expiration: expiration.value },
   }
 }

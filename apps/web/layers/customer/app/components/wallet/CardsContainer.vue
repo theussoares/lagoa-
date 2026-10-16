@@ -54,9 +54,10 @@ const filterOptions = (screen: WalletScreen) =>
           role="secondary"
           :to="card.contact.href"
           target="_blank"
+          rel="noopener noreferrer nofollow"
           external
           block
-          icon="i-ph-whatsapp-logo"
+          :icon="card.contact.icon"
           :label="card.contact.label"
           :aria-label="card.contact.accessibleLabel"
         />

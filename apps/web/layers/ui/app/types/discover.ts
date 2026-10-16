@@ -58,7 +58,7 @@ export interface ShopTeaserModel {
   readonly showcase: ShopShowcaseModel
   /** Link para o mapa: o card leva até a loja, que é onde o cartão abre. */
   readonly directions: ExternalLinkModel
-  /** Botão de WhatsApp com o texto que a loja escolheu; `null` sem WhatsApp cadastrado. */
+  /** Botão do card (WhatsApp ou link) com o texto que a loja escolheu; `null` sem botão cadastrado. */
   readonly contact: ExternalLinkModel | null
 }
 
@@ -67,6 +67,8 @@ export interface ExternalLinkModel {
   /** Nome completo para leitor de tela: "Como chegar: Barbearia Navalha (abre o mapa)". */
   readonly accessibleLabel: string
   readonly href: string
+  /** Ícone do botão quando o link é um botão de ação (o do card da loja muda com o destino). */
+  readonly icon?: string
 }
 
 export interface KnownShopModel {

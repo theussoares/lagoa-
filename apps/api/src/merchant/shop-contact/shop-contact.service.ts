@@ -7,7 +7,7 @@ import { ShopContactRepository } from './shop-contact.repository'
 
 type NotFound = ErrorOf<'notFound'>
 
-/** WhatsApp e texto do botão dos cards da loja. Vale também aguardando aprovação, como as fotos. */
+/** Botão dos cards da loja (WhatsApp ou link). Vale também aguardando aprovação, como as fotos. */
 @Injectable()
 export class ShopContactService {
   constructor(private readonly contacts: ShopContactRepository) {}

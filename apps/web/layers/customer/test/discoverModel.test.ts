@@ -72,19 +72,41 @@ describe('toShopTeaserModel', () => {
     })
   })
 
-  it('has no WhatsApp button unless the shop registered a number', () => {
+  it('has no card button unless the shop registered one', () => {
     expect(toShopTeaserModel(shop('shop_b'), new Set(), t).contact).toBeNull()
   })
 
-  it('shows the WhatsApp button with the text the shop chose, or the default text', () => {
-    const withLabel = ShopSummarySchema.parse({ ...shop('shop_b'), contact: { whatsapp: '67991234567', ctaLabel: 'Agendar agora' } })
+  it('shows the WhatsApp button with the text the shop chose, or the default text, opening the ready message', () => {
+    const withLabel = ShopSummarySchema.parse({
+      ...shop('shop_b'),
+      contact: { kind: 'whatsapp', whatsapp: '67991234567', message: 'Oi! Quero agendar', ctaLabel: 'Agendar agora' },
+    })
     expect(toShopTeaserModel(withLabel, new Set(), t).contact).toEqual({
       label: 'Agendar agora',
       accessibleLabel: 'shopContact.accessibleLabel label=Agendar agora shop=Loja shop_b',
-      href: 'https://wa.me/5567991234567',
+      href: 'https://wa.me/5567991234567?text=Oi!%20Quero%20agendar',
+      icon: 'i-ph-whatsapp-logo',
     })
-    const withoutLabel = ShopSummarySchema.parse({ ...shop('shop_b'), contact: { whatsapp: '67991234567', ctaLabel: null } })
-    expect(toShopTeaserModel(withoutLabel, new Set(), t).contact?.label).toBe('shopContact.defaultLabel')
+    const withoutLabel = ShopSummarySchema.parse({
+      ...shop('shop_b'),
+      contact: { kind: 'whatsapp', whatsapp: '67991234567', message: null, ctaLabel: null },
+    })
+    const model = toShopTeaserModel(withoutLabel, new Set(), t).contact
+    expect(model?.label).toBe('shopContact.defaultLabel')
+    expect(model?.href).toBe('https://wa.me/5567991234567')
+  })
+
+  it('shows the link button pointing at the shop site, saying it opens another site', () => {
+    const withUrl = ShopSummarySchema.parse({
+      ...shop('shop_b'),
+      contact: { kind: 'url', url: 'https://loja.com/cardapio', ctaLabel: 'Ver cardápio' },
+    })
+    expect(toShopTeaserModel(withUrl, new Set(), t).contact).toEqual({
+      label: 'Ver cardápio',
+      accessibleLabel: 'shopContact.accessibleLabelUrl label=Ver cardápio shop=Loja shop_b',
+      href: 'https://loja.com/cardapio',
+      icon: 'i-ph-arrow-square-out',
+    })
   })
 
   it('uses a ruler for points and has no welcome line when the bonus is off', () => {

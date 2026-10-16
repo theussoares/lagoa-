@@ -1,6 +1,5 @@
 import { welcomeUnits } from '#shared/domain/bonusRules'
 import { earnRateOf, unitOf } from '#shared/domain/programStrategies'
-import { PhoneNumberSchema } from '#shared/schemas/phone'
 import { type ShopSummary, ShopSummarySchema } from '#shared/schemas/shop'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
@@ -17,12 +16,6 @@ function showcaseOf(shop: CatalogShop, supabaseUrl: string): { showcase?: { imag
   return Object.keys(showcase).length === 0 ? {} : { showcase }
 }
 
-/** Botão de WhatsApp do card: só com um número válido; número fora do formato some do card em vez de derrubar a loja. */
-function contactOf(shop: CatalogShop): { contact?: { whatsapp: string; ctaLabel: string | null } } {
-  const whatsapp = PhoneNumberSchema.safeParse(shop.whatsapp)
-  return whatsapp.success ? { contact: { whatsapp: whatsapp.data, ctaLabel: shop.ctaLabel } } : {}
-}
-
 export function toShopSummary(shop: CatalogShop, supabaseUrl: string): Result<ShopSummary, ErrorOf<'invalidProgram'>> {
   const { rules, rewardTitle, bonusRules } = shop.program
   const parsed = ShopSummarySchema.safeParse({
@@ -32,7 +25,7 @@ export function toShopSummary(shop: CatalogShop, supabaseUrl: string): Result<Sh
     neighborhood: shop.neighborhood,
     addressLine: shop.addressLine,
     ...showcaseOf(shop, supabaseUrl),
-    ...contactOf(shop),
+    ...(shop.contact !== null && { contact: shop.contact }),
     program: {
       unit: unitOf(rules),
       target: rules.target,
