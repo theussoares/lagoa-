@@ -119,6 +119,10 @@ export const SHOP_NEIGHBORHOOD_MAX_LENGTH = 40
 export const SHOP_ADDRESS_MAX_LENGTH = 100
 /** Texto do botão de WhatsApp nos cards da loja ("Agendar agora"). */
 export const SHOP_CTA_LABEL_MAX_LENGTH = 24
+/** Link do botão do card: o CHECK do banco e o schema recusam acima disto. */
+export const SHOP_CTA_URL_MAX_LENGTH = 500
+/** Mensagem que já aparece escrita no WhatsApp do cliente (opcional). */
+export const SHOP_WHATSAPP_MESSAGE_MAX_LENGTH = 300
 /** Foto da loja (vitrine do Descobrir): o app reduz antes de enviar; o servidor recusa acima disto (o bucket aceita 2 MB). */
 export const SHOP_PHOTO_MAX_BYTES = 1_000_000
 /** Maior lado do banner depois da redução no navegador, em pixels. */

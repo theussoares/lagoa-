@@ -1,6 +1,6 @@
 import type { ShopContact, ShopContactUpdate } from '#shared/schemas/shop'
 
-/** Sem WhatsApp não há botão: o texto do botão não fica guardado sozinho (o CHECK do banco também exige). */
+/** O botão que chega já validado pelo schema (modo coerente, URL https pública); o banco confere de novo no CHECK. */
 export function planShopContact(update: ShopContactUpdate): ShopContact {
-  return update.whatsapp === null ? { whatsapp: null, ctaLabel: null } : { whatsapp: update.whatsapp, ctaLabel: update.ctaLabel }
+  return { contact: update.contact }
 }

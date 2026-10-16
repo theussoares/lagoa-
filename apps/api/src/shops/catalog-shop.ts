@@ -1,3 +1,4 @@
+import type { ShopPublicContact } from '#shared/schemas/shop'
 import type { BonusRules, ExpirationPolicy, ProgramRules } from '#shared/schemas/program'
 import type { ShopCategory } from '#shared/schemas/shop'
 
@@ -10,8 +11,8 @@ export interface CatalogShop {
   readonly addressLine: string
   readonly logoPath: string | null
   readonly bannerPath: string | null
-  readonly whatsapp: string | null
-  readonly ctaLabel: string | null
+  /** Botão do card já validado; linha fora do contrato vira `null`. */
+  readonly contact: ShopPublicContact | null
   readonly program: {
     readonly rules: ProgramRules
     readonly rewardTitle: string

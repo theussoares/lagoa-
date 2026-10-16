@@ -183,6 +183,13 @@
       "when": 1791856880263,
       "tag": "0025_shop_contact",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1792183330108,
+      "tag": "0026_shop_cta_link",
+      "breakpoints": true
     }
   ]
 }

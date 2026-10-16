@@ -3,12 +3,15 @@ import { LoyaltyCardIdSchema, ShopIdSchema } from './ids'
 import { EarnRateSchema, ProgramUnitSchema } from './program'
 import { readableCodeSchema } from './common'
 import { PhoneNumberSchema } from './phone'
+import { isPublicHttpsUrl, normalizeShopCtaUrl } from '../utils/shopCtaUrl'
 import {
   CHECK_IN_CODE_INPUT_MAX_LENGTH,
   CHECK_IN_CODE_LENGTH,
   REWARD_TITLE_MAX_LENGTH,
   SHOP_ADDRESS_MAX_LENGTH,
   SHOP_CTA_LABEL_MAX_LENGTH,
+  SHOP_CTA_URL_MAX_LENGTH,
+  SHOP_WHATSAPP_MESSAGE_MAX_LENGTH,
   SHOP_NAME_MAX_LENGTH,
   SHOP_NEIGHBORHOOD_MAX_LENGTH,
   SHOP_PHOTO_MAX_BYTES,
@@ -58,28 +61,49 @@ export const ShopPhotosSchema = z.object({ logoUrl: z.string().url().nullable(),
 export type ShopPhotos = z.infer<typeof ShopPhotosSchema>
 
 const CtaLabelSchema = z.string().trim().min(1).max(SHOP_CTA_LABEL_MAX_LENGTH)
+const WhatsappMessageSchema = z.string().trim().min(1).max(SHOP_WHATSAPP_MESSAGE_MAX_LENGTH)
+const StoredCtaUrlSchema = z.string().max(SHOP_CTA_URL_MAX_LENGTH).refine(isPublicHttpsUrl)
+/** O que o lojista digita: ganha `https://` se vier sem esquema e só passa se for um site público. */
+const TypedCtaUrlSchema = z
+  .string()
+  .transform(normalizeShopCtaUrl)
+  .pipe(StoredCtaUrlSchema)
 
 /**
- * Contato público da loja nos cards (Descobrir e Carteira): o WhatsApp do negócio que o lojista escolheu divulgar e o
- * texto do botão ("Agendar agora", "Pedir agora"). Não é o celular de nenhum cliente.
+ * Botão do card da loja (Descobrir e Carteira). Um por loja, em um de dois modos: WhatsApp do negócio (com mensagem
+ * pronta opcional; `ctaLabel` `null` usa o texto padrão) ou link de um site (o texto do botão é obrigatório). O
+ * WhatsApp é o número do negócio, não de cliente.
  */
-export const ShopContactSchema = z.object({
-  whatsapp: PhoneNumberSchema.nullable(),
-  /** `null` = o botão usa o texto padrão ("Falar no WhatsApp"). Sem WhatsApp não há botão, então fica `null`. */
-  ctaLabel: CtaLabelSchema.nullable(),
-})
+export const ShopPublicContactSchema = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('whatsapp'),
+    whatsapp: PhoneNumberSchema,
+    message: WhatsappMessageSchema.nullable(),
+    ctaLabel: CtaLabelSchema.nullable(),
+  }),
+  z.object({ kind: z.literal('url'), url: StoredCtaUrlSchema, ctaLabel: CtaLabelSchema }),
+])
+export type ShopPublicContact = z.infer<typeof ShopPublicContactSchema>
+
+/** O que o painel lê: o botão ou nenhum, sempre dentro de um objeto (corpo JSON `null` não passa pelo servidor). */
+export const ShopContactSchema = z.object({ contact: ShopPublicContactSchema.nullable() })
 export type ShopContact = z.infer<typeof ShopContactSchema>
 
-/** O que o lojista salva em Configurações. */
+/** O que o lojista salva em "Botão do card"; `contact: null` tira o botão. */
 export const ShopContactUpdateSchema = z.strictObject({
-  whatsapp: PhoneNumberSchema.nullable(),
-  ctaLabel: CtaLabelSchema.nullable(),
+  contact: z
+    .discriminatedUnion('kind', [
+      z.strictObject({
+        kind: z.literal('whatsapp'),
+        whatsapp: PhoneNumberSchema,
+        message: WhatsappMessageSchema.nullable(),
+        ctaLabel: CtaLabelSchema.nullable(),
+      }),
+      z.strictObject({ kind: z.literal('url'), url: TypedCtaUrlSchema, ctaLabel: CtaLabelSchema }),
+    ])
+    .nullable(),
 })
 export type ShopContactUpdate = z.infer<typeof ShopContactUpdateSchema>
-
-/** O que o card mostra: só existe com WhatsApp cadastrado. */
-export const ShopPublicContactSchema = z.object({ whatsapp: PhoneNumberSchema, ctaLabel: CtaLabelSchema.nullable() })
-export type ShopPublicContact = z.infer<typeof ShopPublicContactSchema>
 
 /** Vitrine da loja no Descobrir. Tudo opcional: o card só mostra o que existe. */
 export const ShopShowcaseSchema = z.object({
