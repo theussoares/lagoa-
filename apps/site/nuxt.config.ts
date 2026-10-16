@@ -25,7 +25,11 @@ export default defineNuxtConfig({
     preference: 'light',
     fallback: 'light',
   },
-  routeRules: { '/**': { headers: SECURITY_HEADERS } },
+  routeRules: {
+    '/**': { headers: SECURITY_HEADERS },
+    // O link da bio é só âncoras: sem JS ele chega pronto, sem hidratar nada. Custo: o analytics não conta aqui.
+    '/links': { noScripts: true },
+  },
   nitro: {
     prerender: { routes: ['/', '/sitemap.xml', '/robots.txt'], crawlLinks: true },
   },
@@ -42,6 +46,16 @@ export default defineNuxtConfig({
     },
   },
   hooks: {
+    // As seções abaixo da dobra hidratam ao entrar na tela (`hydrate-on-visible`); o Nuxt ainda
+    // pré-carregaria o JS delas junto com o HTML. Aqui o chunk só desce quando a seção chega perto.
+    'build:manifest': (manifest) => {
+      for (const entry of Object.values(manifest)) {
+        if (entry.src && /components\/\w+Section\.vue$/.test(entry.src) && !/Hero/.test(entry.src)) {
+          entry.preload = false
+          entry.prefetch = false
+        }
+      }
+    },
     // O prerender congela o runtimeConfig no HTML: um build com o Balcão em localhost
     // publicaria links quebrados. Para gerar local, defina NUXT_PUBLIC_APP_URL mesmo assim.
     'prerender:routes': () => {
@@ -58,6 +72,7 @@ export default defineNuxtConfig({
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'theme-color', content: '#062B3A' },
       ],
+      link: [{ rel: 'icon', href: '/favicon.ico', sizes: 'any' }],
     },
   },
   typescript: {
