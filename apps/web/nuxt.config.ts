@@ -53,30 +53,43 @@ export default defineNuxtConfig({
         { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
         { name: 'theme-color', content: '#FFFFFF', media: '(prefers-color-scheme: light)' },
         { name: 'theme-color', content: '#061C24', media: '(prefers-color-scheme: dark)' },
+        { name: 'mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-title', content: 'Lagoa+' },
+      ],
+      link: [
+        { rel: 'icon', type: 'image/png', href: '/favicon.png' },
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
       ],
     },
   },
   pwa: {
-    // O service worker gerado mandava toda navegação para "/" sem ter "/" no
-    // cache: depois da primeira visita, recarregar ou abrir um link quebrava.
-    // Até o PWA ter ícones e uma estratégia de cache revisada, publicamos um
-    // service worker que se remove sozinho (e limpa quem já instalou o antigo).
-    selfDestroying: true,
+    // O app é SSR com sessão em cookie: HTML e `/api/**` nunca entram no cache (um fallback para "/" quebrava
+    // recarga e links, e HTML guardado serviria a carteira de outra sessão). O worker só pré-guarda os arquivos
+    // estáticos versionados do build, o que já basta para o app ser instalável e abrir rápido.
     registerType: 'autoUpdate',
     manifest: {
+      id: '/carteira',
       name: 'Lagoa+',
       short_name: 'Lagoa+',
+      description: 'Seus carimbos e pontos nas lojas de Três Lagoas, numa carteira só.',
       lang: 'pt-BR',
       start_url: '/carteira',
       scope: '/',
       display: 'standalone',
       orientation: 'portrait',
-      background_color: '#061C24',
-      theme_color: '#061C24',
-      // Ícones entram quando existir logo (PRODUCT.md: nada de marca inventada).
-      icons: [],
+      background_color: '#01348D',
+      theme_color: '#01348D',
+      icons: [
+        { src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+        { src: '/pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+        { src: '/pwa-maskable-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      ],
     },
-    workbox: { navigateFallback: '/' },
+    workbox: {
+      globPatterns: ['_nuxt/**/*.{js,css,woff2}', '*.png'],
+      navigateFallback: null,
+      cleanupOutdatedCaches: true,
+    },
     devOptions: { enabled: false },
   },
   typescript: {
