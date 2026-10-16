@@ -12,13 +12,17 @@ function respond(status: number, body: unknown) {
 afterEach(() => vi.restoreAllMocks())
 
 describe('ComteleSmsSender', () => {
-  it('sends the 55-prefixed phone with the API key header and accepts hasError=false', async () => {
+  it('sends the 55-prefixed phone with the API key header and the code message, and accepts hasError=false', async () => {
     const spy = respond(200, { hasError: false })
-    expect(await sender.send(PHONE, 'Lagoa+: 123456')).toBe(true)
+    expect(await sender.send(PHONE, '123456')).toBe('sent')
     const [url, init] = spy.mock.calls[0] ?? []
     expect(url).toBe('https://api.comtele.com.br/messages/sms/send')
     expect(init?.headers).toMatchObject({ 'x-api-key': 'key' })
-    expect(JSON.parse(String(init?.body))).toMatchObject({ receivers: ['5567991230374'], message: 'Lagoa+: 123456', route: 17 })
+    expect(JSON.parse(String(init?.body))).toMatchObject({
+      receivers: ['5567991230374'],
+      message: 'Lagoa+: seu código é 123456. Não compartilhe com ninguém.',
+      route: 17,
+    })
   })
 
   it.each([
@@ -27,12 +31,12 @@ describe('ComteleSmsSender', () => {
     ['an unexpected body', 200, { ok: true }],
   ])('reports failure on %s', async (_name, status, body) => {
     respond(status, body)
-    expect(await sender.send(PHONE, 'x')).toBe(false)
+    expect(await sender.send(PHONE, '123456')).toBe('failed')
   })
 
   it('reports failure when the request itself fails, and without a key', async () => {
     vi.spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('offline'))
-    expect(await sender.send(PHONE, 'x')).toBe(false)
-    expect(await new ComteleSmsSender({ COMTELE_AUTH_KEY: undefined, COMTELE_ROUTE: 17 }).send(PHONE, 'x')).toBe(false)
+    expect(await sender.send(PHONE, '123456')).toBe('failed')
+    expect(await new ComteleSmsSender({ COMTELE_AUTH_KEY: undefined, COMTELE_ROUTE: 17 }).send(PHONE, '123456')).toBe('failed')
   })
 })

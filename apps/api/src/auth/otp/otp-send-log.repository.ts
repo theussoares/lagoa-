@@ -1,4 +1,4 @@
-export abstract class SmsSendLog {
+export abstract class OtpSendLog {
   /**
    * Grava o envio só se o celular ainda não passou de `max` desde `windowStart`; `false` = limite atingido.
    * Envios fora da janela já podem ser apagados.

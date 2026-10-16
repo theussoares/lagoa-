@@ -80,7 +80,7 @@ Teste do piloto = lojistas e clientes de verdade em Três Lagoas, no ambiente de
    roda por garantia). Nada de MCP nem SQL à mão.
 6. **Deploy e variáveis** (API e web na Vercel), conferir uma a uma:
    - API: `NODE_ENV=production`, `TRUST_PROXY_HOPS`, `SUPABASE_URL` https, `PII_ENCRYPTION_KEY`, `PII_HASH_PEPPER`,
-     `COMTELE_AUTH_KEY`, `SEND_SMS_HOOK_SECRET`, `BFF_SHARED_SECRET`, `CORS_ORIGIN` vazio, **`ENABLE_TEST_APPROVE=0`**,
+     `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `SEND_SMS_HOOK_SECRET`, `BFF_SHARED_SECRET`, `CORS_ORIGIN` vazio, **`ENABLE_TEST_APPROVE=0`**,
      sem `ALLOW_SEED`/`ALLOW_DEV_VISIT_QR`.
    - Web: `NUXT_API_BASE_URL`, `NUXT_SUPABASE_ANON_KEY` (nunca a service_role), `NUXT_BFF_SHARED_SECRET` igual ao da
      API, `NUXT_PUBLIC_SUPABASE_URL`, sem `NUXT_PUBLIC_MERCHANT_BACKEND=mock` e sem `NUXT_PUBLIC_CAMPAIGNS_ENABLED`.
@@ -88,11 +88,11 @@ Teste do piloto = lojistas e clientes de verdade em Três Lagoas, no ambiente de
    - **Ordem:** API antes do web (a sessão nova traz `termsAccepted`; o web tolera a falta, mas pede o aceite).
      Balcão sem o aceite redireciona para o Início (`merchant-terms`).
    - Vercel: deploy automático só em `main`, `develop` e `stable` (`git.deploymentEnabled` nos três `vercel.json`).
-   - Supabase: hook Auth > Send SMS apontando para `POST /v1/auth/hooks/send-sms` com o segredo; saldo na Comtele.
+   - Supabase: hook Auth > Send SMS apontando para `POST /v1/auth/hooks/send-sms` com o segredo; template aprovado e forma de pagamento na Meta.
    - Site (`apps/site`): `NUXT_PUBLIC_APP_URL` do Balcão de produção no `generate`.
 7. **Ensaio ponta a ponta em celular real** (não existe e2e com sessão; o Playwright do #54 é só fumaça sem login).
    Roteiro mínimo, com um lojista e um cliente de teste:
-   1. Lojista entra por SMS → Criar o clube → loja aprovada por `shop:status` (`ALLOW_SHOP_ADMIN=1`, `--actor`).
+   1. Lojista entra por WhatsApp → Criar o clube → loja aprovada por `shop:status` (`ALLOW_SHOP_ADMIN=1`, `--actor`).
    2. Imprime o cartaz; cliente escaneia `?loja=`, faz cadastro/LGPD e entra no clube (cartão zerado).
    3. Balcão gera QR da visita; cliente escaneia (e outro, digitando o código curto) → carimbo; Balcão mostra `claimed`.
    4. Antifraude: segunda visita na janela é recusada e não consome o QR; QR vencido (5 min) e cancelado recusam.
@@ -135,7 +135,6 @@ Teste do piloto = lojistas e clientes de verdade em Três Lagoas, no ambiente de
 
 ## Próximo passo (nova sessão)
 
-1. Cinderela: ligar "Aceita entrada pelo cartaz", subir logo e banner, conferir o card no Descobrir pelo app do cliente.
-2. Ensaio do roteiro acima em celular real, começando pelo aceite do termo no Início antes do primeiro QR.
-3. Aprovar as próximas lojas do piloto com `shop:status` (`ALLOW_SHOP_ADMIN=1`, `--actor`, `--plan`).
-4. Depois do piloto andar: paginação de Clientes (4.3), M5 Campanhas (a Cinderela é Fundador Pro e vai querer).
+1. Conferir na Supabase o hook Auth > Send SMS e template/pagamento na Meta (não dá para ver pelo repo).
+2. Ensaio do roteiro acima em celular real, incluindo o aceite do termo no Início antes de gerar o primeiro QR.
+3. Aprovar as lojas do piloto com `shop:status` e começar.

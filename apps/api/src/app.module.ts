@@ -1,9 +1,10 @@
+import { createHash } from 'node:crypto'
 import { Module } from '@nestjs/common'
 import { APP_FILTER, APP_GUARD } from '@nestjs/core'
 import { ThrottlerModule } from '@nestjs/throttler'
 import { AuthModule } from './auth/auth.module'
 import { LoginAttemptsModule } from './auth/login-attempts/login-attempts.module'
-import { SmsModule } from './auth/sms/sms.module'
+import { OtpModule } from './auth/otp/otp.module'
 import { SupabaseAuthGuard } from './auth/supabase-auth.guard'
 import { UserThrottlerGuard } from './auth/user-throttler.guard'
 import { clientIpOf } from './common/http/client-ip'
@@ -31,12 +32,24 @@ import { PostgresThrottlerStorage } from './throttling/postgres-throttler.storag
           { name: 'default', ttl: 60_000, limit: 120 },
           // Teto por IP (confiável com TRUST_PROXY_HOPS; atrás do BFF vale o IP que ele repassa com o segredo): contas diferentes no mesmo IP somam aqui.
           { name: 'ip', ttl: 60_000, limit: 600, getTracker: (request: { readonly ip?: string }) => clientIpOf(request) },
+          // Teto por celular (chave leva hash sha256 do número, sem dado pessoal exposto):
+          {
+            name: 'phone',
+            ttl: 60_000,
+            limit: 10,
+            getTracker: (request: { readonly body?: { readonly phone?: unknown }; readonly ip?: string }) => {
+              const phone = request.body?.phone
+              return typeof phone === 'string'
+                ? `phone:${createHash('sha256').update(phone).digest('hex')}`
+                : clientIpOf(request)
+            },
+          },
         ],
       }),
     }),
     CustomerModule,
     MerchantModule,
-    SmsModule,
+    OtpModule,
     LoginAttemptsModule,
   ],
   controllers: [HealthController],

@@ -8,7 +8,7 @@ import type { MockState } from './state'
 export interface MockBackendOptions {
   readonly store: MockStore
   readonly seed: (now: Date) => MockState
-  /** Código de login aceito pelo mock (o SMS não é enviado). */
+  /** Código de login aceito pelo mock (o código no WhatsApp não é enviado). */
   readonly loginCode: LoginCode
   readonly runtime?: Partial<MockRuntime>
   /** Atraso artificial para a UI exercitar estados de carregamento. */

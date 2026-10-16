@@ -3,10 +3,10 @@ import { and, eq, lt, sql } from 'drizzle-orm'
 import { uuidv7 } from 'uuidv7'
 import { DB, type Database } from '../../database/database.module'
 import { smsSends } from '../../database/schema'
-import { SmsSendLog } from './sms-send-log.repository'
+import { OtpSendLog } from './otp-send-log.repository'
 
 @Injectable()
-export class DrizzleSmsSendLog extends SmsSendLog {
+export class DrizzleOtpSendLog extends OtpSendLog {
   constructor(@Inject(DB) private readonly db: Database) {
     super()
   }

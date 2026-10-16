@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { SMS_SENDS_MAX_PER_WINDOW } from '#shared/constants/domain'
+import { OTP_SENDS_MAX_PER_WINDOW } from '#shared/constants/domain'
 import { PhoneNumberSchema } from '#shared/schemas/phone'
 import { Clock } from '../../common/clock'
 import { createTestPii } from '../../test-support/pii'
-import { SmsSendGate } from './sms-send-gate'
-import { SmsSendLog } from './sms-send-log.repository'
+import { OtpSendGate } from './otp-send-gate'
+import { OtpSendLog } from './otp-send-log.repository'
 
 const pii = createTestPii()
 const PHONE = PhoneNumberSchema.parse('67991230374')
@@ -20,7 +20,7 @@ class FixedClock extends Clock {
 }
 
 /** Mesma regra do SQL: grava se, na janela, o celular ainda está abaixo do teto. */
-class InMemorySmsSendLog extends SmsSendLog {
+class InMemoryOtpSendLog extends OtpSendLog {
   readonly sends: Array<{ hash: string; at: Date }> = []
   failing = false
   async tryRecord(phoneHash: Buffer, now: Date, windowStart: Date, max: number): Promise<boolean> {
@@ -35,26 +35,26 @@ class InMemorySmsSendLog extends SmsSendLog {
 
 function setup() {
   const clock = new FixedClock(new Date('2026-10-06T14:00:00Z'))
-  const log = new InMemorySmsSendLog()
-  return { clock, log, gate: new SmsSendGate(log, pii, clock) }
+  const log = new InMemoryOtpSendLog()
+  return { clock, log, gate: new OtpSendGate(log, pii, clock) }
 }
 
-describe('SmsSendGate', () => {
+describe('OtpSendGate', () => {
   it('lets a phone receive up to the limit and then holds the next one', async () => {
     const { gate } = setup()
-    for (let sent = 0; sent < SMS_SENDS_MAX_PER_WINDOW; sent++) expect(await gate.allow(PHONE)).toBe(true)
+    for (let sent = 0; sent < OTP_SENDS_MAX_PER_WINDOW; sent++) expect(await gate.allow(PHONE)).toBe(true)
     expect(await gate.allow(PHONE)).toBe(false)
   })
 
   it('counts each phone on its own', async () => {
     const { gate } = setup()
-    for (let sent = 0; sent < SMS_SENDS_MAX_PER_WINDOW; sent++) await gate.allow(PHONE)
+    for (let sent = 0; sent < OTP_SENDS_MAX_PER_WINDOW; sent++) await gate.allow(PHONE)
     expect(await gate.allow(OTHER)).toBe(true)
   })
 
   it('lets the phone try again once the window has passed', async () => {
     const { gate, clock } = setup()
-    for (let sent = 0; sent < SMS_SENDS_MAX_PER_WINDOW; sent++) await gate.allow(PHONE)
+    for (let sent = 0; sent < OTP_SENDS_MAX_PER_WINDOW; sent++) await gate.allow(PHONE)
     clock.current = new Date(clock.current.getTime() + 61 * 60_000)
     expect(await gate.allow(PHONE)).toBe(true)
   })
@@ -65,7 +65,7 @@ describe('SmsSendGate', () => {
     expect(JSON.stringify(log.sends)).not.toContain(PHONE)
   })
 
-  it('lets the SMS go when the log is unavailable: login must not stop for a counter', async () => {
+  it('lets the OTP go when the log is unavailable: login must not stop for a counter', async () => {
     const { gate, log } = setup()
     log.failing = true
     expect(await gate.allow(PHONE)).toBe(true)

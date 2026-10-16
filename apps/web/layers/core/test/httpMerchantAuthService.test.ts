@@ -45,6 +45,12 @@ describe('HttpMerchantAuthService', () => {
     expect(gateway.sendCode).toHaveBeenCalledWith(PHONE)
   })
 
+  it('asks for the code with an explicit SMS channel', async () => {
+    const { auth, gateway } = setup({ ok: true, value: true }, {})
+    expect(await auth.requestLoginCode(PHONE, 'sms')).toEqual({ ok: true, value: { expiresAt: '2026-10-01T16:05:00.000Z' } })
+    expect(gateway.sendCode).toHaveBeenCalledWith(PHONE, 'sms')
+  })
+
   it('signs in a merchant that already has a shop, whatever its status', async () => {
     const { auth, calls } = setup({ ok: true, value: true }, { 'GET /merchant/session': () => json(200, SESSION) })
     expect(await auth.signInMerchant(PHONE, CODE)).toEqual({ ok: true, value: { kind: 'session', session: SESSION } })

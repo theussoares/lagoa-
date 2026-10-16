@@ -9,7 +9,7 @@ const { t } = useI18n()
 const route = useRoute()
 useHead({ title: () => `${t('merchantSignIn.pageTitle')} · ${t('app.name')}` })
 
-const { step, pending, error, resendIn, requestCode, resendCode, verify, changePhone } = useMerchantSignIn()
+const { step, channel, pending, error, resendIn, requestCode, resendCode, switchChannel, verify, changePhone } = useMerchantSignIn()
 const { session } = useMerchantSession()
 const mockCode = useMockLoginHint()
 const mockPhone = useMockMerchantPhone()
@@ -28,6 +28,17 @@ const errorText = computed(() => (error.value === null ? undefined : t(`errors.$
 const phoneError = computed(() => (step.value.name === 'phone' ? errorText.value : undefined))
 const codeError = computed(() => (step.value.name === 'code' ? errorText.value : undefined))
 const sentTo = computed(() => (step.value.name === 'code' ? formatPhoneInput(step.value.phone) : ''))
+
+const otpChannelOptions = computed(() => [
+  { value: 'whatsapp' as const, label: t('merchantSignIn.channels.whatsapp'), icon: 'i-ph-whatsapp-logo' },
+  { value: 'sms' as const, label: t('merchantSignIn.channels.sms'), icon: 'i-ph-chat-circle-dots' },
+])
+
+const isSms = computed(() => step.value.name === 'code' && step.value.channel === 'sms')
+const codeLeadKey = computed(() => (isSms.value ? 'merchantSignIn.codeLeadSms' : 'merchantSignIn.codeLeadWhatsapp'))
+const codeLabel = computed(() => t(isSms.value ? 'merchantSignIn.codeLabelSms' : 'merchantSignIn.codeLabelWhatsapp'))
+const codeDelayHint = computed(() => t(isSms.value ? 'merchantSignIn.codeDelayHintSms' : 'merchantSignIn.codeDelayHintWhatsapp'))
+const switchChannelLabel = computed(() => t(isSms.value ? 'merchantSignIn.switchChannel.whatsapp' : 'merchantSignIn.switchChannel.sms'))
 
 function onPhoneInput(value: string | number): void {
   phoneDraft.value = formatPhoneInput(String(value))
@@ -96,13 +107,20 @@ function backToPhone(): void {
             />
           </UFormField>
 
+          <OtpChannelPicker
+            v-model="channel"
+            :legend="t('merchantSignIn.channelLabel')"
+            :options="otpChannelOptions"
+            :disabled="pending"
+          />
+
           <UButton type="submit" size="xl" block :loading="pending" :label="t('merchantSignIn.sendCode')" />
         </form>
 
         <form v-else class="flex flex-col gap-6" novalidate @submit.prevent="submitCode">
           <PageTitle :title="t('merchantSignIn.codeTitle')">
             <p class="type-lead">
-              <i18n-t keypath="merchantSignIn.codeLead" scope="global">
+              <i18n-t :keypath="codeLeadKey" scope="global">
                 <template #phone>
                   <span class="tabular font-semibold whitespace-nowrap text-highlighted">{{ sentTo }}</span>
                 </template>
@@ -118,7 +136,12 @@ function backToPhone(): void {
             :description="t('signIn.mockHint', { code: mockCode })"
           />
 
-          <UFormField ref="codeField" :label="t('merchantSignIn.codeLabel')" :error="codeError" name="code">
+          <UFormField
+            ref="codeField"
+            :label="codeLabel"
+            :error="codeError"
+            name="code"
+          >
             <template #error="{ error: message }">
               <span v-if="message" class="flex items-start gap-1.5"><UIcon name="i-ph-warning-circle" class="mt-0.5 size-4 shrink-0" aria-hidden="true" />{{ message }}</span>
             </template>
@@ -137,6 +160,7 @@ function backToPhone(): void {
           </UFormField>
 
           <div class="flex flex-col gap-3">
+            <p class="text-base text-muted">{{ codeDelayHint }}</p>
             <UButton type="submit" size="xl" block :loading="pending" :label="t('merchantSignIn.submit')" />
             <UButton
               variant="ghost"
@@ -145,6 +169,15 @@ function backToPhone(): void {
               :disabled="resendIn > 0 || pending"
               :label="resendIn > 0 ? t('merchantSignIn.resendIn', { seconds: resendIn }) : t('merchantSignIn.resend')"
               @click="resendCode"
+            />
+            <UButton
+              variant="link"
+              color="neutral"
+              size="sm"
+              class="self-center"
+              :disabled="pending"
+              :label="switchChannelLabel"
+              @click="switchChannel"
             />
           </div>
         </form>

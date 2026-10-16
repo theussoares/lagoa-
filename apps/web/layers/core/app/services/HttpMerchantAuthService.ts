@@ -1,6 +1,6 @@
 import type { PhoneNumber } from '#shared/schemas/phone'
 import { IsoDateTimeSchema } from '#shared/schemas/common'
-import { MerchantSessionSchema, type LoginChallenge, type LoginCode, type MerchantSession, type MerchantSignInResult } from '#shared/schemas/session'
+import { MerchantSessionSchema, type LoginChallenge, type LoginCode, type MerchantSession, type MerchantSignInResult, type OtpChannel } from '#shared/schemas/session'
 import { LOGIN_CODE_TTL_MINUTES } from '#shared/constants/domain'
 import type { TransportError } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
@@ -11,7 +11,7 @@ import { allowing, type ApiClient } from './http/ApiClient'
 const MS_PER_MINUTE = 60_000
 
 /**
- * Lojista: o mesmo celular + SMS do cliente (Supabase, no servidor do Nuxt). Depois do código, `GET /merchant/session`
+ * Lojista: o mesmo celular + código pelo canal escolhido do cliente (Supabase, no servidor do Nuxt). Depois do código, `GET /merchant/session`
  * diz se já existe loja (`session`) ou se falta criar o clube (`signUp`); o cookie da sessão identifica o dono.
  */
 export class HttpMerchantAuthService implements MerchantAuthService {
@@ -21,8 +21,8 @@ export class HttpMerchantAuthService implements MerchantAuthService {
     private readonly now: () => Date,
   ) {}
 
-  async requestLoginCode(phone: PhoneNumber): Promise<Result<LoginChallenge, TransportError>> {
-    const sent = await this.gateway.sendCode(phone)
+  async requestLoginCode(phone: PhoneNumber, channel?: OtpChannel): Promise<Result<LoginChallenge, TransportError>> {
+    const sent = channel === undefined ? await this.gateway.sendCode(phone) : await this.gateway.sendCode(phone, channel)
     if (!sent.ok) return sent
     return ok({ expiresAt: IsoDateTimeSchema.parse(new Date(this.now().getTime() + LOGIN_CODE_TTL_MINUTES * MS_PER_MINUTE).toISOString()) })
   }

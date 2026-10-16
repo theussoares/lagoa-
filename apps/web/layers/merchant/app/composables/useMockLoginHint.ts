@@ -1,7 +1,7 @@
 import { formatPhoneInput } from '#shared/utils/phone'
 import { EXAMPLE_IDS } from '#layers/core/app/mock/seed.example'
 
-/** No mock do lojista não sai SMS: a tela de código mostra o código de teste. */
+/** No mock do lojista o WhatsApp não sai: a tela de código mostra o código de teste. */
 export function useMockLoginHint(): string {
   return useRuntimeConfig().public.merchantBackend === 'mock' ? useNuxtApp().$mockBackend.loginCode : ''
 }

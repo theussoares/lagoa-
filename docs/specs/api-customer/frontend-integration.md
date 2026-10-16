@@ -5,24 +5,24 @@ já isola isso atrás de interfaces; ver `CLAUDE.md`). Base: `/v1`, JSON, todas 
 `Authorization: Bearer <access_token do Supabase>` (exceto `/health`). Contratos: `shared/schemas`.
 Detalhe das rotas e dos erros: [`apps/api/README.md`](../../../apps/api/README.md).
 
-## 1. Login: SMS primeiro, e-mail como alternativa
+## 1. Login: WhatsApp primeiro, e-mail como alternativa
 
-O `AuthService` do front já modela celular + código por SMS. O backend usa **Supabase Auth**; o código de SMS é gerado
-pelo Supabase e entregue pela API (Send SMS Hook → Comtele, `POST /v1/auth/hooks/send-sms`).
+O `AuthService` do front modela celular + código. O backend usa **Supabase Auth**; o código é gerado
+pelo Supabase e entregue pela API (Send SMS Hook → WhatsApp Cloud API da Meta, `POST /v1/auth/hooks/send-sms`).
 
-1. `supabase.auth.signInWithOtp({ phone: '+55' + digits })` → o cliente recebe o SMS.
+1. `supabase.auth.signInWithOtp({ phone: '+55' + digits, options: { channel: 'sms' } })` → o cliente recebe o código no WhatsApp.
 2. `supabase.auth.verifyOtp({ phone, token, type: 'sms' })` → sessão com `access_token` (o JWT leva o claim `phone`, já confirmado).
 3. `GET /v1/customer/session`:
    - `200` → `CustomerSession`; se `isNewCustomer`, tela de termos e `POST /v1/customer/profile/terms`
      (a regra vem do servidor; ao mudar `TERMS_VERSION` o cliente volta para essa tela).
    - `404 notFound` (`entity: customer`) → primeiro acesso: `POST /v1/customer/registration` **sem corpo**. O celular vem do
-     token (confirmado por SMS), então ninguém cadastra o número de outra pessoa. Devolve a mesma `CustomerSession`.
-4. **Alternativa por e-mail** (quem não recebe SMS): `signInWithOtp({ email })` + `verifyOtp({ email, token, type: 'email' })`.
+     token (confirmado por código), então ninguém cadastra o número de outra pessoa. Devolve a mesma `CustomerSession`.
+4. **Alternativa por e-mail** (quem não recebe WhatsApp): `signInWithOtp({ email })` + `verifyOtp({ email, token, type: 'email' })`.
    No primeiro acesso o cadastro pede o celular e manda `{ phone }` (declarado, sem verificação).
 5. Renovação de sessão e logout são do SDK do Supabase; `401 unauthorized` = sessão acabou.
 
 Configuração (Supabase): Auth > Providers > Phone ligado, Auth > Hooks > Send SMS Hook apontando para a API, com o
-segredo em `SEND_SMS_HOOK_SECRET`; `COMTELE_AUTH_KEY` e `COMTELE_ROUTE` no env da API. Em dev use os *test OTPs* do Supabase.
+segredo em `SEND_SMS_HOOK_SECRET`; `WHATSAPP_ACCESS_TOKEN` e `WHATSAPP_PHONE_NUMBER_ID` no env da API. Em dev use os *test OTPs* do Supabase.
 O lojista (`signInMerchant`) segue outro caminho e é do Caio.
 
 ## 2. Mapa serviço → rota

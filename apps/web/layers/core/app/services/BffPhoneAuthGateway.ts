@@ -1,5 +1,5 @@
 import type { PhoneNumber } from '#shared/schemas/phone'
-import type { LoginCode } from '#shared/schemas/session'
+import type { LoginCode, OtpChannel } from '#shared/schemas/session'
 import type { DomainError, TransportError } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
 import { parseDomainError, isTransportError } from '../utils/domainError'
@@ -11,8 +11,8 @@ import { BFF_AUTH_BASE } from './http/bffPaths'
 export class BffPhoneAuthGateway implements PhoneAuthGateway {
   constructor(private readonly fetcher: typeof fetch) {}
 
-  async sendCode(phone: PhoneNumber): Promise<Result<true, TransportError>> {
-    const failure = await this.post('otp', { phone })
+  async sendCode(phone: PhoneNumber, channel: OtpChannel = 'whatsapp'): Promise<Result<true, TransportError>> {
+    const failure = await this.post('otp', { phone, channel })
     if (failure === null) return ok(true)
     return err(isTransportError(failure) ? failure : { code: 'internal' })
   }

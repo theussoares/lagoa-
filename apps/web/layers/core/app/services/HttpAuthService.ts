@@ -1,6 +1,6 @@
 import type { PhoneNumber } from '#shared/schemas/phone'
 import { IsoDateTimeSchema } from '#shared/schemas/common'
-import { CustomerSessionSchema, type CustomerSession, type LoginChallenge, type LoginCode } from '#shared/schemas/session'
+import { CustomerSessionSchema, type CustomerSession, type LoginChallenge, type LoginCode, type OtpChannel } from '#shared/schemas/session'
 import { LOGIN_CODE_TTL_MINUTES } from '#shared/constants/domain'
 import type { TransportError } from '#shared/types/errors'
 import { ok, type Result } from '#shared/types/result'
@@ -12,7 +12,7 @@ import { allowing, type ApiClient } from './http/ApiClient'
 const MS_PER_MINUTE = 60_000
 
 /**
- * Cliente: celular + SMS (Supabase, no servidor do Nuxt) e depois a sessão da API. Número sem cadastro não é criado
+ * Cliente: celular + código pelo canal escolhido (Supabase, no servidor do Nuxt) e depois a sessão da API. Número sem cadastro não é criado
  * sozinho: o app pede o nome antes (`registerCustomer`); o celular vem do token.
  */
 export class HttpAuthService implements AuthService {
@@ -22,8 +22,8 @@ export class HttpAuthService implements AuthService {
     private readonly now: () => Date,
   ) {}
 
-  async requestLoginCode(phone: PhoneNumber): Promise<Result<LoginChallenge, TransportError>> {
-    const sent = await this.gateway.sendCode(phone)
+  async requestLoginCode(phone: PhoneNumber, channel?: OtpChannel): Promise<Result<LoginChallenge, TransportError>> {
+    const sent = channel === undefined ? await this.gateway.sendCode(phone) : await this.gateway.sendCode(phone, channel)
     if (!sent.ok) return sent
     return ok({ expiresAt: IsoDateTimeSchema.parse(new Date(this.now().getTime() + LOGIN_CODE_TTL_MINUTES * MS_PER_MINUTE).toISOString()) })
   }

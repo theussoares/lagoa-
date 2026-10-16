@@ -108,4 +108,25 @@ describe('useCustomerSignIn', () => {
     expect(signInFlow.step.value).toEqual({ name: 'profile' })
     expect(useSessionStore().customer).toBeNull()
   })
+
+  it('defaults to WhatsApp and delivers via the chosen channel', async () => {
+    const { $auth } = useNuxtApp()
+    const mounted = await mountComposable(() => useCustomerSignIn())
+    expect(mounted.result.channel.value).toBe('whatsapp')
+    mounted.result.channel.value = 'sms'
+    await mounted.result.requestCode('(67) 99123-0374')
+    expect($auth.requestLoginCode).toHaveBeenCalledWith(PHONE, 'sms')
+    expect(mounted.result.step.value).toEqual({ name: 'code', phone: PHONE, channel: 'sms' })
+  })
+
+  it('switches channel immediately on the code step without waiting for resend countdown', async () => {
+    const { $auth } = useNuxtApp()
+    const signInFlow = await atCodeStep()
+    expect(signInFlow.step.value).toEqual({ name: 'code', phone: PHONE, channel: 'whatsapp' })
+    expect(signInFlow.resendIn.value).toBe(60)
+    await signInFlow.switchChannel()
+    expect($auth.requestLoginCode).toHaveBeenLastCalledWith(PHONE, 'sms')
+    expect(signInFlow.step.value).toEqual({ name: 'code', phone: PHONE, channel: 'sms' })
+    expect(signInFlow.channel.value).toBe('sms')
+  })
 })
