@@ -48,7 +48,6 @@ export default defineNuxtConfig({
     head: {
       htmlAttrs: { lang: 'pt-BR' },
       title: 'Lagoa+',
-      link: [{ rel: 'icon', href: '/favicon.ico', sizes: 'any' }],
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
         { name: 'theme-color', content: '#FFFFFF', media: '(prefers-color-scheme: light)' },
@@ -57,6 +56,7 @@ export default defineNuxtConfig({
         { name: 'apple-mobile-web-app-title', content: 'Lagoa+' },
       ],
       link: [
+        { rel: 'icon', href: '/favicon.ico', sizes: 'any' },
         { rel: 'icon', type: 'image/png', href: '/favicon.png' },
         { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
       ],
