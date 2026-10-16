@@ -48,7 +48,7 @@ export function useMerchantSignIn(): MerchantSignIn {
   }
 
   async function switchChannel(): Promise<void> {
-    if (step.value.name !== 'code' || resendIn.value > 0 || pending.value) return
+    if (step.value.name !== 'code' || pending.value) return
     const nextChannel: OtpChannel = step.value.channel === 'whatsapp' ? 'sms' : 'whatsapp'
     await sendTo(step.value.phone, nextChannel)
   }

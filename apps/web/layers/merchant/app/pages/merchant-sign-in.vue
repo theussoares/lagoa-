@@ -29,6 +29,17 @@ const phoneError = computed(() => (step.value.name === 'phone' ? errorText.value
 const codeError = computed(() => (step.value.name === 'code' ? errorText.value : undefined))
 const sentTo = computed(() => (step.value.name === 'code' ? formatPhoneInput(step.value.phone) : ''))
 
+const otpChannelOptions = computed(() => [
+  { value: 'whatsapp' as const, label: t('merchantSignIn.channels.whatsapp'), icon: 'i-ph-whatsapp-logo' },
+  { value: 'sms' as const, label: t('merchantSignIn.channels.sms'), icon: 'i-ph-chat-circle-dots' },
+])
+
+const isSms = computed(() => step.value.name === 'code' && step.value.channel === 'sms')
+const codeLeadKey = computed(() => (isSms.value ? 'merchantSignIn.codeLeadSms' : 'merchantSignIn.codeLeadWhatsapp'))
+const codeLabel = computed(() => t(isSms.value ? 'merchantSignIn.codeLabelSms' : 'merchantSignIn.codeLabelWhatsapp'))
+const codeDelayHint = computed(() => t(isSms.value ? 'merchantSignIn.codeDelayHintSms' : 'merchantSignIn.codeDelayHintWhatsapp'))
+const switchChannelLabel = computed(() => t(isSms.value ? 'merchantSignIn.switchChannel.whatsapp' : 'merchantSignIn.switchChannel.sms'))
+
 function onPhoneInput(value: string | number): void {
   phoneDraft.value = formatPhoneInput(String(value))
 }
@@ -96,7 +107,12 @@ function backToPhone(): void {
             />
           </UFormField>
 
-          <OtpChannelPicker v-model="channel" :disabled="pending" />
+          <OtpChannelPicker
+            v-model="channel"
+            :legend="t('merchantSignIn.channelLabel')"
+            :options="otpChannelOptions"
+            :disabled="pending"
+          />
 
           <UButton type="submit" size="xl" block :loading="pending" :label="t('merchantSignIn.sendCode')" />
         </form>
@@ -104,7 +120,7 @@ function backToPhone(): void {
         <form v-else class="flex flex-col gap-6" novalidate @submit.prevent="submitCode">
           <PageTitle :title="t('merchantSignIn.codeTitle')">
             <p class="type-lead">
-              <i18n-t :keypath="step.channel === 'sms' ? 'merchantSignIn.codeLeadSms' : 'merchantSignIn.codeLeadWhatsapp'" scope="global">
+              <i18n-t :keypath="codeLeadKey" scope="global">
                 <template #phone>
                   <span class="tabular font-semibold whitespace-nowrap text-highlighted">{{ sentTo }}</span>
                 </template>
@@ -122,7 +138,7 @@ function backToPhone(): void {
 
           <UFormField
             ref="codeField"
-            :label="step.channel === 'sms' ? t('merchantSignIn.codeLabelSms') : t('merchantSignIn.codeLabelWhatsapp')"
+            :label="codeLabel"
             :error="codeError"
             name="code"
           >
@@ -144,7 +160,7 @@ function backToPhone(): void {
           </UFormField>
 
           <div class="flex flex-col gap-3">
-            <p class="text-base text-muted">{{ step.channel === 'sms' ? t('merchantSignIn.codeDelayHintSms') : t('merchantSignIn.codeDelayHintWhatsapp') }}</p>
+            <p class="text-base text-muted">{{ codeDelayHint }}</p>
             <UButton type="submit" size="xl" block :loading="pending" :label="t('merchantSignIn.submit')" />
             <UButton
               variant="ghost"
@@ -159,8 +175,8 @@ function backToPhone(): void {
               color="neutral"
               size="sm"
               class="self-center"
-              :disabled="resendIn > 0 || pending"
-              :label="step.channel === 'sms' ? t('merchantSignIn.switchChannel.whatsapp') : t('merchantSignIn.switchChannel.sms')"
+              :disabled="pending"
+              :label="switchChannelLabel"
               @click="switchChannel"
             />
           </div>

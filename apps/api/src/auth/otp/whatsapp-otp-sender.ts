@@ -7,11 +7,12 @@ import { OtpSender, type OtpSendResult } from './otp-sender'
 
 const GRAPH_URL = 'https://graph.facebook.com'
 const BRAZIL_COUNTRY_CODE = '55'
-/** O Supabase desiste do hook em ~5 s: 4 s deixa folga. Sem retry interno. */
-const SEND_TIMEOUT_MS = 4_000
+/** O Supabase desiste do hook em ~5 s: 3 s deixa folga para as queries do banco. Sem retry interno. */
+const SEND_TIMEOUT_MS = 3_000
 
-/** 131056 = muitos envios ao mesmo número: o usuário vê "espere um pouco" (429). */
-const THROTTLED_CODES = new Set([131056])
+/** 131056 = muitos envios ao mesmo número; 130429 / 80007 = limites de vazão da Meta. O usuário vê 429. */
+const THROTTLED_CODES = new Set([131056, 130429, 80007])
+const META_THROUGHPUT_CODES = new Set([130429, 80007])
 /** Sem estes, ninguém loga: logar como erro para chamar atenção imediata. */
 const CRITICAL_CODES = new Set([0, 100, 102, 190, 131042])
 
@@ -113,6 +114,9 @@ export class WhatsAppOtpSender extends OtpSender {
 
     if (isCritical(errorCode)) {
       this.logger.error(context)
+    } else if (META_THROUGHPUT_CODES.has(errorCode)) {
+      this.logger.warn(`otp.whatsapp.throughput_limit code=${errorCode} fbtraceId=${fbtraceId}`)
+      this.logger.warn(context)
     } else {
       this.logger.warn(context)
     }

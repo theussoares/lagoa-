@@ -1,4 +1,5 @@
 import { Body, Controller, Headers, HttpCode, Inject, Post, UnauthorizedException } from '@nestjs/common'
+import { Throttle } from '@nestjs/throttler'
 import { z } from 'zod'
 import { PhoneNumberSchema } from '#shared/schemas/phone'
 import { DEFAULT_OTP_CHANNEL, OtpChannelSchema } from '#shared/schemas/session'
@@ -24,6 +25,7 @@ export class OtpChannelController {
   ) {}
 
   @Public()
+  @Throttle({ ip: { limit: 10, ttl: 60_000 }, phone: { limit: 5, ttl: 60_000 } })
   @Post()
   @HttpCode(204)
   async choose(

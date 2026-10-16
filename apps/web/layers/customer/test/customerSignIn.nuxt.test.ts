@@ -119,21 +119,14 @@ describe('useCustomerSignIn', () => {
     expect(mounted.result.step.value).toEqual({ name: 'code', phone: PHONE, channel: 'sms' })
   })
 
-  it('switches channel on the code step and resends once countdown elapses', async () => {
-    vi.useFakeTimers()
-    try {
-      const { $auth } = useNuxtApp()
-      const signInFlow = await atCodeStep()
-      expect(signInFlow.step.value).toEqual({ name: 'code', phone: PHONE, channel: 'whatsapp' })
-      expect(signInFlow.resendIn.value).toBe(60)
-      await vi.advanceTimersByTimeAsync(60_000)
-      expect(signInFlow.resendIn.value).toBe(0)
-      await signInFlow.switchChannel()
-      expect($auth.requestLoginCode).toHaveBeenLastCalledWith(PHONE, 'sms')
-      expect(signInFlow.step.value).toEqual({ name: 'code', phone: PHONE, channel: 'sms' })
-      expect(signInFlow.channel.value).toBe('sms')
-    } finally {
-      vi.useRealTimers()
-    }
+  it('switches channel immediately on the code step without waiting for resend countdown', async () => {
+    const { $auth } = useNuxtApp()
+    const signInFlow = await atCodeStep()
+    expect(signInFlow.step.value).toEqual({ name: 'code', phone: PHONE, channel: 'whatsapp' })
+    expect(signInFlow.resendIn.value).toBe(60)
+    await signInFlow.switchChannel()
+    expect($auth.requestLoginCode).toHaveBeenLastCalledWith(PHONE, 'sms')
+    expect(signInFlow.step.value).toEqual({ name: 'code', phone: PHONE, channel: 'sms' })
+    expect(signInFlow.channel.value).toBe('sms')
   })
 })

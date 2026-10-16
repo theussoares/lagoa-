@@ -70,20 +70,26 @@ describe('WhatsAppOtpSender', () => {
     })
   })
 
-  it('reports throttled when Meta returns error 131056', async () => {
+  it('reports throttled when Meta returns error 131056, 130429 or 80007', async () => {
     const sender = new WhatsAppOtpSender(validEnv)
-    respond(400, {
-      error: {
-        message: 'Too many messages sent',
-        type: 'OAuthException',
-        code: 131056,
-        fbtrace_id: 'trace-429',
-      },
-    })
+    for (const code of [131056, 130429, 80007]) {
+      logs.length = 0
+      respond(400, {
+        error: {
+          message: 'Rate limit hit',
+          type: 'OAuthException',
+          code,
+          fbtrace_id: `trace-${code}`,
+        },
+      })
 
-    const result = await sender.send(PHONE, CODE)
-    expect(result).toBe('throttled')
-    expect(logs.some((l) => l.includes('code=131056') && l.includes('fbtraceId=trace-429'))).toBe(true)
+      const result = await sender.send(PHONE, CODE)
+      expect(result).toBe('throttled')
+      expect(logs.some((l) => l.includes(`code=${code}`) && l.includes(`fbtraceId=trace-${code}`))).toBe(true)
+      if (code === 130429 || code === 80007) {
+        expect(logs.some((l) => l.includes('otp.whatsapp.throughput_limit'))).toBe(true)
+      }
+    }
   })
 
   it('logs critical errors at error level for authentication and template failures', async () => {

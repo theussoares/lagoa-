@@ -1423,7 +1423,12 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "otp_channel_choices_channel_check": {
+          "name": "otp_channel_choices_channel_check",
+          "value": "\"otp_channel_choices\".\"channel\" in ('whatsapp', 'sms')"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.sms_sends": {

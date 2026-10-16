@@ -56,13 +56,13 @@ Onde ele fala em "CLAUDE.md", leia este arquivo de regras.
   O Balcão não recebe mais celular.
 - **BFF (`apps/web/server`, modo `http`):** o navegador só fala com o próprio domínio. `/api/auth/*`
   faz o login por código (WhatsApp por padrão ou SMS via Comtele) no Supabase e guarda o token em cookie httpOnly (`lagoa_at`/`lagoa_rt`, SameSite=Lax,
-  path `/api`); cada rota de `server/api/**` é um handler explícito (método + caminho fixo da API, entrada validada com
+  path `/`: com `/api` a página `/carteira` não recebia o cookie e o SSR via "sem sessão" a cada recarga; o logout limpa também o caminho antigo `/api`). Só a recusa do refresh token (400/401/403) derruba a sessão; 5xx, limite ou rede do Supabase mantêm os cookies; cada rota de `server/api/**` é um handler explícito (método + caminho fixo da API, entrada validada com
   o schema do `shared`) que troca o cookie por `Bearer` via `callApi` (`NUXT_API_BASE_URL`, só no servidor); não há
   proxy genérico: rota que não existe lá devolve 404 e os caminhos reais da API nunca aparecem no navegador. Escrita em `/api/**` exige `Origin` do próprio host ou de `NUXT_ALLOWED_ORIGINS`. Peças puras
   em `server/utils/*` com testes em `server/test`; as rotas só compõem. Headers de segurança (CSP, HSTS,
   `frame-ancestors`) valem para app e LP via `server/utils/securityHeaders.ts`; o `script-src` é por nonce no app
   (`server/plugins/scriptNonce.ts`, novo a cada HTML, com `strict-dynamic`) e por hash na LP pré-renderizada
-  (`apps/site/server/plugins/scriptHashes.ts`, numa `<meta>`). Script inline novo precisa sair pelo `useHead`/renderer, nunca colado no HTML. Antes de mandar o código de login ao Supabase, o BFF reserva a tentativa na API (`POST /v1/auth/login-attempts`, só com o `BFF_SHARED_SECRET`): teto por celular, fail-closed, porque o limite do Supabase é por IP e lá chega o IP do BFF. Evento de segurança (login, logout,
+  (`apps/site/server/plugins/scriptHashes.ts`, numa `<meta>`). Script inline novo precisa sair pelo `useHead`/renderer, nunca colado no HTML. Antes de mandar o código de login ao Supabase, o BFF grava a escolha de canal na API (`POST /v1/auth/otp-channel`, tabela `otp_channel_choices`) e reserva a tentativa na API (`POST /v1/auth/login-attempts`, só com o `BFF_SHARED_SECRET`): teto por celular, fail-closed, porque o limite do Supabase é por IP e lá chega o IP do BFF. Evento de segurança (login, logout,
   401/403/429 da API) é uma linha `securityLogLine` (`shared/utils/securityEvent.ts`), sem celular, token, IP nem URL real.
 - **SSR e sessão do cliente:** `ssr: true`. O cliente não tem mock nem `localStorage`: o plugin `lagoa:backend`
   monta o `ApiClient` sobre `/api` (BFF). No servidor o fetcher chama o próprio `/api` em memória com o cookie do
@@ -73,7 +73,7 @@ Onde ele fala em "CLAUDE.md", leia este arquivo de regras.
   não roda no SSR: estado derivado de dado assíncrono é `computed`.
 - **Lojista (painel):** SPA (`routeRules` `ssr: false`: `/painel`, `/balcao/**`, `/programa`, `/clientes`, `/campanhas`,
   `/configuracoes`) sobre a API `merchant/*` pelo mesmo BFF (`server/api/merchant/**`, uma rota por rota da API). Login
-  pelo mesmo código no WhatsApp do cliente (`/api/auth`); depois do código, `GET /api/merchant/session` diz se já há loja (`session`) ou
+  pelo mesmo código (WhatsApp por padrão ou SMS) do cliente (`/api/auth`); depois do código, `GET /api/merchant/session` diz se já há loja (`session`) ou
   se falta o Criar o clube (`signUp`, sem ticket: o cookie identifica o dono). A sessão (`useMerchantSessionStore`) fica só
   na memória e é conferida no servidor pelos middlewares (`useMerchantSession().check()`). `runtimeConfig.public.merchantBackend`
   (`NUXT_PUBLIC_MERCHANT_BACKEND`) é `http` por padrão; `mock` (navegador, `localStorage`, código `246810`) só para testes e
@@ -158,6 +158,7 @@ Onde ele fala em "CLAUDE.md", leia este arquivo de regras.
 | Situação da loja          | `shopStatus` (`pending` \| `approved` \| `suspended`) |
 | Plano / cobrança          | `plan` / `billing`             |
 | Fundador / Fundador Pro   | `founder` / `founderPro`       |
+| Canal do código de login (WhatsApp ou SMS) | `otpChannel` (`whatsapp` \| `sms`) |
 
 Termo novo de domínio entra nesta tabela antes de virar código.
 
