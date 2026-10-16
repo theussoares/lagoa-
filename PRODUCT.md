@@ -81,8 +81,10 @@ outra. Para o lojista, o balcão é tão rápido quanto anotar no papel.
 
 - Design de referência com 15 telas e copy de exemplo:
   https://claude.ai/artifact/BkmsXbbcBXZTe9GStye6Ui
-- Não há logo, fotos de lojas, depoimentos nem números reais do piloto. Nada
-  disso deve ser inventado como fato; dados de exemplo ficam marcados como tal.
+- O logo existe só como ícone do app (fonte em `design-system/lagoa/brand/logo-source.jpg`,
+  ícones do PWA em `apps/web/public`). Não há fotos de lojas, depoimentos nem números
+  reais do piloto. Nada disso deve ser inventado como fato; dados de exemplo ficam
+  marcados como tal.
 
 ## Product Principles
 
