@@ -25,14 +25,14 @@ useHead({
 <template>
   <div>
     <HeroSection />
-    <PainSection />
-    <CounterSection />
-    <LapsedSection />
-    <BonusSection />
-    <NetworkSection />
-    <RoiSection />
-    <PricingSection />
-    <FaqSection />
-    <ClosingSection />
+    <LazyPainSection hydrate-on-visible />
+    <LazyCounterSection hydrate-on-visible />
+    <LazyLapsedSection hydrate-on-visible />
+    <LazyBonusSection hydrate-on-visible />
+    <LazyNetworkSection hydrate-on-visible />
+    <LazyRoiSection hydrate-on-visible />
+    <LazyPricingSection hydrate-on-visible />
+    <LazyFaqSection hydrate-on-visible />
+    <LazyClosingSection hydrate-on-visible />
   </div>
 </template>
