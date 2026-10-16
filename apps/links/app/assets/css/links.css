@@ -1,0 +1,8 @@
+html {
+  background: var(--color-tinta-950);
+}
+
+::selection {
+  background: var(--color-sol-200);
+  color: var(--color-tinta-950);
+}

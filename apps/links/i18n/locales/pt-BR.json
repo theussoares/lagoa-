@@ -1,0 +1,35 @@
+{
+  "seo": {
+    "title": "Lagoa+ · Links",
+    "description": "Clube de fidelidade do comércio de Três Lagoas/MS. Seja uma loja parceira, abra sua carteira de carimbos ou fale com a gente."
+  },
+  "links": {
+    "tagline": "Clube de fidelidade do comércio de Três Lagoas/MS",
+    "newTab": "(abre em outra aba)",
+    "partner": {
+      "label": "Quero ser loja parceira",
+      "hint": "Faça seu cliente voltar e comprar de novo"
+    },
+    "wallet": {
+      "label": "Abrir minha carteira",
+      "hint": "Seus carimbos e prêmios nas lojas da cidade"
+    },
+    "whatsapp": {
+      "label": "Falar no WhatsApp",
+      "hint": "Tire dúvidas direto com a gente",
+      "message": "Olá! Vim pelo Instagram e quero saber mais sobre o Lagoa+."
+    },
+    "sections": {
+      "learn": "Para aprender"
+    },
+    "guide": {
+      "label": "Como o Lagoa+ funciona",
+      "hint": "Passo a passo para lojistas"
+    },
+    "post": {
+      "reading": "{minutes} min de leitura"
+    },
+    "merchantSignIn": "Já sou parceiro: entrar no Balcão",
+    "footer": "© Lagoa+ · Três Lagoas/MS"
+  }
+}
