@@ -54,6 +54,7 @@ const filterOptions = (screen: WalletScreen) =>
           role="secondary"
           :to="card.contact.href"
           target="_blank"
+          rel="noopener noreferrer nofollow"
           external
           block
           :icon="card.contact.icon"

@@ -46,6 +46,7 @@ const titleId = useId()
         role="primary"
         :to="shop.contact.href"
         target="_blank"
+        rel="noopener noreferrer nofollow"
         external
         block
         :icon="shop.contact.icon"

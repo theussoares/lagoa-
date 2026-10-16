@@ -166,3 +166,29 @@ alvos ≥ 44px), se o preview fica ao lado (desktop) ou abaixo dos campos, e o f
 - Formato do link de WhatsApp com mensagem: `https://wa.me/<DDI><número>?text=<mensagem codificada>`, número só com
   dígitos (sem `+`, parênteses ou zero à esquerda); codificar com `encodeURIComponent` (espaço `%20`, quebra `%0A`).
   O link só abre a conversa com o texto escrito; o cliente é quem envia.
+
+## Estado (2026-10-16, implementação)
+
+Passos 1 a 7 feitos na branch `claude/shop-cta-link-2f55e8`. Migration `0026_shop_cta_link` aplicada **só** no `lagoa_test` local
+(container `lagoa-postgres`); produção não foi tocada e segue o `db:migrate:prod`.
+
+**Desvios do desenho, com o porquê:**
+
+1. **Envelope `{ contact }` no GET/PUT** (`ShopContactSchema`/`ShopContactUpdateSchema` são objetos com `contact: botão | null`),
+   em vez de a união `.nullable()` pura. Corpo JSON `null` não passa pelo body-parser estrito do Express e a resposta `null` do
+   Nest sai vazia; o envelope vale igual no BFF, na API e no mock. O BFF não precisou mudar (`contact.put.ts` já repassa o corpo validado).
+2. **`ShopCtaUrl` sem tipo de marca**: o schema já recusa o que não é https público; a marca só obrigaria `as` nas fixtures.
+3. **CHECK com `COALESCE(..., false)`**: sem ele um CHECK que dá `NULL` passa (ex.: `cta_label` solto com `cta_kind` nulo, ou
+   `kind = 'url'` com `cta_url` nulo). Os testes de integração cobrem cada combinação recusada.
+4. **Conversão linha → botão** em `apps/api/src/shops/shop-contact-columns.ts`, usada pelo repository do lojista e pelo catálogo
+   (`catalog-row`); `CatalogShop.contact` já vem validado, e o mapper só repassa. Linha fora do contrato vira "sem botão".
+5. **Composable de tela** devolve um `reactive` (`useShopLinkScreen`); sem container, a página compõe os componentes de `components/shop-link/`.
+6. Cartões usam `rel="noopener noreferrer nofollow"` explícito (o `UButton external` só punha `noopener noreferrer`).
+
+**Verificação:** `pnpm typecheck`, `pnpm test`, `pnpm typecheck:api` e `pnpm test:api` (com `TEST_DATABASE_URL` local) verdes.
+Tela `/botao-do-card` vista no navegador com `NUXT_PUBLIC_MERCHANT_BACKEND=mock` nos dois modos (preview, erro de link, salvar).
+O app do cliente não tem mock, então o card foi renderizado numa página descartável (não commitada) com o `toShopTeaserModel` e o
+`ShopCard` reais: WhatsApp → `https://wa.me/5567991234567?text=Oi!%20Quero%20agendar`, link → `https://minhaloja.com.br/cardapio`,
+ambos `target="_blank"` e rótulo de leitor de tela distinto ("abre o WhatsApp" / "abre outro site").
+
+**Falta:** revisão do `code-reviewer`, PR para `develop` (perguntar antes), e a migration em produção (fora desta tarefa).
