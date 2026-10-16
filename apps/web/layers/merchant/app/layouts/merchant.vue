@@ -26,9 +26,9 @@ const footerItems = computed<SpineNavItem[]>(() => [{ label: t('merchantNav.sett
 </script>
 
 <template>
-  <div class="grid min-h-dvh grid-cols-[var(--merchant-sidebar-width)_minmax(0,1fr)] bg-[#f8fafc] dark:bg-(--lagoa-desk) text-base [--merchant-sidebar-width:230px] print:block">
-    <!-- A barra lateral em azul-petróleo muito escuro, seguindo a referência visual -->
-    <aside class="dark print:hidden sticky top-0 flex h-dvh flex-col bg-[#071d24] px-3.5 py-6 text-default">
+  <div class="grid min-h-dvh grid-cols-[var(--merchant-sidebar-width)_minmax(0,1fr)] bg-[#f8fafc] dark:bg-[#081e26] text-base [--merchant-sidebar-width:230px] print:block">
+    <!-- A barra lateral em azul-petróleo muito escuro, com linha divisória e contraste refinado para o tema escuro -->
+    <aside class="dark print:hidden sticky top-0 flex h-dvh flex-col bg-[#03131a] border-r border-white/10 px-3.5 py-6 text-default">
       <div class="flex flex-col items-start px-2 pb-6">
         <div class="rounded-lg border-[1.5px] border-cyan-400/90 px-2.5 py-1 text-sm font-extrabold tracking-wider text-cyan-400">
           LAGOA+
