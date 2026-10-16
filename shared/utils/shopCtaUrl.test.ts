@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isPublicHttpsUrl, normalizeShopCtaUrl } from './shopCtaUrl'
+import { canonicalShopCtaUrl, isPublicHttpsUrl, normalizeShopCtaUrl } from './shopCtaUrl'
 
 describe('normalizeShopCtaUrl', () => {
   it('adds https:// when the scheme is missing', () => {
@@ -28,10 +28,37 @@ describe('isPublicHttpsUrl', () => {
     'https://10.0.0.1/x',
     'https://[::1]/x',
     'https://loja.com/a b',
+    'https://.com',
+    'https://a..b.com',
+    'https://*.com',
+    'https://loja.com:8443',
+    'https://loja.com:0',
     'not a url',
     '',
     `https://loja.com/${'a'.repeat(500)}`,
   ])('refuses %s', (url) => {
     expect(isPublicHttpsUrl(url)).toBe(false)
+  })
+})
+
+describe('canonicalShopCtaUrl', () => {
+  it.each([
+    ['HTTPS://Loja.com', 'https://loja.com/'],
+    ['Https://loja.com/Cardapio?A=1', 'https://loja.com/Cardapio?A=1'],
+    ['https:loja.com', 'https://loja.com/'],
+    ['https:\\\\loja.com\\x', 'https://loja.com/x'],
+    ['  www.loja.com ', 'https://www.loja.com/'],
+    ['https://lojá.com', 'https://xn--loj-gla.com/'],
+  ])('turns %j into %j, which the database check accepts', (input, expected) => {
+    expect(canonicalShopCtaUrl(input)).toBe(expected)
+  })
+  it('is null for what is not a public https url', () => {
+    expect(canonicalShopCtaUrl('http://loja.com')).toBeNull()
+    expect(canonicalShopCtaUrl('https://localhost')).toBeNull()
+    expect(canonicalShopCtaUrl('https://127.0.0.1')).toBeNull()
+    expect(canonicalShopCtaUrl('')).toBeNull()
+  })
+  it('never lets a NUL byte reach the database', () => {
+    expect(canonicalShopCtaUrl('https://loja.com/\u0000')).not.toContain('\u0000')
   })
 })

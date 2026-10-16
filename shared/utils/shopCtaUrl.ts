@@ -19,9 +19,23 @@ export function isPublicHttpsUrl(input: string): boolean {
     return false
   }
   if (url.protocol !== 'https:' || url.username !== '' || url.password !== '') return false
+  if (url.port !== '') return false
   const host = url.hostname
   if (host.startsWith('[') || !host.includes('.')) return false
+  if (!host.split('.').every((label) => /^[a-z0-9-]+$/.test(label))) return false
   if (host === 'localhost' || host.endsWith('.localhost')) return false
   const lastLabel = host.split('.').pop() ?? ''
   return !/^\d+$/.test(lastLabel)
+}
+
+/** A forma que vai para o banco (esquema e host em minúsculas, IDN em punycode, barras normalizadas); `null` se não for um site público. */
+export function canonicalShopCtaUrl(input: string): string | null {
+  const typed = normalizeShopCtaUrl(input)
+  if (typed === '' || /\s/.test(typed)) return null
+  try {
+    const { href } = new URL(typed)
+    return isPublicHttpsUrl(href) ? href : null
+  } catch {
+    return null
+  }
 }

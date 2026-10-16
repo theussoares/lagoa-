@@ -23,7 +23,11 @@ describe('ShopPublicContactSchema', () => {
 describe('ShopContactUpdateSchema', () => {
   it('adds https:// to a url typed without the scheme', () => {
     const parsed = ShopContactUpdateSchema.parse({ contact: { ...url, url: ' www.loja.com ' } })
-    expect(parsed.contact).toMatchObject({ kind: 'url', url: 'https://www.loja.com' })
+    expect(parsed.contact).toMatchObject({ kind: 'url', url: 'https://www.loja.com/' })
+  })
+  it('stores the canonical form, so the database check never sees upper case or a missing slash pair', () => {
+    const parsed = ShopContactUpdateSchema.parse({ contact: { ...url, url: 'HTTPS://Loja.com/x' } })
+    expect(parsed.contact).toMatchObject({ url: 'https://loja.com/x' })
   })
   it.each(['javascript:alert(1)', 'http://loja.com', 'https://localhost', 'https://u:p@loja.com', 'https://10.0.0.1'])(
     'refuses %s',

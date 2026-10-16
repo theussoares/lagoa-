@@ -3,7 +3,7 @@ import { LoyaltyCardIdSchema, ShopIdSchema } from './ids'
 import { EarnRateSchema, ProgramUnitSchema } from './program'
 import { readableCodeSchema } from './common'
 import { PhoneNumberSchema } from './phone'
-import { isPublicHttpsUrl, normalizeShopCtaUrl } from '../utils/shopCtaUrl'
+import { canonicalShopCtaUrl, isPublicHttpsUrl } from '../utils/shopCtaUrl'
 import {
   CHECK_IN_CODE_INPUT_MAX_LENGTH,
   CHECK_IN_CODE_LENGTH,
@@ -66,7 +66,11 @@ const StoredCtaUrlSchema = z.string().max(SHOP_CTA_URL_MAX_LENGTH).refine(isPubl
 /** O que o lojista digita: ganha `https://` se vier sem esquema e só passa se for um site público. */
 const TypedCtaUrlSchema = z
   .string()
-  .transform(normalizeShopCtaUrl)
+  .transform((input, ctx) => {
+    const canonical = canonicalShopCtaUrl(input)
+    if (canonical === null) ctx.addIssue({ code: 'custom', message: 'invalidShopCtaUrl' })
+    return canonical ?? ''
+  })
   .pipe(StoredCtaUrlSchema)
 
 /**

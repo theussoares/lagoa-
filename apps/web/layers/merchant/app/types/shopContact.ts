@@ -1,7 +1,7 @@
-import type { ShopContactUpdate } from '#shared/schemas/shop'
+import type { ShopContactUpdate, ShopPublicContact } from '#shared/schemas/shop'
 import type { ShopContactError } from '../services/ShopContactService'
 
-export type ShopContactKind = 'whatsapp' | 'url'
+export type ShopContactKind = ShopPublicContact['kind']
 
 /** O que a pessoa digitou na tela "Botão do card": só os campos do modo escolhido valem ao salvar. */
 export interface ShopContactForm {

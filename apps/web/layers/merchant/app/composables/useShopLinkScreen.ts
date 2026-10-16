@@ -1,3 +1,4 @@
+import type { ShopContactUpdate } from '#shared/schemas/shop'
 import type { ShopContactForm, ShopContactFormErrorCode, ShopContactMessage, ShopContactSaveState, ShopLinkScreen } from '../types/shopContact'
 import { formatWhatsapp, formFromContact, isFormErrorCode, toContactPreview, toContactUpdate, whatsappDigits } from '../utils/shopContactForm'
 
@@ -21,10 +22,16 @@ export function useShopLinkScreen(): ShopLinkScreen {
   })
   const message = computed<ShopContactMessage | null>(() => {
     const current = state.value
+    if (loaded.value.status === 'error' && current.status === 'idle') return { tone: 'error', key: `errors.${loaded.value.error.code}` }
     if (current.status === 'saved') return { tone: 'success', key: 'merchantShopLink.saved' }
     if (current.status === 'removed') return { tone: 'success', key: 'merchantShopLink.removed' }
     if (current.status === 'error' && fieldError.value === null) return { tone: 'error', key: `errors.${current.code}` }
     return null
+  })
+
+  // Sessão vencida no carregamento: mesmo caminho do salvar. Os outros erros aparecem na mensagem, sem salvar por cima às cegas.
+  watch(loaded, (current) => {
+    if (current.status === 'error' && current.error.code === 'unauthorized') expire()
   })
 
   function change(patch: Partial<ShopContactForm>): void {
@@ -33,7 +40,7 @@ export function useShopLinkScreen(): ShopLinkScreen {
     state.value = { status: 'idle' }
   }
 
-  async function send(update: Parameters<typeof shopContact.saveContact>[0], done: ShopContactSaveState): Promise<void> {
+  async function send(update: ShopContactUpdate, done: ShopContactSaveState): Promise<void> {
     state.value = { status: 'saving' }
     const result = await shopContact.saveContact(update)
     if (!result.ok) {
@@ -47,7 +54,7 @@ export function useShopLinkScreen(): ShopLinkScreen {
   }
 
   async function save(): Promise<void> {
-    if (state.value.status === 'saving') return
+    if (state.value.status === 'saving' || loaded.value.status !== 'success') return
     const result = toContactUpdate(form.value)
     if (!result.ok) {
       state.value = { status: 'error', code: result.code }
@@ -57,7 +64,7 @@ export function useShopLinkScreen(): ShopLinkScreen {
   }
 
   async function remove(): Promise<void> {
-    if (state.value.status === 'saving') return
+    if (state.value.status === 'saving' || loaded.value.status !== 'success') return
     await send({ contact: null }, { status: 'removed' })
   }
 

@@ -192,3 +192,16 @@ O app do cliente não tem mock, então o card foi renderizado numa página desca
 ambos `target="_blank"` e rótulo de leitor de tela distinto ("abre o WhatsApp" / "abre outro site").
 
 **Falta:** revisão do `code-reviewer`, PR para `develop` (perguntar antes), e a migration em produção (fora desta tarefa).
+
+### Revisão do code-reviewer (aplicada)
+
+- **URL canônica**: o schema de entrada grava `new URL(x).href` (`canonicalShopCtaUrl`), então `HTTPS://Loja.com`, `https:loja.com` ou barra invertida
+  não batem no CHECK `^https://` (antes davam 500). Host só com rótulos `[a-z0-9-]` não vazios; porta fora do padrão recusada.
+  Teste de integração: `HTTPS://Loja.com/Cardapio` salva como `https://loja.com/Cardapio`.
+- **Erro ao carregar** o botão aparece na mensagem da tela e não deixa salvar às cegas; `unauthorized` derruba a sessão.
+- `MOCK_STATE_VERSION` 9 → 10 (o formato de `contact` mudou).
+- **Ordem de deploy obrigatória: migration `0026` → API → web.** O web novo valida `contact` com `kind`: contra a API antiga, a
+  Carteira/Descobrir de lojas com WhatsApp falhariam. Entre a migration e a API nova, o PUT antigo (grava `whatsapp` sem `cta_kind`)
+  recusa no CHECK: manter a janela curta.
+- Não feito (decisão): confirmação em "Tirar o botão" (é reversível em segundos: o lojista refaz o botão); sem teste de composável
+  nem de BFF `contact.put` (cobertos pelos testes de schema e do mock; `useAsyncResult` exige montagem Nuxt).

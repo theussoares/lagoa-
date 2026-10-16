@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { PhoneNumberSchema } from '#shared/schemas/phone'
+import { ShopContactUpdateSchema } from '#shared/schemas/shop'
 import { shops } from '../../database/schema'
 import { TEST_DATABASE_URL, TestDatabase } from '../../test-support/test-database'
 import { DrizzleShopContactRepository } from './drizzle-shop-contact.repository'
@@ -27,6 +28,15 @@ describe.skipIf(!TEST_DATABASE_URL)('shop contact against a real database', () =
     const [row] = await data.db.select({ whatsapp: shops.whatsapp, message: shops.whatsappMessage }).from(shops).where(eq(shops.id, shop.id))
     expect(row).toEqual({ whatsapp: null, message: null })
     expect(await service.replace(shop.id, { contact: null })).toEqual({ ok: true, value: { contact: null } })
+  }, 30_000)
+
+  it('stores a link typed with upper case in the canonical form the database check accepts', async () => {
+    const shop = await data.createShop()
+    const update = ShopContactUpdateSchema.parse({ contact: { kind: 'url', url: 'HTTPS://Loja.com/Cardapio', ctaLabel: 'Ver cardápio' } })
+    expect(await service.replace(shop.id, update)).toEqual({
+      ok: true,
+      value: { contact: { kind: 'url', url: 'https://loja.com/Cardapio', ctaLabel: 'Ver cardápio' } },
+    })
   }, 30_000)
 
   it('refuses at the database every combination the modes do not allow', async () => {
