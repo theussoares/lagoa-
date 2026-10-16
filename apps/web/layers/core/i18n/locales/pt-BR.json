@@ -138,7 +138,8 @@
     "customers": "Clientes",
     "program": "Programa e prêmios",
     "campaigns": "Campanhas",
-    "mainLabel": "Navegação principal"
+    "mainLabel": "Navegação principal",
+    "shopLink": "Botão do card"
   },
   "common": {
     "loading": "Carregando",
@@ -709,24 +710,6 @@
     "title": "Configurações",
     "lead": "Foto da loja e ajustes deste computador ou tablet do balcão.",
     "appearance": "Aparência",
-    "contact": {
-      "title": "WhatsApp nos cards",
-      "lead": "O botão aparece no card da sua loja no Descobrir e na carteira do cliente, e abre uma conversa com este número.",
-      "whatsappLabel": "WhatsApp da loja",
-      "whatsappHint": "Celular com DDD. Deixe vazio para não mostrar o botão.",
-      "invalidWhatsapp": "Digite um celular com DDD, como (67) 99999-9999.",
-      "labelLabel": "Texto do botão",
-      "labelHint": "Até 24 caracteres",
-      "presets": "Sugestões de texto do botão",
-      "preset": {
-        "schedule": "Agendar agora",
-        "order": "Pedir agora",
-        "buy": "Comprar agora",
-        "talk": "Falar no WhatsApp"
-      },
-      "save": "Salvar",
-      "saved": "Salvo. O botão já aparece nos cards."
-    },
     "photo": {
       "uploading": "Enviando a foto…",
       "saved": "Imagem salva. Ela já aparece no Descobrir.",
@@ -748,6 +731,63 @@
         "alt": "Banner atual da loja"
       }
     }
+  },
+  "merchantShopLink": {
+    "title": "Botão do card",
+    "lead": "O botão aparece no card da sua loja no Descobrir e na carteira de quem já é cliente. Escolha para onde ele leva.",
+    "formTitle": "Para onde o botão leva",
+    "kind": {
+      "legend": "Tipo de botão",
+      "whatsapp": {
+        "title": "WhatsApp",
+        "hint": "Abre uma conversa com a sua loja, com a mensagem já escrita."
+      },
+      "url": {
+        "title": "Link de um site",
+        "hint": "iFood, agenda online, cardápio, Instagram ou o site da loja."
+      }
+    },
+    "whatsapp": {
+      "label": "WhatsApp da loja",
+      "hint": "Celular com DDD.",
+      "invalid": "Digite um celular com DDD, como (67) 99999-9999."
+    },
+    "message": {
+      "label": "Mensagem pronta (opcional)",
+      "hint": "Já aparece escrita na conversa; o cliente só precisa enviar.",
+      "placeholder": "Oi! Vim pelo Lagoa+ e quero agendar um horário.",
+      "count": "{count} de {max}"
+    },
+    "url": {
+      "label": "Link",
+      "hint": "Cole o endereço completo. Só abrimos sites com https://.",
+      "invalid": "Digite um link que comece com https://, como https://minhaloja.com.br."
+    },
+    "label": {
+      "label": "Texto do botão",
+      "hintWhatsapp": "Até 24 caracteres. Vazio usa \"Falar no WhatsApp\".",
+      "hintUrl": "Até 24 caracteres.",
+      "missing": "Escreva o texto do botão.",
+      "presets": "Sugestões de texto do botão",
+      "preset": {
+        "call": "Chamar agora",
+        "schedule": "Agendar agora",
+        "order": "Pedir agora",
+        "talk": "Falar no WhatsApp",
+        "buy": "Comprar agora",
+        "menu": "Ver cardápio"
+      }
+    },
+    "preview": {
+      "title": "Como fica no card",
+      "lead": "É assim que o cliente vê o botão.",
+      "test": "Testar o link",
+      "empty": "Preencha os campos para ver o botão."
+    },
+    "save": "Salvar",
+    "remove": "Tirar o botão",
+    "saved": "Salvo. O botão já aparece nos cards.",
+    "removed": "Pronto. O botão saiu dos cards."
   },
   "clubSetup": {
     "pageTitle": "Criar o clube",
@@ -813,7 +853,8 @@
   },
   "shopContact": {
     "defaultLabel": "Falar no WhatsApp",
-    "accessibleLabel": "{label}: {shop} (abre o WhatsApp)"
+    "accessibleLabel": "{label}: {shop} (abre o WhatsApp)",
+    "accessibleLabelUrl": "{label}: {shop} (abre outro site)"
   },
   "invite": {
     "pageTitle": "Convite",

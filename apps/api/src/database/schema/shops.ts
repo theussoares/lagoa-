@@ -20,8 +20,11 @@ export const shops = pgTable(
     /** Caminhos no bucket `shop-assets` (nunca a URL): logo quadrado e banner, a capa do card no Descobrir. */
     logoPath: text('logo_path'),
     bannerPath: text('banner_path'),
-    /** Contato público da loja nos cards: WhatsApp (só dígitos, celular BR) e o texto do botão. */
+    /** Botão do card: `ctaKind` 'whatsapp' (número + mensagem pronta) ou 'url' (link https + texto); `null` = sem botão. */
+    ctaKind: text('cta_kind'),
     whatsapp: text('whatsapp'),
+    whatsappMessage: text('whatsapp_message'),
+    ctaUrl: text('cta_url'),
     ctaLabel: text('cta_label'),
     status: shopStatus('status').notNull().default('pending'),
     plan: shopPlan('plan').notNull().default('founder'),
@@ -37,7 +40,18 @@ export const shops = pgTable(
     index('shops_status_idx').on(t.status),
     uniqueIndex('shops_owner_uq').on(t.ownerUserId),
     check('shops_whatsapp_check', sql`${t.whatsapp} IS NULL OR ${t.whatsapp} ~ '^[1-9]{2}9[0-9]{8}$'`),
-    check('shops_cta_label_check', sql`${t.ctaLabel} IS NULL OR (${t.whatsapp} IS NOT NULL AND char_length(${t.ctaLabel}) BETWEEN 1 AND 24)`),
+    check('shops_cta_kind_check', sql`${t.ctaKind} IS NULL OR ${t.ctaKind} IN ('whatsapp', 'url')`),
+    // COALESCE: um CHECK que dá NULL passa; sem ele, `cta_label` solto (kind NULL) e `url` sem endereço escapariam.
+    check(
+      'shops_cta_modes_check',
+      sql`COALESCE((${t.ctaKind} IS NULL AND ${t.whatsapp} IS NULL AND ${t.ctaUrl} IS NULL AND ${t.whatsappMessage} IS NULL AND ${t.ctaLabel} IS NULL)
+        OR (${t.ctaKind} = 'whatsapp' AND ${t.whatsapp} IS NOT NULL AND ${t.ctaUrl} IS NULL
+          AND (${t.whatsappMessage} IS NULL OR char_length(${t.whatsappMessage}) BETWEEN 1 AND 300)
+          AND (${t.ctaLabel} IS NULL OR char_length(${t.ctaLabel}) BETWEEN 1 AND 24))
+        OR (${t.ctaKind} = 'url' AND ${t.ctaUrl} ~ '^https://' AND char_length(${t.ctaUrl}) <= 500
+          AND ${t.whatsapp} IS NULL AND ${t.whatsappMessage} IS NULL
+          AND char_length(${t.ctaLabel}) BETWEEN 1 AND 24), false)`,
+    ),
   ],
 )
 

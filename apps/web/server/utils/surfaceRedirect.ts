@@ -12,7 +12,7 @@ export interface SurfaceRequest {
   readonly pathAndQuery: string
 }
 
-const MERCHANT_PATHS = ['/painel', '/configuracoes', '/campanhas', '/balcao', '/programa', '/clientes']
+const MERCHANT_PATHS = ['/painel', '/configuracoes', '/campanhas', '/balcao', '/programa', '/botao-do-card', '/clientes']
 const CUSTOMER_PATHS = ['/carteira', '/descobrir', '/premios', '/check-in', '/ranking', '/convite', '/perfil', '/entrar']
 
 function hostOf(origin: string): string | null {

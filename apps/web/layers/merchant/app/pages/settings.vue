@@ -9,7 +9,6 @@ useHead({ title: () => `${t('merchantSettings.title')} · ${t('app.name')}` })
 const theme = useThemePreference()
 const themeLabels = computed(() => ({ legend: t('theme.legend'), light: t('theme.light'), dark: t('theme.dark') }))
 const photos = useShopPhotos()
-const contact = useShopContact()
 const SHOP_PHOTO_KINDS = ShopPhotoKindSchema.options
 </script>
 
@@ -24,15 +23,6 @@ const SHOP_PHOTO_KINDS = ShopPhotoKindSchema.options
           :loading="photos.loading.value"
           :send="photos.send.value[kind]"
           @choose="(file) => photos.choose(kind, file)"
-        />
-      </PanelModule>
-      <PanelModule :title="t('merchantSettings.contact.title')">
-        <SettingsShopContact
-          v-model:whatsapp="contact.whatsapp.value"
-          v-model:cta-label="contact.ctaLabel.value"
-          :loading="contact.loading.value"
-          :state="contact.state.value"
-          @save="contact.save"
         />
       </PanelModule>
       <PanelModule :title="t('merchantSettings.appearance')">
