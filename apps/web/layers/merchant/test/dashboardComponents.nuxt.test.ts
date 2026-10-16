@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import type { CustomerId } from '#shared/schemas/ids'
 import type { MerchantCustomerPage, MerchantCustomerRow } from '#shared/schemas/customer'
+import { MaskedPhoneSchema } from '#shared/schemas/phone'
 import type { Program } from '#shared/schemas/program'
 import type { WeekSummary } from '#shared/schemas/weekSummary'
 import { mountComponent, unmountAll } from '#layers/core/test/componentHarness.nuxt'
@@ -36,7 +37,7 @@ function mockCustomer(id: string, firstName: string, balance: number, lastVisitA
   return {
     customerId: id as CustomerId,
     firstName,
-    maskedPhone: '(67) 9••••-0871',
+    maskedPhone: MaskedPhoneSchema.parse('(67) 9••••-0871'),
     balance,
     target: 100,
     unit: 'point',

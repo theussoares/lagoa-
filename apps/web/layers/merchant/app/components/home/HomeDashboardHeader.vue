@@ -34,7 +34,7 @@ const currentDateFormatted = computed(() => {
       </p>
     </div>
 
-    <div class="flex flex-wrap items-center gap-3 sm:gap-4 shrink-0">
+    <div class="flex flex-wrap items-center gap-3 sm:gap-4 shrink-0 sm:pr-14">
       <!-- Data atual no fuso brasileiro -->
       <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
         <UIcon name="i-ph-calendar-blank" class="size-4.5 text-slate-400" aria-hidden="true" />

@@ -10,6 +10,8 @@ export default defineAppConfig({
       neutral: 'mesa',
     },
     icons: {
+      dark: 'i-ph-moon',
+      light: 'i-ph-sun',
       arrowLeft: 'i-ph-arrow-left',
       arrowRight: 'i-ph-arrow-right',
       check: 'i-ph-check',

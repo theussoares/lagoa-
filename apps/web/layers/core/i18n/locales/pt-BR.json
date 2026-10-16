@@ -281,7 +281,10 @@
   "theme": {
     "legend": "Cores do app neste aparelho",
     "light": "Claro",
-    "dark": "Escuro"
+    "dark": "Escuro",
+    "toggle": "Alternar tema",
+    "switchToLight": "Mudar para tema claro",
+    "switchToDark": "Mudar para tema escuro"
   },
   "merchantSignIn": {
     "pageTitle": "Entrar no painel",
