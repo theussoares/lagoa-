@@ -409,3 +409,21 @@ button[disabled] {
   cursor: not-allowed;
 }
 
+/* Links de ação de cabeçalho e cards: sem sublinhado nativo e animação de seta suave */
+.group\/link,
+[class*="group/link"],
+.group\/link *,
+[class*="group/link"] * {
+  text-decoration: none !important;
+}
+.group\/link:hover,
+[class*="group/link"]:hover,
+.group\/link:hover *,
+[class*="group/link"]:hover * {
+  text-decoration: none !important;
+}
+.group\/link:hover [class*="arrow-right"],
+[class*="group/link"]:hover [class*="arrow-right"] {
+  transform: translateX(2px);
+}
+

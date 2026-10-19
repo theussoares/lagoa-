@@ -80,10 +80,10 @@ const alerts = computed<OpportunityItem[]>(() => {
       </div>
       <NuxtLink
         to="/clientes"
-        class="group/link inline-flex items-center gap-1.5 text-xs font-semibold text-[#0f6381] dark:text-cyan-400 hover:text-[#0b4d66] dark:hover:text-cyan-300 hover:bg-[#e8f6f8] dark:hover:bg-cyan-950/50 px-2 py-1 -mr-2 rounded-lg transition-all duration-150"
+        class="group group/link no-underline hover:no-underline inline-flex items-center gap-1.5 text-xs font-semibold text-[#0f6381] dark:text-cyan-400 hover:text-[#0b4d66] dark:hover:text-cyan-300 hover:bg-[#e8f6f8] dark:hover:bg-cyan-950/50 px-2 py-1 -mr-2 rounded-lg transition-all duration-150"
       >
-        <span>{{ t('home.opportunities.seeAll') }}</span>
-        <UIcon name="i-ph-arrow-right" class="size-3 transition-transform duration-200 group-hover/link:translate-x-0.5" aria-hidden="true" />
+        <span class="no-underline">{{ t('home.opportunities.seeAll') }}</span>
+        <UIcon name="i-ph-arrow-right" class="size-3 transition-transform duration-200 group-hover:translate-x-0.5 group-hover/link:translate-x-0.5" aria-hidden="true" />
       </NuxtLink>
     </header>
 
