@@ -172,6 +172,9 @@ Onde ele fala em "CLAUDE.md", leia este arquivo de regras.
 | Convite de admin          | `adminInvite`                  |
 | Equipe do admin           | `adminTeam`                    |
 | Registro de auditoria do admin | `adminEvent`              |
+| Zerar o MFA de um admin (perdeu o autenticador) | `resetMfa` |
+| Tentativa de login do admin (teto por e-mail) | `adminLoginAttempt` |
+| Primeiro admin (por script) | `admin:create` (`bootstrap`) |
 
 Termo novo de domínio entra nesta tabela antes de virar código.
 

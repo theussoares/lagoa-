@@ -29,6 +29,16 @@ export const AdminInviteSchema = z.strictObject({
 })
 export type AdminInvite = z.infer<typeof AdminInviteSchema>
 
+/** O que fica em `admin_events.kind`: quem convidou, desativou, reativou ou zerou o MFA de quem. */
+export const AdminEventKindSchema = z.enum(['invite', 'disable', 'reactivate', 'resetMfa'])
+export type AdminEventKind = z.infer<typeof AdminEventKindSchema>
+
+/** O BFF do admin reserva a tentativa de login antes de mandar a senha ao Supabase. Só o e-mail, normalizado. */
+export const AdminLoginAttemptSchema = z.strictObject({
+  email: z.string().trim().toLowerCase().pipe(z.email().max(EMAIL_MAX_LENGTH)),
+})
+export type AdminLoginAttempt = z.infer<typeof AdminLoginAttemptSchema>
+
 /** Ação do admin sobre uma loja. Suspender exige o motivo. */
 export const AdminShopActionSchema = z.discriminatedUnion('action', [
   z.strictObject({ action: z.literal('approve') }),

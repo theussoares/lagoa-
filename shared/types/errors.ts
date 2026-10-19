@@ -1,6 +1,6 @@
 import type { IsoDateTime } from '../schemas/common'
 
-export type DomainEntity = 'shop' | 'program' | 'customer' | 'merchant' | 'card' | 'redemption' | 'visitQr' | 'hitItem' | 'featuredPlacement'
+export type DomainEntity = 'shop' | 'program' | 'customer' | 'merchant' | 'card' | 'redemption' | 'visitQr' | 'hitItem' | 'featuredPlacement' | 'adminUser'
 
 /**
  * Erros esperados de regra de negócio. A UI traduz `code` para a chave
@@ -76,6 +76,8 @@ export type DomainError =
   | { readonly code: 'slotsFull' }
   /** Destaque para loja que não está aprovada, ou banner com produto não aprovado ou de outra loja. */
   | { readonly code: 'invalidTarget' }
+  /** Convite de admin para um e-mail que já tem conta (de admin, inclusive desativado, ou de cliente/lojista): nunca promove. */
+  | { readonly code: 'alreadyExists' }
 
 export type DomainErrorCode = DomainError['code']
 

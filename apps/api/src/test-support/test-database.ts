@@ -270,6 +270,11 @@ export class TestDatabase {
     this.userIds.push(userId)
   }
 
+  /** Para o admin criado pelo próprio serviço sob teste (não por `createAdminUser`): entra na limpeza do fim. */
+  trackAdmin(adminId: string): void {
+    this.adminIds.push(adminId)
+  }
+
   /** Para a loja criada pelo próprio serviço sob teste (não por `createShop`): entra na limpeza do fim. */
   trackShop(shopId: string): void {
     this.shopIds.push(shopId)

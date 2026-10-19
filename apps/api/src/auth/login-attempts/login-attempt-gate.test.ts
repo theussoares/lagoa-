@@ -1,6 +1,7 @@
 import type { ThrottlerStorage } from '@nestjs/throttler'
-import { describe, expect, it } from 'vitest'
-import { LOGIN_VERIFY_ATTEMPTS_MAX, LOGIN_VERIFY_WINDOW_MINUTES } from '#shared/constants/domain'
+import { Logger } from '@nestjs/common'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { ADMIN_LOGIN_ATTEMPTS_MAX, ADMIN_LOGIN_WINDOW_MINUTES, LOGIN_VERIFY_ATTEMPTS_MAX, LOGIN_VERIFY_WINDOW_MINUTES } from '#shared/constants/domain'
 import { PhoneNumberSchema } from '#shared/schemas/phone'
 import { createTestPii } from '../../test-support/pii'
 import { toStorageRecord, type ThrottlerRecord } from '../../throttling/throttle-window.rules'
@@ -28,6 +29,8 @@ function setup() {
   return { counter, gate: new LoginAttemptGate(counter, createTestPii()) }
 }
 
+afterEach(() => vi.restoreAllMocks())
+
 describe('LoginAttemptGate', () => {
   it(`lets a phone try ${LOGIN_VERIFY_ATTEMPTS_MAX} codes in the window and refuses the next`, async () => {
     const { gate } = setup()
@@ -52,6 +55,41 @@ describe('LoginAttemptGate', () => {
   it('refuses when the counter is down (fail-closed)', async () => {
     const { counter, gate } = setup()
     counter.failing = true
+    const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined)
     expect(await gate.allow(PHONE)).toBe(false)
+    expect(warn).toHaveBeenCalledOnce()
+  })
+})
+
+describe('LoginAttemptGate for admin password logins', () => {
+  const EMAIL = 'ana@rede.test'
+
+  it(`lets an e-mail try ${ADMIN_LOGIN_ATTEMPTS_MAX} times in the window and refuses the next`, async () => {
+    const { gate } = setup()
+    for (let attempt = 0; attempt < ADMIN_LOGIN_ATTEMPTS_MAX; attempt += 1) expect(await gate.reserveAdminLogin(EMAIL)).toBe('allowed')
+    expect(await gate.reserveAdminLogin(EMAIL)).toBe('refused')
+  })
+
+  it('keys the counter by the e-mail hash, never the e-mail, apart from the phone counters', async () => {
+    const { counter, gate } = setup()
+    await gate.reserveAdminLogin(EMAIL)
+    expect(counter.calls[0]?.key).toMatch(/^admin-login:[0-9a-f]{64}$/)
+    expect(counter.calls[0]?.key).not.toContain('ana')
+    expect(counter.calls[0]?.ttl).toBe(ADMIN_LOGIN_WINDOW_MINUTES * 60_000)
+  })
+
+  it('counts the same e-mail written with spaces or capitals as one', async () => {
+    const { counter, gate } = setup()
+    await gate.reserveAdminLogin(EMAIL)
+    await gate.reserveAdminLogin(' Ana@Rede.TEST ')
+    expect(new Set(counter.calls.map((call) => call.key)).size).toBe(1)
+  })
+
+  it('answers unavailable when the counter is down (fail-closed, told apart from the cap)', async () => {
+    const { counter, gate } = setup()
+    counter.failing = true
+    const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined)
+    expect(await gate.reserveAdminLogin(EMAIL)).toBe('unavailable')
+    expect(warn.mock.calls.join('\n')).not.toContain('ana@')
   })
 })

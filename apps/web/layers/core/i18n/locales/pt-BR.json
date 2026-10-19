@@ -191,7 +191,8 @@
     "conflict": "Este produto mudou enquanto você olhava. Recarregue e confira de novo.",
     "invalidTransition": "Essa ação não vale para a situação atual do produto.",
     "slotsFull": "As vagas pagas desta vitrine já estão todas tomadas em parte desse período. Escolha outras datas.",
-    "invalidTarget": "Destaque só para loja aprovada e, no banner, para um produto aprovado da própria loja."
+    "invalidTarget": "Destaque só para loja aprovada e, no banner, para um produto aprovado da própria loja.",
+    "alreadyExists": "Esse e-mail já tem uma conta no Lagoa+. Se for de um admin desativado, use Reativar."
   },
   "ledger": {
     "yesterday": "Ontem",

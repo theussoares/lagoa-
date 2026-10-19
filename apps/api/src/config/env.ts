@@ -26,7 +26,10 @@ const EnvSchema = z
     /** Liga o gate do termo do lojista (`merchantTermsNotAccepted`). Desligado até o texto do jurídico existir (P-M7). */
     MERCHANT_TERMS_REQUIRED: z.enum(['0', '1']).default('0'),
     CORS_ORIGIN: z.string().default('http://localhost:3000'),
-    /** Chave service role do Supabase: só para gravar a foto da loja no bucket `shop-assets`. Sem ela, o envio da foto falha. */
+    /**
+     * Chave service role do Supabase: só para gravar a foto da loja no bucket `shop-assets` e para a equipe do admin
+     * (convidar, zerar o MFA, `admin:create`). Sem ela, essas ações falham.
+     */
     SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
   })
   .superRefine((env, context) => {

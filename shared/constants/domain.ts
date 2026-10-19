@@ -161,3 +161,11 @@ export const ADMIN_SHOPS_SEARCH_MAX_LENGTH = 80
 export const ADMIN_SHOP_HISTORY_LIMIT = 20
 /** Janela das visitas que o detalhe da loja mostra ao admin. */
 export const ADMIN_SHOP_STATS_WINDOW_DAYS = 30
+/** Teto da lista da equipe do admin (a rede tem poucas pessoas; o teto só impede uma lista sem fim). */
+export const ADMIN_TEAM_LIST_LIMIT = 100
+/**
+ * Tentativas de login por senha por e-mail de admin na janela (o BFF reserva antes de chamar o Supabase). Mesmo motivo do
+ * teto do celular: o limite do Supabase é por IP e lá chega o IP do BFF.
+ */
+export const ADMIN_LOGIN_ATTEMPTS_MAX = 5
+export const ADMIN_LOGIN_WINDOW_MINUTES = 15
