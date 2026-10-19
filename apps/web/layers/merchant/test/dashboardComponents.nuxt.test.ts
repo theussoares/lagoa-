@@ -146,14 +146,14 @@ describe('HomeIndicatorCards', () => {
 
     expect(page.text()).toContain('Clientes sumidos')
     expect(page.text()).toContain('14')
-    expect(page.text()).toContain('Ver clientes sumidos')
+    expect(page.text()).toContain('Detalhes')
 
     expect(page.text()).toContain('Prêmios entregues')
     expect(page.text()).toContain('32')
 
     expect(page.text()).toContain('Perto do prêmio')
     expect(page.text()).toContain('6')
-    expect(page.text()).toContain('Ver clientes próximos do prêmio')
+    expect(page.text()).toContain('Detalhes')
   })
 })
 

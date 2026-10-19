@@ -555,7 +555,7 @@
       "lapsedDescription": "há mais de {days} dias sem visita",
       "oldestLapsed": "mais antigo: há {days} dias",
       "noLapsed": "Nenhum cliente sumido 🎉",
-      "seeLapsedAction": "Ver clientes sumidos",
+      "seeLapsedAction": "Detalhes",
       "deliveredRewards": "Prêmios entregues",
       "thisMonth": "este mês",
       "thisWeek": "esta semana",
@@ -565,7 +565,7 @@
       "nearReward": "Perto do prêmio",
       "nearRewardDescription": "a partir de 80% da meta",
       "noNearReward": "Ninguém perto da meta",
-      "seeNearRewardAction": "Ver clientes próximos do prêmio"
+      "seeNearRewardAction": "Detalhes"
     },
     "monthSummary": {
       "title": "Resumo do mês",
