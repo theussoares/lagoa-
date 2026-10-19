@@ -57,7 +57,7 @@ const currentDateFormatted = computed(() => {
         variant="ghost"
         color="neutral"
         icon="i-ph-arrow-clockwise"
-        class="size-9 justify-center rounded-lg"
+        class="size-9 justify-center rounded-lg cursor-pointer transition-all duration-150 hover:bg-slate-100 dark:hover:bg-white/10 active:scale-95"
         :aria-label="t('home.refresh')"
         :loading="loading"
         @click="emit('refresh')"

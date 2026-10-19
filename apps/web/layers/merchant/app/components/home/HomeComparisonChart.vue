@@ -71,7 +71,7 @@ const metricList = computed<MetricItem[]>(() => {
 </script>
 
 <template>
-  <section class="bg-white dark:bg-(--ui-bg) rounded-2xl p-5 border border-slate-100/90 dark:border-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.03)] flex flex-col justify-between">
+  <section class="bg-white dark:bg-(--ui-bg) rounded-2xl p-5 border border-slate-100/90 dark:border-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.03)] flex flex-col justify-between transition-all duration-200 hover:border-slate-200/90 dark:hover:border-white/15 hover:shadow-xs">
     <!-- Header -->
     <div>
       <header class="flex items-center justify-between pb-1">
@@ -86,10 +86,10 @@ const metricList = computed<MetricItem[]>(() => {
 
         <NuxtLink
           to="/balcao"
-          class="inline-flex items-center gap-1 text-xs font-semibold text-[#0f6381] dark:text-cyan-400 hover:underline"
+          class="group/link inline-flex items-center gap-1.5 text-xs font-semibold text-[#0f6381] dark:text-cyan-400 hover:text-[#0b4d66] dark:hover:text-cyan-300 hover:bg-[#e8f6f8] dark:hover:bg-cyan-950/50 px-2 py-1 -mr-2 rounded-lg transition-all duration-150"
         >
           <span>{{ t('home.monthSummary.details') }}</span>
-          <UIcon name="i-ph-arrow-right" class="size-3" aria-hidden="true" />
+          <UIcon name="i-ph-arrow-right" class="size-3 transition-transform duration-200 group-hover/link:translate-x-0.5" aria-hidden="true" />
         </NuxtLink>
       </header>
 
@@ -100,10 +100,10 @@ const metricList = computed<MetricItem[]>(() => {
             v-for="period in periodTabs"
             :key="period.value"
             type="button"
-            class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-150 cursor-pointer active:scale-95"
             :class="selectedPeriod === period.value
-              ? 'bg-white dark:bg-white/15 text-[#0f6381] dark:text-cyan-300 shadow-sm'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+              ? 'bg-white dark:bg-white/15 text-[#0f6381] dark:text-cyan-300 shadow-xs hover:shadow-sm'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-white/10'"
             @click="selectedPeriod = period.value"
           >
             {{ period.label }}
@@ -130,7 +130,7 @@ const metricList = computed<MetricItem[]>(() => {
         <div
           v-for="item in metricList"
           :key="item.id"
-          class="flex flex-col items-center justify-end h-full group"
+          class="flex flex-col items-center justify-end h-full group/col"
         >
           <!-- Variação percentual -->
           <div class="mb-2 text-center">
@@ -163,7 +163,7 @@ const metricList = computed<MetricItem[]>(() => {
                 {{ item.previous }}
               </span>
               <div
-                class="w-full rounded-t-[4px] bg-[#9ed1df] dark:bg-[#1a4f61] transition-all duration-300"
+                class="w-full rounded-t-[4px] bg-[#9ed1df] dark:bg-[#1a4f61] transition-all duration-300 group-hover/col:brightness-105"
                 :style="{ height: `${item.previousHeight}%` }"
                 :title="`${item.label} (Anterior): ${item.previous}`"
               />
@@ -175,7 +175,7 @@ const metricList = computed<MetricItem[]>(() => {
                 {{ item.current }}
               </span>
               <div
-                class="w-full rounded-t-[4px] bg-[#0f6381] dark:bg-cyan-400 transition-all duration-300"
+                class="w-full rounded-t-[4px] bg-[#0f6381] dark:bg-cyan-400 transition-all duration-300 group-hover/col:brightness-110"
                 :style="{ height: `${item.currentHeight}%` }"
                 :title="`${item.label} (Atual): ${item.current}`"
               />

@@ -111,7 +111,7 @@ function getEventDetails(item: HomeActivityItem) {
 </script>
 
 <template>
-  <section class="bg-white dark:bg-(--ui-bg) rounded-2xl p-5 border border-slate-100/90 dark:border-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.03)] flex flex-col">
+  <section class="bg-white dark:bg-(--ui-bg) rounded-2xl p-5 border border-slate-100/90 dark:border-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.03)] flex flex-col transition-all duration-200 hover:border-slate-200/90 dark:hover:border-white/15 hover:shadow-xs">
     <!-- Header -->
     <header class="flex items-center justify-between pb-3">
       <h2 class="text-base font-bold text-slate-900 dark:text-white">
@@ -119,10 +119,10 @@ function getEventDetails(item: HomeActivityItem) {
       </h2>
       <NuxtLink
         to="/clientes"
-        class="inline-flex items-center gap-1 text-xs font-semibold text-[#0f6381] dark:text-cyan-400 hover:underline"
+        class="group/link inline-flex items-center gap-1.5 text-xs font-semibold text-[#0f6381] dark:text-cyan-400 hover:text-[#0b4d66] dark:hover:text-cyan-300 hover:bg-[#e8f6f8] dark:hover:bg-cyan-950/50 px-2 py-1 -mr-2 rounded-lg transition-all duration-150"
       >
         <span>{{ t('home.recentActivity.seeAll') }}</span>
-        <UIcon name="i-ph-arrow-right" class="size-3" aria-hidden="true" />
+        <UIcon name="i-ph-arrow-right" class="size-3 transition-transform duration-200 group-hover/link:translate-x-0.5" aria-hidden="true" />
       </NuxtLink>
     </header>
 
@@ -144,7 +144,7 @@ function getEventDetails(item: HomeActivityItem) {
       <li v-for="(item, index) in activity" :key="item.id">
         <NuxtLink
           :to="getEventDetails(item).to"
-          class="group flex items-center justify-between py-3 -mx-2 px-2 rounded-xl transition-colors hover:bg-slate-50/80 dark:hover:bg-white/5"
+          class="group flex items-center justify-between py-3 -mx-2 px-2.5 rounded-xl transition-all duration-150 hover:bg-[#e8f6f8]/35 dark:hover:bg-white/5 active:scale-[0.99]"
         >
           <!-- Avatar + Nome + Evento -->
           <div class="flex items-center gap-3 min-w-0 pr-3">
@@ -157,7 +157,7 @@ function getEventDetails(item: HomeActivityItem) {
 
             <div class="min-w-0 flex flex-col">
               <div class="flex items-center gap-1.5 truncate">
-                <span class="truncate text-sm font-semibold text-slate-800 dark:text-slate-100 group-hover:text-primary transition-colors">
+                <span class="truncate text-sm font-semibold text-slate-800 dark:text-slate-100 group-hover:text-[#0f6381] dark:group-hover:text-cyan-300 transition-colors">
                   {{ item.name || t('customers.table.noName') }}
                 </span>
                 <span v-if="item.maskedPhone" class="text-xs text-slate-400 dark:text-slate-500 font-mono shrink-0">
@@ -179,7 +179,7 @@ function getEventDetails(item: HomeActivityItem) {
             <span class="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap tabular-nums">
               {{ formatRelativeTime(item.createdAt) }}
             </span>
-            <UIcon name="i-ph-caret-right" class="size-4 text-slate-300 dark:text-slate-600 group-hover:text-slate-500 dark:group-hover:text-slate-300 transition-colors" aria-hidden="true" />
+            <UIcon name="i-ph-caret-right" class="size-4 text-slate-300 dark:text-slate-600 group-hover:text-[#0f6381] dark:group-hover:text-cyan-400 group-hover:translate-x-0.5 transition-all duration-150" aria-hidden="true" />
           </div>
         </NuxtLink>
       </li>

@@ -11,7 +11,7 @@ const emit = defineEmits<{ digit: [digit: string]; backspace: []; clear: [] }>()
 
 const digits = ['1', '2', '3', '4', '5', '6', '7', '8', '9'] as const
 const keyClass =
-  'grid h-16 place-items-center rounded-(--ui-radius) bg-elevated text-highlighted transition-transform duration-(--lagoa-dur-fast) select-none hover:bg-accented active:scale-[0.96] disabled:opacity-50'
+  'grid h-16 place-items-center rounded-(--ui-radius) bg-elevated text-highlighted transition-all duration-150 select-none hover:bg-accented hover:shadow-xs active:scale-[0.96] disabled:opacity-50 cursor-pointer'
 </script>
 
 <template>

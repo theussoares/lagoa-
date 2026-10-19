@@ -44,7 +44,7 @@ function onChange(event: Event): void {
       <div class="flex flex-col items-start gap-2.5">
         <label
           :for="inputId"
-          class="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-(--ui-radius) bg-primary px-4 font-semibold text-inverted focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary transition-opacity hover:opacity-95"
+          class="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-(--ui-radius) bg-primary px-4 font-semibold text-inverted focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary transition-all duration-150 hover:opacity-90 hover:shadow-xs active:scale-[0.98]"
           :aria-disabled="send.status === 'sending'"
         >
           <UIcon name="i-ph-camera" class="size-5" aria-hidden="true" />
@@ -73,7 +73,7 @@ function onChange(event: Event): void {
       <div class="flex flex-wrap items-center gap-3">
         <label
           :for="inputId"
-          class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-(--ui-radius) bg-primary px-4 font-semibold text-inverted focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary transition-opacity hover:opacity-95"
+          class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-(--ui-radius) bg-primary px-4 font-semibold text-inverted focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary transition-all duration-150 hover:opacity-90 hover:shadow-xs active:scale-[0.98]"
           :aria-disabled="send.status === 'sending'"
         >
           <UIcon name="i-ph-camera" class="size-5" aria-hidden="true" />

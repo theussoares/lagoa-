@@ -40,10 +40,10 @@ const footerItems = computed<SpineNavItem[]>(() => [{ label: t('merchantNav.sett
       <SpineNav :items="items" :footer-items="footerItems" :label="t('merchantNav.label')" />
       <button
         type="button"
-        class="mt-1 flex min-h-12 items-center gap-3 rounded-xl px-3 py-2.5 text-[0.9375rem] font-medium text-slate-300/80 transition-all duration-(--lagoa-dur-fast) hover:bg-white/5 hover:text-white"
+        class="group mt-1 flex min-h-12 items-center gap-3 rounded-xl px-3 py-2.5 text-[0.9375rem] font-medium text-slate-300/80 transition-all duration-150 hover:bg-white/10 hover:text-white hover:translate-x-1 active:scale-[0.99] cursor-pointer"
         @click="signOut"
       >
-        <UIcon name="i-ph-sign-out" class="size-5 shrink-0 text-slate-400" aria-hidden="true" />
+        <UIcon name="i-ph-sign-out" class="size-5 shrink-0 text-slate-400 group-hover:text-white group-hover:scale-105 transition-all duration-150" aria-hidden="true" />
         {{ t('merchantNav.signOut') }}
       </button>
     </aside>

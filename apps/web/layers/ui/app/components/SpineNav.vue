@@ -27,14 +27,14 @@ const sections = computed(() => [props.items, props.footerItems].filter((section
           <a
             :href="href ?? item.to"
             :aria-current="isActive ? 'page' : undefined"
-            class="group flex min-h-12 items-center gap-3 rounded-xl px-3 py-2.5 text-[0.9375rem] transition-all duration-(--lagoa-dur-fast)"
-            :class="isActive ? 'bg-[#0f3844] text-white font-medium shadow-xs' : 'text-slate-300/80 hover:bg-white/5 hover:text-white'"
+            class="group flex min-h-12 items-center gap-3 rounded-xl px-3 py-2.5 text-[0.9375rem] transition-all duration-150 cursor-pointer"
+            :class="isActive ? 'bg-[#0f3844] text-white font-medium shadow-xs hover:bg-[#144452]' : 'text-slate-300/80 hover:bg-white/10 hover:text-white hover:translate-x-1 active:scale-[0.99]'"
             @click="navigate"
           >
             <UIcon
               :name="item.icon"
-              class="size-5 shrink-0 transition-colors"
-              :class="isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'"
+              class="size-5 shrink-0 transition-all duration-150"
+              :class="isActive ? 'text-white' : 'text-slate-400 group-hover:text-white group-hover:scale-105'"
               aria-hidden="true"
             />
             <span class="min-w-0 flex-1 truncate">{{ item.label }}</span>

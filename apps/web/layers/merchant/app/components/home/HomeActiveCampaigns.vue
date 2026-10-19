@@ -84,7 +84,7 @@ const seeAllLink = computed(() => (props.campaignsEnabled ? '/campanhas' : '/pro
 </script>
 
 <template>
-  <section class="bg-white dark:bg-(--ui-bg) rounded-2xl p-5 border border-slate-100/90 dark:border-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.03)] flex flex-col">
+  <section class="bg-white dark:bg-(--ui-bg) rounded-2xl p-5 border border-slate-100/90 dark:border-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.03)] flex flex-col transition-all duration-200 hover:border-slate-200/90 dark:hover:border-white/15 hover:shadow-xs">
     <!-- Header -->
     <header class="flex items-center justify-between pb-3">
       <div class="flex items-center gap-2">
@@ -95,10 +95,10 @@ const seeAllLink = computed(() => (props.campaignsEnabled ? '/campanhas' : '/pro
       </div>
       <NuxtLink
         :to="seeAllLink"
-        class="inline-flex items-center gap-1 text-xs font-semibold text-[#0f6381] dark:text-cyan-400 hover:underline"
+        class="group/link inline-flex items-center gap-1.5 text-xs font-semibold text-[#0f6381] dark:text-cyan-400 hover:text-[#0b4d66] dark:hover:text-cyan-300 hover:bg-[#e8f6f8] dark:hover:bg-cyan-950/50 px-2 py-1 -mr-2 rounded-lg transition-all duration-150"
       >
         <span>{{ t('home.activeCampaigns.seeAll') }}</span>
-        <UIcon name="i-ph-arrow-right" class="size-3" aria-hidden="true" />
+        <UIcon name="i-ph-arrow-right" class="size-3 transition-transform duration-200 group-hover/link:translate-x-0.5" aria-hidden="true" />
       </NuxtLink>
     </header>
 
@@ -118,6 +118,7 @@ const seeAllLink = computed(() => (props.campaignsEnabled ? '/campanhas' : '/pro
         size="xs"
         variant="outline"
         color="neutral"
+        class="cursor-pointer transition-all duration-150 hover:bg-slate-100 dark:hover:bg-white/10 active:scale-95"
         :label="t('home.activeCampaigns.configureAction')"
       />
     </div>
@@ -127,7 +128,7 @@ const seeAllLink = computed(() => (props.campaignsEnabled ? '/campanhas' : '/pro
       <li v-for="item in activeItems" :key="item.id">
         <NuxtLink
           :to="item.to"
-          class="group flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-100 dark:border-white/5 hover:border-slate-200 dark:hover:border-white/10 transition-colors"
+          class="group flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50/40 dark:bg-white/2 hover:border-[#0f6381]/30 dark:hover:border-cyan-400/30 hover:bg-[#e8f6f8]/40 dark:hover:bg-cyan-950/20 hover:shadow-xs transition-all duration-150 active:scale-[0.99]"
         >
           <div class="flex items-center gap-3 min-w-0">
             <div
@@ -137,7 +138,7 @@ const seeAllLink = computed(() => (props.campaignsEnabled ? '/campanhas' : '/pro
               <UIcon :name="item.icon" class="size-5" aria-hidden="true" />
             </div>
             <div class="min-w-0 flex flex-col">
-              <span class="truncate text-sm font-bold text-slate-800 dark:text-slate-100 group-hover:text-primary transition-colors">
+              <span class="truncate text-sm font-bold text-slate-800 dark:text-slate-100 group-hover:text-[#0f6381] dark:group-hover:text-cyan-300 transition-colors">
                 {{ item.title }}
               </span>
               <span class="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
