@@ -184,7 +184,10 @@
     "signUpExpired": "O tempo para criar o clube acabou ou o celular já tem uma loja. Confirme o celular de novo para continuar.",
     "shopPendingApproval": "Sua loja ainda está aguardando aprovação da rede. O Balcão passa a valer quando a rede aprovar.",
     "shopSuspended": "Sua loja está suspensa pela rede. Fale com a rede Lagoa+ para voltar a usar o painel.",
-    "invalidShopPhoto": "Essa imagem não serve. Use uma foto JPG, PNG ou WebP de até 1 MB."
+    "invalidShopPhoto": "Essa imagem não serve. Use uma foto JPG, PNG ou WebP de até 1 MB.",
+    "limitReached": "Você já tem o máximo de produtos do seu plano. Arquive um para abrir vaga.",
+    "conflict": "Este produto mudou enquanto você olhava. Recarregue e confira de novo.",
+    "invalidTransition": "Essa ação não vale para a situação atual do produto."
   },
   "ledger": {
     "yesterday": "Ontem",

@@ -13,7 +13,7 @@ const SIMPLE_CODES = [
 const VISIT_QR_CODES = ['invalidVisitQr', 'visitQrLimitReached', 'visitQrExpired', 'visitQrAlreadyUsed', 'visitQrStale', 'shopQrJoinOnly'] as const
 
 /** Painel do lojista: mesma razão da lista acima. */
-const MERCHANT_PANEL_CODES = ['invalidShopPhoto'] as const
+const MERCHANT_PANEL_CODES = ['invalidShopPhoto', 'limitReached', 'conflict', 'invalidTransition'] as const
 
 type VisitQrCode = (typeof VISIT_QR_CODES)[number]
 type MerchantPanelCode = (typeof MERCHANT_PANEL_CODES)[number]

@@ -41,6 +41,9 @@ const STATUS_BY_CODE: Record<DomainErrorCode, number> = {
   birthdayLocked: 409,
   termsNotAccepted: 403,
   merchantTermsNotAccepted: 403,
+  limitReached: 409,
+  conflict: 409,
+  invalidTransition: 409,
 }
 
 /** O corpo da resposta é o próprio `DomainError`, que a UI traduz por `code`. Nunca carrega dado pessoal. */

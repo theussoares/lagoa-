@@ -64,6 +64,12 @@ export type DomainError =
   | { readonly code: 'merchantTermsNotAccepted' }
   /** Aniversário trocado há menos de `BIRTHDAY_CHANGE_COOLDOWN_DAYS`: a data nova só a partir de `changeableAt`. */
   | { readonly code: 'birthdayLocked'; readonly changeableAt: IsoDateTime }
+  /** A loja já tem o máximo de produtos do Hits do plano (arquivar um libera vaga). */
+  | { readonly code: 'limitReached' }
+  /** Quem decidia olhava uma versão que já mudou: recarregar antes de decidir. */
+  | { readonly code: 'conflict' }
+  /** A ação não vale na situação atual do item. */
+  | { readonly code: 'invalidTransition' }
 
 export type DomainErrorCode = DomainError['code']
 
