@@ -25,6 +25,8 @@ export interface NewAdmin {
 /** Lida sob o lock da linha: o que a desativação/reativação vai gravar, ou por que não vale. */
 export type StatusChangeDecision = (current: AdminRecord) => Result<{ readonly disabledAt: Date | null }, ErrorOf<'invalidTransition'>>
 
+export type StatusChangeError = ErrorOf<'forbidden'> | ErrorOf<'notFound'> | ErrorOf<'invalidTransition'>
+
 export abstract class AdminTeamRepository {
   /** Mais antigos primeiro (`created_at`, `id`); no máximo `limit`. */
   abstract list(limit: number): Promise<readonly AdminRecord[]>
@@ -34,9 +36,11 @@ export abstract class AdminTeamRepository {
   /** Grava o admin e o `admin_events(kind='invite')` na mesma transação. Id ou e-mail repetido é `alreadyExists`. */
   abstract insert(admin: NewAdmin): Promise<Result<AdminRecord, ErrorOf<'alreadyExists'>>>
   /**
-   * Numa transação: trava a linha (`FOR UPDATE`), deixa `decide` aprovar, grava `disabled_at` e o evento
-   * (`disable` ou `reactivate`, conforme a nova situação).
+   * Numa transação: trava a linha do alvo **e a de quem age** (`FOR UPDATE`, em ordem de id para dois pedidos cruzados
+   * não se travarem), recusa (`forbidden`) se quem age já não está ativo, deixa `decide` aprovar e grava `disabled_at` e o
+   * evento (`disable` ou `reactivate`). Assim dois admins desativando um ao outro ao mesmo tempo não zeram a equipe: o
+   * segundo encontra o próprio `disabled_at` preenchido.
    */
-  abstract changeStatus(id: string, actorAdminId: string, decide: StatusChangeDecision): Promise<Result<AdminRecord, ErrorOf<'notFound'> | ErrorOf<'invalidTransition'>>>
+  abstract changeStatus(id: string, actorAdminId: string, decide: StatusChangeDecision): Promise<Result<AdminRecord, StatusChangeError>>
   abstract recordEvent(actorAdminId: string, kind: AdminEventKind, targetAdminId: string): Promise<void>
 }

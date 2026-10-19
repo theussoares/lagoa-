@@ -39,7 +39,7 @@ function scriptFetch(responder: Responder): Call[] {
 }
 
 describe('SupabaseAdminAuth', () => {
-  const auth = new SupabaseAdminAuth({ SUPABASE_URL: `${URL_BASE}/`, SUPABASE_SERVICE_ROLE_KEY: KEY })
+  const auth = new SupabaseAdminAuth({ SUPABASE_URL: `${URL_BASE}/`, SUPABASE_SERVICE_ROLE_KEY: KEY, ADMIN_APP_URL: undefined })
   let logged: string[]
 
   beforeEach(() => {
@@ -64,6 +64,17 @@ describe('SupabaseAdminAuth', () => {
       expect(calls[0]?.body).toEqual({ email: EMAIL, app_metadata: { role: 'admin' }, user_metadata: { name: 'Ana' } })
       expect(calls[1]?.body).toEqual({ email: EMAIL })
       expect(calls.every((call) => call.authorization === `Bearer ${KEY}`)).toBe(true)
+    })
+
+    it('sends the invite link to the admin app set-password page when ADMIN_APP_URL is set', async () => {
+      const calls = scriptFetch(() => json(200, { id: USER }))
+      const withApp = new SupabaseAdminAuth({ SUPABASE_URL: URL_BASE, SUPABASE_SERVICE_ROLE_KEY: KEY, ADMIN_APP_URL: 'https://admin.lagoamais.com.br/' })
+      expect((await withApp.invite(EMAIL, 'Ana')).ok).toBe(true)
+      const invite = new URL(`${URL_BASE}${calls[1]?.url ?? ''}`)
+      expect(invite.pathname).toBe('/invite')
+      expect(invite.searchParams.get('redirect_to')).toBe('https://admin.lagoamais.com.br/definir-senha')
+      // O e-mail vai só no corpo, nunca na URL.
+      expect(calls[1]?.url).not.toContain('ana')
     })
 
     it('refuses an e-mail that already has any account (never promotes it) and sends no invite', async () => {
@@ -98,7 +109,7 @@ describe('SupabaseAdminAuth', () => {
 
     it('is off without the service role key', async () => {
       const calls = scriptFetch(() => json(200, { id: USER }))
-      const keyless = new SupabaseAdminAuth({ SUPABASE_URL: URL_BASE, SUPABASE_SERVICE_ROLE_KEY: undefined })
+      const keyless = new SupabaseAdminAuth({ SUPABASE_URL: URL_BASE, SUPABASE_SERVICE_ROLE_KEY: undefined, ADMIN_APP_URL: undefined })
       expect(await keyless.invite(EMAIL, 'Ana')).toEqual({ ok: false, error: { code: 'network' } })
       expect(await keyless.deleteMfaFactors(USER)).toEqual({ ok: false, error: { code: 'network' } })
       expect(calls).toEqual([])

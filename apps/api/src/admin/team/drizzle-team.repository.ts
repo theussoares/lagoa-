@@ -1,12 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common'
-import { eq } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 import type { AdminEventKind } from '#shared/schemas/admin'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
 import { DB, type Database } from '../../database/database.module'
 import { adminEvents, adminUsers } from '../../database/schema'
 import { uniqueViolationConstraint } from '../../database/unique-violation'
-import { type AdminRecord, AdminTeamRepository, type NewAdmin, type StatusChangeDecision } from './team.repository'
+import { type AdminRecord, AdminTeamRepository, type NewAdmin, type StatusChangeDecision, type StatusChangeError } from './team.repository'
 
 const COLUMNS = {
   id: adminUsers.id,
@@ -54,9 +54,13 @@ export class DrizzleAdminTeamRepository extends AdminTeamRepository {
     }
   }
 
-  async changeStatus(id: string, actorAdminId: string, decide: StatusChangeDecision): Promise<Result<AdminRecord, ErrorOf<'notFound'> | ErrorOf<'invalidTransition'>>> {
-    return this.db.transaction(async (tx): Promise<Result<AdminRecord, ErrorOf<'notFound'> | ErrorOf<'invalidTransition'>>> => {
-      const [current] = await tx.select(COLUMNS).from(adminUsers).where(eq(adminUsers.id, id)).for('update')
+  async changeStatus(id: string, actorAdminId: string, decide: StatusChangeDecision): Promise<Result<AdminRecord, StatusChangeError>> {
+    return this.db.transaction(async (tx): Promise<Result<AdminRecord, StatusChangeError>> => {
+      // As duas linhas, em ordem de id: o lock de quem age serializa com um pedido que o desative ao mesmo tempo.
+      const locked = await tx.select(COLUMNS).from(adminUsers).where(inArray(adminUsers.id, [id, actorAdminId])).orderBy(adminUsers.id).for('update')
+      const actor = locked.find((row) => row.id === actorAdminId)
+      if (actor === undefined || actor.disabledAt !== null) return err({ code: 'forbidden' })
+      const current = locked.find((row) => row.id === id)
       if (!current) return err({ code: 'notFound', entity: 'adminUser' })
       const change = decide(current)
       if (!change.ok) return change

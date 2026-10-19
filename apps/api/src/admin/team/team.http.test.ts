@@ -1,10 +1,10 @@
-import type { INestApplication } from '@nestjs/common'
+import { type INestApplication, Logger } from '@nestjs/common'
 import { APP_FILTER, APP_GUARD } from '@nestjs/core'
 import { Test } from '@nestjs/testing'
 import { ThrottlerModule } from '@nestjs/throttler'
 import { createLocalJWKSet, exportJWK, generateKeyPair, type JWK, SignJWT } from 'jose'
 import request from 'supertest'
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AdminEventKind } from '#shared/schemas/admin'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
@@ -22,7 +22,7 @@ import { AdminGuard } from '../access/admin.guard'
 import { AdminUsersReader } from '../access/admin-users.reader'
 import { AdminAuth } from './admin-auth'
 import { AdminTeamController } from './team.controller'
-import { type AdminRecord, AdminTeamRepository, type NewAdmin, type StatusChangeDecision } from './team.repository'
+import { type AdminRecord, AdminTeamRepository, type NewAdmin, type StatusChangeDecision, type StatusChangeError } from './team.repository'
 import { AdminTeamService } from './team.service'
 
 const ISSUER = 'https://project.supabase.co/auth/v1'
@@ -37,6 +37,7 @@ class InMemoryTeamRepository extends AdminTeamRepository {
   readonly events: { actorAdminId: string; kind: AdminEventKind; targetAdminId: string }[] = []
   /** Simula a corrida em que outro pedido grava o mesmo e-mail entre a checagem e o insert. */
   raceOnInsert = false
+  failEvents = false
 
   seed(id: string, name: string, emailEncrypted: Buffer, emailHash: Buffer, disabledAt: Date | null = null): void {
     this.rows.set(id, { id, name, emailEncrypted, emailHash: emailHash.toString('hex'), invitedBy: null, disabledAt, createdAt: new Date('2026-10-01T12:00:00Z') })
@@ -52,7 +53,9 @@ class InMemoryTeamRepository extends AdminTeamRepository {
     this.events.push({ actorAdminId: admin.actorAdminId, kind: 'invite', targetAdminId: admin.id })
     return ok(row)
   }
-  changeStatus = async (id: string, actorAdminId: string, decide: StatusChangeDecision): Promise<Result<AdminRecord, ErrorOf<'notFound'> | ErrorOf<'invalidTransition'>>> => {
+  changeStatus = async (id: string, actorAdminId: string, decide: StatusChangeDecision): Promise<Result<AdminRecord, StatusChangeError>> => {
+    const actor = this.rows.get(actorAdminId)
+    if (actor === undefined || actor.disabledAt !== null) return err({ code: 'forbidden' })
     const row = this.rows.get(id)
     if (!row) return err({ code: 'notFound', entity: 'adminUser' })
     const change = decide(row)
@@ -63,6 +66,7 @@ class InMemoryTeamRepository extends AdminTeamRepository {
     return ok(updated)
   }
   recordEvent = async (actorAdminId: string, kind: AdminEventKind, targetAdminId: string): Promise<void> => {
+    if (this.failEvents) throw new Error('database down')
     this.events.push({ actorAdminId, kind, targetAdminId })
   }
 }
@@ -119,11 +123,13 @@ describe('admin team (HTTP)', () => {
   })
 
   afterAll(async () => app.close())
+  afterEach(() => vi.restoreAllMocks())
 
   beforeEach(() => {
     repository.rows.clear()
     repository.events.length = 0
     repository.raceOnInsert = false
+    repository.failEvents = false
     auth.invited.length = 0
     auth.cancelled.length = 0
     auth.mfaResets.length = 0
@@ -220,6 +226,17 @@ describe('admin team (HTTP)', () => {
     auth.mfaFailure = { code: 'network' }
     await as('post', `/v1/admin/team/${OTHER}/reset-mfa`, await adminToken()).expect(503, { code: 'network' })
     expect(repository.events).toEqual([])
+  })
+
+  it('warns with ids only (no e-mail) when the reset happened but its audit row could not be written', async () => {
+    repository.failEvents = true
+    const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined)
+    vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined)
+    await as('post', `/v1/admin/team/${OTHER}/reset-mfa`, await adminToken()).expect(500, { code: 'internal' })
+    const lines = warn.mock.calls.map(([line]) => String(line))
+    const audit = lines.find((line) => line.includes('admin.mfaReset'))
+    expect(JSON.parse(audit ?? '{}')).toMatchObject({ type: 'security', event: 'admin.mfaReset', outcome: 'failure', code: 'auditNotRecorded', userId: ADMIN, targetId: OTHER })
+    expect(lines.join('\n')).not.toContain('@rede.test')
   })
 
   it.each(['disable', 'reactivate', 'reset-mfa'])('answers 404 for %s on someone outside the team, without calling Supabase', async (action) => {

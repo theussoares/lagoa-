@@ -31,17 +31,21 @@ const EnvSchema = z
      * (convidar, zerar o MFA, `admin:create`). Sem ela, essas ações falham.
      */
     SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
+    /** Endereço do painel da rede (`https://admin...`): o link do convite de admin leva a `<ADMIN_APP_URL>/definir-senha`. */
+    ADMIN_APP_URL: z.url().optional(),
   })
   .superRefine((env, context) => {
     if (env.NODE_ENV !== 'production') return
     // Sem isso, atrás de um load balancer todo mundo parece vir do mesmo IP e o limite por IP vira global.
     if (env.TRUST_PROXY_HOPS === undefined) context.addIssue({ code: 'custom', path: ['TRUST_PROXY_HOPS'], message: 'required in production' })
     if (env.ENABLE_TEST_APPROVE === '1') context.addIssue({ code: 'custom', path: ['ENABLE_TEST_APPROVE'], message: 'must be off in production' })
-    for (const key of ['COMTELE_AUTH_KEY', 'SEND_SMS_HOOK_SECRET', 'SUPABASE_SERVICE_ROLE_KEY', 'BFF_SHARED_SECRET'] as const) {
+    for (const key of ['COMTELE_AUTH_KEY', 'SEND_SMS_HOOK_SECRET', 'SUPABASE_SERVICE_ROLE_KEY', 'BFF_SHARED_SECRET', 'ADMIN_APP_URL'] as const) {
       if (env[key] === undefined) context.addIssue({ code: 'custom', path: [key], message: 'required in production' })
     }
     // O JWKS é buscado nesta URL: sem TLS, quem está no caminho troca a chave e assina o que quiser.
     if (!env.SUPABASE_URL.startsWith('https://')) context.addIssue({ code: 'custom', path: ['SUPABASE_URL'], message: 'must be https in production' })
+    // O link do convite leva a sessão do admin novo: só por TLS.
+    if (env.ADMIN_APP_URL !== undefined && !env.ADMIN_APP_URL.startsWith('https://')) context.addIssue({ code: 'custom', path: ['ADMIN_APP_URL'], message: 'must be https in production' })
   })
 
 export type Env = z.infer<typeof EnvSchema>

@@ -25,7 +25,7 @@ export type AdminUser = z.infer<typeof AdminUserSchema>
 
 export const AdminInviteSchema = z.strictObject({
   name: z.string().trim().min(ADMIN_NAME_MIN_LENGTH).max(ADMIN_NAME_MAX_LENGTH),
-  email: z.email().max(EMAIL_MAX_LENGTH),
+  email: z.string().trim().toLowerCase().pipe(z.email().max(EMAIL_MAX_LENGTH)),
 })
 export type AdminInvite = z.infer<typeof AdminInviteSchema>
 

@@ -169,3 +169,5 @@ export const ADMIN_TEAM_LIST_LIMIT = 100
  */
 export const ADMIN_LOGIN_ATTEMPTS_MAX = 5
 export const ADMIN_LOGIN_WINDOW_MINUTES = 15
+/** Página do painel da rede onde o admin convidado define a senha (destino do link do convite). */
+export const ADMIN_SET_PASSWORD_PATH = '/definir-senha'

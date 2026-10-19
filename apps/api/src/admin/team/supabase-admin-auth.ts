@@ -1,5 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { z } from 'zod'
+import { ADMIN_SET_PASSWORD_PATH } from '#shared/constants/domain'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
 import { ENV } from '../../config/config.module'
@@ -27,7 +28,7 @@ async function errorCodeOf(response: Response): Promise<string | undefined> {
 export class SupabaseAdminAuth extends AdminAuth {
   private readonly logger = new Logger(SupabaseAdminAuth.name)
 
-  constructor(@Inject(ENV) private readonly env: Pick<Env, 'SUPABASE_URL' | 'SUPABASE_SERVICE_ROLE_KEY'>) {
+  constructor(@Inject(ENV) private readonly env: Pick<Env, 'SUPABASE_URL' | 'SUPABASE_SERVICE_ROLE_KEY' | 'ADMIN_APP_URL'>) {
     super()
   }
 
@@ -47,13 +48,20 @@ export class SupabaseAdminAuth extends AdminAuth {
       return err(NETWORK)
     }
     // O `/invite` reaproveita a conta pendente que acabamos de criar (e recusa uma já confirmada).
-    const invited = await this.call('POST', '/invite', { email })
+    const invited = await this.call('POST', this.invitePath(), { email })
     if (invited === null || !invited.ok) {
       this.logger.error(`Admin invite e-mail failed (status ${invited?.status ?? 'network'}); removing the new account`)
       await this.cancelInvite(user.data.id)
       return err(NETWORK)
     }
     return ok({ userId: user.data.id })
+  }
+
+  /** Com `ADMIN_APP_URL`, o link do e-mail leva à página de definir senha do painel; sem ela (só fora de produção), ao Site URL. */
+  private invitePath(): string {
+    if (this.env.ADMIN_APP_URL === undefined) return '/invite'
+    const target = `${this.env.ADMIN_APP_URL.replace(/\/+$/, '')}${ADMIN_SET_PASSWORD_PATH}`
+    return `/invite?redirect_to=${encodeURIComponent(target)}`
   }
 
   async cancelInvite(userId: string): Promise<void> {

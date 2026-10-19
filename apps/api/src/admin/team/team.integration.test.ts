@@ -94,6 +94,24 @@ describe.skipIf(!TEST_DATABASE_URL)('admin team against a real database', () => 
     expect((await eventsOf(actor.adminId)).filter((event) => event.target === actor.adminId)).toEqual([])
   })
 
+  it('refuses (forbidden) an admin who was disabled before acting, so mutual disables cannot empty the team', async () => {
+    const first = await invite()
+    const second = await invite()
+    expect((await service.disable({ adminId: first }, second)).ok).toBe(true)
+    expect(await service.disable({ adminId: second }, first)).toEqual({ ok: false, error: { code: 'forbidden' } })
+    expect(await service.reactivate({ adminId: second }, second)).toEqual({ ok: false, error: { code: 'forbidden' } })
+    expect(await passesGuard(first)).toBe(true)
+  })
+
+  it('serializes two admins disabling each other at the same time: exactly one wins', async () => {
+    const first = await invite()
+    const second = await invite()
+    const results = await Promise.all([service.disable({ adminId: first }, second), service.disable({ adminId: second }, first)])
+    expect(results.filter((result) => result.ok)).toHaveLength(1)
+    expect(results.filter((result) => !result.ok)).toEqual([{ ok: false, error: { code: 'forbidden' } }])
+    expect([await passesGuard(first), await passesGuard(second)].filter(Boolean)).toHaveLength(1)
+  })
+
   it('resets the MFA of someone else and records it; a failed reset records nothing', async () => {
     const id = await invite()
     auth.mfaFailure = { code: 'network' }

@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { ADMIN_TEAM_LIST_LIMIT } from '#shared/constants/domain'
 import type { AdminInvite, AdminUser } from '#shared/schemas/admin'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
+import { securityLogLine } from '#shared/utils/securityEvent'
 import { Clock } from '../../common/clock'
 import { normalizeEmail, PiiService } from '../../common/pii.service'
 import type { AdminContext } from '../access/admin.context'
@@ -18,6 +19,8 @@ type Inviter = { readonly kind: 'admin'; readonly adminId: string } | { readonly
 /** Equipe da rede: listar, convidar, desativar, reativar e zerar o MFA, sempre com o registro de quem fez. */
 @Injectable()
 export class AdminTeamService {
+  private readonly securityLogger = new Logger('Security')
+
   constructor(
     private readonly team: AdminTeamRepository,
     private readonly auth: AdminAuth,
@@ -55,7 +58,16 @@ export class AdminTeamService {
     if (target === null) return err({ code: 'notFound', entity: 'adminUser' })
     const reset = await this.auth.deleteMfaFactors(id)
     if (!reset.ok) return reset
-    await this.team.recordEvent(admin.adminId, 'resetMfa', id)
+    await this.team.recordEvent(admin.adminId, 'resetMfa', id).catch((error: unknown) => {
+      // Os fatores já foram apagados no Supabase: sem esta linha o reset ficaria fora da trilha sem ninguém saber.
+      this.securityLogger.warn(
+        securityLogLine(
+          { event: 'admin.mfaReset', outcome: 'failure', method: 'POST', route: '/v1/admin/team/:id/reset-mfa', code: 'auditNotRecorded', userId: admin.adminId, targetId: id },
+          this.clock.now(),
+        ),
+      )
+      throw error
+    })
     return ok(this.toAdminUser(target))
   }
 
