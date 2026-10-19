@@ -1,13 +1,15 @@
 import { z } from 'zod'
 import {
   ADMIN_NAME_MAX_LENGTH,
+  ADMIN_SHOPS_SEARCH_MAX_LENGTH,
   ADMIN_NAME_MIN_LENGTH,
   ADMIN_REASON_MAX_LENGTH,
   EMAIL_MAX_LENGTH,
   HIT_ITEM_REJECTION_REASON_MAX_LENGTH,
 } from '../constants/domain'
 import { IsoDateTimeSchema } from './common'
-import { ShopPlanSchema } from './shop'
+import { PhoneNumberSchema } from './phone'
+import { ShopCategorySchema, ShopPlanSchema, ShopStatusSchema } from './shop'
 
 const ReasonSchema = z.string().trim().min(1).max(ADMIN_REASON_MAX_LENGTH)
 
@@ -34,6 +36,56 @@ export const AdminShopActionSchema = z.discriminatedUnion('action', [
   z.strictObject({ action: z.literal('changePlan'), plan: ShopPlanSchema }),
 ])
 export type AdminShopAction = z.infer<typeof AdminShopActionSchema>
+
+/** Linha da lista de lojas da rede. Nunca leva contato do dono: isso só sai no detalhe. */
+export const AdminShopRowSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  category: ShopCategorySchema,
+  neighborhood: z.string(),
+  status: ShopStatusSchema,
+  plan: ShopPlanSchema,
+  createdAt: IsoDateTimeSchema,
+})
+export type AdminShopRow = z.infer<typeof AdminShopRowSchema>
+
+/** Cursor da lista: `<0 ou 1 (pendente primeiro)>:<id da última loja da página>`. */
+export const AdminShopCursorSchema = z.string().regex(/^[01]:[0-9a-f-]{36}$/)
+
+export const AdminShopListQuerySchema = z.strictObject({
+  status: ShopStatusSchema.optional(),
+  q: z.string().trim().min(1).max(ADMIN_SHOPS_SEARCH_MAX_LENGTH).optional(),
+  cursor: AdminShopCursorSchema.optional(),
+})
+export type AdminShopListQuery = z.infer<typeof AdminShopListQuerySchema>
+
+export const AdminShopListSchema = z.object({
+  shops: z.array(AdminShopRowSchema),
+  nextCursor: AdminShopCursorSchema.nullable(),
+})
+export type AdminShopList = z.infer<typeof AdminShopListSchema>
+
+export const AdminShopStatusEventSchema = z.object({
+  id: z.uuid(),
+  fromStatus: ShopStatusSchema,
+  toStatus: ShopStatusSchema,
+  plan: ShopPlanSchema,
+  /** Nome do admin do painel, ou o apelido do operador quando foi pelo script. */
+  actorName: z.string(),
+  reason: z.string().nullable(),
+  createdAt: IsoDateTimeSchema,
+})
+export type AdminShopStatusEvent = z.infer<typeof AdminShopStatusEventSchema>
+
+/** Detalhe da loja para a rede. O contato do dono (celular completo) só existe aqui; `null` se a conta do dono foi apagada. */
+export const AdminShopDetailSchema = AdminShopRowSchema.extend({
+  addressLine: z.string(),
+  program: z.object({ rewardTitle: z.string(), mode: z.enum(['stamps', 'pointsPerCurrency', 'pointsPerVisit']), target: z.number().int() }).nullable(),
+  owner: z.object({ phone: PhoneNumberSchema, email: z.email().nullable() }).nullable(),
+  stats: z.object({ customers: z.number().int().min(0), visitsLast30Days: z.number().int().min(0) }),
+  history: z.array(AdminShopStatusEventSchema),
+})
+export type AdminShopDetail = z.infer<typeof AdminShopDetailSchema>
 
 /** Moderação de um produto do Hits. `expectedVersion` barra aprovar o que o lojista editou depois de o admin abrir. */
 export const HitItemReviewSchema = z.discriminatedUnion('action', [

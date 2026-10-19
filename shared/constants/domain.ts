@@ -151,3 +151,8 @@ export const FEATURED_NOTE_MAX_LENGTH = 200
 export const ADMIN_NAME_MIN_LENGTH = 2
 export const ADMIN_NAME_MAX_LENGTH = 80
 export const ADMIN_REASON_MAX_LENGTH = 200
+export const ADMIN_SHOPS_PAGE_SIZE = 50
+export const ADMIN_SHOPS_SEARCH_MAX_LENGTH = 80
+export const ADMIN_SHOP_HISTORY_LIMIT = 20
+/** Janela das visitas que o detalhe da loja mostra ao admin. */
+export const ADMIN_SHOP_STATS_WINDOW_DAYS = 30
