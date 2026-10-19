@@ -30,3 +30,10 @@ export const MerchantHitItemSchema = HitItemDraftSchema.extend({
   updatedAt: IsoDateTimeSchema,
 })
 export type MerchantHitItem = z.infer<typeof MerchantHitItemSchema>
+
+/** Lista do painel: os produtos da loja e quantos o plano deixa ter ativos (não arquivados). */
+export const MerchantHitItemListSchema = z.object({
+  items: z.array(MerchantHitItemSchema),
+  cap: z.number().int().positive(),
+})
+export type MerchantHitItemList = z.infer<typeof MerchantHitItemListSchema>

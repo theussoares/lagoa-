@@ -1,6 +1,6 @@
 import type { IsoDateTime } from '../schemas/common'
 
-export type DomainEntity = 'shop' | 'program' | 'customer' | 'merchant' | 'card' | 'redemption' | 'visitQr'
+export type DomainEntity = 'shop' | 'program' | 'customer' | 'merchant' | 'card' | 'redemption' | 'visitQr' | 'hitItem'
 
 /**
  * Erros esperados de regra de negócio. A UI traduz `code` para a chave
