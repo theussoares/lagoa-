@@ -49,7 +49,6 @@ const currentDateFormatted = computed(() => {
           <UIcon name="i-ph-user" class="size-4" aria-hidden="true" />
         </div>
         <span class="max-w-[170px] truncate" :title="shopName">{{ shopName }}</span>
-        <UIcon name="i-ph-caret-down" class="size-3.5 text-slate-400" aria-hidden="true" />
       </div>
 
       <!-- Ação de atualizar -->

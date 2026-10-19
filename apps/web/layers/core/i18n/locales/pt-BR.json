@@ -570,7 +570,7 @@
     "monthSummary": {
       "title": "Resumo do mês",
       "subtitle": "Evolução do clube comparada com o período anterior",
-      "details": "Ir ao balcão",
+      "details": "Detalhes",
       "periods": {
         "week": "Esta semana",
         "month": "Este mês",

@@ -147,15 +147,12 @@ const seeAllLink = computed(() => (props.campaignsEnabled ? '/campanhas' : '/pro
             </div>
           </div>
 
-          <div class="flex items-center gap-2 shrink-0">
-            <span
-              class="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
-              :class="[item.badgeBg, item.badgeColor]"
-            >
-              {{ item.status }}
-            </span>
-            <UIcon name="i-ph-caret-right" class="size-4 text-slate-300 dark:text-slate-600 group-hover:text-[#0f6381] dark:group-hover:text-cyan-400 group-hover:translate-x-0.5 transition-all duration-150" aria-hidden="true" />
-          </div>
+          <span
+            class="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
+            :class="[item.badgeBg, item.badgeColor]"
+          >
+            {{ item.status }}
+          </span>
         </NuxtLink>
       </li>
     </ul>
