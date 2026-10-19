@@ -161,6 +161,17 @@ Onde ele fala em "CLAUDE.md", leia este arquivo de regras.
 | Situação da loja          | `shopStatus` (`pending` \| `approved` \| `suspended`) |
 | Plano / cobrança          | `plan` / `billing`             |
 | Fundador / Fundador Pro   | `founder` / `founderPro`       |
+| Hits (vitrine de produtos) | `hits`                        |
+| Produto do Hits           | `hitItem`                      |
+| Situação do produto       | `hitItemStatus` (`pending` \| `approved` \| `rejected` \| `archived`) |
+| Banner do Hits            | `hitsBanner`                   |
+| Destaque pago             | `featuredPlacement` (`surface`: `discoverCarousel` \| `hitsBanner`) |
+| Ramo (filtro)             | `shopGroup`                    |
+| Menu Mais                 | `moreMenu`                     |
+| Admin da rede (pessoa)    | `adminUser`                    |
+| Convite de admin          | `adminInvite`                  |
+| Equipe do admin           | `adminTeam`                    |
+| Registro de auditoria do admin | `adminEvent`              |
 
 Termo novo de domínio entra nesta tabela antes de virar código.
 
