@@ -9,7 +9,8 @@ import {
 } from '../constants/domain'
 import { IsoDateTimeSchema } from './common'
 import { PhoneNumberSchema } from './phone'
-import { ShopCategorySchema, ShopPlanSchema, ShopStatusSchema } from './shop'
+import { HitItemStatusSchema } from './hitItem'
+import { ShopCategorySchema, ShopPlanSchema, ShopPublicContactSchema, ShopStatusSchema } from './shop'
 
 const ReasonSchema = z.string().trim().min(1).max(ADMIN_REASON_MAX_LENGTH)
 
@@ -100,3 +101,42 @@ export const HitItemReviewSchema = z.discriminatedUnion('action', [
   }),
 ])
 export type HitItemReview = z.infer<typeof HitItemReviewSchema>
+
+/** Abas da fila de moderação: o que espera decisão e o que está na vitrine. */
+export const AdminHitItemTabSchema = z.enum(['pending', 'approved'])
+export type AdminHitItemTab = z.infer<typeof AdminHitItemTabSchema>
+
+/** Cursor da fila: o id do último produto da página; a posição (data + id) é lida do banco. */
+export const AdminHitItemListQuerySchema = z.strictObject({
+  status: AdminHitItemTabSchema.default('pending'),
+  cursor: z.uuid().optional(),
+})
+export type AdminHitItemListQuery = z.infer<typeof AdminHitItemListQuerySchema>
+
+/**
+ * Produto na fila do admin. `contact` é o botão que o cliente veria: o do produto, ou o da loja quando o produto não tem
+ * (`contactSource`). Sem nenhum dos dois, `contact` é `null` e a origem fica `shop`.
+ */
+export const AdminHitItemSchema = z.object({
+  id: z.uuid(),
+  version: z.number().int().min(1),
+  title: z.string(),
+  description: z.string().nullable(),
+  priceCents: z.number().int().nullable(),
+  endsAt: IsoDateTimeSchema.nullable(),
+  status: HitItemStatusSchema,
+  rejectionReason: z.string().nullable(),
+  photoUrl: z.url().nullable(),
+  contact: ShopPublicContactSchema.nullable(),
+  contactSource: z.enum(['item', 'shop']),
+  shop: z.object({ id: z.uuid(), name: z.string(), status: ShopStatusSchema }),
+  createdAt: IsoDateTimeSchema,
+  approvedAt: IsoDateTimeSchema.nullable(),
+})
+export type AdminHitItem = z.infer<typeof AdminHitItemSchema>
+
+export const AdminHitItemListSchema = z.object({
+  items: z.array(AdminHitItemSchema),
+  nextCursor: z.uuid().nullable(),
+})
+export type AdminHitItemList = z.infer<typeof AdminHitItemListSchema>
