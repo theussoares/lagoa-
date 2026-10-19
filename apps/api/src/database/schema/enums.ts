@@ -1,7 +1,7 @@
 import { pgEnum } from 'drizzle-orm/pg-core'
 
 export const shopCategory = pgEnum('shop_category', [
-  'barbershop', 'beauty', 'cafe', 'bakery', 'pizzeria', 'restaurant', 'petShop', 'gym', 'other',
+  'barbershop', 'beauty', 'cafe', 'bakery', 'pizzeria', 'restaurant', 'petShop', 'gym', 'clothing', 'services', 'home', 'other',
 ])
 export const shopStatus = pgEnum('shop_status', ['pending', 'approved', 'suspended'])
 export const shopPlan = pgEnum('shop_plan', ['founder', 'founderPro'])
@@ -17,3 +17,5 @@ export const referralStatus = pgEnum('referral_status', ['pending', 'rewarded', 
 export const visitQrStatus = pgEnum('visit_qr_status', ['active', 'claimed', 'expired', 'cancelled'])
 export const visitQrCancelReason = pgEnum('visit_qr_cancel_reason', ['merchant', 'programChanged'])
 export const visitQrEarnKind = pgEnum('visit_qr_earn_kind', ['visit', 'amount'])
+export const hitItemStatus = pgEnum('hit_item_status', ['pending', 'approved', 'rejected', 'archived'])
+export const featuredSurface = pgEnum('featured_surface', ['discoverCarousel', 'hitsBanner'])

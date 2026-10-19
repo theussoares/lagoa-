@@ -71,6 +71,7 @@ export class TestDatabase {
   private readonly client: postgres.Sql
   private readonly userIds: string[] = []
   private readonly shopIds: string[] = []
+  private readonly adminIds: string[] = []
 
   constructor(url: string) {
     this.client = postgres(url, { prepare: false, max: 10 })
@@ -240,6 +241,30 @@ export class TestDatabase {
     })
   }
 
+  /** Produto do Hits pendente, com foto e sem botão próprio; `overrides` troca qualquer coluna. A limpeza do fim o remove com a loja. */
+  async createHitItem(shopId: string, overrides: Partial<typeof schema.hitItems.$inferInsert> = {}): Promise<{ id: string }> {
+    const [row] = await this.db
+      .insert(schema.hitItems)
+      .values({ shopId, title: 'Produto de teste', photoPath: `hits/${randomUUID()}.jpg`, ...overrides })
+      .returning({ id: schema.hitItems.id })
+    if (!row) throw new Error('hit item expected')
+    return row
+  }
+
+  /** Admin do painel com e-mail fictício (cifra e hash são bytes soltos, não passam pelo `PiiService`). */
+  async createAdminUser(overrides: Partial<typeof schema.adminUsers.$inferInsert> = {}): Promise<{ id: string }> {
+    const id = overrides.id ?? randomUUID()
+    await this.db.insert(schema.adminUsers).values({
+      id,
+      name: 'Admin de teste',
+      emailEncrypted: Buffer.from('test'),
+      emailHash: Buffer.from(randomUUID()),
+      ...overrides,
+    })
+    this.adminIds.push(id)
+    return { id }
+  }
+
   /** Para o usuário criado pelo próprio serviço sob teste: entra na limpeza do fim. */
   trackUser(userId: string): void {
     this.userIds.push(userId)
@@ -262,6 +287,10 @@ export class TestDatabase {
       await this.db.delete(schema.loyaltyCards).where(inArray(schema.loyaltyCards.customerId, this.userIds))
     }
     if (this.shopIds.length > 0) {
+      const items = this.db.select({ id: schema.hitItems.id }).from(schema.hitItems).where(inArray(schema.hitItems.shopId, this.shopIds))
+      await this.db.delete(schema.featuredPlacements).where(inArray(schema.featuredPlacements.shopId, this.shopIds))
+      await this.db.delete(schema.hitItemStatusEvents).where(inArray(schema.hitItemStatusEvents.hitItemId, items))
+      await this.db.delete(schema.hitItems).where(inArray(schema.hitItems.shopId, this.shopIds))
       await this.db.delete(schema.referrals).where(inArray(schema.referrals.shopId, this.shopIds))
       await this.db.delete(schema.programs).where(inArray(schema.programs.shopId, this.shopIds))
       await this.db.delete(schema.shopStatusEvents).where(inArray(schema.shopStatusEvents.shopId, this.shopIds))
@@ -270,6 +299,10 @@ export class TestDatabase {
     if (this.userIds.length > 0) {
       await this.db.delete(schema.customerProfiles).where(inArray(schema.customerProfiles.userId, this.userIds))
       await this.db.delete(schema.appUsers).where(inArray(schema.appUsers.id, this.userIds))
+    }
+    if (this.adminIds.length > 0) {
+      await this.db.delete(schema.adminEvents).where(inArray(schema.adminEvents.actorAdminId, this.adminIds))
+      await this.db.delete(schema.adminUsers).where(inArray(schema.adminUsers.id, this.adminIds))
     }
   }
 
