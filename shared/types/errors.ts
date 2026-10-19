@@ -8,6 +8,8 @@ export type DomainEntity = 'shop' | 'program' | 'customer' | 'merchant' | 'card'
  */
 export type DomainError =
   | { readonly code: 'unauthorized' }
+  /** Sessão válida, mas sem acesso a esta superfície (ex.: conta da rede fora do painel da rede, ou sem MFA). Não diz o motivo. */
+  | { readonly code: 'forbidden' }
   | { readonly code: 'network' }
   /** Limite de requisições (HTTP 429 sem regra de negócio): esperar e tentar de novo. */
   | { readonly code: 'rateLimited' }

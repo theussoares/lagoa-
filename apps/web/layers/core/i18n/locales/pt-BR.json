@@ -148,6 +148,7 @@
   },
   "errors": {
     "unauthorized": "Sua sessão terminou. Entre de novo para continuar.",
+    "forbidden": "Esta conta não tem acesso a esta área.",
     "network": "Sem conexão agora. Confira a internet e tente de novo.",
     "birthdayLocked": "A data do aniversário só pode ser trocada uma vez por ano.",
     "notFound": "Não encontramos o que você procurou.",

@@ -6,7 +6,7 @@ import type { PhoneNumber } from '#shared/schemas/phone'
 import { parsePhoneNumber } from '#shared/utils/phone'
 import { ENV } from '../config/config.module'
 import type { Env } from '../config/env'
-import type { AuthenticatedRequest } from './auth.types'
+import type { AuthAssuranceLevel, AuthenticatedRequest, AuthRole } from './auth.types'
 import { JWKS, type Jwks, SUPABASE_AUDIENCE, supabaseIssuer } from './jwks'
 import { IS_PUBLIC } from './public.decorator'
 
@@ -24,6 +24,19 @@ function verifiedPhone(claim: unknown): PhoneNumber | undefined {
   if (typeof claim !== 'string') return undefined
   const parsed = parsePhoneNumber(claim)
   return parsed.ok ? parsed.value : undefined
+}
+
+// Só `app_metadata` (escrito pelo service_role); `user_metadata` e um `role` solto no token o próprio usuário controla.
+const AdminClaimSchema = z.object({ role: z.literal('admin') })
+const AssuranceLevelSchema = z.enum(['aal1', 'aal2'])
+
+function roleOf(appMetadata: unknown): AuthRole | null {
+  return AdminClaimSchema.safeParse(appMetadata).success ? 'admin' : null
+}
+
+function assuranceLevelOf(claim: unknown): AuthAssuranceLevel | null {
+  const parsed = AssuranceLevelSchema.safeParse(claim)
+  return parsed.success ? parsed.data : null
 }
 
 /** Valida o JWT do Supabase Auth (chaves assimétricas, via JWKS público); `sub` é o `app_users.id`. */
@@ -54,7 +67,13 @@ export class SupabaseAuthGuard implements CanActivate {
       })
       // Id do Supabase é UUID; conta anônima (sem e-mail verificado) não vira cliente.
       if (!UserIdSchema.safeParse(payload.sub).success || payload.is_anonymous === true) throw new UnauthorizedException()
-      request.user = { id: String(payload.sub), email: verifiedEmail(payload.email), phone: verifiedPhone(payload.phone) }
+      request.user = {
+        id: String(payload.sub),
+        email: verifiedEmail(payload.email),
+        phone: verifiedPhone(payload.phone),
+        role: roleOf(payload.app_metadata),
+        aal: assuranceLevelOf(payload.aal),
+      }
       return true
     } catch {
       throw new UnauthorizedException()

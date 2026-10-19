@@ -170,7 +170,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant foundation against a real database
     const newOwner = (phone: string) => {
       const id = randomUUID()
       data.trackUser(id)
-      return { id, email: undefined, phone: PhoneNumberSchema.parse(phone) }
+      return { id, email: undefined, phone: PhoneNumberSchema.parse(phone), role: null, aal: null }
     }
 
     it('creates the app user, the shop and the program for someone who only has a Supabase login', async () => {
