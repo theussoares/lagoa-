@@ -6,6 +6,7 @@ import { createLocalJWKSet, exportJWK, generateKeyPair, type JWK, SignJWT } from
 import request from 'supertest'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { JWKS } from '../../auth/jwks'
+import { Public } from '../../auth/public.decorator'
 import { SupabaseAuthGuard } from '../../auth/supabase-auth.guard'
 import { SurfaceRoleGuard } from '../../auth/surface-role.guard'
 import { UserThrottlerGuard } from '../../auth/user-throttler.guard'
@@ -60,9 +61,20 @@ class TestAdminShopsController {
   }
 }
 
-/** Sem `@AdminSurface()`: mesmo atrás do AdminGuard por engano, a rota não pode atender admin. */
+/** Sob `admin/` mas sem `@AdminSurface()`: sem o AdminGuard, ninguém pode passar (nem cliente, nem admin). */
 @Controller('admin/forgotten')
 class TestForgottenAdminController {
+  @Get()
+  list(): { ok: true } {
+    return { ok: true }
+  }
+}
+
+/** `@Public()` por engano numa rota da rede: sem usuário, o AdminGuard recusa em vez de quebrar. */
+@AdminSurface()
+@Controller('admin/public-by-mistake')
+class TestPublicAdminController {
+  @Public()
   @Get()
   list(): { ok: true } {
     return { ok: true }
@@ -92,7 +104,7 @@ describe('admin role separation (global guard chain)', () => {
     const publicJwk: JWK = { ...(await exportJWK(pair.publicKey)), kid: 'test', alg: 'ES256' }
     const moduleRef = await Test.createTestingModule({
       imports: [ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 1_000 }])],
-      controllers: [WalletController, SessionController, TestAdminShopsController, TestForgottenAdminController],
+      controllers: [WalletController, SessionController, TestAdminShopsController, TestForgottenAdminController, TestPublicAdminController],
       providers: [
         { provide: ENV, useValue: { SUPABASE_URL: 'https://project.supabase.co' } },
         { provide: JWKS, useValue: createLocalJWKSet({ keys: [publicJwk] }) },
@@ -128,10 +140,22 @@ describe('admin role separation (global guard chain)', () => {
       expect(res.body).toEqual({ code: 'forbidden' })
     })
 
-    it('is refused on a route under /admin that forgot @AdminSurface()', async () => {
-      const res = await get('/v1/admin/forgotten', await adminToken(ACTIVE_ADMIN, 'aal2')).expect(403)
+  })
+
+  describe('a route under /admin that forgot @AdminSurface()', () => {
+    it.each([
+      ['an active admin with MFA', () => adminToken(ACTIVE_ADMIN, 'aal2')],
+      ['a customer', () => tokenFor(CUSTOMER)],
+    ])('refuses %s', async (_name, token) => {
+      const res = await get('/v1/admin/forgotten', await token()).expect(403)
       expect(res.body).toEqual({ code: 'forbidden' })
     })
+  })
+
+  it('refuses a public route on the admin surface, with or without a token', async () => {
+    const anonymous = await request(app.getHttpServer()).get('/v1/admin/public-by-mistake').expect(403)
+    expect(anonymous.body).toEqual({ code: 'forbidden' })
+    await get('/v1/admin/public-by-mistake', await adminToken(ACTIVE_ADMIN, 'aal2')).expect(403)
   })
 
   describe('a customer token', () => {
