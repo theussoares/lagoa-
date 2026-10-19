@@ -1,0 +1,196 @@
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Bricolage+Grotesque:wght@600..800&display=swap" rel="stylesheet">
+<style>
+  .lg { --desk:#061C24; --bg:#0A2631; --muted:#0E3140; --elev:#133D4E; --hi:#F2FAFD; --tx:#D6E8EE; --toned:#B2CDD6; --mut:#8DB3BF;
+        --tinta:#74CBE3; --tinta950:#062B3A; --sol:#F6B04A; --sol200:#FCD9A0; --sol900:#4F2D05; --folha:#9AD0AC;
+        font-family:'Archivo',sans-serif; }
+  .lg * { box-sizing:border-box; }
+  .phones { display:flex; gap:36px; flex-wrap:wrap; justify-content:center; margin-top:24px; }
+  .col { display:flex; flex-direction:column; align-items:center; gap:10px; max-width:370px; }
+  .col h3 { margin:0; }
+  .col p.note { margin:0; font-size:14px; opacity:.8; text-align:center; min-height:40px; }
+  .phone { width:360px; height:760px; border-radius:40px; background:var(--desk); color:var(--tx); overflow:hidden; position:relative;
+           box-shadow:0 0 0 10px #111, 0 20px 50px rgba(0,0,0,.4); display:flex; flex-direction:column; }
+  .scroll { flex:1; overflow-y:auto; padding-bottom:90px; scrollbar-width:none; }
+  .disp { font-family:'Bricolage Grotesque',sans-serif; font-weight:750; letter-spacing:-.025em; color:var(--hi); }
+  .head { background:var(--tinta950); padding:44px 20px 20px; border-radius:0 0 28px 28px; position:relative; }
+  .eyebrow { font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--sol200); }
+  .head h1 { margin:6px 0 0; font-size:28px; line-height:1.02; }
+  .ex { position:absolute; top:16px; right:20px; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--mut); }
+  .chips { display:flex; gap:8px; overflow-x:auto; padding:16px 20px 4px; scrollbar-width:none; }
+  .chip { flex:none; height:40px; padding:0 16px; border-radius:999px; background:var(--muted); color:var(--tx); display:flex; align-items:center; font-size:15px; font-weight:600; white-space:nowrap; }
+  .chip.on { background:var(--tinta); color:var(--tinta950); }
+  .sec { padding:20px 20px 0; }
+  .sec h2 { margin:0 0 2px; font-size:20px; }
+  .why { font-size:14px; color:var(--mut); margin-bottom:12px; }
+  .rail { display:flex; gap:12px; overflow-x:auto; padding:0 20px; margin:0 -20px; scrollbar-width:none; }
+  .card { background:var(--bg); border-radius:24px; overflow:hidden; box-shadow:0 0 0 1px rgba(116,203,227,.08), 0 8px 24px rgba(0,0,0,.25); }
+  .photo { background:#1C5066; display:flex; align-items:flex-end; padding:10px; position:relative; }
+  .ph { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--mut); opacity:.7; }
+  .seal { position:relative; z-index:1; background:var(--sol); color:var(--sol900); font-weight:800; font-size:12px; padding:5px 10px; border-radius:999px; text-transform:uppercase; letter-spacing:.04em; font-stretch:75%; }
+  .pro { position:absolute; top:10px; left:10px; z-index:1; background:rgba(6,28,36,.8); color:var(--sol200); font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; padding:4px 9px; border-radius:999px; }
+  .shop { font-family:'Bricolage Grotesque',sans-serif; font-weight:700; color:var(--hi); font-size:17px; letter-spacing:-.02em; }
+  .meta { font-size:13px; color:var(--mut); margin-top:2px; }
+  .offer { font-size:15px; margin-top:6px; line-height:1.3; }
+  .offer b { color:var(--sol200); }
+  /* featured carousel */
+  .feat { display:flex; gap:12px; overflow-x:auto; padding:0 20px; margin-top:-28px; position:relative; z-index:2; scrollbar-width:none; }
+  .feat .card { width:290px; flex:none; }
+  .feat .photo { height:130px; }
+  .feat .body { padding:12px 14px 14px; }
+  .dots { display:flex; justify-content:center; gap:6px; margin-top:10px; }
+  .dots i { width:6px; height:6px; border-radius:50%; background:var(--elev); }
+  .dots i.on { width:18px; border-radius:3px; background:var(--tinta); }
+  .mini { width:180px; flex:none; }
+  .mini .photo { height:100px; }
+  .mini .body { padding:10px 12px 12px; }
+  /* hits */
+  .banner { width:300px; flex:none; height:150px; border-radius:24px; background:#1C5066; position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:flex-end; padding:14px; }
+  .banner .scrim { position:absolute; inset:0; background:linear-gradient(to top, rgba(6,28,36,.92), rgba(6,28,36,0) 70%); }
+  .banner > *:not(.scrim):not(.ph) { position:relative; z-index:1; }
+  .banner .t { font-family:'Bricolage Grotesque'; font-weight:750; color:var(--hi); font-size:20px; letter-spacing:-.02em; line-height:1.1; }
+  .banner .s { font-size:13px; color:var(--toned); margin-top:2px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .prod .photo { height:120px; padding:8px; }
+  .prod .body { padding:10px 12px 12px; }
+  .pname { font-size:15px; font-weight:600; color:var(--hi); line-height:1.25; }
+  .pshop { font-size:12px; color:var(--mut); margin-top:2px; }
+  .price { font-family:'Bricolage Grotesque'; font-weight:750; font-size:19px; color:var(--hi); margin-top:6px; font-variant-numeric:tabular-nums; }
+  .earn { display:inline-flex; margin-top:4px; font-size:12px; font-weight:700; color:var(--sol200); background:rgba(246,176,74,.12); border-radius:999px; padding:3px 8px; }
+  .cta { margin-top:10px; height:44px; border-radius:999px; border:1.5px solid rgba(116,203,227,.5); color:var(--tinta); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; gap:6px; }
+  /* tabbar */
+  .tabbar { position:absolute; bottom:0; left:0; right:0; height:80px; background:var(--bg); border-top:1px solid rgba(255,255,255,.08); display:grid; grid-template-columns:repeat(5,1fr); align-items:center; font-size:11px; color:var(--mut); padding-bottom:12px; z-index:5; }
+  .tabbar span { display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .tabbar span::before { content:''; width:22px; height:22px; border-radius:6px; border:2px solid currentColor; opacity:.8; }
+  .tabbar .on { color:var(--tinta); font-weight:700; }
+  .tabbar .ci::before { display:none; }
+  .tabbar .ci b { width:60px; height:60px; border-radius:50%; background:var(--tinta); color:var(--tinta950); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; margin-top:-30px; box-shadow:0 0 0 6px var(--desk); }
+  /* wallet + menu */
+  .wallet { margin:-28px 20px 0; position:relative; z-index:2; padding:16px; }
+  .slots { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-top:12px; }
+  .slots i { aspect-ratio:1; border-radius:50%; border:2px dashed #5C8C9A; }
+  .slots i.f { border:none; background:var(--tinta); }
+  .count { font-family:'Bricolage Grotesque'; font-weight:800; font-size:44px; color:var(--hi); line-height:1; }
+  .tabs { display:flex; gap:6px; margin:18px 20px 0; background:var(--muted); border-radius:999px; padding:4px; }
+  .tabs span { flex:1; height:40px; border-radius:999px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--toned); }
+  .tabs span.on { background:var(--bg); color:var(--hi); }
+  .veil { position:absolute; inset:0; background:rgba(0,0,0,.55); z-index:6; }
+  .sheet { position:absolute; left:0; right:0; bottom:0; background:var(--bg); border-radius:28px 28px 0 0; z-index:7; padding:12px 20px 28px; }
+  .grab { width:40px; height:5px; border-radius:3px; background:var(--elev); margin:0 auto 14px; }
+  .mrow { display:flex; align-items:center; gap:14px; height:56px; border-top:1px solid rgba(255,255,255,.1); font-size:17px; color:var(--hi); }
+  .mrow:first-of-type { border-top:0; }
+  .mrow i { width:36px; height:36px; border-radius:12px; background:var(--muted); }
+  .mrow small { margin-left:auto; color:var(--mut); font-size:13px; }
+</style>
+
+<h2>Descobrir · Hits · Carteira — v2</h2>
+<p class="subtitle">Barra nova: Descobrir · Hits · Carimbar · Carteira (com Prêmios) · Mais. O app continua abrindo na Carteira. Dados de exemplo.</p>
+
+<div class="phones lg">
+
+  <!-- 1. DESCOBRIR -->
+  <div class="col">
+    <h3>1 · Descobrir</h3>
+    <p class="note">Carrossel de destaque (Pro / destaque pago) sobe sobre a faixa; abaixo a vitrine em trilhos.</p>
+    <div class="phone">
+      <div class="scroll">
+        <div class="head" style="padding-bottom:44px">
+          <span class="ex">exemplo</span>
+          <div class="eyebrow">Descobrir</div>
+          <h1 class="disp">Onde rende mais hoje</h1>
+        </div>
+        <div class="feat">
+          <div class="card"><div class="photo"><span class="ph">foto da vitrine</span><span class="pro">Destaque</span><span class="seal">Carimbo em dobro</span></div>
+            <div class="body"><div class="shop">Barbearia do Zé</div><div class="meta">Beleza · Centro · aberta agora</div><div class="offer">Hoje cada visita vale <b>2 carimbos</b></div></div></div>
+          <div class="card"><div class="photo"><span class="ph">foto</span><span class="pro">Destaque</span><span class="seal">+2 de cara</span></div>
+            <div class="body"><div class="shop">Moda Sol</div><div class="meta">Roupas · Centro</div></div></div>
+        </div>
+        <div class="dots"><i class="on"></i><i></i><i></i><i></i></div>
+        <div class="chips"><span class="chip on">Tudo</span><span class="chip">Comer</span><span class="chip">Beleza</span><span class="chip">Roupas</span><span class="chip">Serviços</span><span class="chip">Pet</span></div>
+        <div class="sec">
+          <h2 class="disp">Dia surpresa</h2><div class="why">Visita vale o dobro só hoje</div>
+          <div class="rail">
+            <div class="card mini"><div class="photo"><span class="ph">foto</span><span class="seal">2× hoje</span></div><div class="body"><div class="shop">Café Lagoa</div><div class="meta">Comer · 1,2 km</div></div></div>
+            <div class="card mini"><div class="photo"><span class="ph">foto</span><span class="seal">2× hoje</span></div><div class="body"><div class="shop">Pet Amigo</div><div class="meta">Pet · 900 m</div></div></div>
+          </div>
+        </div>
+        <div class="sec">
+          <h2 class="disp">Cartão já começa andado</h2><div class="why">Boas-vindas ao entrar no clube</div>
+          <div class="rail">
+            <div class="card mini"><div class="photo"><span class="ph">foto</span><span class="seal">+2 de cara</span></div><div class="body"><div class="shop">Lava-Jato Rápido</div><div class="meta">Serviços · 2 km</div></div></div>
+            <div class="card mini"><div class="photo"><span class="ph">foto</span><span class="seal">+2 de cara</span></div><div class="body"><div class="shop">Studio Unha</div><div class="meta">Beleza · Centro</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="tabbar"><span class="on">Descobrir</span><span>Hits</span><span class="ci"><b>Carimbar</b></span><span>Carteira</span><span>Mais</span></div>
+    </div>
+  </div>
+
+  <!-- 2. HITS -->
+  <div class="col">
+    <h3>2 · Hits</h3>
+    <p class="note">Lojas postam produtos/serviços. Banner só Pro ou pago. Cada item diz o preço e quanto rende; o botão é o mesmo do card da loja.</p>
+    <div class="phone">
+      <div class="scroll">
+        <div class="head">
+          <span class="ex">exemplo</span>
+          <div class="eyebrow">Hits da Lagoa</div>
+          <h1 class="disp">O que tá saindo na cidade</h1>
+        </div>
+        <div class="rail" style="margin:16px 0 0;padding:0 20px">
+          <div class="banner"><span class="ph">foto do banner</span><div class="scrim"></div><span class="pro" style="position:absolute">Patrocinado</span><div class="t">Coleção de verão na Moda Sol</div><div class="s">10 pts a cada R$ 1 · até domingo</div></div>
+          <div class="banner"><span class="ph">foto</span><div class="scrim"></div><div class="t">Combo pizza + refri</div><div class="s">Pizzaria Bella</div></div>
+        </div>
+        <div class="chips"><span class="chip on">Tudo</span><span class="chip">Comer</span><span class="chip">Beleza</span><span class="chip">Roupas</span><span class="chip">Serviços</span><span class="chip">Pet</span></div>
+        <div class="sec">
+          <div class="grid">
+            <div class="card prod"><div class="photo"><span class="ph">foto</span></div><div class="body">
+              <div class="pname">Camiseta linho</div><div class="pshop">Moda Sol</div><div class="price">R$ 59,90</div><div class="earn">rende 599 pts</div>
+              <div class="cta">WhatsApp</div></div></div>
+            <div class="card prod"><div class="photo"><span class="ph">foto</span></div><div class="body">
+              <div class="pname">Corte + barba</div><div class="pshop">Barbearia do Zé</div><div class="price">R$ 45,00</div><div class="earn">rende 1 carimbo</div>
+              <div class="cta">Agendar</div></div></div>
+            <div class="card prod"><div class="photo"><span class="ph">foto</span></div><div class="body">
+              <div class="pname">Pizza grande</div><div class="pshop">Pizzaria Bella</div><div class="price">R$ 54,00</div><div class="earn">rende 1 carimbo</div>
+              <div class="cta">Pedir</div></div></div>
+            <div class="card prod"><div class="photo"><span class="ph">foto</span></div><div class="body">
+              <div class="pname">Banho e tosa P</div><div class="pshop">Pet Amigo</div><div class="price">R$ 60,00</div><div class="earn">rende 1 carimbo</div>
+              <div class="cta">WhatsApp</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="tabbar"><span>Descobrir</span><span class="on">Hits</span><span class="ci"><b>Carimbar</b></span><span>Carteira</span><span>Mais</span></div>
+    </div>
+  </div>
+
+  <!-- 3. CARTEIRA + MAIS -->
+  <div class="col">
+    <h3>3 · Carteira + menu Mais</h3>
+    <p class="note">Carteira ganha a aba Prêmios dentro. "Mais" abre uma folha com Ranking, Perfil, Convite.</p>
+    <div class="phone">
+      <div class="scroll">
+        <div class="head" style="padding-bottom:44px">
+          <span class="ex">exemplo</span>
+          <div class="eyebrow">Carteira</div>
+          <h1 class="disp">Oi, Ana</h1>
+        </div>
+        <div class="card wallet">
+          <div class="shop">Barbearia do Zé</div>
+          <div class="slots"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i></div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-top:14px"><span class="count">4</span><span>para um corte grátis</span></div>
+        </div>
+        <div class="tabs"><span class="on">Cartões</span><span>Prêmios (1)</span></div>
+      </div>
+      <div class="veil"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <div class="mrow"><i></i>Ranking<small>você está em 12º</small></div>
+        <div class="mrow"><i></i>Convidar amigo<small>+1 carimbo</small></div>
+        <div class="mrow"><i></i>Perfil</div>
+        <div class="mrow"><i></i>Aparência</div>
+        <div class="mrow"><i></i>Ajuda</div>
+      </div>
+      <div class="tabbar"><span>Descobrir</span><span>Hits</span><span class="ci"><b>Carimbar</b></span><span>Carteira</span><span class="on">Mais</span></div>
+    </div>
+  </div>
+
+</div>
