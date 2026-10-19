@@ -697,6 +697,9 @@
       "restaurant": "Restaurante",
       "petShop": "Pet shop",
       "gym": "Academia",
+      "clothing": "Roupas e acessórios",
+      "services": "Serviços",
+      "home": "Casa e construção",
       "other": "Outro comércio"
     }
   },

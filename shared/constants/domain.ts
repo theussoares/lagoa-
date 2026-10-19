@@ -131,3 +131,23 @@ export const SHOP_PHOTO_MAX_DIMENSION = 1200
 export const SHOP_LOGO_DIMENSION = 512
 /** Tempo para terminar o "Criar o clube" depois de confirmar o celular. */
 export const SIGN_UP_TICKET_TTL_MINUTES = 60
+
+/** Produto do Hits (valores provisórios do PO; mudam só aqui). */
+export const HIT_ITEM_TITLE_MAX_LENGTH = 60
+export const HIT_ITEM_DESCRIPTION_MAX_LENGTH = 140
+export const HIT_ITEM_PRICE_MAX_CENTS = 10_000_000
+/** Itens não arquivados por loja, por plano. */
+export const HIT_ITEMS_MAX_FOUNDER = 5
+export const HIT_ITEMS_MAX_FOUNDER_PRO = 20
+export const HIT_ITEM_REJECTION_REASON_MAX_LENGTH = 200
+
+/** Vagas de destaque pago por vitrine e teto de itens no carrossel do Descobrir. */
+export const FEATURED_PAID_SLOTS_DISCOVER = 4
+export const FEATURED_PAID_SLOTS_HITS = 3
+export const FEATURED_CAROUSEL_MAX = 8
+export const FEATURED_NOTE_MAX_LENGTH = 200
+
+/** Painel de admin da rede. */
+export const ADMIN_NAME_MIN_LENGTH = 2
+export const ADMIN_NAME_MAX_LENGTH = 80
+export const ADMIN_REASON_MAX_LENGTH = 200

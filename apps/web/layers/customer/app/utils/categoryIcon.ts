@@ -10,6 +10,9 @@ const CATEGORY_ICONS: Record<ShopCategory, string> = {
   restaurant: 'i-ph-fork-knife-bold',
   petShop: 'i-ph-paw-print-bold',
   gym: 'i-ph-barbell-bold',
+  clothing: 'i-ph-t-shirt-bold',
+  services: 'i-ph-wrench-bold',
+  home: 'i-ph-house-line-bold',
   other: 'i-ph-storefront-bold',
 }
 
