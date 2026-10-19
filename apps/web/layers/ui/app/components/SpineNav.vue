@@ -19,15 +19,15 @@ const sections = computed(() => [props.items, props.footerItems].filter((section
     <ul
       v-for="(section, index) in sections"
       :key="index"
-      class="flex flex-col gap-1"
-      :class="{ 'mt-auto pt-4 border-t border-white/10': index > 0 }"
+      class="flex flex-col"
+      :class="index === 0 ? 'gap-2.5' : 'mt-auto pt-4 border-t border-white/10 gap-2'"
     >
       <li v-for="item in section" :key="item.to">
         <NuxtLink v-slot="{ href, navigate, isActive }" :to="item.to" custom>
           <a
             :href="href ?? item.to"
             :aria-current="isActive ? 'page' : undefined"
-            class="group flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-[0.9375rem] transition-all duration-(--lagoa-dur-fast)"
+            class="group flex min-h-12 items-center gap-3 rounded-xl px-3 py-2.5 text-[0.9375rem] transition-all duration-(--lagoa-dur-fast)"
             :class="isActive ? 'bg-[#0f3844] text-white font-medium shadow-xs' : 'text-slate-300/80 hover:bg-white/5 hover:text-white'"
             @click="navigate"
           >
