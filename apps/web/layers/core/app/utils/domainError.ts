@@ -1,7 +1,7 @@
 import type { DomainError, DomainErrorCode, ErrorOf, TransportError } from '#shared/types/errors'
 import { IsoDateTimeSchema } from '#shared/schemas/common'
 
-const ENTITIES = ['shop', 'program', 'customer', 'merchant', 'card', 'redemption', 'visitQr'] as const
+const ENTITIES = ['shop', 'program', 'customer', 'merchant', 'card', 'redemption', 'visitQr', 'hitItem'] as const
 const SIMPLE_CODES = [
   'unauthorized', 'rateLimited', 'invalidPhone', 'phoneAlreadyUsed', 'accountOwnsShop', 'merchantTermsNotAccepted', 'emailAlreadyUsed', 'invalidLoginCode', 'loginCodeExpired',
   'invalidAmount', 'amountNotAccepted', 'invalidShopQr', 'checkInDisabled', 'redemptionInvalid', 'redemptionExpired',

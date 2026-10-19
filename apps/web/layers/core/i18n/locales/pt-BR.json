@@ -139,7 +139,8 @@
     "program": "Programa e prêmios",
     "campaigns": "Campanhas",
     "mainLabel": "Navegação principal",
-    "shopLink": "Botão do card"
+    "shopLink": "Botão do card",
+    "hits": "Hits"
   },
   "common": {
     "loading": "Carregando",
@@ -794,6 +795,78 @@
     "remove": "Tirar o botão",
     "saved": "Salvo. O botão já aparece nos cards.",
     "removed": "Pronto. O botão saiu dos cards."
+  },
+  "merchantHits": {
+    "title": "Hits",
+    "lead": "Os produtos da sua loja que aparecem na vitrine Hits do Descobrir. A rede analisa cada produto antes de ele ir ao ar.",
+    "listTitle": "Seus produtos",
+    "counter": "{count} de {cap} produtos",
+    "new": "Novo produto",
+    "capReached": "Você chegou ao máximo de produtos do seu plano. Arquive um para abrir vaga.",
+    "empty": "Você ainda não cadastrou nenhum produto.",
+    "onRequest": "Sob consulta",
+    "edit": "Editar",
+    "archive": "Arquivar",
+    "unarchive": "Desarquivar",
+    "missingPhoto": "Falta a foto",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "status": {
+      "pending": "Em análise",
+      "approved": "No ar",
+      "rejected": "Recusado: {reason}",
+      "archived": "Arquivado"
+    },
+    "form": {
+      "newTitle": "Novo produto",
+      "editTitle": "Editar produto"
+    },
+    "fields": {
+      "title": {
+        "label": "Nome do produto"
+      },
+      "description": {
+        "label": "Descrição (opcional)",
+        "count": "{count} de {max}"
+      },
+      "price": {
+        "label": "Preço (opcional)",
+        "hint": "Em reais, como 12,50. Vazio mostra \"Sob consulta\"."
+      },
+      "endsAt": {
+        "label": "Sai do ar em (opcional)",
+        "hint": "O último dia em que o produto aparece."
+      }
+    },
+    "photo": {
+      "label": "Foto",
+      "hint": "Sem foto a rede não analisa o produto.",
+      "choose": "Escolher foto",
+      "change": "Trocar foto"
+    },
+    "button": {
+      "legend": "Botão do produto",
+      "shop": "Usar o botão da loja",
+      "own": "Um botão só deste produto"
+    },
+    "preview": {
+      "title": "Como fica no card",
+      "lead": "É assim que o cliente vê o produto.",
+      "photoAlt": "Foto do produto",
+      "titleEmpty": "Nome do produto",
+      "shopButton": "Este produto usa o botão da loja."
+    },
+    "errors": {
+      "missingTitle": "Escreva o nome do produto.",
+      "invalidPrice": "Digite um preço em reais, como 12,50.",
+      "invalidEndsAt": "Escolha um dia que ainda não passou.",
+      "missingPhoto": "Escolha uma foto do produto.",
+      "unreadable": "Não deu para abrir essa imagem. Escolha outra foto."
+    },
+    "sentToReview": "Enviado. A rede vai analisar o produto antes de ele aparecer na vitrine.",
+    "backToReview": "Salvo. Como o produto estava no ar, ele volta para a análise da rede e sai da vitrine até ser aprovado.",
+    "archived": "Produto arquivado. Ele saiu da vitrine e liberou uma vaga.",
+    "unarchivedToReview": "Produto desarquivado. Ele volta para a análise da rede."
   },
   "clubSetup": {
     "pageTitle": "Criar o clube",

@@ -18,6 +18,7 @@ describe('surfaceRedirect', () => {
     expect(get('app.lagoa.test', '/balcao/entrar')).toBe('https://balcao.lagoa.test/balcao/entrar')
     expect(get('app.lagoa.test', '/painel')).toBe('https://balcao.lagoa.test/painel')
     expect(get('app.lagoa.test', '/botao-do-card')).toBe('https://balcao.lagoa.test/botao-do-card')
+    expect(get('app.lagoa.test', '/hits')).toBe('https://balcao.lagoa.test/hits')
   })
 
   it('leaves each host alone on its own pages, API and assets', () => {

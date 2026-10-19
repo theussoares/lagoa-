@@ -6,6 +6,7 @@ import type { MerchantHomeService } from './MerchantHomeService'
 import type { MerchantTermsService } from './MerchantTermsService'
 import type { PosterReprintService } from './PosterReprintService'
 import type { ProgramService } from './ProgramService'
+import type { HitItemService } from './HitItemService'
 import type { ShopContactService } from './ShopContactService'
 import type { ShopPhotoService } from './ShopPhotoService'
 import type { VisitQrService, VisitQrTestingService } from './VisitQrService'
@@ -24,6 +25,7 @@ export interface MerchantServices {
   readonly posterReprint: PosterReprintService
   readonly shopPhoto: ShopPhotoService
   readonly shopContact: ShopContactService
+  readonly hits: HitItemService
   readonly shopStatus: ShopStatusService
   /** `null` fora do mock. */
   readonly shopApprovalTesting: ShopApprovalTestingService | null
