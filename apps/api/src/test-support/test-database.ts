@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { drizzle } from 'drizzle-orm/postgres-js'
-import { and, eq, inArray, sql, type SQLWrapper } from 'drizzle-orm'
+import { and, eq, inArray, or, sql, type SQLWrapper } from 'drizzle-orm'
 import postgres from 'postgres'
 import { REFERRAL_CODE_LENGTH, VISIT_CODE_LENGTH } from '#shared/constants/domain'
 import { visitQrExpiresAt } from '#shared/domain/visitQr'
@@ -301,7 +301,7 @@ export class TestDatabase {
       await this.db.delete(schema.appUsers).where(inArray(schema.appUsers.id, this.userIds))
     }
     if (this.adminIds.length > 0) {
-      await this.db.delete(schema.adminEvents).where(inArray(schema.adminEvents.actorAdminId, this.adminIds))
+      await this.db.delete(schema.adminEvents).where(or(inArray(schema.adminEvents.actorAdminId, this.adminIds), inArray(schema.adminEvents.targetAdminId, this.adminIds)))
       await this.db.delete(schema.adminUsers).where(inArray(schema.adminUsers.id, this.adminIds))
     }
   }

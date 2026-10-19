@@ -53,7 +53,7 @@ CREATE TABLE "hit_items" (
 	"title" text NOT NULL,
 	"description" text,
 	"price_cents" integer,
-	"photo_path" text NOT NULL,
+	"photo_path" text,
 	"cta_kind" text,
 	"whatsapp" text,
 	"whatsapp_message" text,

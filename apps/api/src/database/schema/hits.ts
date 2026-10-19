@@ -17,8 +17,8 @@ export const hitItems = pgTable(
     description: text('description'),
     /** `null` = sob consulta. */
     priceCents: integer('price_cents'),
-    /** Caminho no bucket `shop-assets` (nunca a URL). */
-    photoPath: text('photo_path').notNull(),
+    /** Caminho no bucket `shop-assets` (nunca a URL); `null` até a foto chegar, que vem depois de criar o item. */
+    photoPath: text('photo_path'),
     /** Botão próprio do produto: mesmas colunas e mesmo CHECK de `shops`; tudo `null` = usa o botão da loja. */
     ctaKind: text('cta_kind'),
     whatsapp: text('whatsapp'),

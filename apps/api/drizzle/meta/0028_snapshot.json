@@ -1,5 +1,5 @@
 {
-  "id": "0e739004-58bc-482b-9b81-bc1f920b2c85",
+  "id": "3489b994-d168-4b52-9993-5d67ade0310b",
   "prevId": "0b600263-3e17-421a-b802-0c6c0ce48e91",
   "version": "7",
   "dialect": "postgresql",
@@ -2347,7 +2347,7 @@
           "name": "photo_path",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "cta_kind": {
           "name": "cta_kind",

@@ -34,6 +34,11 @@ describe.skipIf(!TEST_DATABASE_URL)('hits tables (integration)', () => {
     expect(item.id).toBeTruthy()
   })
 
+  it('accepts a hit item that has no photo yet', async () => {
+    const item = await testDb.createHitItem(shop.id, { photoPath: null })
+    expect(item.id).toBeTruthy()
+  })
+
   it('rejects a url button that is not https', async () => {
     const insert = testDb.db.insert(schema.hitItems).values({
       shopId: shop.id, title: 'Café', photoPath: 'hits/x.jpg', ctaKind: 'url', ctaUrl: 'http://x', ctaLabel: 'Ver',
