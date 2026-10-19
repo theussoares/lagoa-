@@ -204,6 +204,13 @@
       "when": 1792447287593,
       "tag": "0028_hits_featured_admin",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1792450438788,
+      "tag": "0029_featured_cancelled_by",
+      "breakpoints": true
     }
   ]
 }

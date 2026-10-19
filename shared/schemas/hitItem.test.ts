@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { FeaturedPlacementDraftSchema } from './featured'
+import { FeaturedPlacementDraftSchema, FeaturedRangeQuerySchema } from './featured'
 import { HitItemDraftSchema } from './hitItem'
 import { HitItemReviewSchema } from './admin'
 
@@ -54,6 +54,26 @@ describe('FeaturedPlacementDraftSchema', () => {
   it('rejects an end that is not after the start', () => {
     const same = { ...base, surface: 'discoverCarousel', hitItemId: null, endsAt: base.startsAt }
     expect(FeaturedPlacementDraftSchema.safeParse(same).success).toBe(false)
+  })
+})
+
+describe('FeaturedRangeQuerySchema', () => {
+  const range = (from: string, to: string) => FeaturedRangeQuerySchema.safeParse({ surface: 'hitsBanner', from, to }).success
+
+  it('takes one to 90 local days', () => {
+    expect(range('2026-11-10', '2026-11-11')).toBe(true)
+    expect(range('2026-11-01', '2027-01-30')).toBe(true)
+  })
+
+  it('refuses an empty, inverted or longer than 90 days range', () => {
+    expect(range('2026-11-10', '2026-11-10')).toBe(false)
+    expect(range('2026-11-10', '2026-11-09')).toBe(false)
+    expect(range('2026-11-01', '2027-01-31')).toBe(false)
+  })
+
+  it('refuses datetimes and unknown fields', () => {
+    expect(range('2026-11-10T00:00:00Z', '2026-11-11')).toBe(false)
+    expect(FeaturedRangeQuerySchema.safeParse({ surface: 'hitsBanner', from: '2026-11-10', to: '2026-11-11', x: '1' }).success).toBe(false)
   })
 })
 

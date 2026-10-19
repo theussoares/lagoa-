@@ -122,6 +122,7 @@ Mesmo padrão de `shop_status_events`: `hit_item_id`, `from_status`, `to_status`
 | `created_by_admin_id` | uuid | quem lançou |
 | `note` | text null | referência da venda (sem dado pessoal) |
 | `cancelled_at` | timestamptz null | |
+| `cancelled_by_admin_id` | uuid null | quem cancelou (migration 0029); junto com `cancelled_at` |
 
 - **Vagas pagas (decisão do dono, 2026-10-19):** cada superfície tem um número fixo de vagas pagas
   (`FEATURED_PAID_SLOTS_DISCOVER`, `FEATURED_PAID_SLOTS_HITS`, valores do PO). Criar um destaque num período em que

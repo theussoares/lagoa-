@@ -146,6 +146,10 @@ export const FEATURED_PAID_SLOTS_DISCOVER = 4
 export const FEATURED_PAID_SLOTS_HITS = 3
 export const FEATURED_CAROUSEL_MAX = 8
 export const FEATURED_NOTE_MAX_LENGTH = 200
+/** Janela máxima (em dias de calendário) da agenda e da lista de destaques do admin. */
+export const FEATURED_RANGE_MAX_DAYS = 90
+/** Teto da lista de destaques numa janela (inclui cancelados) e da lista de lojas Pro ao lado. */
+export const ADMIN_FEATURED_LIST_LIMIT = 200
 
 /** Painel de admin da rede. */
 export const ADMIN_NAME_MIN_LENGTH = 2

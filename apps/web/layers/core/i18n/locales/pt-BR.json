@@ -189,7 +189,9 @@
     "invalidShopPhoto": "Essa imagem não serve. Use uma foto JPG, PNG ou WebP de até 1 MB.",
     "limitReached": "Você já tem o máximo de produtos do seu plano. Arquive um para abrir vaga.",
     "conflict": "Este produto mudou enquanto você olhava. Recarregue e confira de novo.",
-    "invalidTransition": "Essa ação não vale para a situação atual do produto."
+    "invalidTransition": "Essa ação não vale para a situação atual do produto.",
+    "slotsFull": "As vagas pagas desta vitrine já estão todas tomadas em parte desse período. Escolha outras datas.",
+    "invalidTarget": "Destaque só para loja aprovada e, no banner, para um produto aprovado da própria loja."
   },
   "ledger": {
     "yesterday": "Ontem",

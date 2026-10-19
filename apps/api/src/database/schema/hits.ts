@@ -97,6 +97,8 @@ export const featuredPlacements = pgTable(
     /** Referência da venda, sem dado pessoal. */
     note: text('note'),
     cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
+    /** Quem cancelou: junto com `cancelled_at`, nunca um sem o outro. */
+    cancelledByAdminId: uuid('cancelled_by_admin_id').references(() => adminUsers.id),
     createdAt: createdAt(),
   },
   (t) => [
@@ -104,6 +106,7 @@ export const featuredPlacements = pgTable(
       .on(t.surface, t.startsAt, t.endsAt)
       .where(sql`${t.cancelledAt} IS NULL`),
     check('featured_placements_period_check', sql`${t.endsAt} > ${t.startsAt}`),
+    check('featured_placements_cancel_check', sql`(${t.cancelledAt} IS NULL) = (${t.cancelledByAdminId} IS NULL)`),
     check('featured_placements_item_check', sql`(${t.surface} = 'hitsBanner') = (${t.hitItemId} IS NOT NULL)`),
   ],
 )

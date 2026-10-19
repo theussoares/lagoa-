@@ -45,6 +45,8 @@ const STATUS_BY_CODE: Record<DomainErrorCode, number> = {
   limitReached: 409,
   conflict: 409,
   invalidTransition: 409,
+  slotsFull: 409,
+  invalidTarget: 422,
 }
 
 /** O corpo da resposta é o próprio `DomainError`, que a UI traduz por `code`. Nunca carrega dado pessoal. */

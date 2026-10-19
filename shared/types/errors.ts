@@ -1,6 +1,6 @@
 import type { IsoDateTime } from '../schemas/common'
 
-export type DomainEntity = 'shop' | 'program' | 'customer' | 'merchant' | 'card' | 'redemption' | 'visitQr' | 'hitItem'
+export type DomainEntity = 'shop' | 'program' | 'customer' | 'merchant' | 'card' | 'redemption' | 'visitQr' | 'hitItem' | 'featuredPlacement'
 
 /**
  * Erros esperados de regra de negócio. A UI traduz `code` para a chave
@@ -72,6 +72,10 @@ export type DomainError =
   | { readonly code: 'conflict' }
   /** A ação não vale na situação atual do item. */
   | { readonly code: 'invalidTransition' }
+  /** Destaque pago: algum instante do período já está com todas as vagas pagas da vitrine tomadas. */
+  | { readonly code: 'slotsFull' }
+  /** Destaque para loja que não está aprovada, ou banner com produto não aprovado ou de outra loja. */
+  | { readonly code: 'invalidTarget' }
 
 export type DomainErrorCode = DomainError['code']
 
