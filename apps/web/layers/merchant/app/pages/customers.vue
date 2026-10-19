@@ -106,11 +106,20 @@ const tableLabels = computed<CustomerTableLabels>(() => ({
 
         <p
           v-if="filter === 'lapsed' && page !== null && page.total > 0"
-          class="flex flex-wrap items-center gap-x-1.5 text-[0.9375rem] text-toned"
+          class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.9375rem] text-toned"
         >
-          <UIcon name="i-ph-bell-ringing" class="size-4 shrink-0" aria-hidden="true" />{{ t('customers.lapsedHint', { count: page.acceptingNotifications, total: page.total }) }}
+          <span class="inline-flex items-center gap-1.5">
+            <UIcon name="i-ph-bell-ringing" class="size-4 shrink-0" aria-hidden="true" />
+            <span>{{ t('customers.lapsedHint', { count: page.acceptingNotifications, total: page.total }) }}</span>
+          </span>
           <!-- A janela e a expiração só o servidor sabe: quem de fato recebe aparece em Campanhas. -->
-          <ULink to="/campanhas" class="inline-flex min-h-11 items-center font-semibold text-primary">{{ t('customers.lapsedHintLink') }}</ULink>
+          <NuxtLink
+            to="/campanhas"
+            class="group/link inline-flex items-center gap-1.5 text-xs font-semibold text-[#0f6381] dark:text-cyan-400 hover:text-[#0b4d66] dark:hover:text-cyan-300 hover:bg-[#e8f6f8] dark:hover:bg-cyan-950/50 px-2 py-1 rounded-lg transition-all duration-150"
+          >
+            <span>{{ t('customers.lapsedHintLink') }}</span>
+            <UIcon name="i-ph-arrow-right" class="size-3 transition-transform duration-200 group-hover/link:translate-x-0.5" aria-hidden="true" />
+          </NuxtLink>
         </p>
 
         <div v-if="state.status === 'loading'" class="flex flex-col" role="status" :aria-label="t('common.loading')">
