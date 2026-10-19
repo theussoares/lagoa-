@@ -79,17 +79,16 @@ const snapshot = computed(() => (state.value.status === 'success' ? state.value.
         <!-- 4 Cards de Indicadores -->
         <HomeIndicatorCards
           :week="snapshot.week"
-          :all-customers="snapshot.allCustomers"
+          :overview="snapshot.overview"
           :program="snapshot.program"
         />
 
         <!-- Área Principal em 2 Colunas -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-          <!-- Coluna Esquerda: Últimos clientes e Campanhas ativas -->
+          <!-- Coluna Esquerda: Atividade recente e Campanhas ativas -->
           <div class="flex flex-col gap-6 min-w-0">
-            <HomeRecentCustomers
-              :customers="snapshot.allCustomers?.items ?? []"
-              :unit="snapshot.program?.rules.mode === 'stamps' ? 'stamp' : 'point'"
+            <HomeRecentActivity
+              :activity="snapshot.overview.activity"
             />
             <HomeActiveCampaigns
               :program="snapshot.program"
@@ -98,16 +97,15 @@ const snapshot = computed(() => (state.value.status === 'success' ? state.value.
             />
           </div>
 
-          <!-- Coluna Direita: Resumo da loja e Próximos resgates -->
+          <!-- Coluna Direita: Resumo do mês e Resumo de oportunidades -->
           <div class="flex flex-col gap-6 min-w-0">
-            <HomeShopSummaryChart
-              :week="snapshot.week"
+            <HomeComparisonChart
+              :comparison="snapshot.overview.comparison"
               :program="snapshot.program"
             />
-            <HomeUpcomingRedemptions
+            <HomeOpportunities
+              :overview="snapshot.overview"
               :program="snapshot.program"
-              :ready-customers="snapshot.readyCustomers"
-              :all-customers="snapshot.allCustomers"
             />
           </div>
         </div>

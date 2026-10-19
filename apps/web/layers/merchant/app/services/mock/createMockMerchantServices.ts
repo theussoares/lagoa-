@@ -15,7 +15,7 @@ import { approveShop, createClub, markPosterReprinted, posterReprintPending, sho
 import { confirmRedemption, todayEntries, validateRedemption } from '#layers/core/app/mock/handlers/counter'
 import { cancelVisitQr, getVisitQr, issueVisitQr } from '#layers/core/app/mock/handlers/visitQr'
 import { simulateVisitQrClaim } from '#layers/core/app/mock/handlers/visitQrClaim'
-import { countActiveCards, getProgram, merchantCustomerPage, updateProgram, weekSummary } from '#layers/core/app/mock/handlers/merchant'
+import { countActiveCards, getProgram, homeOverview, merchantCustomerPage, updateProgram, weekSummary } from '#layers/core/app/mock/handlers/merchant'
 import { contactOf, saveContact } from '#layers/core/app/mock/handlers/shopContact'
 import type { MerchantSessionProvider } from '#layers/core/app/services/SessionProvider'
 
@@ -57,6 +57,7 @@ export function createMockMerchantServices(backend: MockBackend, sessions: Merch
     },
     home: {
       getWeekSummary: () => asMerchant(backend, sessions, (ctx, shopId) => ok(weekSummary(ctx, shopId))),
+      getOverview: () => asMerchant(backend, sessions, (ctx, shopId) => ok(homeOverview(ctx, shopId))),
     },
     clubSetup: {
       createClub: (draft: ClubSetupDraft) => backend.run((ctx) => createClub(ctx, draft)),

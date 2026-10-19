@@ -30,9 +30,40 @@ class FakeSessionRepository extends SessionRepository {
 
 class FakeHomeRepository implements HomeRepository {
   records: WeekLedgerRecord[] = []
+  lapsedCount = 0
+  oldestLapsedVisit: string | null = null
+  nearRewardCount = 0
+  rewardReadyCount = 0
+  allCount = 0
+  comparisonRecords: any[] = []
+  newCardDates: any[] = []
+  activity: any[] = []
 
   async listShopLedgerRecords(_shopId: string): Promise<WeekLedgerRecord[]> {
     return this.records
+  }
+
+  async countShopCustomersByFilter(_shopId: string, filter: string): Promise<number> {
+    if (filter === 'lapsed') return this.lapsedCount
+    if (filter === 'nearReward') return this.nearRewardCount
+    if (filter === 'rewardReady') return this.rewardReadyCount
+    return this.allCount
+  }
+
+  async getOldestLapsedVisit(_shopId: string): Promise<string | null> {
+    return this.oldestLapsedVisit
+  }
+
+  async listComparisonRecords(_shopId: string): Promise<any[]> {
+    return this.comparisonRecords
+  }
+
+  async listNewCardDates(_shopId: string): Promise<any[]> {
+    return this.newCardDates
+  }
+
+  async listRecentActivity(_shopId: string): Promise<any[]> {
+    return this.activity
   }
 }
 
@@ -66,6 +97,9 @@ describe('HomeService', () => {
     if (!result.ok) {
       expect(result.error.code).toBe('notFound')
     }
+
+    const overview = await service.getOverview(ownerUserId)
+    expect(overview.ok).toBe(false)
   })
 
   it('retorna resumo vazio de 7 dias com contagens zeradas quando a loja não tem registros', async () => {
@@ -104,6 +138,42 @@ describe('HomeService', () => {
       expect(result.value.customers).toBe(2)
       expect(result.value.newCustomers).toBe(2)
       expect(result.value.redemptions).toBe(1)
+    }
+  })
+
+  it('retorna overview com lapsed, nearReward, comparison e activity', async () => {
+    homeRepo.lapsedCount = 12
+    homeRepo.oldestLapsedVisit = '2026-08-10T14:00:00Z'
+    homeRepo.nearRewardCount = 5
+    homeRepo.rewardReadyCount = 3
+    homeRepo.allCount = 80
+    homeRepo.activity = [
+      {
+        id: 'ledger_1',
+        kind: 'visit',
+        customerId: '018f98a2-7b2a-7182-9f33-6d004bbbb011',
+        name: 'Carlos',
+        maskedPhone: '(67) 9****-1234',
+        units: 1,
+        unit: 'stamp',
+        amountCents: null,
+        rewardTitle: null,
+        createdAt: '2026-10-08T11:00:00Z',
+      },
+    ]
+
+    const result = await service.getOverview(ownerUserId)
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.value.lapsed.total).toBe(12)
+      expect(result.value.lapsed.oldestLastVisitAt).toBe('2026-08-10T14:00:00Z')
+      expect(result.value.nearReward.total).toBe(5)
+      expect(result.value.rewardReady.total).toBe(3)
+      expect(result.value.totalCustomers).toBe(80)
+      expect(result.value.comparison).toHaveProperty('week')
+      expect(result.value.comparison).toHaveProperty('month')
+      expect(result.value.comparison).toHaveProperty('last30')
+      expect(result.value.activity).toHaveLength(1)
     }
   })
 })

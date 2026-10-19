@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { CustomerIdSchema, LoyaltyCardIdSchema, ProgramIdSchema, ShopIdSchema } from '../schemas/ids'
 import type { LoyaltyCard } from '../schemas/loyaltyCard'
-import { addUnits, consumeReward, isRewardReady, remainingUnits, sortByRewardProximity } from './loyaltyCard'
+import { addUnits, consumeReward, isNearReward, isRewardReady, remainingUnits, sortByRewardProximity } from './loyaltyCard'
 
 const card: LoyaltyCard = {
   id: LoyaltyCardIdSchema.parse('card_1'),
@@ -49,5 +49,24 @@ describe('loyalty card', () => {
       { balance: 96, target: 150 },
       { balance: 2, target: 10 },
     ])
+  })
+
+  it('determines if card is near reward (>= 80% and < target)', () => {
+    // Carimbos: meta 5
+    expect(isNearReward({ balance: 3, target: 5 })).toBe(false) // 60%
+    expect(isNearReward({ balance: 4, target: 5 })).toBe(true)  // 80%
+    expect(isNearReward({ balance: 5, target: 5 })).toBe(false) // 100% (já está liberado, não apenas perto)
+
+    // Carimbos: meta 10
+    expect(isNearReward({ balance: 7, target: 10 })).toBe(false) // 70%
+    expect(isNearReward({ balance: 8, target: 10 })).toBe(true)  // 80%
+    expect(isNearReward({ balance: 9, target: 10 })).toBe(true)  // 90%
+    expect(isNearReward({ balance: 10, target: 10 })).toBe(false)
+
+    // Pontos: meta 100
+    expect(isNearReward({ balance: 79, target: 100 })).toBe(false)
+    expect(isNearReward({ balance: 80, target: 100 })).toBe(true)
+    expect(isNearReward({ balance: 95, target: 100 })).toBe(true)
+    expect(isNearReward({ balance: 100, target: 100 })).toBe(false)
   })
 })

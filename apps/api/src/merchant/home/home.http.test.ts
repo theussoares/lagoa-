@@ -34,6 +34,42 @@ class TestHomeRepository extends HomeRepository {
   async listShopLedgerRecords(_shopId: string): Promise<WeekLedgerRecord[]> {
     return this.records
   }
+
+  async countShopCustomersByFilter(_shopId: string, filter: string): Promise<number> {
+    if (filter === 'lapsed') return 2
+    if (filter === 'nearReward') return 4
+    if (filter === 'rewardReady') return 1
+    return 10
+  }
+
+  async getOldestLapsedVisit(_shopId: string): Promise<string | null> {
+    return '2026-08-01T10:00:00.000Z'
+  }
+
+  async listComparisonRecords(_shopId: string): Promise<any[]> {
+    return []
+  }
+
+  async listNewCardDates(_shopId: string): Promise<any[]> {
+    return []
+  }
+
+  async listRecentActivity(_shopId: string): Promise<any[]> {
+    return [
+      {
+        id: 'ledger_1',
+        kind: 'visit',
+        customerId: '018f98a2-7b2a-7182-9f33-6d004bbbb011',
+        name: 'Maria',
+        maskedPhone: '(67) 9****-9999',
+        units: 1,
+        unit: 'stamp',
+        amountCents: null,
+        rewardTitle: null,
+        createdAt: '2026-10-08T10:00:00.000Z',
+      },
+    ]
+  }
 }
 
 describe('merchant home HTTP', () => {
@@ -101,6 +137,19 @@ describe('merchant home HTTP', () => {
     expect(response.body.days).toHaveLength(7)
     expect(response.body.visits).toBe(1)
     expect(response.body.customers).toBe(1)
+  })
+
+  it('GET /merchant/home/overview returns home overview', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/merchant/home/overview')
+      .expect(200)
+
+    expect(response.body.lapsed.total).toBe(2)
+    expect(response.body.nearReward.total).toBe(4)
+    expect(response.body.rewardReady.total).toBe(1)
+    expect(response.body.totalCustomers).toBe(10)
+    expect(response.body.comparison).toHaveProperty('week')
+    expect(response.body.activity).toHaveLength(1)
   })
 
   it('GET /merchant/home/summary returns 404 when shop not found', async () => {

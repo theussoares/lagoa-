@@ -27,14 +27,11 @@ export interface LapsedPreviewLabels {
   readonly noName: string
 }
 
+import type { HomeOverview } from '#shared/schemas/homeOverview'
+
 export interface MerchantHomeSnapshot {
   readonly week: WeekSummary
-  /** Primeira página dos sumidos, mais recentes primeiro (os mais fáceis de trazer de volta); `total` conta todos. */
-  readonly lapsed: MerchantCustomerPage
-  /** Todos os clientes cadastrados da loja (mais recentes primeiro). */
-  readonly allCustomers: MerchantCustomerPage | null
-  /** Clientes prontos para resgate. */
-  readonly readyCustomers: MerchantCustomerPage | null
+  readonly overview: HomeOverview
   /** Programa e prêmio cadastrados da loja. */
   readonly program: Program | null
   /** Campanhas cadastradas. */

@@ -1,3 +1,4 @@
+import { NEAR_REWARD_PERCENT } from '../constants/domain'
 import type { EarnSource, LoyaltyCard, Stamp } from '../schemas/loyaltyCard'
 import type { CardProgress } from '../schemas/visit'
 import type { ExpirationPolicy } from '../schemas/program'
@@ -11,6 +12,11 @@ export function remainingUnits(card: CardBalance): number {
 
 export function isRewardReady(card: CardBalance): boolean {
   return card.balance >= card.target
+}
+
+/** Perto do prêmio: a partir de 80% da meta, mas ainda abaixo de completar. */
+export function isNearReward(card: CardBalance): boolean {
+  return card.balance * 100 >= card.target * NEAR_REWARD_PERCENT && card.balance < card.target
 }
 
 export function toCardProgress(card: LoyaltyCard): CardProgress {

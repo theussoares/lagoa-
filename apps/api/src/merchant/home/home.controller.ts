@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common'
+import type { HomeOverview } from '#shared/schemas/homeOverview'
 import type { WeekSummary } from '#shared/schemas/weekSummary'
 import type { AuthUser } from '../../auth/auth.types'
 import { CurrentUser } from '../../auth/current-user.decorator'
@@ -19,5 +20,10 @@ export class HomeController {
   @Get('week-summary')
   async weekSummary(@CurrentUser() user: AuthUser): Promise<WeekSummary> {
     return unwrap(await this.home.getWeekSummary(user.id))
+  }
+
+  @Get('overview')
+  async overview(@CurrentUser() user: AuthUser): Promise<HomeOverview> {
+    return unwrap(await this.home.getOverview(user.id))
   }
 }

@@ -131,3 +131,7 @@ export const SHOP_PHOTO_MAX_DIMENSION = 1200
 export const SHOP_LOGO_DIMENSION = 512
 /** Tempo para terminar o "Criar o clube" depois de confirmar o celular. */
 export const SIGN_UP_TICKET_TTL_MINUTES = 60
+/** Porcentagem mínima da meta (80%) para o cliente ser considerado próximo do prêmio. */
+export const NEAR_REWARD_PERCENT = 80
+/** Quantidade máxima de itens na lista de atividade recente da home. */
+export const HOME_ACTIVITY_LIMIT = 10
