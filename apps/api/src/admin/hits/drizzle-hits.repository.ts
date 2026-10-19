@@ -1,5 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { and, eq, isNotNull, sql, type SQL } from 'drizzle-orm'
+import type { HitItemStatus } from '#shared/schemas/hitItem'
+import type { ShopStatus } from '#shared/schemas/shop'
 import { err, ok, type Result } from '#shared/types/result'
 import { DB, type Database } from '../../database/database.module'
 import { hitItemStatusEvents, hitItems, shops } from '../../database/schema'
@@ -42,7 +44,32 @@ const COLUMNS = {
   shopCtaLabel: shops.ctaLabel,
 }
 
-type Row = { [Key in keyof typeof COLUMNS]: (typeof COLUMNS)[Key] extends { _: { data: infer Data; notNull: infer NotNull } } ? (NotNull extends true ? Data : Data | null) : never }
+interface Row {
+  readonly id: string
+  readonly version: number
+  readonly title: string
+  readonly description: string | null
+  readonly priceCents: number | null
+  readonly endsAt: Date | null
+  readonly status: HitItemStatus
+  readonly rejectionReason: string | null
+  readonly photoPath: string | null
+  readonly createdAt: Date
+  readonly approvedAt: Date | null
+  readonly ctaKind: string | null
+  readonly whatsapp: string | null
+  readonly whatsappMessage: string | null
+  readonly ctaUrl: string | null
+  readonly ctaLabel: string | null
+  readonly shopId: string
+  readonly shopName: string
+  readonly shopStatus: ShopStatus
+  readonly shopCtaKind: string | null
+  readonly shopWhatsapp: string | null
+  readonly shopWhatsappMessage: string | null
+  readonly shopCtaUrl: string | null
+  readonly shopCtaLabel: string | null
+}
 
 function toRecord(row: Row): AdminHitItemRecord {
   return {
@@ -113,6 +140,7 @@ export class DrizzleAdminHitsRepository extends AdminHitsRepository {
       .where(
         and(
           eq(hitItems.status, filter.tab),
+          filter.shopId === undefined ? undefined : eq(hitItems.shopId, filter.shopId),
           pending ? isNotNull(hitItems.photoPath) : undefined,
           filter.after === null ? undefined : pending ? pendingAfter(filter.after) : approvedAfter(filter.after),
         ),

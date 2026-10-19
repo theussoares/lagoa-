@@ -57,12 +57,60 @@ describe.skipIf(!TEST_DATABASE_URL)('admin hits against a real database', () => 
     expect(ids.indexOf(older.id)).toBeLessThan(ids.indexOf(newer.id))
   }, SLOW)
 
-  it('keeps the cursor stable across pages with the same timestamp', async () => {
+  /** Percorre a aba de uma loja só, com páginas de 2, para forçar a fronteira de página. */
+  const pagesOf = async (shopId: string, status: 'pending' | 'approved'): Promise<string[][]> => {
+    const small = new AdminHitsService(new DrizzleAdminHitsRepository(data.db), { SUPABASE_URL }, 2)
+    const pages: string[][] = []
+    let cursor: string | undefined
+    do {
+      const page = await small.list({ status, ...(cursor !== undefined && { cursor }) }, shopId)
+      pages.push(page.items.map((item) => item.id))
+      cursor = page.nextCursor ?? undefined
+    } while (cursor !== undefined)
+    return pages
+  }
+
+  it('pages the pending queue without gaps or duplicates, across equal timestamps', async () => {
     const shop = await data.createShop()
-    const sameMoment = new Date('2019-06-01T00:00:00.123Z')
-    const created = await Promise.all(Array.from({ length: 4 }, () => data.createHitItem(shop.id, { createdAt: sameMoment })))
-    const seen = (await everything('pending')).map((item) => item.id)
-    for (const { id } of created) expect(seen.filter((seenId) => seenId === id)).toHaveLength(1)
+    const same = new Date('2019-06-01T00:00:00.123456Z')
+    const later = new Date('2019-06-02T00:00:00Z')
+    const rows = [
+      await data.createHitItem(shop.id, { createdAt: same }),
+      await data.createHitItem(shop.id, { createdAt: same }),
+      await data.createHitItem(shop.id, { createdAt: same }),
+      await data.createHitItem(shop.id, { createdAt: later }),
+      await data.createHitItem(shop.id, { createdAt: later }),
+    ]
+    const pages = await pagesOf(shop.id, 'pending')
+    expect(pages.map((page) => page.length)).toEqual([2, 2, 1])
+    const flat = pages.flat()
+    expect(new Set(flat).size).toBe(5)
+    expect([...flat].sort()).toEqual(rows.map((row) => row.id).sort())
+    expect(flat.slice(0, 3).sort()).toEqual(rows.slice(0, 3).map((row) => row.id).sort())
+  }, SLOW)
+
+  it('pages the approved tab without gaps or duplicates, including null approved_at at the tail', async () => {
+    const shop = await data.createShop()
+    const same = new Date('2019-06-01T00:00:00.123456Z')
+    const newest = new Date('2019-06-03T00:00:00Z')
+    const approved = { status: 'approved' as const }
+    const rows = [
+      await data.createHitItem(shop.id, { ...approved, approvedAt: newest }),
+      await data.createHitItem(shop.id, { ...approved, approvedAt: same }),
+      await data.createHitItem(shop.id, { ...approved, approvedAt: same }),
+      await data.createHitItem(shop.id, { ...approved, approvedAt: same }),
+      await data.createHitItem(shop.id, { ...approved, approvedAt: null }),
+      await data.createHitItem(shop.id, { ...approved, approvedAt: null }),
+      await data.createHitItem(shop.id, { ...approved, approvedAt: null }),
+    ]
+    const pages = await pagesOf(shop.id, 'approved')
+    expect(pages.map((page) => page.length)).toEqual([2, 2, 2, 1])
+    const flat = pages.flat()
+    expect(new Set(flat).size).toBe(7)
+    expect([...flat].sort()).toEqual(rows.map((row) => row.id).sort())
+    expect(flat[0]).toBe(rows[0]?.id)
+    expect(flat.slice(1, 4).sort()).toEqual(rows.slice(1, 4).map((row) => row.id).sort())
+    expect(flat.slice(4).sort()).toEqual(rows.slice(4).map((row) => row.id).sort())
   }, SLOW)
 
   it('shows the item button, else the shop button, with where it came from', async () => {

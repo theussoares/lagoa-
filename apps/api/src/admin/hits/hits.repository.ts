@@ -32,6 +32,8 @@ export interface AdminHitItemListFilter {
   /** Id do último produto da página anterior. */
   readonly after: string | null
   readonly limit: number
+  /** Só para testes: restringe a uma loja. */
+  readonly shopId?: string
 }
 
 export interface HitItemSnapshot {
