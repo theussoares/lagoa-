@@ -74,7 +74,7 @@ const formatNumber = (num: number): string => new Intl.NumberFormat('pt-BR').for
     <!-- Card 2 — Clientes que estão sumindo (Prioridade Alta) -->
     <article class="bg-white dark:bg-(--ui-bg) rounded-2xl p-5 border border-slate-100/90 dark:border-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.03)] flex flex-col justify-between gap-4">
       <div class="flex items-center gap-3.5">
-        <div class="size-11 rounded-full bg-[#fef2f2] dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+        <div class="size-11 rounded-full bg-[#e8f6f8] text-[#0f6381] flex items-center justify-center shrink-0">
           <UIcon name="i-ph-user-minus" class="size-5.5" aria-hidden="true" />
         </div>
         <h2 class="text-sm font-medium text-slate-600 dark:text-slate-300">
