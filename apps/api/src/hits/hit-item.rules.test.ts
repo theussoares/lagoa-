@@ -59,14 +59,19 @@ describe('planReview', () => {
   })
 
   it('rejects a pending item with the reason', () => {
-    expect(planReview({ status: 'pending', version: 1 }, { action: 'reject', reason: 'Foto borrada' })).toEqual({
+    expect(planReview({ status: 'pending', version: 1 }, { action: 'reject', expectedVersion: 1, reason: 'Foto borrada' })).toEqual({
       ok: true,
       value: { to: 'rejected', reason: 'Foto borrada' },
     })
   })
 
+  it('refuses to reject a version the admin has not seen', () => {
+    const result = planReview({ status: 'pending', version: 2 }, { action: 'reject', expectedVersion: 1, reason: 'Foto borrada' })
+    expect(result).toEqual({ ok: false, error: { code: 'conflict' } })
+  })
+
   it('refuses to reject an approved item', () => {
-    const result = planReview({ status: 'approved', version: 1 }, { action: 'reject', reason: 'x' })
+    const result = planReview({ status: 'approved', version: 1 }, { action: 'reject', expectedVersion: 1, reason: 'x' })
     expect(result).toEqual({ ok: false, error: { code: 'invalidTransition' } })
   })
 

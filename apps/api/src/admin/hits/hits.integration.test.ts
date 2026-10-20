@@ -154,7 +154,7 @@ describe.skipIf(!TEST_DATABASE_URL)('admin hits against a real database', () => 
   it('rejects with a reason and refuses approving a rejected item', async () => {
     const shop = await data.createShop()
     const item = await data.createHitItem(shop.id)
-    expect(await review(item.id, { action: 'reject', reason: 'Foto escura' })).toMatchObject({ ok: true, value: { status: 'rejected', rejectionReason: 'Foto escura' } })
+    expect(await review(item.id, { action: 'reject', expectedVersion: 1, reason: 'Foto escura' })).toMatchObject({ ok: true, value: { status: 'rejected', rejectionReason: 'Foto escura' } })
     expect(await review(item.id, { action: 'approve', expectedVersion: 1 })).toEqual({ ok: false, error: { code: 'invalidTransition' } })
     expect(await review(item.id, { action: 'takeDown', reason: 'x' })).toEqual({ ok: false, error: { code: 'invalidTransition' } })
   }, SLOW)
@@ -176,13 +176,13 @@ describe.skipIf(!TEST_DATABASE_URL)('admin hits against a real database', () => 
     const shop = await data.createShop()
     const item = await data.createHitItem(shop.id, { photoPath: null })
     expect(await review(item.id, { action: 'approve', expectedVersion: 1 })).toEqual({ ok: false, error: { code: 'invalidTransition' } })
-    expect(await review(randomUUID(), { action: 'reject', reason: 'x' })).toEqual({ ok: false, error: { code: 'notFound', entity: 'hitItem' } })
+    expect(await review(randomUUID(), { action: 'reject', expectedVersion: 1, reason: 'x' })).toEqual({ ok: false, error: { code: 'notFound', entity: 'hitItem' } })
   }, SLOW)
 
   it('lets two concurrent decisions through only once', async () => {
     const shop = await data.createShop()
     const item = await data.createHitItem(shop.id)
-    const results = await Promise.all([review(item.id, { action: 'approve', expectedVersion: 1 }), review(item.id, { action: 'reject', reason: 'tarde' })])
+    const results = await Promise.all([review(item.id, { action: 'approve', expectedVersion: 1 }), review(item.id, { action: 'reject', expectedVersion: 1, reason: 'tarde' })])
     expect(results.filter((result) => result.ok)).toHaveLength(1)
     const events = await data.db.select().from(hitItemStatusEvents).where(eq(hitItemStatusEvents.hitItemId, item.id))
     expect(events).toHaveLength(1)

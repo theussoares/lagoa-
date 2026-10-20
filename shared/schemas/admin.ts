@@ -98,11 +98,12 @@ export const AdminShopDetailSchema = AdminShopRowSchema.extend({
 })
 export type AdminShopDetail = z.infer<typeof AdminShopDetailSchema>
 
-/** Moderação de um produto do Hits. `expectedVersion` barra aprovar o que o lojista editou depois de o admin abrir. */
+/** Moderação de um produto do Hits. `expectedVersion` barra aprovar ou recusar o que o lojista editou depois de o admin abrir. */
 export const HitItemReviewSchema = z.discriminatedUnion('action', [
   z.strictObject({ action: z.literal('approve'), expectedVersion: z.number().int().min(1) }),
   z.strictObject({
     action: z.literal('reject'),
+    expectedVersion: z.number().int().min(1),
     reason: z.string().trim().min(1).max(HIT_ITEM_REJECTION_REASON_MAX_LENGTH),
   }),
   z.strictObject({

@@ -42,6 +42,7 @@ export function planReview(current: ItemSnapshot, review: HitItemReview): Result
       return ok({ to: 'approved', reason: null })
     case 'reject':
       if (current.status !== 'pending') return err({ code: 'invalidTransition' })
+      if (review.expectedVersion !== current.version) return err({ code: 'conflict' })
       return ok({ to: 'rejected', reason: review.reason })
     case 'takeDown':
       if (current.status !== 'approved') return err({ code: 'invalidTransition' })

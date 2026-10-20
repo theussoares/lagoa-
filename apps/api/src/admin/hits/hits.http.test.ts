@@ -97,7 +97,7 @@ describe('admin hits (HTTP)', () => {
   it('refuses a customer on every route', async () => {
     const jwt = await token(CUSTOMER)
     await as('get', '/v1/admin/hits', jwt).expect(403)
-    await as('post', `/v1/admin/hits/${ITEM_ID}/review`, jwt).send({ action: 'reject', reason: 'x' }).expect(403)
+    await as('post', `/v1/admin/hits/${ITEM_ID}/review`, jwt).send({ action: 'reject', expectedVersion: 1, reason: 'x' }).expect(403)
   })
 
   it('lists the queue with the effective button and no next page', async () => {
@@ -110,8 +110,8 @@ describe('admin hits (HTTP)', () => {
   })
 
   it.each([
-    ['reject without a reason', { action: 'reject' }],
-    ['reject with a blank reason', { action: 'reject', reason: '  ' }],
+    ['reject without a reason', { action: 'reject', expectedVersion: 1 }],
+    ['reject with a blank reason', { action: 'reject', expectedVersion: 1, reason: '  ' }],
     ['takeDown without a reason', { action: 'takeDown' }],
     ['approve without expectedVersion', { action: 'approve' }],
     ['an unknown action', { action: 'delete' }],
@@ -122,7 +122,7 @@ describe('admin hits (HTTP)', () => {
   })
 
   it('answers 400 for a bad id', async () => {
-    await as('post', '/v1/admin/hits/nope/review', await adminToken()).send({ action: 'reject', reason: 'x' }).expect(400)
+    await as('post', '/v1/admin/hits/nope/review', await adminToken()).send({ action: 'reject', expectedVersion: 1, reason: 'x' }).expect(400)
   })
 
   it('answers 409 conflict for a stale approval', async () => {
