@@ -139,7 +139,8 @@
     "program": "Programa e prêmios",
     "campaigns": "Campanhas",
     "mainLabel": "Navegação principal",
-    "shopLink": "Botão do card"
+    "shopLink": "Botão do card",
+    "hits": "Hits"
   },
   "common": {
     "loading": "Carregando",
@@ -147,6 +148,7 @@
   },
   "errors": {
     "unauthorized": "Sua sessão terminou. Entre de novo para continuar.",
+    "forbidden": "Esta conta não tem acesso a esta área.",
     "network": "Sem conexão agora. Confira a internet e tente de novo.",
     "birthdayLocked": "A data do aniversário só pode ser trocada uma vez por ano.",
     "notFound": "Não encontramos o que você procurou.",
@@ -184,7 +186,13 @@
     "signUpExpired": "O tempo para criar o clube acabou ou o celular já tem uma loja. Confirme o celular de novo para continuar.",
     "shopPendingApproval": "Sua loja ainda está aguardando aprovação da rede. O Balcão passa a valer quando a rede aprovar.",
     "shopSuspended": "Sua loja está suspensa pela rede. Fale com a rede Lagoa+ para voltar a usar o painel.",
-    "invalidShopPhoto": "Essa imagem não serve. Use uma foto JPG, PNG ou WebP de até 1 MB."
+    "invalidShopPhoto": "Essa imagem não serve. Use uma foto JPG, PNG ou WebP de até 1 MB.",
+    "limitReached": "Você já tem o máximo de produtos do seu plano. Arquive um para abrir vaga.",
+    "conflict": "Este produto mudou enquanto você olhava. Recarregue e confira de novo.",
+    "invalidTransition": "Essa ação não vale para a situação atual do produto.",
+    "slotsFull": "As vagas pagas desta vitrine já estão todas tomadas em parte desse período. Escolha outras datas.",
+    "invalidTarget": "Destaque só para loja aprovada e, no banner, para um produto aprovado da própria loja.",
+    "alreadyExists": "Esse e-mail já tem uma conta no Lagoa+. Se for de um admin desativado, use Reativar."
   },
   "ledger": {
     "yesterday": "Ontem",
@@ -697,6 +705,9 @@
       "restaurant": "Restaurante",
       "petShop": "Pet shop",
       "gym": "Academia",
+      "clothing": "Roupas e acessórios",
+      "services": "Serviços",
+      "home": "Casa e construção",
       "other": "Outro comércio"
     }
   },
@@ -788,6 +799,78 @@
     "remove": "Tirar o botão",
     "saved": "Salvo. O botão já aparece nos cards.",
     "removed": "Pronto. O botão saiu dos cards."
+  },
+  "merchantHits": {
+    "title": "Hits",
+    "lead": "Os produtos da sua loja que aparecem na vitrine Hits do Descobrir. A rede analisa cada produto antes de ele ir ao ar.",
+    "listTitle": "Seus produtos",
+    "counter": "{count} de {cap} produtos",
+    "new": "Novo produto",
+    "capReached": "Você chegou ao máximo de produtos do seu plano. Arquive um para abrir vaga.",
+    "empty": "Você ainda não cadastrou nenhum produto.",
+    "onRequest": "Sob consulta",
+    "edit": "Editar",
+    "archive": "Arquivar",
+    "unarchive": "Desarquivar",
+    "missingPhoto": "Falta a foto",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "status": {
+      "pending": "Em análise",
+      "approved": "No ar",
+      "rejected": "Recusado: {reason}",
+      "archived": "Arquivado"
+    },
+    "form": {
+      "newTitle": "Novo produto",
+      "editTitle": "Editar produto"
+    },
+    "fields": {
+      "title": {
+        "label": "Nome do produto"
+      },
+      "description": {
+        "label": "Descrição (opcional)",
+        "count": "{count} de {max}"
+      },
+      "price": {
+        "label": "Preço (opcional)",
+        "hint": "Em reais, como 12,50. Vazio mostra \"Sob consulta\"."
+      },
+      "endsAt": {
+        "label": "Sai do ar em (opcional)",
+        "hint": "O último dia em que o produto aparece."
+      }
+    },
+    "photo": {
+      "label": "Foto",
+      "hint": "Sem foto a rede não analisa o produto.",
+      "choose": "Escolher foto",
+      "change": "Trocar foto"
+    },
+    "button": {
+      "legend": "Botão do produto",
+      "shop": "Usar o botão da loja",
+      "own": "Um botão só deste produto"
+    },
+    "preview": {
+      "title": "Como fica no card",
+      "lead": "É assim que o cliente vê o produto.",
+      "photoAlt": "Foto do produto",
+      "titleEmpty": "Nome do produto",
+      "shopButton": "Este produto usa o botão da loja."
+    },
+    "errors": {
+      "missingTitle": "Escreva o nome do produto.",
+      "invalidPrice": "Digite um preço em reais, como 12,50.",
+      "invalidEndsAt": "Escolha um dia que ainda não passou.",
+      "missingPhoto": "Escolha uma foto do produto.",
+      "unreadable": "Não deu para abrir essa imagem. Escolha outra foto."
+    },
+    "sentToReview": "Enviado. A rede vai analisar o produto antes de ele aparecer na vitrine.",
+    "backToReview": "Salvo. Como o produto estava no ar, ele volta para a análise da rede e sai da vitrine até ser aprovado.",
+    "archived": "Produto arquivado. Ele saiu da vitrine e liberou uma vaga.",
+    "unarchivedToReview": "Produto desarquivado. Ele volta para a análise da rede."
   },
   "clubSetup": {
     "pageTitle": "Criar o clube",

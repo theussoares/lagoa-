@@ -14,6 +14,7 @@
     "db:seed": "node --env-file-if-exists=.env --require @swc-node/register src/database/seed.ts",
     "db:backfill-visits": "node --env-file-if-exists=.env --require @swc-node/register src/database/backfill-card-visits.ts",
     "shop:status": "node --env-file-if-exists=.env --require @swc-node/register src/database/shop-status.ts",
+    "admin:create": "node --env-file-if-exists=.env --require @swc-node/register src/database/admin-create.ts",
     "visit-qr:dev": "node --env-file-if-exists=.env --require @swc-node/register src/database/dev-issue-visit-qr.ts",
     "build:vercel": "node scripts/build-vercel.mjs",
     "db:check": "node --env-file-if-exists=.env scripts/check-db-parity.mjs",

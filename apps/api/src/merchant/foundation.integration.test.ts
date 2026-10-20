@@ -22,6 +22,7 @@ import { DrizzleMerchantTermsRepository } from './terms/drizzle-terms.repository
 import { DrizzleMerchantShopResolver } from './access/drizzle-merchant-shop.resolver'
 
 const SLOW = 30_000
+const SCRIPT = { kind: 'script', nickname: 'matheus' } as const
 
 describe.skipIf(!TEST_DATABASE_URL)('merchant foundation against a real database', () => {
   let data: TestDatabase
@@ -117,7 +118,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant foundation against a real database
 
   it('changes status and plan from the admin script and writes the audit event', async () => {
     const shop = await data.createShop({ status: 'pending' })
-    expect(await changeShopStatus(data.db, { shopId: shop.id, status: 'approved', plan: 'founderPro', actor: 'matheus', reason: 'piloto' })).toEqual({
+    expect(await changeShopStatus(data.db, { shopId: shop.id, status: 'approved', plan: 'founderPro', actor: SCRIPT, reason: 'piloto' })).toEqual({
       ok: true,
       from: 'pending',
       to: 'approved',
@@ -125,12 +126,12 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant foundation against a real database
     })
     expect((await data.db.select({ status: shops.status, plan: shops.plan }).from(shops).where(eq(shops.id, shop.id)))[0]).toEqual({ status: 'approved', plan: 'founderPro' })
     expect(await data.db.select().from(shopStatusEvents).where(eq(shopStatusEvents.shopId, shop.id))).toMatchObject([
-      { fromStatus: 'pending', toStatus: 'approved', plan: 'founderPro', actor: 'matheus', reason: 'piloto' },
+      { fromStatus: 'pending', toStatus: 'approved', plan: 'founderPro', actor: 'matheus', actorAdminId: null, reason: 'piloto' },
     ])
-    expect(await changeShopStatus(data.db, { shopId: shop.id, actor: 'matheus' })).toEqual({ ok: false, reason: 'nothingToChange' })
-    expect(await changeShopStatus(data.db, { shopId: shop.id, status: 'approved', plan: 'founderPro', actor: 'matheus' })).toEqual({ ok: false, reason: 'nothingToChange' })
-    expect(await changeShopStatus(data.db, { shopId: shop.id, status: 'suspended', actor: 'ana@x.com' })).toEqual({ ok: false, reason: 'invalidActor' })
-    expect(await changeShopStatus(data.db, { shopId: '0190ae00-0000-7000-8000-00000000dead', status: 'approved', actor: 'matheus' })).toEqual({ ok: false, reason: 'shopNotFound' })
+    expect(await changeShopStatus(data.db, { shopId: shop.id, actor: SCRIPT })).toEqual({ ok: false, reason: 'nothingToChange' })
+    expect(await changeShopStatus(data.db, { shopId: shop.id, status: 'approved', plan: 'founderPro', actor: SCRIPT })).toEqual({ ok: false, reason: 'nothingToChange' })
+    expect(await changeShopStatus(data.db, { shopId: shop.id, status: 'suspended', actor: { kind: 'script', nickname: 'ana@x.com' } })).toEqual({ ok: false, reason: 'invalidActor' })
+    expect(await changeShopStatus(data.db, { shopId: '0190ae00-0000-7000-8000-00000000dead', status: 'approved', actor: SCRIPT })).toEqual({ ok: false, reason: 'shopNotFound' })
   }, SLOW)
 
   it('stamps erased_at on erasure, but refuses to erase the account of a shop owner (accountOwnsShop)', async () => {
@@ -170,7 +171,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant foundation against a real database
     const newOwner = (phone: string) => {
       const id = randomUUID()
       data.trackUser(id)
-      return { id, email: undefined, phone: PhoneNumberSchema.parse(phone) }
+      return { id, email: undefined, phone: PhoneNumberSchema.parse(phone), role: null, aal: null }
     }
 
     it('creates the app user, the shop and the program for someone who only has a Supabase login', async () => {

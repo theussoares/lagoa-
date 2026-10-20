@@ -131,3 +131,43 @@ export const SHOP_PHOTO_MAX_DIMENSION = 1200
 export const SHOP_LOGO_DIMENSION = 512
 /** Tempo para terminar o "Criar o clube" depois de confirmar o celular. */
 export const SIGN_UP_TICKET_TTL_MINUTES = 60
+
+/** Produto do Hits (valores provisórios do PO; mudam só aqui). */
+export const HIT_ITEM_TITLE_MAX_LENGTH = 60
+export const HIT_ITEM_DESCRIPTION_MAX_LENGTH = 140
+export const HIT_ITEM_PRICE_MAX_CENTS = 10_000_000
+/** Itens não arquivados por loja, por plano. */
+export const HIT_ITEMS_MAX_FOUNDER = 5
+export const HIT_ITEMS_MAX_FOUNDER_PRO = 20
+export const HIT_ITEM_REJECTION_REASON_MAX_LENGTH = 200
+
+/** Vagas de destaque pago por vitrine e teto de itens no carrossel do Descobrir. */
+export const FEATURED_PAID_SLOTS_DISCOVER = 4
+export const FEATURED_PAID_SLOTS_HITS = 3
+export const FEATURED_CAROUSEL_MAX = 8
+export const FEATURED_NOTE_MAX_LENGTH = 200
+/** Janela máxima (em dias de calendário) da agenda e da lista de destaques do admin. */
+export const FEATURED_RANGE_MAX_DAYS = 90
+/** Teto da lista de destaques numa janela (inclui cancelados) e da lista de lojas Pro ao lado. */
+export const ADMIN_FEATURED_LIST_LIMIT = 200
+
+/** Painel de admin da rede. */
+export const ADMIN_NAME_MIN_LENGTH = 2
+export const ADMIN_NAME_MAX_LENGTH = 80
+export const ADMIN_REASON_MAX_LENGTH = 200
+export const ADMIN_SHOPS_PAGE_SIZE = 50
+export const ADMIN_HIT_ITEMS_PAGE_SIZE = 30
+export const ADMIN_SHOPS_SEARCH_MAX_LENGTH = 80
+export const ADMIN_SHOP_HISTORY_LIMIT = 20
+/** Janela das visitas que o detalhe da loja mostra ao admin. */
+export const ADMIN_SHOP_STATS_WINDOW_DAYS = 30
+/** Teto da lista da equipe do admin (a rede tem poucas pessoas; o teto só impede uma lista sem fim). */
+export const ADMIN_TEAM_LIST_LIMIT = 100
+/**
+ * Tentativas de login por senha por e-mail de admin na janela (o BFF reserva antes de chamar o Supabase). Mesmo motivo do
+ * teto do celular: o limite do Supabase é por IP e lá chega o IP do BFF.
+ */
+export const ADMIN_LOGIN_ATTEMPTS_MAX = 5
+export const ADMIN_LOGIN_WINDOW_MINUTES = 15
+/** Página do painel da rede onde o admin convidado define a senha (destino do link do convite). */
+export const ADMIN_SET_PASSWORD_PATH = '/definir-senha'

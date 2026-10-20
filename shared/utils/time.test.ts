@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { startOfLocalDay } from './time'
+import { localMidnight, startOfLocalDay } from './time'
 
 describe('startOfLocalDay', () => {
   it('is local midnight (UTC-4) of the day of the instant, in UTC', () => {
@@ -14,5 +14,11 @@ describe('startOfLocalDay', () => {
   it('moves to the new day exactly at local midnight', () => {
     expect(startOfLocalDay(new Date('2026-10-10T03:59:59.999Z')).toISOString()).toBe('2026-10-09T04:00:00.000Z')
     expect(startOfLocalDay(new Date('2026-10-10T04:00:00Z')).toISOString()).toBe('2026-10-10T04:00:00.000Z')
+  })
+})
+
+describe('localMidnight', () => {
+  it('is 00:00 local (04:00 UTC) of the given date', () => {
+    expect(localMidnight('2026-11-10').toISOString()).toBe('2026-11-10T04:00:00.000Z')
   })
 })

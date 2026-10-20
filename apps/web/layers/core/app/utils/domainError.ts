@@ -1,7 +1,7 @@
 import type { DomainError, DomainErrorCode, ErrorOf, TransportError } from '#shared/types/errors'
 import { IsoDateTimeSchema } from '#shared/schemas/common'
 
-const ENTITIES = ['shop', 'program', 'customer', 'merchant', 'card', 'redemption', 'visitQr'] as const
+const ENTITIES = ['shop', 'program', 'customer', 'merchant', 'card', 'redemption', 'visitQr', 'hitItem', 'featuredPlacement', 'adminUser'] as const
 const SIMPLE_CODES = [
   'unauthorized', 'rateLimited', 'invalidPhone', 'phoneAlreadyUsed', 'accountOwnsShop', 'merchantTermsNotAccepted', 'emailAlreadyUsed', 'invalidLoginCode', 'loginCodeExpired',
   'invalidAmount', 'amountNotAccepted', 'invalidShopQr', 'checkInDisabled', 'redemptionInvalid', 'redemptionExpired',
@@ -12,8 +12,8 @@ const SIMPLE_CODES = [
 /** Em lista própria: uma união de literais com mais de 25 membros o TypeScript não consegue correlacionar com `DomainError`. */
 const VISIT_QR_CODES = ['invalidVisitQr', 'visitQrLimitReached', 'visitQrExpired', 'visitQrAlreadyUsed', 'visitQrStale', 'shopQrJoinOnly'] as const
 
-/** Painel do lojista: mesma razão da lista acima. */
-const MERCHANT_PANEL_CODES = ['invalidShopPhoto'] as const
+/** Painéis (lojista e rede): mesma razão da lista acima. */
+const MERCHANT_PANEL_CODES = ['invalidShopPhoto', 'limitReached', 'conflict', 'invalidTransition', 'forbidden', 'slotsFull', 'invalidTarget', 'alreadyExists'] as const
 
 type VisitQrCode = (typeof VISIT_QR_CODES)[number]
 type MerchantPanelCode = (typeof MERCHANT_PANEL_CODES)[number]
