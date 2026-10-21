@@ -35,6 +35,15 @@ createServer((req, res) => {
     req.on('close', () => clients.delete(res))
     return
   }
-  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
+  // Only flat module names under /js are served, so no path can escape the folder.
+  const script = /^\/js\/([a-z-]+)\.js$/.exec(req.url ?? '')
+  if (script) {
+    const file = join(DIR, 'js', `${script[1]}.js`)
+    if (!existsSync(file)) { res.writeHead(404); res.end(); return }
+    res.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-cache' })
+    res.end(readFileSync(file))
+    return
+  }
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' })
   res.end(readFileSync(join(DIR, 'index.html')))
 }).listen(PORT, '127.0.0.1', () => console.log(`office on http://localhost:${PORT}`))
