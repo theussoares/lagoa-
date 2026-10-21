@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Escritório Lagoa+</title>
+<style>
+  :root { --bg: #1d1a17; --ink: #f4ecdf; --muted: #a89c8a; --accent: #e8743b; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.4 system-ui, sans-serif; overflow: hidden; }
+  #hud { position: fixed; top: 12px; left: 12px; right: 12px; display: flex; gap: 12px; align-items: flex-start; pointer-events: none; }
+  #demand { background: #000a; padding: 8px 12px; border-radius: 8px; flex: 1; max-width: 560px; }
+  #demand b { color: var(--accent); }
+  #log { position: fixed; bottom: 12px; left: 12px; width: min(420px, calc(100% - 24px)); max-height: 34vh; overflow: auto; background: #000a; border-radius: 8px; padding: 8px 12px; font-size: 12px; }
+  #log div { color: var(--muted); } #log div b { color: var(--ink); }
+  button { pointer-events: auto; background: var(--accent); color: #1d1a17; border: 0; border-radius: 8px; padding: 10px 14px; font-weight: 700; cursor: pointer; min-height: 44px; }
+  #status { font-size: 12px; color: var(--muted); }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="hud">
+  <div id="demand"><b>Demanda:</b> <span id="demandText">aguardando…</span><div id="status">conectando…</div></div>
+  <button id="demo" type="button">▶ Demo</button>
+</div>
+<div id="log"></div>
+<script type="module">
+import * as THREE from 'three'
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+
+// role id → name, seat, color. Seats are [x, z] on a 3-row floor.
+const ROLES = {
+  main:              { name: 'Claude (gerente)', seat: [0, -7],  color: 0xe8743b },
+  'tech-lead':       { name: 'Tech Lead',       seat: [-4, -7], color: 0xd9a441 },
+  'product-owner':   { name: 'PO',              seat: [-8, -3], color: 0x7fb069 },
+  cto:               { name: 'CTO',             seat: [4, -7],  color: 0xc94f4f },
+  arquiteto:         { name: 'Arquiteto',       seat: [-4, -3], color: 0x9c6ade },
+  engenheiro:        { name: 'Eng. Sênior',     seat: [0, -3],  color: 0x4f8fc9 },
+  seguranca:         { name: 'Segurança',       seat: [4, -3],  color: 0x333333 },
+  infra:             { name: 'Infra',           seat: [8, -3],  color: 0x5aa5a0 },
+  'dev-nuxt':        { name: 'Dev Nuxt (pleno)',  seat: [-8, 1], color: 0x41b883 },
+  'dev-ui':          { name: 'Dev UI (pleno)',    seat: [-4, 1], color: 0xe58fb4 },
+  'dev-stores':      { name: 'Dev Stores (pleno)',seat: [0, 1],  color: 0xf2c94c },
+  'dev-tipos':       { name: 'Dev Tipos (pleno)', seat: [4, 1],  color: 0x3178c6 },
+  'dev-junior':      { name: 'Dev Júnior',      seat: [8, 1],   color: 0xa0d995 },
+  qa:                { name: 'QA',              seat: [-4, 5],  color: 0xff9f43 },
+  'code-reviewer':   { name: 'Reviewer Sênior', seat: [0, 5],   color: 0x8d6e63 },
+  'revisor-ui':      { name: 'Revisor UI',      seat: [4, 5],   color: 0xb39ddb },
+  'general-purpose': { name: 'Freela',          seat: [8, 5],   color: 0x9e9e9e },
+}
+const MEETING = new THREE.Vector3(0, 0, 9)
+
+const scene = new THREE.Scene()
+scene.background = new THREE.Color(0x1d1a17)
+const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 200)
+camera.position.set(0, 18, 20)
+const renderer = new THREE.WebGLRenderer({ antialias: true })
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
+renderer.setSize(innerWidth, innerHeight)
+renderer.shadowMap.enabled = true
+document.body.appendChild(renderer.domElement)
+const controls = new OrbitControls(camera, renderer.domElement)
+controls.target.set(0, 0, 0); controls.maxPolarAngle = Math.PI / 2.2; controls.enableDamping = true
+
+scene.add(new THREE.HemisphereLight(0xfff1dd, 0x3a2f25, 0.9))
+const sun = new THREE.DirectionalLight(0xffffff, 1.1)
+sun.position.set(8, 20, 10); sun.castShadow = true
+sun.shadow.camera.left = -20; sun.shadow.camera.right = 20; sun.shadow.camera.top = 20; sun.shadow.camera.bottom = -20
+scene.add(sun)
+
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(26, 24), new THREE.MeshStandardMaterial({ color: 0xcbb89a }))
+floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor)
+const wallMat = new THREE.MeshStandardMaterial({ color: 0xefe6d6 })
+const backWall = new THREE.Mesh(new THREE.BoxGeometry(26, 4, 0.3), wallMat); backWall.position.set(0, 2, -12); scene.add(backWall)
+const sideWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, 4, 24), wallMat); sideWall.position.set(-13, 2, 0); scene.add(sideWall)
+const meetingTable = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.2, 0.15, 32), new THREE.MeshStandardMaterial({ color: 0x6b4f3a }))
+meetingTable.position.set(MEETING.x, 0.9, MEETING.z); meetingTable.castShadow = true; scene.add(meetingTable)
+
+function textSprite(text, bg = '#000000cc', fg = '#f4ecdf') {
+  const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d')
+  ctx.font = 'bold 36px system-ui'; const w = ctx.measureText(text).width + 40
+  canvas.width = w; canvas.height = 60
+  ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(0, 0, w, 60, 16); ctx.fill()
+  ctx.font = 'bold 36px system-ui'; ctx.fillStyle = fg; ctx.textBaseline = 'middle'; ctx.fillText(text, 20, 32)
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), depthTest: false }))
+  sprite.scale.set(w / 100, 0.6, 1); sprite.renderOrder = 10
+  return sprite
+}
+
+const agents = {}
+function buildAgent(id, role) {
+  const [x, z] = role.seat
+  const desk = new THREE.Group(); desk.position.set(x, 0, z)
+  const top = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.1, 1.2), new THREE.MeshStandardMaterial({ color: 0x8a6a4f }))
+  top.position.y = 0.9; top.castShadow = true; desk.add(top)
+  const screenMat = new THREE.MeshStandardMaterial({ color: 0x111111, emissive: 0x000000 })
+  const screen = new THREE.Mesh(new THREE.BoxGeometry(1, 0.6, 0.05), screenMat); screen.position.set(0, 1.3, -0.4); desk.add(screen)
+  scene.add(desk)
+
+  const body = new THREE.Group()
+  const mat = new THREE.MeshStandardMaterial({ color: role.color })
+  const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.3, 0.6, 4, 12), mat); torso.position.y = 0.8; torso.castShadow = true
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), new THREE.MeshStandardMaterial({ color: 0xf1c9a5 })); head.position.y = 1.5; head.castShadow = true
+  body.add(torso, head)
+  const home = new THREE.Vector3(x, 0, z + 0.9)
+  body.position.copy(home); scene.add(body)
+  const label = textSprite(role.name); label.position.y = 2.1; body.add(label)
+
+  agents[id] = { role, body, screenMat, home, target: home.clone(), working: false, bubble: null, phase: Math.random() * 6 }
+}
+for (const [id, role] of Object.entries(ROLES)) buildAgent(id, role)
+
+function agentFor(id) {
+  if (!agents[id]) buildAgent(id, { name: id, seat: [10, 8], color: 0x9e9e9e })
+  return agents[id]
+}
+function say(agent, text) {
+  if (agent.bubble) agent.body.remove(agent.bubble)
+  if (!text) { agent.bubble = null; return }
+  agent.bubble = textSprite(text, '#f4ecdfee', '#1d1a17'); agent.bubble.position.y = 2.8; agent.body.add(agent.bubble)
+}
+
+// Paper handoff from one agent to another.
+const papers = []
+function handoff(fromId, toId) {
+  const from = agentFor(fromId).body.position, to = agentFor(toId).body.position
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.02, 0.55), new THREE.MeshStandardMaterial({ color: 0xffffff }))
+  scene.add(mesh); papers.push({ mesh, from: from.clone(), to: to.clone(), t: 0 })
+}
+
+let lastActive = 'main'
+const logEl = document.getElementById('log')
+function log(html) { const d = document.createElement('div'); d.innerHTML = html; logEl.prepend(d) }
+
+function handle(event) {
+  if (event.type === 'demand') {
+    document.getElementById('demandText').textContent = event.text
+    const boss = agentFor('main'); boss.working = true; say(boss, 'nova demanda!')
+    lastActive = 'main'; log(`<b>Você</b> → ${event.text}`)
+    return
+  }
+  if (event.type === 'agentStart') {
+    const a = agentFor(event.role)
+    handoff(lastActive, event.role); lastActive = event.role
+    a.working = true; a.screenMat.emissive.setHex(0x4fc3f7); say(a, event.text || 'trabalhando…')
+    log(`<b>${a.role.name}</b> começou: ${event.text ?? ''}`)
+    return
+  }
+  if (event.type === 'agentDone') {
+    const a = agentFor(event.role)
+    a.working = false; a.screenMat.emissive.setHex(0x000000); say(a, '✓ feito')
+    setTimeout(() => say(a, null), 3000)
+    handoff(event.role, 'main'); lastActive = 'main'
+    log(`<b>${a.role.name}</b> entregou`)
+    return
+  }
+  if (event.type === 'tool') {
+    const a = agentFor(event.role); a.screenMat.emissive.setHex(0x81c784)
+    if (event.role !== 'main' || !agents.main.bubble) say(a, `🔧 ${event.tool}`)
+    setTimeout(() => { if (!a.working) a.screenMat.emissive.setHex(0x000000) }, 600)
+    return
+  }
+  if (event.type === 'idle') {
+    for (const a of Object.values(agents)) { a.working = false; a.screenMat.emissive.setHex(0); say(a, null) }
+    say(agents.main, '☕'); log('<b>Equipe</b> parada')
+  }
+}
+
+const statusEl = document.getElementById('status')
+const source = new EventSource('/events')
+source.onopen = () => { statusEl.textContent = 'ao vivo (hooks)' }
+source.onerror = () => { statusEl.textContent = 'sem conexão com o servidor — use a Demo' }
+source.onmessage = (msg) => handle(JSON.parse(msg.data))
+
+document.getElementById('demo').onclick = () => {
+  const steps = [
+    { type: 'demand', text: 'Adicionar filtro por ramo no Descobrir' },
+    { type: 'agentStart', role: 'tech-lead', text: 'triagem: tamanho M' }, { type: 'agentDone', role: 'tech-lead' },
+    { type: 'agentStart', role: 'product-owner', text: 'escrevendo spec.md' }, { type: 'agentDone', role: 'product-owner' },
+    { type: 'agentStart', role: 'dev-nuxt', text: 'filtro na tela' },
+    { type: 'agentStart', role: 'dev-tipos', text: 'schema shopGroup' },
+    { type: 'tool', role: 'dev-nuxt', tool: 'Edit' }, { type: 'tool', role: 'dev-tipos', tool: 'Write' },
+    { type: 'agentDone', role: 'dev-tipos' }, { type: 'agentDone', role: 'dev-nuxt' },
+    { type: 'agentStart', role: 'qa', text: 'testes Vitest' }, { type: 'agentDone', role: 'qa' },
+    { type: 'agentStart', role: 'revisor-ui', text: 'revisando diff' }, { type: 'agentDone', role: 'revisor-ui' },
+    { type: 'idle' },
+  ]
+  steps.forEach((s, i) => setTimeout(() => handle(s), i * 1600))
+}
+
+const clock = new THREE.Clock()
+function animate() {
+  const dt = clock.getDelta(), t = clock.elapsedTime
+  for (const a of Object.values(agents)) {
+    a.target.copy(a.working ? a.home : a.home)
+    a.body.position.lerp(a.target, Math.min(1, dt * 3))
+    a.body.position.y = a.working ? Math.abs(Math.sin(t * 8 + a.phase)) * 0.12 : 0
+    a.body.rotation.y = a.working ? Math.sin(t * 3 + a.phase) * 0.25 + Math.PI : Math.PI
+  }
+  for (let i = papers.length - 1; i >= 0; i--) {
+    const p = papers[i]; p.t += dt / 1.2
+    p.mesh.position.lerpVectors(p.from, p.to, Math.min(p.t, 1)); p.mesh.position.y = 1.5 + Math.sin(Math.min(p.t, 1) * Math.PI) * 2
+    p.mesh.rotation.y += dt * 6
+    if (p.t >= 1) { scene.remove(p.mesh); papers.splice(i, 1) }
+  }
+  controls.update(); renderer.render(scene, camera); requestAnimationFrame(animate)
+}
+animate()
+addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight) })
+</script>
+</body>
+</html>
