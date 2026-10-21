@@ -38,7 +38,7 @@ describe.skipIf(!TEST_DATABASE_URL)('registration against a real database', () =
   const newUser = (): AuthUser => {
     const id = randomUUID()
     created.push(id)
-    return { id, email: `${id}@test.lagoa`, phone: undefined }
+    return { id, email: `${id}@test.lagoa`, phone: undefined, role: null, aal: null }
   }
 
   it('creates the user and profile together and answers the session of a new customer', async () => {
@@ -74,7 +74,7 @@ describe.skipIf(!TEST_DATABASE_URL)('registration against a real database', () =
   it('lets a merchant (who already has a user row) become a customer, keeping the stored phone', async () => {
     const merchant = await data.createCustomer({ withProfile: false })
     created.push(merchant)
-    const result = await service.register({ id: merchant, email: `${merchant}@other.lagoa`, phone: undefined }, uniquePhone())
+    const result = await service.register({ id: merchant, email: `${merchant}@other.lagoa`, phone: undefined, role: null, aal: null }, uniquePhone())
     expect(result).toMatchObject({ ok: true, value: { customerId: merchant } })
     expect(await data.db.select().from(customerProfiles).where(eq(customerProfiles.userId, merchant))).toHaveLength(1)
   }, SLOW)

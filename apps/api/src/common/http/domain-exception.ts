@@ -4,6 +4,7 @@ import type { Result } from '#shared/types/result'
 
 const STATUS_BY_CODE: Record<DomainErrorCode, number> = {
   unauthorized: 401,
+  forbidden: 403,
   network: 503,
   rateLimited: 429,
   internal: 500,
@@ -41,6 +42,12 @@ const STATUS_BY_CODE: Record<DomainErrorCode, number> = {
   birthdayLocked: 409,
   termsNotAccepted: 403,
   merchantTermsNotAccepted: 403,
+  limitReached: 409,
+  conflict: 409,
+  invalidTransition: 409,
+  slotsFull: 409,
+  invalidTarget: 422,
+  alreadyExists: 409,
 }
 
 /** O corpo da resposta é o próprio `DomainError`, que a UI traduz por `code`. Nunca carrega dado pessoal. */

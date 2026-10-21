@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { SECURITY_HEADERS } from './server/utils/securityHeaders'
 
 /** Rotas do lojista (layer `merchant`): SPA, sem SSR (desktop, sessão conferida no servidor pelos middlewares). */
-const MERCHANT_SPA_ROUTES = ['/painel', '/configuracoes', '/campanhas', '/balcao/**', '/programa', '/botao-do-card', '/clientes']
+const MERCHANT_SPA_ROUTES = ['/painel', '/configuracoes', '/campanhas', '/balcao/**', '/programa', '/hits', '/botao-do-card', '/clientes']
 
 export default defineNuxtConfig({
   // `shared/` mora na raiz do monorepo para o futuro `apps/api` usar os mesmos contratos.

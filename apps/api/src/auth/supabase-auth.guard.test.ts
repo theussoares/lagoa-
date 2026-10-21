@@ -15,8 +15,8 @@ let guard: SupabaseAuthGuard
 let privateKey: CryptoKey
 let strangerKey: CryptoKey
 
-async function token(overrides: { key?: CryptoKey; alg?: string; issuer?: string; audience?: string; subject?: string | null; expiresIn?: string | null; email?: string; phone?: string; anonymous?: boolean } = {}): Promise<string> {
-  const jwt = new SignJWT({ ...(overrides.email !== undefined && { email: overrides.email }), ...(overrides.phone !== undefined && { phone: overrides.phone }), ...(overrides.anonymous && { is_anonymous: true }) })
+async function token(overrides: { key?: CryptoKey; alg?: string; issuer?: string; audience?: string; subject?: string | null; expiresIn?: string | null; email?: string; phone?: string; anonymous?: boolean; claims?: Record<string, unknown> } = {}): Promise<string> {
+  const jwt = new SignJWT({ ...overrides.claims, ...(overrides.email !== undefined && { email: overrides.email }), ...(overrides.phone !== undefined && { phone: overrides.phone }), ...(overrides.anonymous && { is_anonymous: true }) })
     .setProtectedHeader({ alg: overrides.alg ?? 'ES256', kid: 'test' })
     .setIssuer(overrides.issuer ?? ISSUER)
     .setAudience(overrides.audience ?? 'authenticated')
@@ -45,16 +45,37 @@ describe('SupabaseAuthGuard', () => {
   it('accepts a valid token and exposes the user id and e-mail', async () => {
     const { context, request } = contextFor(`Bearer ${await token({ email: 'ana@example.com' })}`)
     await expect(guard.canActivate(context)).resolves.toBe(true)
-    expect(request.user).toEqual({ id: USER_ID, email: 'ana@example.com', phone: undefined })
+    expect(request.user).toEqual({ id: USER_ID, email: 'ana@example.com', phone: undefined, role: null, aal: null })
   })
 
   it('exposes the SMS-verified phone as 11 national digits, and ignores a junk claim', async () => {
     const verified = contextFor(`Bearer ${await token({ phone: '5567991230374' })}`)
     await guard.canActivate(verified.context)
-    expect(verified.request.user).toEqual({ id: USER_ID, email: undefined, phone: '67991230374' })
+    expect(verified.request.user).toEqual({ id: USER_ID, email: undefined, phone: '67991230374', role: null, aal: null })
     const junk = contextFor(`Bearer ${await token({ phone: '123' })}`)
     await guard.canActivate(junk.context)
     expect(junk.request.user?.phone).toBeUndefined()
+  })
+
+  it('reads the admin role only from app_metadata and the aal claim', async () => {
+    const admin = contextFor(`Bearer ${await token({ claims: { app_metadata: { provider: 'email', role: 'admin' }, aal: 'aal2' } })}`)
+    await guard.canActivate(admin.context)
+    expect(admin.request.user).toMatchObject({ role: 'admin', aal: 'aal2' })
+    const withoutMfa = contextFor(`Bearer ${await token({ claims: { app_metadata: { role: 'admin' }, aal: 'aal1' } })}`)
+    await guard.canActivate(withoutMfa.context)
+    expect(withoutMfa.request.user).toMatchObject({ role: 'admin', aal: 'aal1' })
+  })
+
+  it.each([
+    ['a top-level role claim', { role: 'admin' }],
+    ['user_metadata, which the user can write', { user_metadata: { role: 'admin' } }],
+    ['another role in app_metadata', { app_metadata: { role: 'Admin' } }],
+    ['app_metadata that is not an object', { app_metadata: 'admin' }],
+    ['an unknown aal', { app_metadata: {}, aal: 'aal3' }],
+  ])('gives no role and no known aal for %s', async (_name, claims) => {
+    const { context, request } = contextFor(`Bearer ${await token({ claims })}`)
+    await guard.canActivate(context)
+    expect(request.user).toMatchObject({ role: null, aal: null })
   })
 
   it('lets @Public() routes through without a token', async () => {
@@ -82,7 +103,7 @@ describe('SupabaseAuthGuard', () => {
     for (const email of ['', 'not-an-email']) {
       const { context, request } = contextFor(`Bearer ${await token({ email })}`)
       await guard.canActivate(context)
-      expect(request.user).toEqual({ id: USER_ID, email: undefined, phone: undefined })
+      expect(request.user).toEqual({ id: USER_ID, email: undefined, phone: undefined, role: null, aal: null })
     }
   })
 })
