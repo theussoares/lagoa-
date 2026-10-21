@@ -29,6 +29,8 @@ export default defineNuxtConfig({
     '/**': { headers: SECURITY_HEADERS },
     // O link da bio é só âncoras: sem JS ele chega pronto, sem hidratar nada. Custo: o analytics não conta aqui.
     '/links': { noScripts: true },
+    // Escritório 3D da equipe de agentes: arquivos estáticos em public/equipe (gerados por `pnpm build:office`).
+    '/equipe': { redirect: { to: '/equipe/', statusCode: 308 } },
   },
   nitro: {
     prerender: { routes: ['/', '/sitemap.xml', '/robots.txt'], crawlLinks: true },

@@ -13,13 +13,14 @@ export const CHARACTERS = ['male-a', 'male-b', 'male-c', 'male-d', 'male-e', 'ma
 export const FURNITURE_SCALE = 2.6
 export const CHARACTER_HEIGHT = 1.3
 
+const MODELS_BASE = document.documentElement.dataset.models ?? '/models/'
 const cache = new Map()
 export async function loadModels(onProgress) {
   const loader = new GLTFLoader()
   const paths = [...FURNITURE.map((n) => `furniture/${n}`), ...CHARACTERS.map((n) => `characters/character-${n}`), 'characters/aid-glasses']
   let done = 0
   await Promise.all(paths.map(async (path) => {
-    cache.set(path, await loader.loadAsync(`/models/${path}.glb`))
+    cache.set(path, await loader.loadAsync(`${MODELS_BASE}${path}.glb`))
     onProgress?.(++done / paths.length)
   }))
 }

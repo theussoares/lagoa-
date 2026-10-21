@@ -6,6 +6,10 @@ import { ROLES, SPARE_DESKS } from './roster.js'
 import { buildAvatar } from './avatar.js'
 import { Agent, isOffHours } from './brain.js'
 import { loadModels } from './models.js'
+import { scenario, loop } from './demo.js'
+
+// Public page (lagoamais.com.br/equipe): no hooks, a demo loop and always office hours.
+const PUBLIC = document.documentElement.dataset.mode === 'public'
 
 const LABEL_DISTANCE = 22
 
@@ -87,7 +91,8 @@ const agentFor = (id) => agents.get(id) ?? createAgent(id)
 // ---------- Clock and hours ----------
 const forcedHour = new URLSearchParams(location.search).get('hora')
 const currentHour = () => (forcedHour !== null ? Number(forcedHour) : new Date().getHours())
-office.offHours = isOffHours(currentHour())
+const offHoursNow = () => !PUBLIC && isOffHours(currentHour())
+office.offHours = offHoursNow()
 
 for (const id of Object.keys(ROLES)) createAgent(id)
 for (const agent of agents.values()) {
@@ -139,30 +144,17 @@ function handle(event) {
   }
 }
 
-const source = new EventSource('/events')
-source.onopen = () => { statusEl.textContent = 'ao vivo (hooks)' }
-source.onerror = () => { statusEl.textContent = 'sem conexão com o servidor — use a Demo' }
-source.onmessage = (msg) => handle(JSON.parse(msg.data))
-
-document.getElementById('demo').onclick = () => {
-  const steps = [
-    [0, { type: 'demand', text: 'Adicionar filtro por ramo no Descobrir' }],
-    [1, { type: 'agentStart', role: 'tech-lead', text: 'triagem: tamanho G' }], [7, { type: 'agentDone', role: 'tech-lead' }],
-    [8, { type: 'agentStart', role: 'product-owner', text: 'escrevendo spec.md' }],
-    [8.5, { type: 'agentStart', role: 'arquiteto', text: 'solution-design' }],
-    [16, { type: 'agentDone', role: 'product-owner' }], [17, { type: 'agentStart', role: 'cto', text: 'aprovando design' }],
-    [21, { type: 'agentDone', role: 'arquiteto' }], [23, { type: 'agentDone', role: 'cto' }],
-    [24, { type: 'agentStart', role: 'dev-nuxt', text: 'filtro na tela' }],
-    [24.3, { type: 'agentStart', role: 'dev-tipos', text: 'schema shopGroup' }],
-    [24.6, { type: 'agentStart', role: 'dev-junior', text: 'textos pt-BR' }],
-    [30, { type: 'tool', role: 'dev-nuxt', tool: 'Edit' }], [31, { type: 'tool', role: 'dev-tipos', tool: 'Write' }],
-    [34, { type: 'agentDone', role: 'dev-junior' }], [37, { type: 'agentDone', role: 'dev-tipos' }], [38, { type: 'agentDone', role: 'dev-nuxt' }],
-    [39, { type: 'agentStart', role: 'qa', text: 'testes Vitest' }], [39.3, { type: 'agentStart', role: 'seguranca', text: 'checando dado pessoal' }],
-    [45, { type: 'agentDone', role: 'qa' }], [46, { type: 'agentDone', role: 'seguranca' }],
-    [47, { type: 'agentStart', role: 'code-reviewer', text: 'revisando diff' }], [52, { type: 'agentDone', role: 'code-reviewer' }],
-    [53, { type: 'idle' }],
-  ]
-  for (const [sec, event] of steps) setTimeout(() => handle(event), sec * 1000)
+const demoButton = document.getElementById('demo')
+if (PUBLIC) {
+  statusEl.textContent = 'demonstração'
+  demoButton.hidden = true
+  loop(handle)
+} else {
+  const source = new EventSource('/events')
+  source.onopen = () => { statusEl.textContent = 'ao vivo (hooks)' }
+  source.onerror = () => { statusEl.textContent = 'sem conexão com o servidor — use a Demo' }
+  source.onmessage = (msg) => handle(JSON.parse(msg.data))
+  demoButton.onclick = () => { for (const [sec, event] of scenario()) setTimeout(() => handle(event), sec * 1000) }
 }
 
 // ---------- Hover: name tags show on hover, when close or while working ----------
@@ -184,7 +176,7 @@ function frame() {
   const dt = Math.min(clock.getDelta(), 1), t = clock.elapsedTime, now = performance.now()
   if (now - lastHourCheck > 10000) {
     lastHourCheck = now
-    office.offHours = isOffHours(currentHour())
+    office.offHours = offHoursNow()
     clockEl.textContent = office.offHours ? `🌙 ${currentHour()}h · fora do expediente` : `☀️ ${currentHour()}h · expediente`
   }
   let meetingActive = false
