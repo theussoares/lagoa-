@@ -146,4 +146,4 @@ em Opus, plenos e infra em Sonnet, júnior em Haiku.
 
 **Escritório 3D:** `tools/office` (preview `lagoa-office`, porta 4545). Hooks em
 `.claude/settings.json` gravam eventos em `tools/office/.data/events.jsonl`; não
-gastam tokens.
+gastam tokens. Modelos 3D: Kenney (Furniture Kit e Mini Characters, CC0) em `tools/office/models`.

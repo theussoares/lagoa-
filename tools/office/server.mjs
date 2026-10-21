@@ -8,6 +8,7 @@ const DIR = dirname(fileURLToPath(import.meta.url))
 const LOG = join(DIR, '.data', 'events.jsonl')
 const PORT = Number(process.env.PORT ?? 4545)
 const clients = new Set()
+const TYPES = { js: 'text/javascript; charset=utf-8', glb: 'model/gltf-binary', png: 'image/png' }
 let offset = existsSync(LOG) ? statSync(LOG).size : 0
 
 function readNewLines() {
@@ -35,12 +36,12 @@ createServer((req, res) => {
     req.on('close', () => clients.delete(res))
     return
   }
-  // Only flat module names under /js are served, so no path can escape the folder.
-  const script = /^\/js\/([a-z-]+)\.js$/.exec(req.url ?? '')
-  if (script) {
-    const file = join(DIR, 'js', `${script[1]}.js`)
+  // Only known folders and extensions are served; the pattern has no '.' in the path, so nothing escapes the folder.
+  const asset = /^\/(js|models)\/([\w/-]+)\.(js|glb|png)$/.exec((req.url ?? '').split('?')[0])
+  if (asset) {
+    const file = join(DIR, asset[1], `${asset[2]}.${asset[3]}`)
     if (!existsSync(file)) { res.writeHead(404); res.end(); return }
-    res.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-cache' })
+    res.writeHead(200, { 'Content-Type': TYPES[asset[3]], 'Cache-Control': 'no-cache' })
     res.end(readFileSync(file))
     return
   }

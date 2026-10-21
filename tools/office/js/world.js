@@ -1,5 +1,10 @@
 // Floor plan, furniture and the walking network (door column → aisle → slot).
 import * as THREE from 'three'
+import { furniture } from './models.js'
+
+// Extra Y rotation so each kit model faces +z (calibrated by eye).
+export const FACE = { desk: Math.PI, chairDesk: 0, chairModernCushion: 0, loungeSofaLong: 0, tableCoffee: 0, televisionModern: 0, kitchenCabinet: 0, kitchenFridgeLarge: 0, kitchenCoffeeMachine: 0, bookcaseOpen: 0, loungeChair: 0, laptop: 0, computerKeyboard: 0, computerMouse: 0 }
+const kit = (scene, name, opts) => furniture(scene, name, { ...opts, rotY: (opts.rotY ?? 0) + (FACE[name] ?? 0) })
 
 // Corridor runs along z = 0 (|z| < 1). North rooms: z ∈ [-13, -1]. South rooms: z ∈ [1, 13].
 export const ROOMS = {
@@ -141,45 +146,35 @@ function drawRoomName(name, accent) {
 }
 
 // ---------- Furniture ----------
-function plant(scene, x, z, size = 1) {
-  at(scene, cyl(0.28 * size, 0.22 * size, 0.5 * size, 0xd8d2c8), x, 0.25 * size, z)
-  for (let i = 0; i < 3; i++) {
-    const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.35 * size, 10, 8), mat(i % 2 ? 0x4f8a4b : 0x3d7a3a)); leaf.castShadow = true
-    at(scene, leaf, x + Math.cos(i * 2.1) * 0.15 * size, (0.75 + i * 0.22) * size, z + Math.sin(i * 2.1) * 0.15 * size)
-  }
+function plant(scene, x, z, size = 1) { kit(scene, 'pottedPlant', { x, z, height: 1.3 * size }) }
+function chair(scene, x, z, rotY, color = 0x2f3640, name = 'chairDesk') {
+  kit(scene, name, { x, z, rotY, height: 0.95, tint: tint(color, 0.35).getHex() })
 }
-function chair(scene, x, z, rotY, color = 0x2f3640) {
-  const g = new THREE.Group()
-  at(g, cyl(0.05, 0.05, 0.42, 0x555555, 8), 0, 0.21, 0)
-  at(g, cyl(0.3, 0.3, 0.04, 0x555555, 5), 0, 0.03, 0)
-  at(g, box(0.56, 0.09, 0.52, color), 0, 0.47, 0)
-  at(g, box(0.52, 0.62, 0.08, color), 0, 0.84, 0.26)
-  g.position.set(x, 0, z); g.rotation.y = rotY; scene.add(g)
-}
-function stool(scene, x, z) { at(scene, cyl(0.04, 0.04, 0.75, 0x666666, 8), x, 0.38, z); at(scene, cyl(0.22, 0.22, 0.07, 0x2b2b2b), x, 0.78, z) }
 
 // A desk facing north with chair, keyboard, mouse, one or two monitors and a personal item.
 export function buildDesk(scene, { x, z, room, dual = false, item = 'mug', accent = 0x444444 }) {
-  at(scene, box(2.2, 0.07, 1.1, 0xe9e4dc), x, 0.88, z)
-  for (const dx of [-1, 1]) at(scene, box(0.07, 0.86, 0.9, 0x9a9590), x + dx, 0.43, z)
+  const desk = kit(scene, 'desk', { x, z, width: 1.8 })
+  const top = desk.userData.size.y, depth = desk.userData.size.z
   const screens = []
-  const offsets = dual ? [-0.42, 0.42] : [0]
-  for (const dx of offsets) {
+  for (const dx of dual ? [-0.42, 0.42] : [0]) {
     const screenMat = new THREE.MeshStandardMaterial({ color: 0x15171a, emissive: 0x000000 })
     const scr = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.46, 0.04), screenMat); scr.castShadow = true
-    scr.position.set(x + dx, 1.28, z - 0.35); scr.rotation.y = dual ? -dx * 0.35 : 0; scene.add(scr)
-    at(scene, box(0.06, 0.3, 0.06, 0x333333), x + dx, 1.05, z - 0.38)
+    scr.position.set(x + dx, top + 0.42, z - depth * 0.25); scr.rotation.y = dual ? -dx * 0.35 : 0; scene.add(scr)
+    at(scene, box(0.06, 0.3, 0.06, 0x333333), x + dx, top + 0.15, z - depth * 0.25 - 0.03)
+    at(scene, box(0.3, 0.02, 0.2, 0x333333), x + dx, top + 0.01, z - depth * 0.25)
     screens.push(screenMat)
   }
-  at(scene, box(0.6, 0.03, 0.2, 0x2a2a2a), x, 0.93, z + 0.05)
-  at(scene, box(0.08, 0.03, 0.12, 0x2a2a2a), x + 0.45, 0.93, z + 0.05)
-  if (item === 'mug') at(scene, cyl(0.06, 0.06, 0.12, accent, 10), x - 0.8, 0.98, z - 0.1)
-  if (item === 'books') { at(scene, box(0.3, 0.06, 0.22, 0xb5473f), x - 0.8, 0.95, z - 0.2); at(scene, box(0.28, 0.06, 0.2, 0x3f7fc4), x - 0.8, 1.01, z - 0.2) }
-  if (item === 'plant') plant(scene, x - 0.85, z - 0.2, 0.35)
-  if (item === 'headphones') { const hp = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.025, 6, 16, Math.PI), mat(0x222222)); hp.rotation.x = -Math.PI / 2; at(scene, hp, x - 0.8, 0.93, z - 0.1) }
-  if (item === 'laptop') { at(scene, box(0.45, 0.02, 0.32, 0x9aa0a6), x - 0.75, 0.93, z - 0.05); const lid = box(0.45, 0.3, 0.02, 0x9aa0a6); lid.rotation.x = -0.3; at(scene, lid, x - 0.75, 1.07, z - 0.2) }
-  chair(scene, x, z + 1.0, 0, accent)
-  const slot = makeSlot({ room, x, z: z + 1.0, lookX: x, lookZ: z - 3, pose: 'sit', aisle: z + 1.9 })
+  kit(scene, 'computerKeyboard', { x, z: z + depth * 0.15, y: top, width: 0.6 })
+  kit(scene, 'computerMouse', { x: x + 0.45, z: z + depth * 0.15, y: top, width: 0.1 })
+  const side = { x: x - 0.75, z: z - depth * 0.05, y: top }
+  if (item === 'mug') at(scene, cyl(0.06, 0.06, 0.12, accent, 10), side.x, top + 0.06, side.z)
+  if (item === 'books') kit(scene, 'books', { ...side, width: 0.4 })
+  if (item === 'plant') kit(scene, 'plantSmall2', { ...side, height: 0.4 })
+  if (item === 'headphones') { const hp = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.025, 6, 16, Math.PI), mat(0x222222)); hp.rotation.x = -Math.PI / 2; at(scene, hp, side.x, top + 0.03, side.z) }
+  if (item === 'laptop') kit(scene, 'laptop', { ...side, width: 0.5 })
+  const chairZ = z + depth / 2 + 0.45
+  chair(scene, x, chairZ, Math.PI, accent)
+  const slot = makeSlot({ room, x, z: chairZ, lookX: x, lookZ: z - 3, pose: 'sit', aisle: chairZ + 0.9 })
   return { slot, screens, pos: V(x, z) }
 }
 
@@ -238,7 +233,8 @@ export function buildWorld(scene) {
   panel(scene, drawLogo, 4, 1.2, -18, 1.9, -12.85)
   at(scene, box(3.2, 1.05, 0.9, 0xe8743b), -18, 0.52, -9.8)
   at(scene, box(3.4, 0.06, 1.1, 0xf4f1ec), -18, 1.08, -9.8)
-  for (const z of [-7.5, -6.5, -5.5]) chair(scene, -15, z, Math.PI / 2, 0xe8743b)
+  for (const z of [-7.5, -6.2, -4.9]) kit(scene, 'loungeChair', { x: -15.2, z, rotY: -Math.PI / 2, height: 1.0, tint: 0xffd2b8 })
+  kit(scene, 'coatRackStanding', { x: -21.2, z: -3.2, height: 2.0 })
   plant(scene, -21.2, -12.2, 1.3); plant(scene, -15, -4, 1)
   at(scene, box(1.6, 0.02, 2.2, 0x8a7d6c), -21, 0.03, ENTRANCE_Z)
   slots.exit = makeSlot({ room: 'recepcao', x: -25.5, z: ENTRANCE_Z, lookX: -30, lookZ: ENTRANCE_Z })
@@ -246,8 +242,8 @@ export function buildWorld(scene) {
   // Board room / diretoria: goals panel and a reading corner.
   panel(scene, drawGoals, 4.4, 2.2, -9, 1.6, -12.85)
   plant(scene, -13.3, -12.3, 1.2); plant(scene, -4.7, -12.3, 1.2)
-  at(scene, box(1.8, 1.8, 0.45, 0x8a6a4f), -6.5, 0.9, -4.0).castShadow = true
-  for (let i = 0; i < 4; i++) at(scene, box(0.2, 0.35, 0.3, [0xb5473f, 0x3f7fc4, 0xd9a441, 0x5f9e57][i]), -7.1 + i * 0.35, 1.25, -3.9)
+  kit(scene, 'bookcaseOpen', { x: -6.5, z: -3.6, rotY: Math.PI, height: 1.5 })
+  kit(scene, 'lampRoundFloor', { x: -4.8, z: -2.2, height: 2.0 })
 
   // Meeting room: table, chairs, big screen and a presenter spot.
   at(scene, box(7.4, 0.08, 2.4, 0x6b4f3a), 2, 0.9, -6.5)
@@ -255,7 +251,7 @@ export function buildWorld(scene) {
   const meetingScreen = panel(scene, drawChart, 4.4, 2.3, 2, 1.7, -12.85, 0, true)
   meetingScreen.material.emissiveIntensity = 0.15
   for (const x of [-0.6, 1.3, 3.2, 5.1]) {
-    chair(scene, x, -8.35, Math.PI, 0x3a7bd5); chair(scene, x, -4.65, 0, 0x3a7bd5)
+    chair(scene, x, -8.35, 0, 0x3a7bd5, 'chairModernCushion'); chair(scene, x, -4.65, Math.PI, 0x3a7bd5, 'chairModernCushion')
     slots.meeting.push(makeSlot({ room: 'reuniao', x, z: -8.35, lookX: x, lookZ: -6.5, pose: 'sit', aisle: -9.3 }))
     slots.meeting.push(makeSlot({ room: 'reuniao', x, z: -4.65, lookX: x, lookZ: -6.5, pose: 'sit', aisle: -3.7 }))
   }
@@ -272,7 +268,7 @@ export function buildWorld(scene) {
   at(scene, box(2.6, 1.5, 0.06, 0xffffff), -12, 1.4, 12.2)
   panel(scene, drawDiagram, 2.4, 1.3, -12, 1.4, 12.16, Math.PI)
   for (const dx of [-0.9, 0, 0.9]) slots.huddle.push(makeSlot({ room: 'dev', x: -12 + dx, z: 10.4 + Math.abs(dx) * 0.3, lookX: -12, lookZ: 12.2 }))
-  at(scene, box(2.4, 1.0, 0.5, 0x8a6a4f), -18, 0.5, 12.5)
+  kit(scene, 'bookcaseOpen', { x: -21.4, z: 2.6, rotY: Math.PI / 2, height: 1.5 })
   plant(scene, -21.2, 1.8, 1.1); plant(scene, -2.8, 12.2, 1.1)
 
   // Quality: test dashboard on a stand.
@@ -280,14 +276,16 @@ export function buildWorld(scene) {
   panel(scene, drawTests, 2.6, 1.5, 3, 1.75, 12.25, Math.PI, true).material.emissiveIntensity = 0.35
   plant(scene, -1.3, 12.3, 1); plant(scene, 7.3, 1.8, 0.9)
 
-  // Copa: counter, coffee machine, fridge, bar table with stools.
-  at(scene, box(4.6, 0.95, 0.8, 0xffffff), 11.2, 0.48, 12.4)
-  at(scene, box(4.8, 0.06, 0.9, 0x3b3b3b), 11.2, 0.98, 12.4)
-  at(scene, box(0.55, 0.7, 0.45, 0x1f1f1f), 9.6, 1.36, 12.4)
-  at(scene, box(1.1, 2.3, 0.9, 0xe6e6e6), 14.3, 1.15, 12.3)
-  at(scene, cyl(0.85, 0.85, 0.07, 0xffffff, 28), 11.5, 1.1, 6.5); at(scene, cyl(0.07, 0.07, 1.1, 0x777777), 11.5, 0.55, 6.5)
+  // Copa: cabinets, coffee machine, fridge, round table with chairs.
+  for (const x of [9.6, 10.8, 12.0]) kit(scene, 'kitchenCabinet', { x, z: 12.3, rotY: Math.PI, width: 1.2 })
+  kit(scene, 'kitchenCoffeeMachine', { x: 9.6, z: 12.3, y: 0.95, rotY: Math.PI, height: 0.6 })
+  kit(scene, 'kitchenFridgeLarge', { x: 14.2, z: 12.2, rotY: Math.PI, height: 2.3 })
+  kit(scene, 'tableRound', { x: 11.5, z: 6.5, width: 1.7 })
   const copaSpots = [[10.1, 6.5, null], [11.5, 5.1, null], [11.5, 7.9, null], [12.9, 6.5, [[9, 4.2], [12.9, 4.2]]]]
-  for (const [x, z, approach] of copaSpots) { stool(scene, x, z); slots.copa.push(makeSlot({ room: 'copa', x, z, lookX: 11.5, lookZ: 6.5, pose: 'perch', approach })) }
+  for (const [x, z, approach] of copaSpots) {
+    chair(scene, x, z, Math.atan2(11.5 - x, 6.5 - z), 0xd9a441, 'chairModernCushion')
+    slots.copa.push(makeSlot({ room: 'copa', x, z, lookX: 11.5, lookZ: 6.5, pose: 'sit', approach }))
+  }
   slots.copa.push(makeSlot({ room: 'copa', x: 12.4, z: 10.4, lookX: 13.6, lookZ: 10.4 }), makeSlot({ room: 'copa', x: 13.6, z: 10.4, lookX: 12.4, lookZ: 10.4 }))
   slots.coffee.push(makeSlot({ room: 'copa', x: 9.6, z: 11.4, lookX: 9.6, lookZ: 13 }), makeSlot({ room: 'copa', x: 10.6, z: 11.4, lookX: 10.6, lookZ: 13 }))
 
@@ -296,9 +294,9 @@ export function buildWorld(scene) {
   const gameScreen = new THREE.MeshStandardMaterial({ color: 0x111111, emissive: 0x3355ff, emissiveIntensity: 0.9 })
   const tv = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 1.35), gameScreen); tv.position.set(21.74, 1.6, 7.5); tv.rotation.y = -Math.PI / 2; scene.add(tv)
   at(scene, box(0.5, 0.45, 2.4, 0x2b2b2b), 21.5, 0.23, 7.5)
-  at(scene, box(1.0, 0.45, 3.4, 0x6a3fb5), 17.1, 0.23, 7.5); at(scene, box(0.3, 0.9, 3.4, 0x6a3fb5), 16.6, 0.6, 7.5)
-  at(scene, box(1.0, 0.7, 0.3, 0x6a3fb5), 17.1, 0.45, 5.7); at(scene, box(1.0, 0.7, 0.3, 0x6a3fb5), 17.1, 0.45, 9.3)
-  at(scene, box(0.9, 0.4, 1.3, 0x8a6a4f), 19, 0.2, 7.5)
+  kit(scene, 'loungeSofaLong', { x: 17.0, z: 7.5, rotY: Math.PI / 2, width: 3.6, tint: 0xd8c8ff })
+  kit(scene, 'tableCoffee', { x: 19, z: 7.5, rotY: Math.PI / 2, width: 1.4 })
+  kit(scene, 'speaker', { x: 21.3, z: 5.6, height: 1.0 }); kit(scene, 'speaker', { x: 21.3, z: 9.4, height: 1.0 })
   for (const z of [6.5, 7.5, 8.5]) slots.lounge.push(makeSlot({ room: 'lounge', x: 17.25, z, lookX: 22, lookZ: z, pose: 'game', approach: [[20.5, 3], [18.2, 3], [18.2, z]] }))
   for (const [x, z] of [[19.8, 4.2], [19.8, 11]]) {
     const bag = new THREE.Mesh(new THREE.SphereGeometry(0.55, 14, 10), mat(0xe8a33b)); bag.scale.y = 0.6; bag.castShadow = true; at(scene, bag, x, 0.3, z)

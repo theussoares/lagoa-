@@ -103,7 +103,7 @@ export class Agent {
       }
       case 'copa': {
         const spot = pick(free(slots.copa)); if (!spot) return null
-        return [{ go: this.claim(spot) }, { fn: () => { this.holding = true } }, { do: spot.pose === 'perch' ? 'perch' : 'talk', secs: rand(15, 30), lines: CHAT_LINES },
+        return [{ go: this.claim(spot) }, { fn: () => { this.holding = true } }, { do: spot.pose === 'sit' ? 'sitTalk' : 'talk', secs: rand(15, 30), lines: CHAT_LINES },
           { fn: () => { this.holding = false; this.energy += 0.5 } }]
       }
       case 'lounge': {

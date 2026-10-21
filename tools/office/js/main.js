@@ -5,6 +5,7 @@ import { buildWorld, buildDesk, box } from './world.js'
 import { ROLES, SPARE_DESKS } from './roster.js'
 import { buildAvatar } from './avatar.js'
 import { Agent, isOffHours } from './brain.js'
+import { loadModels } from './models.js'
 
 const LABEL_DISTANCE = 22
 
@@ -30,6 +31,9 @@ Object.assign(sun.shadow.camera, { left: -26, right: 26, top: 20, bottom: -20 })
 sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0005
 scene.add(sun)
 
+const statusEl = document.getElementById('status')
+statusEl.textContent = 'carregando modelos…'
+await loadModels((done) => { statusEl.textContent = `carregando modelos… ${Math.round(done * 100)}%` })
 const world = buildWorld(scene)
 
 // ---------- Sprites ----------
@@ -65,7 +69,7 @@ let spareIndex = 0
 function createAgent(id) {
   const role = ROLES[id] ?? (() => {
     const spare = SPARE_DESKS[spareIndex++ % SPARE_DESKS.length]
-    return { name: id, ...spare, look: { skin: 0xe0ac69, hair: 'short', hairColor: 0x5a3825, outfit: 'tee', top: 0x9e9e9e, bottom: 0x3a3f4b }, idle: { desk: 3, copa: 1, coffee: 1 } }
+    return { name: id, ...spare, look: { model: 'male-a', tint: 0xcccccc, skin: 0xe0ac69, hair: 'short', hairColor: 0x5a3825, outfit: 'tee', top: 0x9e9e9e, bottom: 0x3a3f4b }, idle: { desk: 3, copa: 1, coffee: 1 } }
   })()
   const desk = buildDesk(scene, { x: role.desk[0], z: role.desk[1], room: role.room, dual: role.dual, item: role.item, accent: role.look.top })
   const avatar = buildAvatar(role.look)
@@ -135,7 +139,6 @@ function handle(event) {
   }
 }
 
-const statusEl = document.getElementById('status')
 const source = new EventSource('/events')
 source.onopen = () => { statusEl.textContent = 'ao vivo (hooks)' }
 source.onerror = () => { statusEl.textContent = 'sem conexão com o servidor — use a Demo' }
@@ -204,4 +207,6 @@ function frame() {
 }
 // Timer instead of requestAnimationFrame: keeps the office moving when the pane is in the background.
 setInterval(frame, 1000 / 40)
+// Handy for tweaking poses from the devtools console.
+window.__office = { agents, camera, controls, scene }
 addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); fitCamera(); renderer.setSize(innerWidth, innerHeight) })
