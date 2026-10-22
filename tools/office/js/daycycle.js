@@ -1,26 +1,24 @@
-// Office day: arrival, focus, lunch, leaving and night, with light that follows the hour.
-// Public page runs a virtual clock (a work day in ~10 minutes, nights fast-forward); local mode uses the real clock.
+// Office day: always open (no one goes home), with lunch and light that follows the hour.
+// Public page runs a virtual work day (8h–18h in ~10 minutes, then starts over); local mode uses the real clock.
 import * as THREE from 'three'
 
 const VIRTUAL_MINUTES_PER_SECOND = 1
-const NIGHT_SPEEDUP = 8
-export const HOURS = { arrive: 7.5, lunchStart: 12, lunchEnd: 13, leave: 18.5 }
+export const HOURS = { start: 8, lunchStart: 12, lunchEnd: 13, end: 18 }
 
 export function createDayClock({ virtual, forcedHour }) {
-  let hour = forcedHour ?? (virtual ? 9 + Math.random() * 6 : realHour())
+  let hour = forcedHour ?? (virtual ? HOURS.start + 1 + Math.random() * 6 : realHour())
   return {
     get hour() { return hour },
     tick(dt) {
       if (forcedHour !== null && forcedHour !== undefined) return
       if (!virtual) { hour = realHour(); return }
-      const night = hour >= HOURS.leave + 0.5 || hour < HOURS.arrive - 0.5
-      hour = (hour + (dt * VIRTUAL_MINUTES_PER_SECOND * (night ? NIGHT_SPEEDUP : 1)) / 60) % 24
+      hour += (dt * VIRTUAL_MINUTES_PER_SECOND) / 60
+      if (hour >= HOURS.end) hour = HOURS.start
     },
   }
 }
 function realHour() { const d = new Date(); return d.getHours() + d.getMinutes() / 60 }
 
-export const isOffHours = (hour) => hour >= HOURS.leave || hour < HOURS.arrive
 export const isLunch = (hour) => hour >= HOURS.lunchStart && hour < HOURS.lunchEnd
 export const formatHour = (hour) => `${String(Math.floor(hour)).padStart(2, '0')}:${String(Math.floor((hour % 1) * 60)).padStart(2, '0')}`
 

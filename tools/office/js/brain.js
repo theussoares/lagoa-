@@ -18,7 +18,7 @@ const STUCK_CHANCE = 0.35
 const ACTIVITY = {
   desk: 'Na mesa', coffee: 'Pegando café', copa: 'Na copa', lounge: 'Jogando videogame', board: 'Organizando o kanban',
   huddle: 'No quadro branco', bug: 'Caçando um bug', chat: 'Batendo papo', review: 'Mostrando código', roam: 'Circulando entre os devs',
-  lunch: 'Almoçando', leave: 'Indo embora', arrive: 'Chegando', rest: 'Descansando',
+  lunch: 'Almoçando', rest: 'Descansando',
 }
 
 export class Agent {
@@ -31,7 +31,7 @@ export class Agent {
     this.steps = []; this.stepIndex = 0; this.stepUntil = 0; this.nextLineAt = 0; this.nextStuckAt = 0; this.cheerUntil = 0
     this.path = []; this.pendingTarget = null
     this.here = nodeAt(desk.slot); this.slot = desk.slot
-    this.holding = false; this.hidden = false
+    this.holding = false
     this.reserved = new Set()
     avatar.root.position.copy(desk.slot.pos)
   }
@@ -39,7 +39,7 @@ export class Agent {
   get pos() { return this.avatar.root.position }
   get step() { return this.steps[this.stepIndex] }
   get walking() { return this.path.length > 0 }
-  get atDesk() { return !this.walking && !this.hidden && this.slot === this.desk.slot }
+  get atDesk() { return !this.walking && this.slot === this.desk.slot }
 
   claim(slot) { slot.taken = this.id; this.reserved.add(slot); return slot }
   releaseAll() { for (const s of this.reserved) if (s.taken === this.id) s.taken = null; this.reserved.clear() }
@@ -69,11 +69,6 @@ export class Agent {
     this.helping = null
     const office = this.office
     if (this.task) return this.setPlan(this.workPlan())
-    if (office.offHours) {
-      if (this.hidden) return this.setPlan([{ do: 'stand', secs: rand(15, 40) }])
-      return this.setPlan([{ go: this.claim(office.world.slots.exit) }, { fn: () => this.leave() }], ACTIVITY.leave)
-    }
-    if (this.hidden) { this.arrive(); return this.setPlan([{ go: this.desk.slot }, { do: 'deskIdle', secs: rand(10, 25) }], ACTIVITY.arrive) }
     if (office.lunch) return this.setPlan(this.lunchPlan(), ACTIVITY.lunch)
     this.idlePlan()
   }
@@ -196,7 +191,6 @@ export class Agent {
 
   // ---------- Hooks ----------
   assignTask(text) {
-    if (this.hidden) this.arrive()
     this.task = text || 'trabalhando…'
     this.holding = false
     this.nextStuckAt = performance.now() + rand(15000, 40000)
@@ -212,15 +206,7 @@ export class Agent {
     this.setPlan([{ do: this.walking ? 'stand' : this.restingPose(), secs: 2.5 }], ACTIVITY.rest)
   }
   restingPose() { return isSeated(this.slot.pose) || this.slot.pose === 'sit' ? 'sit' : 'stand' }
-  cheer(secs) { if (!this.hidden) this.cheerUntil = performance.now() + secs * 1000 }
-
-  leave() { this.hidden = true; this.avatar.root.visible = false; this.office.say(this, null) }
-  arrive() {
-    const exit = this.office.world.slots.exit
-    this.hidden = false; this.avatar.root.visible = true
-    this.path = []; this.pendingTarget = null
-    this.here = nodeAt(exit); this.slot = exit; this.pos.copy(exit.pos)
-  }
+  cheer(secs) { this.cheerUntil = performance.now() + secs * 1000 }
 
   // Jump straight to the end of the first walk (used on page load so the office starts alive).
   settle() {
@@ -231,7 +217,6 @@ export class Agent {
   }
 
   describeActivity() {
-    if (this.hidden) return 'Fora do escritório'
     if (this.talk) return `Conversando com ${this.talk.members.filter((m) => m !== this).map((m) => m.role.name).join(', ')}`
     if (this.task) return `Trabalhando: ${this.task}`
     return this.walking ? `${this.activity} (a caminho)` : this.activity
@@ -239,7 +224,6 @@ export class Agent {
 
   // ---------- Simulation tick (decisions and movement) ----------
   tick(dt, now) {
-    if (this.hidden) { if (this.step && now > this.stepUntil && !this.step.go) this.advance(); return }
     if (this.walking) this.walk(dt)
     else if (this.step && !this.step.go && now > this.stepUntil) this.advance()
     else if (this.step?.lines && !this.talk && now > this.nextLineAt) {
