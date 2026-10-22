@@ -662,6 +662,23 @@
     },
     "groupEmpty": "Nenhuma loja desse ramo por enquanto. Escolha outro ramo ou toque em Tudo."
   },
+  "hits": {
+    "title": "Hits da Lagoa",
+    "lead": "O que tá saindo na cidade",
+    "bannersLabel": "Destaques do Hits",
+    "itemsLabel": "Produtos do Hits",
+    "sponsored": "Patrocinado",
+    "featured": "Destaque",
+    "earn": {
+      "stamp": "rende {n} carimbo | rende {n} carimbos",
+      "point": "rende {n} pts",
+      "doubled": "em dobro hoje"
+    },
+    "priceOnRequest": "Sob consulta",
+    "loadMore": "Ver mais",
+    "empty": "Ainda não tem produto na vitrine. Volte daqui a pouco para ver as novidades.",
+    "groupEmpty": "Nenhum produto desse ramo por enquanto. Escolha outro ramo."
+  },
   "checkIn": {
     "pageTitle": "Carimbar",
     "title": "Carimbar minha visita",

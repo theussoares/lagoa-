@@ -63,7 +63,7 @@ describe('customer layout with the hits flag on', () => {
   it('shows Descobrir, Hits, Carimbar, Carteira and a Mais button', async () => {
     const layout = await mountLayout()
     expect(tabNames(layout)).toEqual(['Descobrir', 'Hits', 'Carimbar', 'Carteira', 'Mais'])
-    expect(layout.get('nav').findAll('a').map((anchor) => anchor.attributes('href'))).toEqual(['/descobrir', '/hits', '/check-in', '/carteira'])
+    expect(layout.get('nav').findAll('a').map((anchor) => anchor.attributes('href'))).toEqual(['/descobrir', '/vitrine', '/check-in', '/carteira'])
     const more = layout.get('nav button')
     expect(more.text()).toBe('Mais')
     expect(more.attributes('aria-haspopup')).toBe('dialog')

@@ -13,7 +13,7 @@ export interface SurfaceRequest {
 }
 
 const MERCHANT_PATHS = ['/painel', '/configuracoes', '/campanhas', '/balcao', '/programa', '/hits', '/botao-do-card', '/clientes']
-const CUSTOMER_PATHS = ['/carteira', '/descobrir', '/premios', '/check-in', '/ranking', '/convite', '/perfil', '/entrar']
+const CUSTOMER_PATHS = ['/carteira', '/descobrir', '/vitrine', '/premios', '/check-in', '/ranking', '/convite', '/perfil', '/entrar']
 
 function hostOf(origin: string): string | null {
   try {

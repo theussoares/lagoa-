@@ -12,7 +12,7 @@ export function useCustomerTabBar(): CustomerTabBar {
     hitsEnabled
       ? [
           { to: '/descobrir', label: t('nav.discover'), icon: 'i-ph-compass', activeIcon: 'i-ph-compass-fill' },
-          { to: '/hits', label: t('nav.hits'), icon: 'i-ph-fire', activeIcon: 'i-ph-fire-fill' },
+          { to: '/vitrine', label: t('nav.hits'), icon: 'i-ph-fire', activeIcon: 'i-ph-fire-fill' },
           { to: '/carteira', label: t('nav.wallet'), icon: 'i-ph-wallet', activeIcon: 'i-ph-wallet-fill' },
           {
             kind: 'button',
