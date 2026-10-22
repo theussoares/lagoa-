@@ -1,0 +1,13 @@
+{
+  "name": "@lagoa/office",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server.mjs",
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1",
+    "three": "0.160.0"
+  }
+}

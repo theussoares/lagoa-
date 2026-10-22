@@ -1,0 +1,8 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/tools/office/hook.mjs\"", "timeout": 3 }] }],
+    "PreToolUse": [{ "matcher": "*", "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/tools/office/hook.mjs\"", "timeout": 3 }] }],
+    "PostToolUse": [{ "matcher": "Agent|Task", "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/tools/office/hook.mjs\"", "timeout": 3 }] }],
+    "Stop": [{ "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/tools/office/hook.mjs\"", "timeout": 3 }] }]
+  }
+}
