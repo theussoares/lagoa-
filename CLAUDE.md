@@ -82,6 +82,7 @@ Onde ele fala em "CLAUDE.md", leia este arquivo de regras.
   **Cookie compartilhado com o app do cliente** (mesma conta Supabase): entrar ou sair pelo painel zera o cache do cliente
   (`resetCustomer`) e o logout é `scope: 'local'`; outra aba aberta só descobre a troca na próxima navegação (risco aceito).
   Sair só deixa o painel depois que o servidor confirma (`signOut`); `expire()` é o logout só local, para `unauthorized`. **Ainda sem API:** Campanhas (M5); no `http` a tela fica escondida (`useCampaignsEnabled`, `NUXT_PUBLIC_CAMPAIGNS_ENABLED`). Termo do lojista: a sessão traz `termsAccepted` e o Início pede o aceite (`HomeTermsAcceptance`). Plano: `docs/specs/api-merchant/`.
+- **App do cliente, fase B:** barra nova (Descobrir · Hits · Carimbar · Carteira · Mais) atrás de `NUXT_PUBLIC_HITS_ENABLED` (padrão desligado; desligada, o app fica como antes). A aba Hits mora em `/vitrine` (o `/hits` é do painel do lojista; arquivo `pages/hits-showcase.vue`, composable `useCustomerHitsScreen`). Prêmios ficam dentro da Carteira (`/carteira?aba=premios`); `/premios` redireciona com 302 só com a chave ligada. Descobrir vira trilhos: carrossel de destaque com selo "Destaque" em todo card e os trilhos "Dia surpresa" e "Cartão já começa andado" (este só com lojas sem cartão). O "rende X" vem de `showcaseEarning` (`shared/domain/showcaseEarning.ts`): regra base do programa ativo + dobro do dia surpresa, igual para todos. API: `GET /v1/hits`, `GET /v1/hits/banners` (pagos "Patrocinado" primeiro, depois o item mais novo de cada loja Pro, "Destaque") e `GET /v1/discover/featured`.
 - **Monorepo (pnpm workspace):** o front vive em `apps/web` (Nuxt + `layers/`);
   `shared/` fica na raiz (alias `#shared`) para o futuro `apps/api` reusar
   os contratos. Caminhos `layers/...` neste documento são relativos a `apps/web/`.
@@ -165,6 +166,9 @@ Onde ele fala em "CLAUDE.md", leia este arquivo de regras.
 | Produto do Hits           | `hitItem`                      |
 | Situação do produto       | `hitItemStatus` (`pending` \| `approved` \| `rejected` \| `archived`) |
 | Banner do Hits            | `hitsBanner`                   |
+| Dia surpresa hoje (selo no Descobrir) | `surpriseDayToday`     |
+| Quanto o produto rende (selo do Hits) | `showcaseEarning`      |
+| Loja em destaque (carrossel do Descobrir) | `featuredShop`     |
 | Destaque pago             | `featuredPlacement` (`surface`: `discoverCarousel` \| `hitsBanner`) |
 | Ramo (filtro)             | `shopGroup`                    |
 | Menu Mais                 | `moreMenu`                     |

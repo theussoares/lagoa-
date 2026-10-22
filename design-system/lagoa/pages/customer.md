@@ -9,6 +9,9 @@ Direção completa: `.impeccable/surfaces/layers-customer.md`.
 - Margem lateral 20px. Fundo da tela é a mesa (`--lagoa-desk`); conteúdo vive em cartões brancos.
 - `AppTabBar` fixa embaixo: Carteira · Descobrir · **Check-in** (centro, botão
   redondo de 64px em tinta) · Prêmios · Perfil. Conteúdo reserva a altura da barra.
+  Com `NUXT_PUBLIC_HITS_ENABLED` ligada a ordem é Descobrir · Hits · **Carimbar**
+  (centro) · Carteira · Mais; Prêmios vive dentro da Carteira e Mais é um botão que
+  abre uma folha (não uma rota).
 
 ## Carteira (primeira tela)
 
@@ -32,7 +35,9 @@ Direção completa: `.impeccable/surfaces/layers-customer.md`.
 | Check-in | Câmera em tela cheia com moldura; fallback "digitar código da loja"; antifraude mostra quando libera de novo ("Próximo carimbo aqui a partir das 18h") em `warning` |
 | Carimbo ganho | Tela da batida: cartão no centro, a nova impressão cai com `.stamp-press`; frase do que falta; `aria-live` |
 | Resgate | `RedemptionStub` com código grande e contagem de 10 min; brilho de tela não é alterado pelo app |
-| Descobrir | Lista de lojas como cartões em branco (sem carimbo ainda) com letreiro e regra do clube; desafios como cartão com casas por loja |
+| Descobrir | Lista de lojas como cartões em branco (sem carimbo ainda) com letreiro e regra do clube; desafios como cartão com casas por loja. Com a chave da fase B vira trilhos: carrossel de destaque (selo "Destaque" em todo card), "Dia surpresa" e "Cartão já começa andado" (só lojas sem cartão) |
+| Hits (`/vitrine`) | Grade de produtos das lojas; selos em `sol` ("Patrocinado", "Destaque", "rende X") |
+| Carteira (abas) | Abas Cartões · Prêmios (`?aba=premios`); Prêmios deixou de ser tela da barra |
 | Perfil | Consentimentos revogáveis, dados, sair |
 
 ## Cabeçalho das telas internas
@@ -41,7 +46,8 @@ Carteira, Descobrir, Prêmios, Perfil, Ranking, Resgate, Check-in e os passos
 Carimbo ganho e Entrou no clube abrem com `ScreenHeader` + foto da cidade
 (`useCityHeaderImage()`; nos passos a página passa a foto por prop). O primeiro elemento só sobe sobre a faixa
 (`relative -mt-10`) quando é **um card único** (Carteira: `CardStack`; Descobrir:
-`HeroCard`; Perfil: card de telefone e avisos). Quando a tela abre com título de
+`HeroCard`; Perfil: card de telefone e avisos) ou **uma fileira de cards com
+rolagem horizontal** (o carrossel de destaque do Descobrir). Quando a tela abre com título de
 seção ou lista, o conteúdo começa abaixo da faixa: texto escuro nunca fica sobre
 a faixa escura.
 
