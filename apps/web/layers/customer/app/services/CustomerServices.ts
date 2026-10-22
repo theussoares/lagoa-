@@ -2,6 +2,7 @@ import type { CheckInService } from './CheckInService'
 import type { AccountService } from './AccountService'
 import type { DataExportService } from './DataExportService'
 import type { DiscoverService } from './DiscoverService'
+import type { HitsService } from './HitsService'
 import type { ProfileService } from './ProfileService'
 import type { RankingService } from './RankingService'
 import type { SessionService } from './SessionService'
@@ -15,6 +16,7 @@ export interface CustomerServices {
   readonly checkIn: CheckInService
   readonly redemption: RewardRedemptionService
   readonly discover: DiscoverService
+  readonly hits: HitsService
   readonly profile: ProfileService
   readonly referral: ReferralService
   readonly dataExport: DataExportService
