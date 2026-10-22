@@ -117,7 +117,7 @@ describe('toShopRailCardModel contact', () => {
   it('carries the shop button like the standard card', () => {
     const card = toShopRailCardModel(shop('a', { contact: { kind: 'url', url: 'https://loja.example.com', ctaLabel: 'Ver cardápio' } }), t)
     expect(card.contact?.label).toBe('Ver cardápio')
-    expect(card.contact?.href).toBe('https://loja.example.com/')
+    expect(card.contact?.href).toBe('https://loja.example.com')
   })
 
   it('has no button when the shop has none', () => {
