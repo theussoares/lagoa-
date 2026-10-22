@@ -2,8 +2,9 @@
 definePageMeta({
   path: '/premios',
   layout: 'customer',
-  // Com a chave da fase B os Prêmios moram numa aba da Carteira; o link antigo vira redirecionamento permanente.
-  middleware: [() => (useHitsEnabled() ? navigateTo(walletSectionPath('rewards'), { redirectCode: 301 }) : undefined), 'customer-auth'],
+  // Com a chave da fase B os Prêmios moram numa aba da Carteira. 302, não 301: o navegador guarda o 301 e,
+  // com a chave desligada de novo, a pessoa não chegaria mais à página Prêmios.
+  middleware: [() => (useHitsEnabled() ? navigateTo(walletSectionPath('rewards'), { redirectCode: 302 }) : undefined), 'customer-auth'],
 })
 
 const { t } = useI18n()

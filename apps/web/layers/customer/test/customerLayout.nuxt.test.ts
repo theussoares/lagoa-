@@ -92,10 +92,10 @@ describe('customer layout with the hits flag on', () => {
     expect(layout.get('nav button').attributes('aria-expanded')).toBe('false')
   })
 
-  it('sends /premios to the rewards tab of the wallet with a permanent redirect', async () => {
+  it('sends /premios to the rewards tab of the wallet with a temporary redirect (the flag can go back off)', async () => {
     wrapper = await mountSuspended(RewardsPage, { route: '/premios' })
     await flushPromises()
-    expect(navigateTo).toHaveBeenCalledWith('/carteira?aba=premios', { redirectCode: 301 })
+    expect(navigateTo).toHaveBeenCalledWith('/carteira?aba=premios', { redirectCode: 302 })
     expect(useRouter().currentRoute.value.fullPath).toBe('/carteira?aba=premios')
   })
 })

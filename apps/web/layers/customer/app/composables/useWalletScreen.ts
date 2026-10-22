@@ -52,8 +52,9 @@ export function useWalletScreen(): WalletScreen {
     expandedId.value = expandedId.value === id ? '' : id
   }
 
-  watch([cardsState, seen], ([state, seenNow]) => {
-    if (state.status === 'success' && seenNow !== null) seenStamps.remember(Object.fromEntries(state.value.map((card) => [card.id, card.balance])))
+  // Na aba Prêmios os cartões não aparecem: o saldo só vira visto quando a aba Cartões mostrar a batida.
+  watch([cardsState, seen, section], ([state, seenNow, current]) => {
+    if (current === 'cards' && state.status === 'success' && seenNow !== null) seenStamps.remember(Object.fromEntries(state.value.map((card) => [card.id, card.balance])))
   })
 
   const anyUnauthorized = computed(() =>

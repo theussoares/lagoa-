@@ -36,10 +36,12 @@ describe('AppTabBar', () => {
     expect(onSelect).toHaveBeenCalledTimes(1)
   })
 
-  it('says the button is expanded while its dialog is open', async () => {
+  it('says the button is expanded while its dialog is open, and is then the only active tab', async () => {
     const more: TabBarItem = { kind: 'button', label: 'Mais', icon: 'i-ph-x', activeIcon: 'i-ph-x-bold', onSelect: () => {}, expanded: true }
     const items: [TabBarItem, TabBarItem, TabBarItem, TabBarItem] = [link('/a', 'A'), link('/b', 'B'), link('/c', 'C'), more]
     const bar = await mountComponent(AppTabBar, { items, action, label: 'Navegação', currentPath: '/a' })
     expect(bar.get('button').attributes('aria-expanded')).toBe('true')
+    expect(bar.find('a[aria-current]').exists()).toBe(false)
+    expect(bar.get('button').find('.iconify').classes()).toContain('i-ph:x-bold')
   })
 })

@@ -19,8 +19,12 @@ function keyOf(item: TabBarItem): string {
   return item.kind === 'button' ? `button:${item.label}` : item.to
 }
 
+// Com a folha de um botão aberta, só ele aparece ativo.
+const sheetOpen = computed(() => props.items.some((item) => item.kind === 'button' && item.expanded === true))
+
 function isActive(item: TabBarItem): boolean {
   if (item.kind === 'button') return item.expanded === true
+  if (sheetOpen.value) return false
   return props.currentPath === item.to || props.currentPath.startsWith(`${item.to}/`)
 }
 </script>
