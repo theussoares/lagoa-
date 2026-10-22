@@ -18,7 +18,9 @@ const scene = new THREE.Scene()
 scene.background = new THREE.Color(0x1d1a17)
 const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.1, 300)
 const renderer = new THREE.WebGLRenderer({ antialias: true })
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
+// Phones and tablets: lighter rendering (pixel ratio and shadow resolution) to save battery.
+const LIGHT_MODE = matchMedia('(pointer: coarse)').matches
+renderer.setPixelRatio(Math.min(devicePixelRatio, LIGHT_MODE ? 1.25 : 2))
 renderer.setSize(innerWidth, innerHeight)
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap
 renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05
@@ -34,7 +36,7 @@ scene.add(new THREE.HemisphereLight(0xfff4e5, 0x6b5a48, 1.1))
 const sun = new THREE.DirectionalLight(0xfff1dc, 1.4)
 sun.position.set(12, 34, 18); sun.castShadow = true
 Object.assign(sun.shadow.camera, { left: -26, right: 26, top: 20, bottom: -20 })
-sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0005
+sun.shadow.mapSize.setScalar(LIGHT_MODE ? 1024 : 2048); sun.shadow.bias = -0.0005
 scene.add(sun)
 
 const statusEl = document.getElementById('status')
@@ -189,6 +191,8 @@ const clock = new THREE.Clock()
 const clockEl = document.getElementById('clock')
 let lastHourCheck = -Infinity
 function frame() {
+  // Hidden tab: no simulation and no rendering. Reading the delta here avoids a jump when the tab comes back.
+  if (document.hidden) { clock.getDelta(); return }
   const dt = Math.min(clock.getDelta(), 1), t = clock.elapsedTime, now = performance.now()
   if (now - lastHourCheck > 10000) {
     lastHourCheck = now

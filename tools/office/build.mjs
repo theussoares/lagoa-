@@ -18,7 +18,8 @@ await build({
   format: 'esm',
   target: 'es2022',
   minify: true,
-  legalComments: 'none',
+  // three.js is MIT: its copyright notice must ship with the bundle.
+  legalComments: 'eof',
   outfile: join(OUT, 'office.js'),
 })
 
