@@ -1,9 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import type { WeekLedgerRecord } from '#shared/domain/weekSummary'
+import { CustomerIdSchema } from '#shared/schemas/ids'
+import { MaskedPhoneSchema } from '#shared/schemas/phone'
+import type { IsoDateTime } from '#shared/schemas/common'
+import type { HomeActivityItem, HomeMetrics, HomePeriod } from '#shared/schemas/homeOverview'
+import type { DateRange } from '#shared/domain/homeComparison'
 import { Clock } from '../../common/clock'
 import type { MerchantShopRecord } from '../session/session.repository'
 import { SessionRepository } from '../session/session.repository'
-import type { HomeRepository } from './home.repository'
+import type { HomeRepository, ShopCustomerMetrics } from './home.repository'
 import { HomeService } from './home.service'
 
 class FakeClock extends Clock {
@@ -30,39 +35,51 @@ class FakeSessionRepository extends SessionRepository {
 
 class FakeHomeRepository implements HomeRepository {
   records: WeekLedgerRecord[] = []
-  lapsedCount = 0
-  oldestLapsedVisit: string | null = null
-  nearRewardCount = 0
-  rewardReadyCount = 0
-  allCount = 0
-  comparisonRecords: any[] = []
-  newCardDates: any[] = []
-  activity: any[] = []
+  customerMetrics: ShopCustomerMetrics = {
+    total: 0,
+    lapsedTotal: 0,
+    nearRewardTotal: 0,
+    rewardReadyTotal: 0,
+    oldestLastVisitAt: null,
+  }
+  comparisonMetrics: Record<HomePeriod, HomeMetrics> = {
+    week: {
+      newCustomers: { current: 0, previous: 0 },
+      visits: { current: 0, previous: 0 },
+      purchases: { current: 0, previous: 0 },
+      redemptions: { current: 0, previous: 0 },
+    },
+    month: {
+      newCustomers: { current: 0, previous: 0 },
+      visits: { current: 0, previous: 0 },
+      purchases: { current: 0, previous: 0 },
+      redemptions: { current: 0, previous: 0 },
+    },
+    last30: {
+      newCustomers: { current: 0, previous: 0 },
+      visits: { current: 0, previous: 0 },
+      purchases: { current: 0, previous: 0 },
+      redemptions: { current: 0, previous: 0 },
+    },
+  }
+  activity: HomeActivityItem[] = []
 
   async listShopLedgerRecords(_shopId: string): Promise<WeekLedgerRecord[]> {
     return this.records
   }
 
-  async countShopCustomersByFilter(_shopId: string, filter: string): Promise<number> {
-    if (filter === 'lapsed') return this.lapsedCount
-    if (filter === 'nearReward') return this.nearRewardCount
-    if (filter === 'rewardReady') return this.rewardReadyCount
-    return this.allCount
+  async getCustomerMetrics(_shopId: string, _lapsedCutoff: Date): Promise<ShopCustomerMetrics> {
+    return this.customerMetrics
   }
 
-  async getOldestLapsedVisit(_shopId: string): Promise<string | null> {
-    return this.oldestLapsedVisit
+  async getComparisonMetrics(
+    _shopId: string,
+    _ranges: Record<HomePeriod, { current: DateRange; previous: DateRange }>,
+  ): Promise<Record<HomePeriod, HomeMetrics>> {
+    return this.comparisonMetrics
   }
 
-  async listComparisonRecords(_shopId: string): Promise<any[]> {
-    return this.comparisonRecords
-  }
-
-  async listNewCardDates(_shopId: string): Promise<any[]> {
-    return this.newCardDates
-  }
-
-  async listRecentActivity(_shopId: string): Promise<any[]> {
+  async listRecentActivity(_shopId: string): Promise<HomeActivityItem[]> {
     return this.activity
   }
 }
@@ -116,18 +133,18 @@ describe('HomeService', () => {
   })
 
   it('calcula o resumo da semana agregando visitas, novos clientes e resgates', async () => {
-    const cust1 = '018f98a2-7b2a-7182-9f33-6d004bbbb011' as any
-    const cust2 = '018f98a2-7b2a-7182-9f33-6d004bbbb012' as any
+    const cust1 = CustomerIdSchema.parse('018f98a2-7b2a-7182-9f33-6d004bbbb011')
+    const cust2 = CustomerIdSchema.parse('018f98a2-7b2a-7182-9f33-6d004bbbb012')
 
     homeRepo.records = [
       // cust1 visitou hoje (novo cliente)
-      { customerId: cust1, kind: 'visit', createdAt: '2026-10-08T10:00:00Z' as any },
+      { customerId: cust1, kind: 'visit', createdAt: '2026-10-08T10:00:00Z' as IsoDateTime },
       // cust2 visitou 2 dias atrás (novo cliente naquele dia)
-      { customerId: cust2, kind: 'visit', createdAt: '2026-10-06T10:00:00Z' as any },
+      { customerId: cust2, kind: 'visit', createdAt: '2026-10-06T10:00:00Z' as IsoDateTime },
       // cust2 visitou hoje de novo (visita repetida, não é novo cliente hoje)
-      { customerId: cust2, kind: 'visit', createdAt: '2026-10-08T11:00:00Z' as any },
+      { customerId: cust2, kind: 'visit', createdAt: '2026-10-08T11:00:00Z' as IsoDateTime },
       // resgate entregue hoje
-      { customerId: cust2, kind: 'redemption', createdAt: '2026-10-08T11:05:00Z' as any },
+      { customerId: cust2, kind: 'redemption', createdAt: '2026-10-08T11:05:00Z' as IsoDateTime },
     ]
 
     const result = await service.getWeekSummary(ownerUserId)
@@ -142,23 +159,26 @@ describe('HomeService', () => {
   })
 
   it('retorna overview com lapsed, nearReward, comparison e activity', async () => {
-    homeRepo.lapsedCount = 12
-    homeRepo.oldestLapsedVisit = '2026-08-10T14:00:00Z'
-    homeRepo.nearRewardCount = 5
-    homeRepo.rewardReadyCount = 3
-    homeRepo.allCount = 80
+    const cust1 = CustomerIdSchema.parse('018f98a2-7b2a-7182-9f33-6d004bbbb011')
+    homeRepo.customerMetrics = {
+      total: 80,
+      lapsedTotal: 12,
+      nearRewardTotal: 5,
+      rewardReadyTotal: 3,
+      oldestLastVisitAt: '2026-08-10T14:00:00Z' as IsoDateTime,
+    }
     homeRepo.activity = [
       {
         id: 'ledger_1',
         kind: 'visit',
-        customerId: '018f98a2-7b2a-7182-9f33-6d004bbbb011',
+        customerId: cust1,
         name: 'Carlos',
-        maskedPhone: '(67) 9****-1234',
+        maskedPhone: MaskedPhoneSchema.parse('(67) 9••••-1234'),
         units: 1,
         unit: 'stamp',
         amountCents: null,
         rewardTitle: null,
-        createdAt: '2026-10-08T11:00:00Z',
+        createdAt: '2026-10-08T11:00:00Z' as IsoDateTime,
       },
     ]
 

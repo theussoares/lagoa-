@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common'
 import { HOME_ACTIVITY_LIMIT } from '#shared/constants/domain'
 import { lapsedCutoff } from '#shared/domain/customer'
-import { summarizeComparison } from '#shared/domain/homeComparison'
+import { getComparisonRanges } from '#shared/domain/homeComparison'
 import { summarizeWeek } from '#shared/domain/weekSummary'
 import type { HomeOverview } from '#shared/schemas/homeOverview'
 import type { WeekSummary } from '#shared/schemas/weekSummary'
 import type { ErrorOf } from '#shared/types/errors'
 import { err, ok, type Result } from '#shared/types/result'
-import { addDays, startOfLocalDay } from '#shared/utils/time'
 import { Clock } from '../../common/clock'
 import { SessionRepository } from '../session/session.repository'
 import { HomeRepository } from './home.repository'
@@ -35,42 +34,26 @@ export class HomeService {
 
     const now = this.clock.now()
     const cutoff = lapsedCutoff(now)
-    const comparisonSince = addDays(startOfLocalDay(now), -65)
+    const ranges = getComparisonRanges(now)
 
-    const [
-      lapsedTotal,
-      oldestLastVisitAt,
-      nearRewardTotal,
-      rewardReadyTotal,
-      totalCustomers,
-      comparisonRecords,
-      newCardDates,
-      activity,
-    ] = await Promise.all([
-      this.homeRepo.countShopCustomersByFilter(shop.id, 'lapsed', cutoff),
-      this.homeRepo.getOldestLapsedVisit(shop.id, cutoff),
-      this.homeRepo.countShopCustomersByFilter(shop.id, 'nearReward', cutoff),
-      this.homeRepo.countShopCustomersByFilter(shop.id, 'rewardReady', cutoff),
-      this.homeRepo.countShopCustomersByFilter(shop.id, 'all', cutoff),
-      this.homeRepo.listComparisonRecords(shop.id, comparisonSince),
-      this.homeRepo.listNewCardDates(shop.id, comparisonSince),
+    const [customerMetrics, comparison, activity] = await Promise.all([
+      this.homeRepo.getCustomerMetrics(shop.id, cutoff),
+      this.homeRepo.getComparisonMetrics(shop.id, ranges),
       this.homeRepo.listRecentActivity(shop.id, HOME_ACTIVITY_LIMIT),
     ])
 
-    const comparison = summarizeComparison(comparisonRecords, newCardDates, now)
-
     return ok({
       lapsed: {
-        total: lapsedTotal,
-        oldestLastVisitAt,
+        total: customerMetrics.lapsedTotal,
+        oldestLastVisitAt: customerMetrics.oldestLastVisitAt,
       },
       nearReward: {
-        total: nearRewardTotal,
+        total: customerMetrics.nearRewardTotal,
       },
       rewardReady: {
-        total: rewardReadyTotal,
+        total: customerMetrics.rewardReadyTotal,
       },
-      totalCustomers,
+      totalCustomers: customerMetrics.total,
       comparison,
       activity,
     })

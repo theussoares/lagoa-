@@ -1,14 +1,22 @@
-import type { CustomerFilter } from '#shared/schemas/customer'
 import type { IsoDateTime } from '#shared/schemas/common'
-import type { CustomerRegistrationRecord, LedgerComparisonRecord } from '#shared/domain/homeComparison'
+import type { DateRange } from '#shared/domain/homeComparison'
 import type { WeekLedgerRecord } from '#shared/domain/weekSummary'
-import type { HomeActivityItem } from '#shared/schemas/homeOverview'
+import type { HomeActivityItem, HomeMetrics, HomePeriod } from '#shared/schemas/homeOverview'
+
+export interface ShopCustomerMetrics {
+  readonly total: number
+  readonly lapsedTotal: number
+  readonly nearRewardTotal: number
+  readonly rewardReadyTotal: number
+  readonly oldestLastVisitAt: IsoDateTime | null
+}
 
 export abstract class HomeRepository {
   abstract listShopLedgerRecords(shopId: string): Promise<WeekLedgerRecord[]>
-  abstract countShopCustomersByFilter(shopId: string, filter: CustomerFilter, lapsedCutoff: Date): Promise<number>
-  abstract getOldestLapsedVisit(shopId: string, lapsedCutoff: Date): Promise<IsoDateTime | null>
-  abstract listComparisonRecords(shopId: string, since: Date): Promise<LedgerComparisonRecord[]>
-  abstract listNewCardDates(shopId: string, since: Date): Promise<CustomerRegistrationRecord[]>
+  abstract getCustomerMetrics(shopId: string, lapsedCutoff: Date): Promise<ShopCustomerMetrics>
+  abstract getComparisonMetrics(
+    shopId: string,
+    ranges: Record<HomePeriod, { current: DateRange; previous: DateRange }>,
+  ): Promise<Record<HomePeriod, HomeMetrics>>
   abstract listRecentActivity(shopId: string, limit: number): Promise<HomeActivityItem[]>
 }

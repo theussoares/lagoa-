@@ -1,20 +1,22 @@
 import { Inject, Injectable } from '@nestjs/common'
-import { and, asc, desc, eq, gte, inArray, isNull, lte, sql } from 'drizzle-orm'
-import type { CustomerRegistrationRecord, LedgerComparisonRecord } from '#shared/domain/homeComparison'
+import { and, asc, desc, eq, gte, inArray, isNull, lt, lte, sql, type SQL } from 'drizzle-orm'
+import type { DateRange } from '#shared/domain/homeComparison'
 import type { WeekLedgerRecord } from '#shared/domain/weekSummary'
-import type { CustomerFilter } from '#shared/schemas/customer'
 import { CustomerIdSchema } from '#shared/schemas/ids'
 import type { IsoDateTime } from '#shared/schemas/common'
 import type { PhoneNumber } from '#shared/schemas/phone'
 import { LedgerKindSchema } from '#shared/schemas/visit'
-import type { HomeActivityItem, HomeActivityKind } from '#shared/schemas/homeOverview'
+import type { HomeActivityItem, HomeActivityKind, HomeMetrics, HomePeriod } from '#shared/schemas/homeOverview'
 import { maskPhone } from '#shared/utils/phone'
 import { toIso } from '#shared/utils/time'
 import { PiiService } from '../../common/pii.service'
 import { DB, type Database } from '../../database/database.module'
 import { appUsers, customerProfiles, ledgerEntries, loyaltyCards, programs, redemptions } from '../../database/schema'
-import { filterCondition } from '../customers/drizzle-customers.repository'
-import { HomeRepository } from './home.repository'
+import { filterCondition } from '../customers/customer-filter.sql'
+import { HomeRepository, type ShopCustomerMetrics } from './home.repository'
+
+const PERIODS: readonly HomePeriod[] = ['week', 'month', 'last30']
+const RANGE_KEYS = ['current', 'previous'] as const
 
 @Injectable()
 export class DrizzleHomeRepository extends HomeRepository {
@@ -47,7 +49,7 @@ export class DrizzleHomeRepository extends HomeRepository {
       if (!parsed.success) return []
       return [
         {
-          customerId: row.customerId as any,
+          customerId: CustomerIdSchema.parse(row.customerId),
           kind: parsed.data,
           createdAt: toIso(row.occurredAt),
           amountCents: row.amountCents,
@@ -56,9 +58,21 @@ export class DrizzleHomeRepository extends HomeRepository {
     })
   }
 
-  async countShopCustomersByFilter(shopId: string, filter: CustomerFilter, lapsedCutoff: Date): Promise<number> {
+  async getCustomerMetrics(shopId: string, lapsedCutoff: Date): Promise<ShopCustomerMetrics> {
+    const lapsedCond = filterCondition('lapsed', lapsedCutoff)
+    const nearRewardCond = filterCondition('nearReward', lapsedCutoff)
+    const rewardReadyCond = filterCondition('rewardReady', lapsedCutoff)
+
     const [row] = await this.db
-      .select({ count: sql<number>`count(*)::int` })
+      .select({
+        total: sql<number>`count(*)::int`,
+        lapsedTotal: lapsedCond ? sql<number>`count(*) FILTER (WHERE ${lapsedCond})::int` : sql<number>`0`,
+        nearRewardTotal: nearRewardCond ? sql<number>`count(*) FILTER (WHERE ${nearRewardCond})::int` : sql<number>`0`,
+        rewardReadyTotal: rewardReadyCond ? sql<number>`count(*) FILTER (WHERE ${rewardReadyCond})::int` : sql<number>`0`,
+        oldestLastVisitAt: lapsedCond
+          ? sql<Date | null>`min(${loyaltyCards.lastVisitAt}) FILTER (WHERE ${lapsedCond})`
+          : sql<Date | null>`null`,
+      })
       .from(loyaltyCards)
       .innerJoin(programs, eq(programs.id, loyaltyCards.programId))
       .innerJoin(appUsers, eq(appUsers.id, loyaltyCards.customerId))
@@ -66,79 +80,100 @@ export class DrizzleHomeRepository extends HomeRepository {
         and(
           eq(loyaltyCards.shopId, shopId),
           isNull(appUsers.erasedAt),
-          filterCondition(filter, lapsedCutoff),
         ),
       )
-    return row?.count ?? 0
+
+    return {
+      total: row?.total ?? 0,
+      lapsedTotal: row?.lapsedTotal ?? 0,
+      nearRewardTotal: row?.nearRewardTotal ?? 0,
+      rewardReadyTotal: row?.rewardReadyTotal ?? 0,
+      oldestLastVisitAt: row?.oldestLastVisitAt ? toIso(row.oldestLastVisitAt) : null,
+    }
   }
 
-  async getOldestLapsedVisit(shopId: string, lapsedCutoff: Date): Promise<IsoDateTime | null> {
-    const [row] = await this.db
-      .select({ lastVisitAt: loyaltyCards.lastVisitAt })
-      .from(loyaltyCards)
-      .innerJoin(appUsers, eq(appUsers.id, loyaltyCards.customerId))
-      .where(
-        and(
-          eq(loyaltyCards.shopId, shopId),
-          isNull(appUsers.erasedAt),
-          lte(loyaltyCards.lastVisitAt, lapsedCutoff),
+  async getComparisonMetrics(
+    shopId: string,
+    ranges: Record<HomePeriod, { current: DateRange; previous: DateRange }>,
+  ): Promise<Record<HomePeriod, HomeMetrics>> {
+    const minStart = ranges.last30.previous.start
+
+    const ledgerSelectFields: Record<string, SQL<number>> = {}
+    for (const p of PERIODS) {
+      for (const k of RANGE_KEYS) {
+        const range = ranges[p][k]
+        const timeFilter = (range.inclusiveEnd ?? true)
+          ? and(gte(ledgerEntries.occurredAt, range.start), lte(ledgerEntries.occurredAt, range.end))!
+          : and(gte(ledgerEntries.occurredAt, range.start), lt(ledgerEntries.occurredAt, range.end))!
+
+        const visitFilter = and(inArray(ledgerEntries.kind, ['visit', 'amount', 'checkIn']), timeFilter)!
+        const purchaseFilter = and(
+          inArray(ledgerEntries.kind, ['visit', 'amount', 'checkIn']),
+          sql`${ledgerEntries.amountCents} > 0`,
+          timeFilter,
+        )!
+        const redemptionFilter = and(eq(ledgerEntries.kind, 'redemption'), timeFilter)!
+
+        ledgerSelectFields[`${p}_${k}_visits`] = sql<number>`count(*) FILTER (WHERE ${visitFilter})::int`
+        ledgerSelectFields[`${p}_${k}_purchases`] = sql<number>`count(*) FILTER (WHERE ${purchaseFilter})::int`
+        ledgerSelectFields[`${p}_${k}_redemptions`] = sql<number>`count(*) FILTER (WHERE ${redemptionFilter})::int`
+      }
+    }
+
+    const cardSelectFields: Record<string, SQL<number>> = {}
+    for (const p of PERIODS) {
+      for (const k of RANGE_KEYS) {
+        const range = ranges[p][k]
+        const cardTimeFilter = (range.inclusiveEnd ?? true)
+          ? and(gte(loyaltyCards.createdAt, range.start), lte(loyaltyCards.createdAt, range.end))!
+          : and(gte(loyaltyCards.createdAt, range.start), lt(loyaltyCards.createdAt, range.end))!
+
+        cardSelectFields[`${p}_${k}_newCustomers`] =
+          sql<number>`count(DISTINCT ${loyaltyCards.customerId}) FILTER (WHERE ${cardTimeFilter})::int`
+      }
+    }
+
+    const [[ledgerRow], [cardRow]] = await Promise.all([
+      this.db
+        .select(ledgerSelectFields)
+        .from(ledgerEntries)
+        .where(and(eq(ledgerEntries.shopId, shopId), gte(ledgerEntries.occurredAt, minStart))),
+      this.db
+        .select(cardSelectFields)
+        .from(loyaltyCards)
+        .innerJoin(appUsers, eq(appUsers.id, loyaltyCards.customerId))
+        .where(
+          and(
+            eq(loyaltyCards.shopId, shopId),
+            isNull(appUsers.erasedAt),
+            gte(loyaltyCards.createdAt, minStart),
+          ),
         ),
-      )
-      .orderBy(asc(loyaltyCards.lastVisitAt))
-      .limit(1)
+    ])
 
-    return row?.lastVisitAt ? toIso(row.lastVisitAt) : null
-  }
-
-  async listComparisonRecords(shopId: string, since: Date): Promise<LedgerComparisonRecord[]> {
-    const rows = await this.db
-      .select({
-        kind: ledgerEntries.kind,
-        occurredAt: ledgerEntries.occurredAt,
-        amountCents: ledgerEntries.amountCents,
-      })
-      .from(ledgerEntries)
-      .where(
-        and(
-          eq(ledgerEntries.shopId, shopId),
-          gte(ledgerEntries.occurredAt, since),
-          inArray(ledgerEntries.kind, ['visit', 'amount', 'checkIn', 'redemption']),
-        ),
-      )
-
-    return rows.flatMap((r) => {
-      const parsed = LedgerKindSchema.safeParse(r.kind)
-      if (!parsed.success) return []
-      return [
-        {
-          kind: parsed.data,
-          createdAt: toIso(r.occurredAt),
-          amountCents: r.amountCents,
+    const result = {} as Record<HomePeriod, HomeMetrics>
+    for (const p of PERIODS) {
+      result[p] = {
+        newCustomers: {
+          current: cardRow?.[`${p}_current_newCustomers`] ?? 0,
+          previous: cardRow?.[`${p}_previous_newCustomers`] ?? 0,
         },
-      ]
-    })
-  }
+        visits: {
+          current: ledgerRow?.[`${p}_current_visits`] ?? 0,
+          previous: ledgerRow?.[`${p}_previous_visits`] ?? 0,
+        },
+        purchases: {
+          current: ledgerRow?.[`${p}_current_purchases`] ?? 0,
+          previous: ledgerRow?.[`${p}_previous_purchases`] ?? 0,
+        },
+        redemptions: {
+          current: ledgerRow?.[`${p}_current_redemptions`] ?? 0,
+          previous: ledgerRow?.[`${p}_previous_redemptions`] ?? 0,
+        },
+      }
+    }
 
-  async listNewCardDates(shopId: string, since: Date): Promise<CustomerRegistrationRecord[]> {
-    const rows = await this.db
-      .select({
-        customerId: loyaltyCards.customerId,
-        createdAt: loyaltyCards.createdAt,
-      })
-      .from(loyaltyCards)
-      .innerJoin(appUsers, eq(appUsers.id, loyaltyCards.customerId))
-      .where(
-        and(
-          eq(loyaltyCards.shopId, shopId),
-          isNull(appUsers.erasedAt),
-          gte(loyaltyCards.createdAt, since),
-        ),
-      )
-
-    return rows.map((r) => ({
-      customerId: CustomerIdSchema.parse(r.customerId),
-      createdAt: toIso(r.createdAt),
-    }))
+    return result
   }
 
   async listRecentActivity(shopId: string, limit: number): Promise<HomeActivityItem[]> {
@@ -189,7 +224,12 @@ export class DrizzleHomeRepository extends HomeRepository {
         .innerJoin(programs, eq(programs.id, loyaltyCards.programId))
         .innerJoin(appUsers, eq(appUsers.id, loyaltyCards.customerId))
         .leftJoin(customerProfiles, eq(customerProfiles.userId, loyaltyCards.customerId))
-        .where(eq(redemptions.shopId, shopId))
+        .where(
+          and(
+            eq(redemptions.shopId, shopId),
+            eq(redemptions.status, 'active'),
+          ),
+        )
         .orderBy(desc(redemptions.createdAt))
         .limit(limit),
     ])
@@ -214,7 +254,7 @@ export class DrizzleHomeRepository extends HomeRepository {
         maskedPhone: this.maskedPhoneOf(row.phoneEncrypted, row.erasedAt),
         units: Math.abs(row.unitsDelta),
         unit: row.programUnit,
-        amountCents: row.amountCents,
+        amountCents: row.amountCents !== null && row.amountCents !== undefined && row.amountCents > 0 ? row.amountCents : null,
         rewardTitle: row.rewardTitle,
         createdAt: toIso(row.occurredAt),
       })

@@ -14,18 +14,7 @@ import {
   type RawCustomerCardRow,
 } from './customers.repository'
 
-/** Mesmas regras de `isLapsedSince`, `isRewardReady` e `isNearReward`, aplicadas no banco para filtrar antes de paginar e contar. */
-export function filterCondition(filter: CustomerFilter, cutoff: Date): SQL | undefined {
-  if (filter === 'lapsed') return lte(loyaltyCards.lastVisitAt, cutoff)
-  if (filter === 'rewardReady') return gte(loyaltyCards.balance, programs.target)
-  if (filter === 'nearReward') {
-    return and(
-      sql`${loyaltyCards.balance} * 100 >= ${programs.target} * ${NEAR_REWARD_PERCENT}`,
-      lt(loyaltyCards.balance, programs.target),
-    )
-  }
-  return undefined
-}
+import { filterCondition } from './customer-filter.sql'
 
 /**
  * Linhas depois do cartão do cliente-cursor na ordem `last_visit_at desc nulls last, id desc`. Compara com o valor

@@ -4,13 +4,18 @@ import { Test } from '@nestjs/testing'
 import request from 'supertest'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import type { WeekLedgerRecord } from '#shared/domain/weekSummary'
+import type { DateRange } from '#shared/domain/homeComparison'
+import type { HomeActivityItem, HomeMetrics, HomePeriod } from '#shared/schemas/homeOverview'
+import { CustomerIdSchema } from '#shared/schemas/ids'
+import { MaskedPhoneSchema } from '#shared/schemas/phone'
+import type { IsoDateTime } from '#shared/schemas/common'
 import { Clock } from '../../common/clock'
 import { AllExceptionsFilter } from '../../common/http/all-exceptions.filter'
 import { FakeAuthGuard, TEST_USER } from '../../test-support/fake-auth.guard'
 import type { MerchantShopRecord } from '../session/session.repository'
 import { SessionRepository } from '../session/session.repository'
 import { HomeController } from './home.controller'
-import { HomeRepository } from './home.repository'
+import { HomeRepository, type ShopCustomerMetrics } from './home.repository'
 import { HomeService } from './home.service'
 import { MerchantShopGuard } from '../access/merchant-shop.guard'
 
@@ -35,38 +40,55 @@ class TestHomeRepository extends HomeRepository {
     return this.records
   }
 
-  async countShopCustomersByFilter(_shopId: string, filter: string): Promise<number> {
-    if (filter === 'lapsed') return 2
-    if (filter === 'nearReward') return 4
-    if (filter === 'rewardReady') return 1
-    return 10
+  async getCustomerMetrics(_shopId: string, _lapsedCutoff: Date): Promise<ShopCustomerMetrics> {
+    return {
+      total: 10,
+      lapsedTotal: 2,
+      nearRewardTotal: 4,
+      rewardReadyTotal: 1,
+      oldestLastVisitAt: '2026-08-01T10:00:00.000Z',
+    }
   }
 
-  async getOldestLapsedVisit(_shopId: string): Promise<string | null> {
-    return '2026-08-01T10:00:00.000Z'
+  async getComparisonMetrics(
+    _shopId: string,
+    _ranges: Record<HomePeriod, { current: DateRange; previous: DateRange }>,
+  ): Promise<Record<HomePeriod, HomeMetrics>> {
+    return {
+      week: {
+        newCustomers: { current: 1, previous: 0 },
+        visits: { current: 2, previous: 1 },
+        purchases: { current: 1, previous: 1 },
+        redemptions: { current: 0, previous: 0 },
+      },
+      month: {
+        newCustomers: { current: 5, previous: 4 },
+        visits: { current: 10, previous: 8 },
+        purchases: { current: 6, previous: 5 },
+        redemptions: { current: 1, previous: 0 },
+      },
+      last30: {
+        newCustomers: { current: 5, previous: 4 },
+        visits: { current: 10, previous: 8 },
+        purchases: { current: 6, previous: 5 },
+        redemptions: { current: 1, previous: 0 },
+      },
+    }
   }
 
-  async listComparisonRecords(_shopId: string): Promise<any[]> {
-    return []
-  }
-
-  async listNewCardDates(_shopId: string): Promise<any[]> {
-    return []
-  }
-
-  async listRecentActivity(_shopId: string): Promise<any[]> {
+  async listRecentActivity(_shopId: string): Promise<HomeActivityItem[]> {
     return [
       {
         id: 'ledger_1',
         kind: 'visit',
-        customerId: '018f98a2-7b2a-7182-9f33-6d004bbbb011',
+        customerId: CustomerIdSchema.parse('018f98a2-7b2a-7182-9f33-6d004bbbb011'),
         name: 'Maria',
-        maskedPhone: '(67) 9****-9999',
+        maskedPhone: MaskedPhoneSchema.parse('(67) 9••••-9999'),
         units: 1,
         unit: 'stamp',
         amountCents: null,
         rewardTitle: null,
-        createdAt: '2026-10-08T10:00:00.000Z',
+        createdAt: '2026-10-08T10:00:00.000Z' as IsoDateTime,
       },
     ]
   }
@@ -113,9 +135,9 @@ describe('merchant home HTTP', () => {
       status: 'approved',
       merchantTermsVersion: null,
     }
-    const cust1 = '018f98a2-7b2a-7182-9f33-6d004bbbb011' as any
+    const cust1 = CustomerIdSchema.parse('018f98a2-7b2a-7182-9f33-6d004bbbb011')
     homeRepo.records = [
-      { customerId: cust1, kind: 'visit', createdAt: '2026-10-08T10:00:00Z' as any },
+      { customerId: cust1, kind: 'visit', createdAt: '2026-10-08T10:00:00Z' as IsoDateTime },
     ]
   })
 
