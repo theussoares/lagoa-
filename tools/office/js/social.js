@@ -76,7 +76,7 @@ export class Conversations {
       here.lines.splice(here.index, 0, [here.members.length - 1, pick(JOIN_LINES)])
       return here
     }
-    const others = this.office.list().filter((a) => a !== agent && !a.talk && !a.walking && !a.hidden && a.slot.room === room && a.step?.do === 'converse')
+    const others = this.office.list().filter((a) => a !== agent && !a.talk && !a.walking && a.slot.room === room && a.step?.do === 'converse')
     if (!others.length) return null
     return this.start([agent, ...others.slice(0, 2)], kind, { room })
   }
@@ -102,7 +102,7 @@ export class Conversations {
   update(now) {
     for (const conv of this.active) {
       if (now < conv.nextAt) continue
-      if (conv.index >= conv.lines.length || conv.members.some((m) => m.hidden)) { this.end(conv); continue }
+      if (conv.index >= conv.lines.length) { this.end(conv); continue }
       const [who, text] = conv.lines[conv.index++]
       const speaker = conv.members[Math.min(who, conv.members.length - 1)]
       const other = conv.members.find((m) => m !== speaker)
@@ -115,7 +115,7 @@ export class Conversations {
 
   // A busy dev gets stuck and calls the closest available helper (affinity first).
   requestHelp(asker) {
-    const helpers = this.office.list().filter((a) => a !== asker && !a.task && !a.hidden && !a.talk && !a.helping)
+    const helpers = this.office.list().filter((a) => a !== asker && !a.task && !a.talk && !a.helping)
     if (!helpers.length) return false
     const helper = pickByAffinity(asker, helpers)
     this.office.say(asker, pick(STUCK_LINES), 3)

@@ -8,11 +8,11 @@ import { Agent } from './brain.js'
 import { loadModels } from './models.js'
 import { scenario, loop } from './demo.js'
 import { Conversations, TRAITS, pickByAffinity } from './social.js'
-import { createDayClock, applyLight, isOffHours, isLunch, formatHour } from './daycycle.js'
+import { createDayClock, applyLight, isLunch, formatHour } from './daycycle.js'
 import { createFx } from './fx.js'
 import { createFollow } from './follow.js'
 
-// Public page (lagoamais.com.br/equipe): no hooks, a demo loop and a virtual clock.
+// Public page (lagoamais.com.br/equipe): no hooks, a demo loop and a virtual work day.
 const PUBLIC = document.documentElement.dataset.mode === 'public'
 const LABEL_DISTANCE = 22
 // Simulation runs at a fixed rate, independent of the camera and of the frame rate.
@@ -72,14 +72,13 @@ function textSprite(text, bg, fg, size = 34) {
 const agents = new Map()
 const office = {
   world,
-  offHours: false,
   lunch: false,
   list: () => [...agents.values()],
   pickByAffinity,
   say(agent, text, seconds = 0) {
     if (agent.bubble) agent.avatar.root.remove(agent.bubble)
     agent.bubble = null
-    if (!text || agent.hidden) return
+    if (!text) return
     agent.bubble = textSprite(text, '#fbfaf7f0', '#1d1a17'); agent.bubble.position.y = 2.75
     agent.avatar.root.add(agent.bubble)
     agent.bubbleUntil = seconds ? performance.now() + seconds * 1000 : Infinity
@@ -109,14 +108,11 @@ const agentFor = (id) => agents.get(id) ?? createAgent(id)
 // ---------- Day ----------
 const forcedParam = new URLSearchParams(location.search).get('hora')
 const day = createDayClock({ virtual: PUBLIC, forcedHour: forcedParam === null ? null : Number(forcedParam) })
-const syncHours = () => { office.offHours = isOffHours(day.hour); office.lunch = isLunch(day.hour) }
+const syncHours = () => { office.lunch = isLunch(day.hour) }
 syncHours()
 
 for (const id of Object.keys(ROLES)) createAgent(id)
-for (const agent of agents.values()) {
-  if (office.offHours) { agent.leave(); agent.setPlan([{ do: 'stand', secs: Math.random() * 20 }]); continue }
-  agent.decide(); agent.settle()
-}
+for (const agent of agents.values()) { agent.decide(); agent.settle() }
 loadingEl.hidden = true
 
 // ---------- Handoff papers ----------
@@ -152,7 +148,7 @@ let demand = null
 const setStage = (stage) => { if (!demand) return; demand.stage = Math.max(demand.stage, stage); world.setKanban(demand) }
 
 function celebrate() {
-  const present = [...agents.values()].filter((a) => !a.hidden)
+  const present = [...agents.values()]
   for (const a of present) a.cheer(a.role.trait === 'festeiro' ? 4 : 2.5 + Math.random())
   for (const a of present.filter((p) => p.role.trait === 'festeiro')) office.say(a, '🎉🎉', 3)
   fx.celebrate(present.map((a) => a.pos))
@@ -212,7 +208,7 @@ const demoButton = document.getElementById('demo')
 if (PUBLIC) {
   statusEl.textContent = 'demonstração'
   demoButton.hidden = true
-  loop(handle, () => !office.offHours && !office.lunch)
+  loop(handle, () => !office.lunch)
 } else {
   const source = new EventSource('/events')
   source.onopen = () => { statusEl.textContent = 'ao vivo (hooks)' }
@@ -245,16 +241,17 @@ function frame() {
   }
   if (now - lastHud > 1000) {
     lastHud = now
-    const phase = office.offHours ? '🌙 fora do expediente' : office.lunch ? '🍽️ almoço' : '☀️ expediente'
+    const dark = day.hour >= 18 || day.hour < 6
+    const phase = office.lunch ? '🍽️ almoço' : `${dark ? '🌙' : '☀️'} expediente`
     clockEl.textContent = `${formatHour(day.hour)} · ${phase}`
   }
   applyLight({ hour: day.hour, sun, hemi, scene, lamps: world.lamps })
 
   let meetingActive = false
   for (const a of agents.values()) {
-    if (!a.hidden) a.animate(now, t)
+    a.animate(now, t)
     if (a.bubble && now > a.bubbleUntil) office.say(a, null)
-    a.label.visible = !a.hidden && (a.id === follow.hoveredId || a.id === follow.followId || !!a.task || camera.position.distanceTo(a.pos) < LABEL_DISTANCE)
+    a.label.visible = (a.id === follow.hoveredId || a.id === follow.followId || !!a.task || camera.position.distanceTo(a.pos) < LABEL_DISTANCE)
     if (a.task && a.slot.room === 'reuniao' && !a.walking) meetingActive = true
   }
   world.meetingScreen.material.emissiveIntensity += ((meetingActive ? 0.8 : 0.12) - world.meetingScreen.material.emissiveIntensity) * 0.05

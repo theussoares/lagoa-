@@ -15,7 +15,7 @@ export function createFollow({ camera, controls, renderer, agents, describe }) {
   const agentAt = (e) => {
     pointer.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1)
     raycaster.setFromCamera(pointer, camera)
-    const visible = [...agents.values()].filter((a) => !a.hidden).map((a) => a.avatar.root)
+    const visible = [...agents.values()].map((a) => a.avatar.root)
     return raycaster.intersectObjects(visible, true).find((h) => h.object.isMesh)?.object.userData.agentId ?? null
   }
 
@@ -71,14 +71,13 @@ export function createFollow({ camera, controls, renderer, agents, describe }) {
     update(now) {
       if (cinema && now > nextCut) {
         nextCut = now + CINEMA_SECS * 1000
-        const visible = [...agents.values()].filter((a) => !a.hidden && a.id !== followId)
+        const visible = [...agents.values()].filter((a) => a.id !== followId)
         const busy = visible.filter((a) => a.task || a.talk)
         const next = (busy.length ? busy : visible)[Math.floor(Math.random() * (busy.length || visible.length))]
         if (next) follow(next.id, { fromCinema: true })
       }
       const a = followId && agents.get(followId)
       if (!a) return
-      if (a.hidden) { stop(); return }
       // Move target and camera by how much the person moved, so the user's chosen angle is kept.
       const delta = a.pos.clone().sub(lastTarget)
       lastTarget.copy(a.pos)
