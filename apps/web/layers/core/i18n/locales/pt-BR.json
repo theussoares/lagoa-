@@ -30,6 +30,11 @@
     "lead": "Continue juntando carimbos pela cidade e ganhe prêmios.",
     "profileLink": "Abrir seu perfil",
     "stackLabel": "Seus cartões",
+    "tabs": {
+      "label": "Seções da carteira",
+      "cards": "Cartões",
+      "rewards": "Prêmios"
+    },
     "openCard": "Abrir o cartão de {shop}",
     "closeCard": "Fechar o cartão de {shop}",
     "searchLabel": "Buscar e filtrar seus cartões",
@@ -133,6 +138,7 @@
     "checkIn": "Carimbar",
     "rewards": "Prêmios",
     "profile": "Perfil",
+    "more": "Mais",
     "home": "Início",
     "counter": "Balcão",
     "customers": "Clientes",
@@ -141,6 +147,11 @@
     "mainLabel": "Navegação principal",
     "shopLink": "Botão do card",
     "hits": "Hits"
+  },
+  "moreMenu": {
+    "title": "Mais",
+    "ranking": "Ranking",
+    "profile": "Perfil"
   },
   "common": {
     "loading": "Carregando",
@@ -629,7 +640,44 @@
     "challengeTag": "Conta no desafio",
     "directions": "Como chegar",
     "directionsTo": "Como chegar: {shop} (abre o mapa)",
-    "empty": "Nenhuma loja na rede por enquanto. Volte em breve."
+    "empty": "Nenhuma loja na rede por enquanto. Volte em breve.",
+    "featuredLabel": "Lojas em destaque",
+    "featuredBadge": "Destaque",
+    "rails": {
+      "surpriseDay": "Dia surpresa",
+      "surpriseDayLead": "Visita vale o dobro só hoje",
+      "surpriseDaySeal": "2× hoje",
+      "welcome": "Cartão já começa andado",
+      "welcomeLead": "Boas-vindas ao entrar no clube",
+      "welcomeSeal": "+{count} de cara"
+    },
+    "groups": {
+      "label": "Filtrar lojas por ramo",
+      "all": "Tudo",
+      "food": "Comer",
+      "beauty": "Beleza",
+      "clothing": "Roupas",
+      "services": "Serviços",
+      "pet": "Pet"
+    },
+    "groupEmpty": "Nenhuma loja desse ramo por enquanto. Escolha outro ramo ou toque em Tudo."
+  },
+  "hits": {
+    "title": "Hits da Lagoa",
+    "lead": "O que tá saindo na cidade",
+    "bannersLabel": "Destaques do Hits",
+    "itemsLabel": "Produtos do Hits",
+    "sponsored": "Patrocinado",
+    "featured": "Destaque",
+    "earn": {
+      "stamp": "rende {n} carimbo | rende {n} carimbos",
+      "point": "rende {n} pts",
+      "doubled": "em dobro hoje"
+    },
+    "priceOnRequest": "Sob consulta",
+    "loadMore": "Ver mais",
+    "empty": "Ainda não tem produto na vitrine. Volte daqui a pouco para ver as novidades.",
+    "groupEmpty": "Nenhum produto desse ramo por enquanto. Escolha outro ramo."
   },
   "checkIn": {
     "pageTitle": "Carimbar",

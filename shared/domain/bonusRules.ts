@@ -29,6 +29,11 @@ export function isBirthdayToday(birthday: Birthday | null, today: EarnContext['t
   return birthday === LEAP_DAY && today.monthDay === LEAP_DAY_FALLBACK && !isLeapYear(Number(today.isoDate.slice(0, 4)))
 }
 
+/** Dia surpresa ligado e marcado para `isoDate` (data local do piloto). */
+export function isSurpriseDay(rules: BonusRules, isoDate: IsoDate): boolean {
+  return rules.surpriseDay.enabled && rules.surpriseDay.date === isoDate
+}
+
 const multiplierRules: Readonly<Record<AppliedBonus, MultiplierRule>> = {
   birthdayMultiplier: {
     applies: (rules, context) =>
@@ -36,7 +41,7 @@ const multiplierRules: Readonly<Record<AppliedBonus, MultiplierRule>> = {
     multiplier: (rules) => rules.birthdayMultiplier.multiplier,
   },
   surpriseDay: {
-    applies: (rules, context) => rules.surpriseDay.enabled && rules.surpriseDay.date === context.today.isoDate,
+    applies: (rules, context) => isSurpriseDay(rules, context.today.isoDate),
     multiplier: (rules) => rules.surpriseDay.multiplier,
   },
 }

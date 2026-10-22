@@ -4,6 +4,7 @@ import { HttpCheckInService } from './HttpCheckInService'
 import { HttpAccountService } from './HttpAccountService'
 import { HttpDataExportService } from './HttpDataExportService'
 import { HttpDiscoverService } from './HttpDiscoverService'
+import { HttpHitsService } from './HttpHitsService'
 import { HttpProfileService } from './HttpProfileService'
 import { HttpRankingService } from './HttpRankingService'
 import { HttpReferralService } from './HttpReferralService'
@@ -17,6 +18,7 @@ export function createHttpCustomerServices(api: ApiClient, newIdempotencyKey: ()
     checkIn: new HttpCheckInService(api, newIdempotencyKey),
     redemption: new HttpRewardRedemptionService(api),
     discover: new HttpDiscoverService(api),
+    hits: new HttpHitsService(api),
     profile: new HttpProfileService(api),
     referral: new HttpReferralService(api),
     dataExport: new HttpDataExportService(api),

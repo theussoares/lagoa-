@@ -15,6 +15,9 @@ export interface WalletFilterOption {
   readonly count: number
 }
 
+/** Seções da Carteira com a chave da fase B: os cartões ou os prêmios (`?aba=premios`). */
+export type WalletSection = 'cards' | 'rewards'
+
 export type SeenBalances = Readonly<Record<string, number>>
 
 export interface SeenStamps {
@@ -47,4 +50,7 @@ export interface WalletScreen {
   readonly ledger: LedgerEntryModel[]
   readonly cityHeaderImage: string
   readonly installInvite: InstallInviteScreen
+  /** Abas Cartões | Prêmios no topo (chave da fase B). */
+  readonly sectionsEnabled: boolean
+  readonly section: WalletSection
 }

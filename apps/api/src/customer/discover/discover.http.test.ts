@@ -10,7 +10,8 @@ import { FakeAuthGuard } from '../../test-support/fake-auth.guard'
 import { catalogShop } from '../../shops/catalog.fixtures'
 import type { CatalogShop } from '../../shops/catalog-shop'
 import { DiscoverController } from './discover.controller'
-import { DiscoverRepository } from './discover.repository'
+import { DiscoverRepository, type FeaturedCatalogShop } from './discover.repository'
+import { Clock } from '../../common/clock'
 import { DiscoverService } from './discover.service'
 
 class RecordingDiscoverRepository extends DiscoverRepository {
@@ -21,6 +22,9 @@ class RecordingDiscoverRepository extends DiscoverRepository {
   async listApprovedShops(limit: number): Promise<CatalogShop[]> {
     this.lastLimit = limit
     return this.shops
+  }
+  async listFeaturedShops(): Promise<FeaturedCatalogShop[]> {
+    return this.shops.map((shop, index) => ({ shop, sponsored: index === 0 }))
   }
 }
 
@@ -35,6 +39,7 @@ describe('discover HTTP', () => {
         DiscoverService,
         { provide: DiscoverRepository, useValue: repository },
         { provide: ENV, useValue: { SUPABASE_URL: 'https://project.supabase.co' } },
+        { provide: Clock, useValue: { now: () => new Date('2026-10-03T12:00:00Z') } },
         { provide: APP_GUARD, useClass: FakeAuthGuard },
         { provide: APP_FILTER, useClass: AllExceptionsFilter },
       ],

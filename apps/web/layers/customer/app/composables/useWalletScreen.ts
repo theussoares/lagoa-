@@ -1,4 +1,4 @@
-import type { SeenBalances, WalletFilter, WalletScreen } from '../types/wallet'
+import type { SeenBalances, WalletFilter, WalletScreen, WalletSection } from '../types/wallet'
 import { countWalletCards, filterWalletCards } from '../utils/walletFilter'
 import { countEarnings } from '../utils/installInviteRule'
 import { formatShortDate } from '#shared/utils/dateFormat'
@@ -13,6 +13,9 @@ export function useWalletScreen(): WalletScreen {
   const { state: profileState } = useCustomerProfile()
   const seenStamps = useSeenStamps()
   const cityHeaderImage = useCityHeaderImage()
+  const route = useRoute()
+  const sectionsEnabled = useHitsEnabled()
+  const section = computed<WalletSection>(() => (sectionsEnabled ? walletSectionFrom(route.query) : 'cards'))
   const installInvite = useInstallPrompt(() => countEarnings(activityState.value.status === 'success' ? activityState.value.value : []))
 
   const filter = ref<WalletFilter>('all')
@@ -49,8 +52,9 @@ export function useWalletScreen(): WalletScreen {
     expandedId.value = expandedId.value === id ? '' : id
   }
 
-  watch([cardsState, seen], ([state, seenNow]) => {
-    if (state.status === 'success' && seenNow !== null) seenStamps.remember(Object.fromEntries(state.value.map((card) => [card.id, card.balance])))
+  // Na aba Prêmios os cartões não aparecem: o saldo só vira visto quando a aba Cartões mostrar a batida.
+  watch([cardsState, seen, section], ([state, seenNow, current]) => {
+    if (current === 'cards' && state.status === 'success' && seenNow !== null) seenStamps.remember(Object.fromEntries(state.value.map((card) => [card.id, card.balance])))
   })
 
   const anyUnauthorized = computed(() =>
@@ -74,5 +78,5 @@ export function useWalletScreen(): WalletScreen {
     return activityState.value.value.map((activity) => toLedgerEntryModel(activity, now, translate, iconByShop))
   })
 
-  return reactive({ cardsState, reloadCards, activityState, cards, visibleCards, filter, query, filterCounts, expandedId, toggleCard, greeting, ledger, cityHeaderImage, installInvite })
+  return reactive({ cardsState, reloadCards, activityState, cards, visibleCards, filter, query, filterCounts, expandedId, toggleCard, greeting, ledger, cityHeaderImage, installInvite, sectionsEnabled, section })
 }

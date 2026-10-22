@@ -4,6 +4,7 @@ import type { CustomerProfile } from '#shared/schemas/customer'
 import type { Challenge } from '#shared/schemas/discover'
 import type { Ranking } from '#shared/schemas/ranking'
 import type { ShopSummary } from '#shared/schemas/shop'
+import type { FeaturedShop } from '#shared/schemas/showcase'
 import type { WalletActivity } from '#shared/schemas/visit'
 import type { TransportError } from '#shared/types/errors'
 
@@ -33,6 +34,11 @@ export function useCustomerProfile(): AsyncResult<CustomerProfile, TransportErro
 export function useDiscoverShops(): AsyncResult<ShopSummary[], TransportError> {
   const { discover } = useCustomerServices()
   return useAsyncQuery('discover-shops', () => discover.listShops())
+}
+
+export function useDiscoverFeatured(): AsyncResult<FeaturedShop[], TransportError> {
+  const { discover } = useCustomerServices()
+  return useAsyncQuery('discover-featured', () => discover.listFeatured())
 }
 
 export function useDiscoverChallenges(): AsyncResult<Challenge[], TransportError> {

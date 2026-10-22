@@ -145,6 +145,9 @@ export const HIT_ITEM_REJECTION_REASON_MAX_LENGTH = 200
 export const FEATURED_PAID_SLOTS_DISCOVER = 4
 export const FEATURED_PAID_SLOTS_HITS = 3
 export const FEATURED_CAROUSEL_MAX = 8
+/** Hits do cliente: itens por página da grade e banners no topo. */
+export const HITS_PAGE_SIZE = 20
+export const HITS_BANNERS_MAX = 5
 export const FEATURED_NOTE_MAX_LENGTH = 200
 /** Janela máxima (em dias de calendário) da agenda e da lista de destaques do admin. */
 export const FEATURED_RANGE_MAX_DAYS = 90

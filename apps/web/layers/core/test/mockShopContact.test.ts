@@ -25,7 +25,7 @@ describe('mock shop contact', () => {
     const summaries = await backend.run((ctx) =>
       ctx.state.shops.map((shop) => {
         const program = ctx.state.programs.find((item) => item.shopId === shop.id)
-        return program === undefined ? null : { id: shop.id, contact: toShopSummary(shop, program).contact }
+        return program === undefined ? null : { id: shop.id, contact: toShopSummary(ctx, shop, program).contact }
       }),
     )
     expect(summaries.find((item) => item?.id === shops.barbershop)?.contact).toEqual(link)
