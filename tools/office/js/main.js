@@ -25,6 +25,8 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure
 document.body.appendChild(renderer.domElement)
 const controls = new OrbitControls(camera, renderer.domElement)
 controls.target.set(0, 0, 0.5); controls.maxPolarAngle = Math.PI / 2.3; controls.enableDamping = true
+// Wheel/pinch zoom heads to where the pointer is, a bit faster than the default, between a close look and the whole floor.
+controls.zoomToCursor = true; controls.zoomSpeed = 1.6; controls.minDistance = 3; controls.maxDistance = 90
 const fitCamera = () => { const k = Math.max(1, 1.45 / camera.aspect); camera.position.set(0, 34 * k, 30 * k); camera.lookAt(controls.target) }
 fitCamera()
 
@@ -111,6 +113,20 @@ function handoff(fromId, toId) {
 // ---------- Events ----------
 let lastActive = 'main'
 const logEl = document.getElementById('log')
+const logToggle = document.getElementById('logToggle')
+logToggle.onclick = () => {
+  logEl.hidden = !logEl.hidden
+  logToggle.textContent = logEl.hidden ? 'Mostrar log' : 'Esconder log'
+  logToggle.setAttribute('aria-expanded', String(!logEl.hidden))
+}
+const ZOOM_STEP = 0.7
+function zoom(factor) {
+  const offset = camera.position.clone().sub(controls.target)
+  const distance = THREE.MathUtils.clamp(offset.length() * factor, controls.minDistance, controls.maxDistance)
+  camera.position.copy(controls.target).add(offset.setLength(distance))
+}
+document.getElementById('zoomIn').onclick = () => zoom(ZOOM_STEP)
+document.getElementById('zoomOut').onclick = () => zoom(1 / ZOOM_STEP)
 function log(html) { const d = document.createElement('div'); d.innerHTML = html; logEl.prepend(d); while (logEl.children.length > 40) logEl.lastChild.remove() }
 const escape = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
 
