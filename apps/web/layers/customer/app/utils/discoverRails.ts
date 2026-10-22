@@ -3,6 +3,7 @@ import type { ShopGroup } from '#shared/domain/shopGroup'
 import type { ShopSummary } from '#shared/schemas/shop'
 import type { Translate } from '#layers/core/app/types/i18n'
 import { categoryIcon } from './categoryIcon'
+import { shopContactLink } from './shopContact'
 import { walletSectionPath } from './walletSection'
 import type { DiscoverRailModel, DiscoverRails, ShopRailCardModel } from '../types/discover'
 
@@ -55,6 +56,7 @@ export function toShopRailCardModel(shop: ShopSummary, t: Translate, options: { 
     badge: options.featured ? t('discover.featuredBadge') : null,
     seal: sealOf(shop, t),
     to: walletSectionPath('cards'),
+    contact: shopContactLink(shop, t),
   }
 }
 

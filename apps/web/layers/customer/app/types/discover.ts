@@ -1,5 +1,5 @@
 import type { AsyncResultState } from '#layers/core/app/types/asyncResult'
-import type { ChallengeModel, KnownShopModel, ShopTeaserModel } from '#layers/ui/app/types/discover'
+import type { ChallengeModel, ExternalLinkModel, KnownShopModel, ShopTeaserModel } from '#layers/ui/app/types/discover'
 import type { ShopGroup } from '#shared/domain/shopGroup'
 import type { ShopSummary } from '#shared/schemas/shop'
 import type { TransportError } from '#shared/types/errors'
@@ -36,6 +36,8 @@ export interface ShopRailCardModel {
   readonly seal: string | null
   /** Para onde o card leva: o mesmo destino do `ShopTile`. */
   readonly to: string
+  /** Botão da loja (WhatsApp ou link), o mesmo do card padrão; `null` sem botão cadastrado. */
+  readonly contact: ExternalLinkModel | null
 }
 
 export interface DiscoverRailModel {
