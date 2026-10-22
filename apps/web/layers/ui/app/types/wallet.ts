@@ -75,9 +75,24 @@ export interface LedgerEntryModel {
   readonly tilt: number
 }
 
-export interface TabBarItem {
+/** Destino da barra de baixo; sem `kind` é link (o padrão). */
+export interface TabBarLinkItem {
+  readonly kind?: 'link'
   readonly to: string
   readonly label: string
   readonly icon: string
   readonly activeIcon: string
 }
+
+/** Item que abre uma folha (menu Mais) em vez de navegar. */
+export interface TabBarButtonItem {
+  readonly kind: 'button'
+  readonly label: string
+  readonly icon: string
+  readonly activeIcon: string
+  readonly onSelect: () => void
+  /** A folha que ele abre está aberta: `aria-expanded` e o ícone ativo. */
+  readonly expanded?: boolean
+}
+
+export type TabBarItem = TabBarLinkItem | TabBarButtonItem

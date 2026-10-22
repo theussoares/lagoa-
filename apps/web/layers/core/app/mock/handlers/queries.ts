@@ -5,6 +5,7 @@ import type { MaskedPhone, PhoneNumber } from '#shared/schemas/phone'
 import type { Program } from '#shared/schemas/program'
 import type { ShopSummary } from '#shared/schemas/shop'
 import { earnRateOf, unitOf } from '#shared/domain/programStrategies'
+import { isSurpriseDayToday } from '#shared/domain/showcaseEarning'
 import { maskPhone } from '#shared/utils/phone'
 import { toIso } from '#shared/utils/time'
 import type { MockContext } from './context'
@@ -41,7 +42,7 @@ export function maskedPhoneOf(ctx: MockContext, customerId: CustomerId): MaskedP
   return customer === undefined ? undefined : maskPhone(customer.phone)
 }
 
-export function toShopSummary(shop: ShopRecord, program: Program): ShopSummary {
+export function toShopSummary(ctx: MockContext, shop: ShopRecord, program: Program): ShopSummary {
   return {
     id: shop.id,
     name: shop.name,
@@ -57,6 +58,7 @@ export function toShopSummary(shop: ShopRecord, program: Program): ShopSummary {
       earnRate: earnRateOf(program.rules),
       welcomeUnits: program.bonusRules.welcomeBonus.enabled ? program.bonusRules.welcomeBonus.units : 0,
     },
+    surpriseDayToday: isSurpriseDayToday(program.bonusRules, ctx.now),
   }
 }
 

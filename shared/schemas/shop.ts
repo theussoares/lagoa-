@@ -154,6 +154,8 @@ export const ShopSummarySchema = ShopSchema.pick({
     /** Unidades que o cartão novo já ganha (0 quando a regra está desligada). */
     welcomeUnits: z.number().int().nonnegative(),
   }),
+  /** Hoje é o dia surpresa da loja (rende em dobro). Calculado no servidor; payload antigo sem o campo vale `false`. */
+  surpriseDayToday: z.boolean().default(false),
 })
 export type ShopSummary = z.infer<typeof ShopSummarySchema>
 

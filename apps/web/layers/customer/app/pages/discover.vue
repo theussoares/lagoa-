@@ -8,7 +8,8 @@ const screen = useDiscoverScreen()
 
 <template>
   <div>
-    <DiscoverHeader v-model:query="screen.query" :image="screen.cityHeaderImage" :map-url="screen.mapUrl" />
+    <DiscoverHeader v-model:query="screen.query" :image="screen.cityHeaderImage" :map-url="screen.mapUrl" :overlap="screen.headerOverlap" />
+    <DiscoverFeaturedCarousel v-if="screen.featured.length > 0" :shops="screen.featured" />
     <HeroCard
       v-if="!screen.loading && screen.heroChallenge && !screen.searching"
       :badge="t('discover.challengeBadge')"
@@ -38,8 +39,13 @@ const screen = useDiscoverScreen()
       </p>
 
       <template v-else>
+        <DiscoverGroupChips v-if="screen.showGroups" v-model:selected="screen.group" />
+        <p v-if="screen.groupEmpty" class="rounded-(--radius-card) border-2 border-dashed border-(--lagoa-slot) px-5 py-4 text-pretty text-toned">
+          {{ t('discover.groupEmpty') }}
+        </p>
+        <DiscoverRail v-for="rail in screen.rails" :key="rail.id" :title="rail.title" :lead="rail.lead" :shops="rail.cards" />
         <DiscoverChallengeList v-if="screen.otherChallenges.length > 0 && !screen.searching" :challenges="screen.otherChallenges" />
-        <DiscoverFreshShops :shops="screen.fresh" :searching="screen.searching" />
+        <DiscoverFreshShops v-if="screen.showFresh" :shops="screen.fresh" :searching="screen.searching" />
         <DiscoverKnownShops v-if="screen.known.length > 0" :shops="screen.known" />
       </template>
     </div>

@@ -20,7 +20,7 @@ const isoOrNull = (date: Date | null): string | null => (date === null ? null : 
 export function toWalletCard(record: WalletCardRecord, supabaseUrl: string, now: Date): Result<WalletCard, InvalidContract> {
   const { rules, rewardTitle, expiration } = record.shop.program
   const current = applyExpiration(record, planExpiration(record, expiration, rules.target, now))
-  const shop = toShopSummary(record.shop, supabaseUrl)
+  const shop = toShopSummary(record.shop, supabaseUrl, now)
   if (!shop.ok) return err(shop.error)
   const unit = unitOf(rules)
   const parsed = WalletCardSchema.safeParse({

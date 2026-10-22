@@ -11,7 +11,8 @@ export interface RewardGroups {
   readonly upcoming: readonly WalletCard[]
 }
 
-export interface RewardsScreen {
+/** Os prêmios sem a moldura da tela: servem à página Prêmios e à aba Prêmios da Carteira. */
+export interface RewardLists {
   readonly cardsState: AsyncResultState<WalletCard[], TransportError>
   readonly historyState: AsyncResultState<WalletActivity[], TransportError>
   readonly reloadCards: () => Promise<void>
@@ -21,5 +22,8 @@ export interface RewardsScreen {
   readonly closest: string | null
   readonly hasCards: boolean
   readonly history: LedgerEntryModel[]
+}
+
+export interface RewardsScreen extends RewardLists {
   readonly cityHeaderImage: string
 }

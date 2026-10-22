@@ -40,6 +40,8 @@ export default defineNuxtConfig({
       merchantUrl: '',
       /** Campanhas do lojista (M5, sem API ainda). Env: NUXT_PUBLIC_CAMPAIGNS_ENABLED. */
       campaignsEnabled: false,
+      /** App do cliente da fase B: Hits, barra nova com o menu Mais e Prêmios dentro da Carteira. Env: NUXT_PUBLIC_HITS_ENABLED. */
+      hitsEnabled: false,
       /** Atraso artificial do mock para a UI exercitar carregamento. */
       mockLatencyMs: 250,
     },

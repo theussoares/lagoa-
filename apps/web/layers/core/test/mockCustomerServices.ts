@@ -45,7 +45,12 @@ export function createMockCustomerServices(backend: MockBackend, sessions: Custo
     },
     discover: {
       listShops: () => asCustomer(backend, sessions, (ctx) => ok(discoverShops(ctx))),
+      listFeatured: () => asCustomer(backend, sessions, () => ok([])),
       listChallenges: () => asCustomer(backend, sessions, (ctx, customerId) => ok(discoverChallenges(ctx, customerId))),
+    },
+    hits: {
+      list: () => asCustomer(backend, sessions, () => ok({ items: [], nextCursor: null })),
+      banners: () => asCustomer(backend, sessions, () => ok([])),
     },
     profile: {
       getProfile: () => asCustomer(backend, sessions, getProfile),

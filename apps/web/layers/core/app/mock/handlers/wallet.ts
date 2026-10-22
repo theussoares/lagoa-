@@ -20,7 +20,7 @@ function toWalletCard(ctx: MockContext, card: LoyaltyCard): WalletCard | undefin
   const program = findProgram(ctx, card.shopId)
   if (shop === undefined || program === undefined) return undefined
   const { customerId: _customerId, ...rest } = card
-  return { ...rest, shop: toShopSummary(shop, program) }
+  return { ...rest, shop: toShopSummary(ctx, shop, program) }
 }
 
 export function walletCards(ctx: MockContext, customerId: CustomerId): WalletCard[] {
@@ -86,7 +86,7 @@ export function discoverShops(ctx: MockContext): ShopSummary[] {
     .filter((shop) => shop.status === 'approved')
     .flatMap((shop) => {
       const program = findProgram(ctx, shop.id)
-      return program === undefined ? [] : [toShopSummary(shop, program)]
+      return program === undefined ? [] : [toShopSummary(ctx, shop, program)]
     })
 }
 

@@ -21,6 +21,12 @@ describe('surfaceRedirect', () => {
     expect(get('app.lagoa.test', '/hits')).toBe('https://balcao.lagoa.test/hits')
   })
 
+  it('keeps the customer showcase on the app host and sends it there from the Balcão (the merchant keeps /hits)', () => {
+    expect(get('app.lagoa.test', '/vitrine')).toBeNull()
+    expect(get('balcao.lagoa.test', '/vitrine')).toBe('https://app.lagoa.test/vitrine')
+    expect(get('balcao.lagoa.test', '/hits')).toBeNull()
+  })
+
   it('leaves each host alone on its own pages, API and assets', () => {
     expect(get('app.lagoa.test', '/carteira')).toBeNull()
     expect(get('app.lagoa.test', '/api/session')).toBeNull()
