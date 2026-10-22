@@ -14,6 +14,7 @@ const TASKS = {
   'dev-junior': 'textos e ajustes',
 }
 
+const BLOCK_CHANCE = 0.45
 const pick = (list) => list[Math.floor(Math.random() * list.length)]
 const jitter = (base) => base * (0.8 + Math.random() * 0.5)
 
@@ -43,6 +44,12 @@ export function scenario(demand = pick(DEMANDS)) {
     if (demand.security) checks.push(work('seguranca', 'checando dado pessoal', 8))
     if (demand.infra) checks.push(work('infra', 'migration e deploy', 7))
     checks.forEach((done, i) => done(i ? jitter(2) : undefined))
+    // Sometimes security blocks: the dev fixes it and security checks again.
+    if (demand.security && Math.random() < BLOCK_CHANCE) {
+      at(0.5, { type: 'alert', role: 'seguranca', text: 'dado pessoal no log' })
+      work(demand.dev[0], 'corrigindo o bloqueio', 8)()
+      work('seguranca', 'revalidando', 5)()
+    }
   }
   work(demand.review, 'revisando o diff', 7)()
   at(2, { type: 'idle' })
@@ -50,8 +57,9 @@ export function scenario(demand = pick(DEMANDS)) {
 }
 
 /** Plays scenarios forever with a break between them, so the office also shows idle life. */
-export function loop(handle, pauseSecs = [18, 35]) {
+export function loop(handle, canRun = () => true, pauseSecs = [18, 35]) {
   const run = () => {
+    if (!canRun()) { setTimeout(run, 5000); return }
     const events = scenario()
     for (const [sec, event] of events) setTimeout(() => handle(event), sec * 1000)
     const total = events.at(-1)[0]

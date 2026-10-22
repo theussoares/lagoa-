@@ -1,30 +1,37 @@
 // Behavior: each agent runs a plan (go somewhere → do something → …) and picks the next one by itself.
-// Decision (what), movement (route along the door/aisle network) and animation (pose) stay separate.
+// Decision (what), movement (route along the door/aisle network) and animation (pose) stay separate;
+// conversations live in social.js.
 import * as THREE from 'three'
 import { route, nodeAt, makeSlot } from './world.js'
 import { applyPose, isSeated } from './avatar.js'
-import { CHAT_LINES, GAME_LINES, REVIEW_LINES, ROAM_LINES } from './roster.js'
+import { GAME_LINES } from './roster.js'
+import { TRAITS } from './social.js'
 
 const WALK_SPEED = 3.0
 const rand = (a, b) => a + Math.random() * (b - a)
 const pick = (list) => list[Math.floor(Math.random() * list.length)]
-const HUDDLE_LINES = ['e se a gente…', 'desenha aí', 'faz sentido', 'boa ideia!', 'quebra em 3']
 const WORK_CYCLE = ['type', 'type', 'mouse', 'type', 'think', 'type', 'mouse']
 const DESK_IDLE_CYCLE = ['mouse', 'read', 'think', 'type', 'mouse']
 const MEETING_CYCLE = ['sitTalk', 'sit', 'think', 'sitTalk', 'sit']
-
-export function isOffHours(hour) { return hour >= 20 || hour < 7 }
+const STUCK_ROOMS = new Set(['dev', 'qualidade'])
+const STUCK_CHANCE = 0.35
+const ACTIVITY = {
+  desk: 'Na mesa', coffee: 'Pegando café', copa: 'Na copa', lounge: 'Jogando videogame', board: 'Organizando o kanban',
+  huddle: 'No quadro branco', bug: 'Caçando um bug', chat: 'Batendo papo', review: 'Mostrando código', roam: 'Circulando entre os devs',
+  lunch: 'Almoçando', leave: 'Indo embora', arrive: 'Chegando', rest: 'Descansando',
+}
 
 export class Agent {
   constructor({ id, role, avatar, desk, office }) {
     Object.assign(this, { id, role, avatar, desk, office })
     this.phase = Math.random() * 10
     this.energy = rand(0.5, 1)
-    this.task = null
-    this.steps = []; this.stepIndex = 0; this.stepUntil = 0; this.nextLineAt = 0
+    this.task = null; this.talk = null; this.helping = null
+    this.activity = ACTIVITY.desk
+    this.steps = []; this.stepIndex = 0; this.stepUntil = 0; this.nextLineAt = 0; this.nextStuckAt = 0; this.cheerUntil = 0
     this.path = []; this.pendingTarget = null
     this.here = nodeAt(desk.slot); this.slot = desk.slot
-    this.holding = false; this.hidden = false; this.chatWith = null
+    this.holding = false; this.hidden = false
     this.reserved = new Set()
     avatar.root.position.copy(desk.slot.pos)
   }
@@ -32,13 +39,13 @@ export class Agent {
   get pos() { return this.avatar.root.position }
   get step() { return this.steps[this.stepIndex] }
   get walking() { return this.path.length > 0 }
-  get idleAtDesk() { return !this.task && !this.walking && !this.hidden && this.slot === this.desk.slot && this.step?.do === 'deskIdle' }
+  get atDesk() { return !this.walking && !this.hidden && this.slot === this.desk.slot }
 
   claim(slot) { slot.taken = this.id; this.reserved.add(slot); return slot }
   releaseAll() { for (const s of this.reserved) if (s.taken === this.id) s.taken = null; this.reserved.clear() }
 
   // ---------- Plans ----------
-  setPlan(steps) { this.steps = steps; this.stepIndex = -1; this.advance() }
+  setPlan(steps, activity) { if (activity) this.activity = activity; this.steps = steps; this.stepIndex = -1; this.advance() }
   advance() {
     this.stepIndex++
     const step = this.step
@@ -54,17 +61,21 @@ export class Agent {
     if (this.walking) { this.pendingTarget = slot; return }
     this.path = route(this.here, slot)
   }
+  // Replaces the step after the current one (used when a planned talk can't happen).
+  shortenNext() { this.steps.splice(this.stepIndex + 1, 1, { do: 'stand', secs: 1.5, say: '🤷' }) }
 
   decide() {
     this.releaseAll()
+    this.helping = null
     const office = this.office
     if (this.task) return this.setPlan(this.workPlan())
     if (office.offHours) {
-      if (this.hidden) return this.setPlan([{ do: 'stand', secs: rand(20, 40) }])
-      return this.setPlan([{ go: this.claim(office.world.slots.exit) }, { fn: () => this.leave() }])
+      if (this.hidden) return this.setPlan([{ do: 'stand', secs: rand(15, 40) }])
+      return this.setPlan([{ go: this.claim(office.world.slots.exit) }, { fn: () => this.leave() }], ACTIVITY.leave)
     }
-    if (this.hidden) { this.arrive(); return this.setPlan([{ go: this.desk.slot }, { do: 'deskIdle', secs: rand(10, 25) }]) }
-    this.setPlan(this.idlePlan())
+    if (this.hidden) { this.arrive(); return this.setPlan([{ go: this.desk.slot }, { do: 'deskIdle', secs: rand(10, 25) }], ACTIVITY.arrive) }
+    if (office.lunch) return this.setPlan(this.lunchPlan(), ACTIVITY.lunch)
+    this.idlePlan()
   }
 
   workPlan() {
@@ -77,17 +88,34 @@ export class Agent {
     return [{ go: target }, { do: pose, secs: Infinity }]
   }
 
+  // Role weights × personality, with low energy pushing towards breaks.
   idlePlan() {
-    const weights = { ...this.role.idle }
+    const trait = TRAITS[this.role.trait]
+    const weights = { ...this.role.idle, ...trait?.extra }
+    for (const [kind, k] of Object.entries(trait?.weights ?? {})) if (weights[kind]) weights[kind] *= k
     if (this.energy < 0.35) for (const k of ['coffee', 'copa', 'lounge']) if (weights[k]) weights[k] *= 4
     const kinds = Object.keys(weights)
     let roll = Math.random() * kinds.reduce((sum, k) => sum + weights[k], 0)
     const ordered = kinds.filter((k) => (roll -= weights[k]) < 0).concat(kinds)
     for (const kind of ordered) {
       const plan = this.planFor(kind)
-      if (plan) return plan
+      if (plan) return this.setPlan(plan, ACTIVITY[kind])
     }
-    return [{ go: this.desk.slot }, { do: 'deskIdle', secs: rand(15, 30) }]
+    this.setPlan([{ go: this.desk.slot }, { do: 'deskIdle', secs: rand(15, 30) }], ACTIVITY.desk)
+  }
+
+  lunchPlan() {
+    const { slots } = this.office.world
+    const seat = pick(slots.copa.filter((s) => !s.taken))
+    if (seat) return this.copaSteps(seat, 'lunch', rand(20, 35))
+    const couch = pick(slots.lounge.filter((s) => !s.taken))
+    if (couch) return [{ go: this.claim(couch) }, { do: 'game', secs: rand(20, 35), lines: GAME_LINES }]
+    return [{ go: this.desk.slot }, { do: 'sip', secs: rand(15, 25) }]
+  }
+
+  copaSteps(spot, kind, secs) {
+    return [{ go: this.claim(spot) }, { fn: () => { this.holding = true; this.office.talk.joinOrStart(this, 'copa', kind) } },
+      { do: 'converse', secs }, { fn: () => { this.holding = false; this.energy += 0.5 } }]
   }
 
   planFor(kind) {
@@ -103,8 +131,7 @@ export class Agent {
       }
       case 'copa': {
         const spot = pick(free(slots.copa)); if (!spot) return null
-        return [{ go: this.claim(spot) }, { fn: () => { this.holding = true } }, { do: spot.pose === 'sit' ? 'sitTalk' : 'talk', secs: rand(15, 30), lines: CHAT_LINES },
-          { fn: () => { this.holding = false; this.energy += 0.5 } }]
+        return this.copaSteps(spot, 'smalltalk', rand(15, 28))
       }
       case 'lounge': {
         const spot = pick(free(slots.lounge)); if (!spot) return null
@@ -116,19 +143,19 @@ export class Agent {
       }
       case 'huddle': {
         const spot = pick(free(slots.huddle)); if (!spot) return null
-        return [{ go: this.claim(spot) }, { do: 'talk', secs: rand(12, 20), lines: HUDDLE_LINES }]
+        return [{ go: this.claim(spot) }, { do: 'talk', secs: rand(12, 20), lines: ['e se a gente…', 'desenha aí', 'faz sentido', 'quebra em 3'] }]
       }
       case 'bug': return [{ go: desk }, { do: 'type', secs: rand(4, 7) }, { do: 'frustrated', secs: 2.5, say: '🐛 achei um bug!' },
         { do: 'read', secs: 5, say: '📝 anotando' }, { do: 'type', secs: rand(5, 9) }]
-      case 'chat': return this.visitPlan(this.role.chatWith, 'talk', CHAT_LINES, 'sitTalk')
-      case 'review': return this.visitPlan(null, 'point', REVIEW_LINES, 'mouse', ['dev', 'qualidade', 'produto'])
+      case 'chat': return this.visitPlan((a) => true, Math.random() < 0.5 ? 'smalltalk' : 'work')
+      case 'review': return this.visitPlan((a) => ['dev', 'qualidade', 'produto'].includes(a.desk.slot.room), 'review')
       case 'roam': {
-        const devs = this.office.list().filter((a) => a !== this && a.desk.slot.room === 'dev' && !a.hidden)
+        const devs = this.office.list().filter((a) => a !== this && a.desk.slot.room === 'dev' && a.atDesk && !a.talk)
         const stops = devs.sort(() => Math.random() - 0.5).slice(0, 3)
         if (!stops.length) return null
         return stops.flatMap((a) => {
           const spot = this.visitSpot(a); if (!spot) return []
-          return [{ go: spot }, { fn: () => this.engage(a, 5, 'sitTalk') }, { do: 'talk', secs: 5, say: ROAM_LINES }]
+          return [{ go: spot }, { fn: () => this.startTalkWith(a, 'checkin') }, { do: 'converse', secs: 15, endWithTalk: true }]
         })
       }
       default: return null
@@ -144,21 +171,35 @@ export class Agent {
     }
     return null
   }
-  visitPlan(preferred, pose, lines, partnerPose, rooms) {
-    const candidates = this.office.list().filter((a) => a !== this && !a.hidden && !a.walking && a.slot === a.desk.slot &&
-      (preferred ? preferred.includes(a.id) : rooms.includes(a.desk.slot.room)))
-    const other = pick(candidates); if (!other) return null
+  visitPlan(filter, kind) {
+    const candidates = this.office.list().filter((a) => a !== this && a.atDesk && !a.talk && filter(a))
+    if (!candidates.length) return null
+    const other = this.office.pickByAffinity(this, candidates)
     const spot = this.visitSpot(other); if (!spot) return null
-    const secs = rand(7, 11)
-    return [{ go: spot }, { fn: () => this.engage(other, secs, partnerPose) }, { do: pose, secs, lines }]
+    return [{ go: spot }, { fn: () => this.startTalkWith(other, kind) }, { do: 'converse', secs: 20, endWithTalk: true }]
   }
-  engage(other, secs, pose) { other.chatWith = { agent: this, until: performance.now() + secs * 1000, pose } }
+  // On arrival: talk only if the colleague is still there and free.
+  startTalkWith(other, kind) {
+    if (!other.atDesk || other.talk) { this.shortenNext(); return }
+    this.office.talk.start([this, other], kind)
+  }
+
+  // Called by social.js when a colleague is stuck.
+  helpWith(asker) {
+    this.releaseAll()
+    const spot = this.visitSpot(asker)
+    if (!spot) return
+    this.helping = asker
+    this.setPlan([{ go: spot }, { fn: () => this.startTalkWith(asker, 'help') }, { do: 'converse', secs: 25, endWithTalk: true }],
+      `Ajudando ${asker.role.name}`)
+  }
 
   // ---------- Hooks ----------
   assignTask(text) {
     if (this.hidden) this.arrive()
     this.task = text || 'trabalhando…'
     this.holding = false
+    this.nextStuckAt = performance.now() + rand(15000, 40000)
     this.office.say(this, this.task)
     this.decide()
   }
@@ -168,9 +209,10 @@ export class Agent {
     this.energy = Math.max(0, this.energy - 0.25)
     this.office.say(this, '✓ feito', 2.5)
     this.releaseAll()
-    this.setPlan([{ do: this.walking ? 'stand' : this.restingPose(), secs: 2.5 }])
+    this.setPlan([{ do: this.walking ? 'stand' : this.restingPose(), secs: 2.5 }], ACTIVITY.rest)
   }
   restingPose() { return isSeated(this.slot.pose) || this.slot.pose === 'sit' ? 'sit' : 'stand' }
+  cheer(secs) { if (!this.hidden) this.cheerUntil = performance.now() + secs * 1000 }
 
   leave() { this.hidden = true; this.avatar.root.visible = false; this.office.say(this, null) }
   arrive() {
@@ -188,18 +230,28 @@ export class Agent {
     this.advance()
   }
 
-  // ---------- Frame update ----------
-  update(dt, now, t) {
+  describeActivity() {
+    if (this.hidden) return 'Fora do escritório'
+    if (this.talk) return `Conversando com ${this.talk.members.filter((m) => m !== this).map((m) => m.role.name).join(', ')}`
+    if (this.task) return `Trabalhando: ${this.task}`
+    return this.walking ? `${this.activity} (a caminho)` : this.activity
+  }
+
+  // ---------- Simulation tick (decisions and movement) ----------
+  tick(dt, now) {
     if (this.hidden) { if (this.step && now > this.stepUntil && !this.step.go) this.advance(); return }
     if (this.walking) this.walk(dt)
     else if (this.step && !this.step.go && now > this.stepUntil) this.advance()
-    else if (this.step?.lines && now > this.nextLineAt) {
+    else if (this.step?.lines && !this.talk && now > this.nextLineAt) {
       this.nextLineAt = now + rand(5000, 11000)
       if (Math.random() < 0.55) this.office.say(this, pick(this.step.lines), 2.5)
     }
+    if (this.task && this.atDesk && !this.talk && STUCK_ROOMS.has(this.desk.slot.room) && now > this.nextStuckAt) {
+      this.nextStuckAt = now + rand(25000, 60000)
+      if (Math.random() < STUCK_CHANCE) this.office.talk.requestHelp(this)
+    }
     const workingNow = this.task && !this.walking
     this.energy = Math.min(1, Math.max(0, this.energy - dt * (workingNow ? 0.006 : 0.002)))
-    this.animate(now, t)
   }
 
   walk(dt) {
@@ -218,17 +270,22 @@ export class Agent {
     this.avatar.root.rotation.y = Math.atan2(delta.x, delta.z)
   }
 
+  // ---------- Frame (animation only) ----------
   currentPose(now) {
     if (this.walking) return 'walk'
-    const step = this.step
+    if (now < this.cheerUntil) return 'cheer'
+    const seated = this.slot.pose === 'sit' || this.slot.pose === 'game'
+    if (this.talk) {
+      if (this.office.talk.isSpeaking(this)) return seated ? 'sitTalk' : 'talk'
+      return seated ? (this.task ? 'mouse' : 'sit') : 'stand'
+    }
     const cycle = (list, secs) => list[Math.floor((now / 1000 + this.phase * 7) / secs) % list.length]
-    const partner = this.chatWith && now < this.chatWith.until && this.slot === this.desk.slot ? this.chatWith : null
-    if (partner) return partner.pose
-    const pose = step?.do ?? this.slot.pose
-    if (pose === 'work') return this.slot.pose === 'sit' ? cycle(WORK_CYCLE, 4) : 'talk'
+    const pose = this.step?.do ?? this.slot.pose
+    if (pose === 'work') return seated ? cycle(WORK_CYCLE, 4) : 'talk'
     if (pose === 'meeting') return cycle(MEETING_CYCLE, 5)
     if (pose === 'present') return cycle(['point', 'talk', 'talk'], 4)
     if (pose === 'deskIdle') return cycle(DESK_IDLE_CYCLE, 6)
+    if (pose === 'converse') return seated ? 'sit' : 'stand'
     if (pose === 'stand' && this.slot.pose === 'sit') return 'sit'
     return pose
   }
@@ -236,17 +293,15 @@ export class Agent {
   animate(now, t) {
     const pose = this.currentPose(now)
     if (!this.walking) {
-      const partner = this.chatWith && now < this.chatWith.until && pose !== 'mouse' ? this.chatWith.agent.pos : null
-      const look = partner ?? this.slot.look
+      const look = this.office.talk.focusOf(this) ?? this.slot.look
       const target = Math.atan2(look.x - this.pos.x, look.z - this.pos.z)
       let diff = target - this.avatar.root.rotation.y
       diff = Math.atan2(Math.sin(diff), Math.cos(diff))
       this.avatar.root.rotation.y += diff * 0.15
     }
-    if (this.chatWith && now > this.chatWith.until) this.chatWith = null
     applyPose(this.avatar, pose, t, this.phase, this.holding)
     for (const screen of this.desk.screens) {
-      const lit = this.task ? 0x4fc3f7 : (this.slot === this.desk.slot && !this.walking ? 0x2a3f55 : 0x000000)
+      const lit = this.task ? 0x4fc3f7 : (this.atDesk ? 0x2a3f55 : 0x000000)
       if (screen.emissive.getHex() !== lit && !this.flashUntil) screen.emissive.setHex(lit)
     }
     if (this.flashUntil && now > this.flashUntil) this.flashUntil = 0
