@@ -11,11 +11,11 @@ const props = defineProps<Props>()
 const { t } = useI18n()
 
 const AVATAR_PALETTES = [
-  { bg: 'bg-[#e0f2f7] dark:bg-[#0e353f]', text: 'text-[#0f6381] dark:text-cyan-300' },
-  { bg: 'bg-[#f0ebf8] dark:bg-[#2b1f47]', text: 'text-[#7048e8] dark:text-purple-300' },
-  { bg: 'bg-[#e6f4ea] dark:bg-[#1a3826]', text: 'text-[#137333] dark:text-emerald-300' },
-  { bg: 'bg-[#e8f0fe] dark:bg-[#1f2d48]', text: 'text-[#1a73e8] dark:text-blue-300' },
-  { bg: 'bg-[#fef3c7] dark:bg-[#36270d]', text: 'text-[#b45309] dark:text-amber-300' },
+  { bg: 'bg-primary/10', text: 'text-primary' },
+  { bg: 'bg-secondary/10', text: 'text-secondary' },
+  { bg: 'bg-success/10', text: 'text-success' },
+  { bg: 'bg-(--color-sol-100) dark:bg-(--color-sol-900)', text: 'text-(--color-sol-700) dark:text-(--color-sol-200)' },
+  { bg: 'bg-(--ui-bg-accented)', text: 'text-(--ui-text-toned)' },
 ]
 
 function getInitials(name: string | null): string {
@@ -34,7 +34,7 @@ function getInitials(name: string | null): string {
 
 function getAvatarPalette(index: number) {
   const palette = AVATAR_PALETTES[index % AVATAR_PALETTES.length]
-  return palette ?? { bg: 'bg-[#e0f2f7] dark:bg-[#0e353f]', text: 'text-[#0f6381] dark:text-cyan-300' }
+  return palette ?? { bg: 'bg-primary/10', text: 'text-primary' }
 }
 
 function formatRelativeTime(isoDate: string): string {
@@ -70,7 +70,7 @@ function getEventDetails(item: HomeActivityItem) {
         label: t('home.recentActivity.events.purchase', { amount: formatAmount(item.amountCents) }),
         sub: `+${unitLabel}`,
         icon: 'i-ph-receipt',
-        iconColor: 'text-blue-500',
+        iconColor: 'text-primary',
         to: '/clientes',
       }
     case 'bonus':
@@ -78,7 +78,7 @@ function getEventDetails(item: HomeActivityItem) {
         label: t('home.recentActivity.events.bonus'),
         sub: `+${unitLabel}`,
         icon: 'i-ph-sparkle',
-        iconColor: 'text-purple-500',
+        iconColor: 'text-(--color-sol-700) dark:text-(--color-sol-200)',
         to: '/clientes',
       }
     case 'rewardReleased':
@@ -86,7 +86,7 @@ function getEventDetails(item: HomeActivityItem) {
         label: t('home.recentActivity.events.rewardReleased', { reward: item.rewardTitle || 'Prêmio' }),
         sub: `${item.units} ${isStamp ? 'carimbos atingidos' : 'pontos atingidos'}`,
         icon: 'i-ph-gift',
-        iconColor: 'text-amber-500',
+        iconColor: 'text-secondary',
         to: '/clientes?filtro=premio-liberado',
       }
     case 'redemption':
@@ -94,7 +94,7 @@ function getEventDetails(item: HomeActivityItem) {
         label: t('home.recentActivity.events.redemption', { reward: item.rewardTitle || 'Prêmio' }),
         sub: 'Entregue no balcão',
         icon: 'i-ph-trophy',
-        iconColor: 'text-emerald-500',
+        iconColor: 'text-success',
         to: '/balcao',
       }
     case 'visit':
@@ -103,7 +103,7 @@ function getEventDetails(item: HomeActivityItem) {
         label: t('home.recentActivity.events.visit'),
         sub: `+${unitLabel}`,
         icon: 'i-ph-check-circle',
-        iconColor: 'text-[#0f6381] dark:text-cyan-400',
+        iconColor: 'text-primary',
         to: '/clientes',
       }
   }
@@ -111,15 +111,15 @@ function getEventDetails(item: HomeActivityItem) {
 </script>
 
 <template>
-  <section class="bg-white dark:bg-(--ui-bg) rounded-2xl p-5 border border-slate-100/90 dark:border-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.03)] flex flex-col transition-all duration-200 hover:border-slate-200/90 dark:hover:border-white/15 hover:shadow-xs">
+  <section class="bg-(--ui-bg) rounded-2xl p-5 border border-(--ui-border-muted) shadow-(--lagoa-shadow-card) flex flex-col transition-all duration-200 hover:border-(--ui-border)">
     <!-- Header -->
     <header class="flex items-center justify-between pb-3">
-      <h2 class="text-base font-bold text-slate-900 dark:text-white">
+      <h2 class="text-base font-bold text-(--ui-text-highlighted)">
         {{ t('home.recentActivity.title') }}
       </h2>
       <NuxtLink
         to="/clientes"
-        class="group group/link no-underline hover:no-underline inline-flex items-center gap-1.5 text-xs font-semibold text-[#0f6381] dark:text-cyan-400 hover:text-[#0b4d66] dark:hover:text-cyan-300 hover:bg-[#e8f6f8] dark:hover:bg-cyan-950/50 px-2 py-1 -mr-2 rounded-lg transition-all duration-150"
+        class="group group/link no-underline hover:no-underline inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:bg-primary/10 px-2 py-1 -mr-2 rounded-lg transition-all duration-150"
       >
         <span class="no-underline">{{ t('home.recentActivity.seeAll') }}</span>
         <UIcon name="i-ph-arrow-right" class="size-3 transition-transform duration-200 group-hover:translate-x-0.5 group-hover/link:translate-x-0.5" aria-hidden="true" />
@@ -128,23 +128,23 @@ function getEventDetails(item: HomeActivityItem) {
 
     <!-- Estado Vazio -->
     <div v-if="activity.length === 0" class="py-10 text-center flex flex-col items-center justify-center">
-      <div class="size-12 rounded-full bg-slate-100 dark:bg-white/5 text-slate-400 flex items-center justify-center mb-3">
+      <div class="size-12 rounded-full bg-(--ui-bg-elevated) text-(--ui-text-muted) flex items-center justify-center mb-3">
         <UIcon name="i-ph-clock-counter-clockwise" class="size-6" aria-hidden="true" />
       </div>
-      <p class="text-sm font-semibold text-slate-600 dark:text-slate-300">
+      <p class="text-sm font-semibold text-(--ui-text-toned)">
         {{ t('home.recentActivity.empty') }}
       </p>
-      <p class="mt-1 text-xs text-slate-400 dark:text-slate-500 max-w-xs">
+      <p class="mt-1 text-xs text-(--ui-text-muted) max-w-xs">
         {{ t('home.recentActivity.emptyHint') }}
       </p>
     </div>
 
     <!-- Lista de Atividades -->
-    <ul v-else class="divide-y divide-slate-100/90 dark:divide-white/5">
+    <ul v-else class="divide-y divide-(--ui-border-muted)">
       <li v-for="(item, index) in activity" :key="item.id">
         <NuxtLink
           :to="getEventDetails(item).to"
-          class="group flex items-center justify-between py-3 -mx-2 px-2.5 rounded-xl transition-all duration-150 hover:bg-[#e8f6f8]/35 dark:hover:bg-white/5 active:scale-[0.99]"
+          class="group flex items-center justify-between py-3 -mx-2 px-2.5 rounded-xl transition-all duration-150 hover:bg-primary/5 active:scale-[0.99]"
         >
           <!-- Avatar + Nome + Evento -->
           <div class="flex items-center gap-3 min-w-0 pr-3">
@@ -157,29 +157,29 @@ function getEventDetails(item: HomeActivityItem) {
 
             <div class="min-w-0 flex flex-col">
               <div class="flex items-center gap-1.5 truncate">
-                <span class="truncate text-sm font-semibold text-slate-800 dark:text-slate-100 group-hover:text-[#0f6381] dark:group-hover:text-cyan-300 transition-colors">
+                <span class="truncate text-sm font-semibold text-(--ui-text-highlighted) group-hover:text-primary transition-colors">
                   {{ item.name || t('customers.table.noName') }}
                 </span>
-                <span v-if="item.maskedPhone" class="text-xs text-slate-400 dark:text-slate-500 font-mono shrink-0">
+                <span v-if="item.maskedPhone" class="text-xs text-(--ui-text-muted) font-mono shrink-0">
                   · {{ item.maskedPhone }}
                 </span>
               </div>
 
-              <div class="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
+              <div class="flex items-center gap-1 text-xs text-(--ui-text-muted) truncate mt-0.5">
                 <UIcon :name="getEventDetails(item).icon" class="size-3.5 shrink-0" :class="getEventDetails(item).iconColor" aria-hidden="true" />
-                <span class="truncate font-medium text-slate-700 dark:text-slate-300">{{ getEventDetails(item).label }}</span>
-                <span class="text-slate-300 dark:text-slate-600">·</span>
-                <span class="text-slate-400 dark:text-slate-500 tabular-nums shrink-0">{{ getEventDetails(item).sub }}</span>
+                <span class="truncate font-medium text-(--ui-text-toned)">{{ getEventDetails(item).label }}</span>
+                <span class="text-(--ui-border)">·</span>
+                <span class="text-(--ui-text-muted) tabular-nums shrink-0">{{ getEventDetails(item).sub }}</span>
               </div>
             </div>
           </div>
 
           <!-- Horário Relativo + Caret -->
           <div class="flex items-center gap-2 shrink-0">
-            <span class="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap tabular-nums">
+            <span class="text-xs text-(--ui-text-muted) whitespace-nowrap tabular-nums">
               {{ formatRelativeTime(item.createdAt) }}
             </span>
-            <UIcon name="i-ph-caret-right" class="size-4 text-slate-300 dark:text-slate-600 group-hover:text-[#0f6381] dark:group-hover:text-cyan-400 group-hover:translate-x-0.5 transition-all duration-150" aria-hidden="true" />
+            <UIcon name="i-ph-caret-right" class="size-4 text-(--ui-text-muted) group-hover:text-primary group-hover:translate-x-0.5 transition-all duration-150" aria-hidden="true" />
           </div>
         </NuxtLink>
       </li>

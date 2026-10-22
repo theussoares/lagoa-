@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import type { CustomerId } from '#shared/schemas/ids'
+import type { CustomerId, ProgramId, ShopId } from '#shared/schemas/ids'
 import { MaskedPhoneSchema } from '#shared/schemas/phone'
 import type { Program } from '#shared/schemas/program'
 import type { WeekSummary } from '#shared/schemas/weekSummary'
@@ -91,8 +91,8 @@ function mockOverview(overrides: Partial<HomeOverview> = {}): HomeOverview {
 
 function mockProgram(overrides: Partial<Program> = {}): Program {
   return {
-    id: 'prg_test' as any,
-    shopId: 'shp_test' as any,
+    id: 'prg_test' as ProgramId,
+    shopId: 'shp_test' as ShopId,
     reward: { title: 'Corte de cabelo + Barba' },
     rules: { mode: 'pointsPerCurrency', pointsPerReal: 1, target: 120 },
     bonusRules: {

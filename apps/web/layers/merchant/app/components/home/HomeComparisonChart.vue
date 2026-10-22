@@ -71,22 +71,22 @@ const metricList = computed<MetricItem[]>(() => {
 </script>
 
 <template>
-  <section class="bg-white dark:bg-(--ui-bg) rounded-2xl p-5 border border-slate-100/90 dark:border-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.03)] flex flex-col justify-between transition-all duration-200 hover:border-slate-200/90 dark:hover:border-white/15 hover:shadow-xs">
+  <section class="bg-(--ui-bg) rounded-2xl p-5 border border-(--ui-border-muted) shadow-(--lagoa-shadow-card) flex flex-col justify-between transition-all duration-200 hover:border-(--ui-border)">
     <!-- Header -->
     <div>
       <header class="flex items-center justify-between pb-1">
         <div>
-          <h2 class="text-base font-bold text-slate-900 dark:text-white">
+          <h2 class="text-base font-bold text-(--ui-text-highlighted)">
             {{ t('home.monthSummary.title') }}
           </h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <p class="text-xs text-(--ui-text-muted) mt-0.5">
             {{ t('home.monthSummary.subtitle') }}
           </p>
         </div>
 
         <NuxtLink
           to="/balcao"
-          class="group group/link no-underline hover:no-underline inline-flex items-center gap-1.5 text-xs font-semibold text-[#0f6381] dark:text-cyan-400 hover:text-[#0b4d66] dark:hover:text-cyan-300 hover:bg-[#e8f6f8] dark:hover:bg-cyan-950/50 px-2 py-1 -mr-2 rounded-lg transition-all duration-150"
+          class="group group/link no-underline hover:no-underline inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:bg-primary/10 px-2 py-1 -mr-2 rounded-lg transition-all duration-150"
         >
           <span class="no-underline">{{ t('home.monthSummary.details') }}</span>
           <UIcon name="i-ph-arrow-right" class="size-3 transition-transform duration-200 group-hover:translate-x-0.5 group-hover/link:translate-x-0.5" aria-hidden="true" />
@@ -95,15 +95,15 @@ const metricList = computed<MetricItem[]>(() => {
 
       <!-- Períodos (Tabs) e Legenda -->
       <div class="flex flex-wrap items-center justify-between gap-3 mt-4 pt-1">
-        <div class="flex items-center gap-1 bg-slate-100/80 dark:bg-white/5 p-1 rounded-xl">
+        <div class="flex items-center gap-1 bg-(--ui-bg-elevated) p-1 rounded-xl">
           <button
             v-for="period in periodTabs"
             :key="period.value"
             type="button"
             class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-150 cursor-pointer active:scale-95"
             :class="selectedPeriod === period.value
-              ? 'bg-white dark:bg-white/15 text-[#0f6381] dark:text-cyan-300 shadow-xs hover:shadow-sm'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-white/10'"
+              ? 'bg-(--ui-bg) text-primary shadow-xs hover:shadow-sm'
+              : 'text-(--ui-text-muted) hover:text-(--ui-text-highlighted) hover:bg-(--ui-bg-accented)'"
             @click="selectedPeriod = period.value"
           >
             {{ period.label }}
@@ -111,13 +111,13 @@ const metricList = computed<MetricItem[]>(() => {
         </div>
 
         <!-- Legenda -->
-        <div class="flex items-center gap-4 text-xs font-medium text-slate-500 dark:text-slate-400">
+        <div class="flex items-center gap-4 text-xs font-medium text-(--ui-text-muted)">
           <div class="flex items-center gap-1.5">
-            <span class="size-2.5 rounded-full bg-[#0f6381] dark:bg-cyan-400" />
+            <span class="size-2.5 rounded-full bg-primary" />
             <span>{{ t('home.monthSummary.current') }}</span>
           </div>
           <div class="flex items-center gap-1.5">
-            <span class="size-2.5 rounded-full bg-[#9ed1df] dark:bg-[#1a4f61]" />
+            <span class="size-2.5 rounded-full bg-primary/30" />
             <span>{{ t('home.monthSummary.previous') }}</span>
           </div>
         </div>
@@ -138,10 +138,10 @@ const metricList = computed<MetricItem[]>(() => {
               v-if="item.diffPercent !== null"
               class="inline-flex items-center gap-0.5 text-[11px] font-bold px-1.5 py-0.5 rounded-full tabular-nums"
               :class="item.diffPercent > 0
-                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400'
+                ? 'bg-success/10 text-success'
                 : item.diffPercent < 0
-                  ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400'
-                  : 'bg-slate-100 dark:bg-white/10 text-slate-500'"
+                  ? 'bg-error/10 text-error'
+                  : 'bg-(--ui-bg-elevated) text-(--ui-text-muted)'"
             >
               <UIcon
                 :name="item.diffPercent > 0 ? 'i-ph-arrow-up' : item.diffPercent < 0 ? 'i-ph-arrow-down' : 'i-ph-minus'"
@@ -150,7 +150,7 @@ const metricList = computed<MetricItem[]>(() => {
               />
               {{ item.diffPercent > 0 ? `+${item.diffPercent}%` : `${item.diffPercent}%` }}
             </span>
-            <span v-else class="text-[11px] font-medium text-slate-400 dark:text-slate-500">
+            <span v-else class="text-[11px] font-medium text-(--ui-text-muted)">
               —
             </span>
           </div>
@@ -159,11 +159,11 @@ const metricList = computed<MetricItem[]>(() => {
           <div class="w-full flex items-end justify-center gap-1.5 sm:gap-2 h-32">
             <!-- Barra Anterior -->
             <div class="w-1/2 max-w-[28px] flex flex-col items-center justify-end h-full">
-              <span class="text-[11px] text-slate-400 dark:text-slate-500 mb-1 tabular-nums">
+              <span class="text-[11px] text-(--ui-text-muted) mb-1 tabular-nums">
                 {{ item.previous }}
               </span>
               <div
-                class="w-full rounded-t-[4px] bg-[#9ed1df] dark:bg-[#1a4f61] transition-all duration-300 group-hover/col:brightness-105"
+                class="w-full rounded-t-[4px] bg-primary/30 transition-all duration-300 group-hover/col:brightness-105"
                 :style="{ height: `${item.previousHeight}%` }"
                 :title="`${item.label} (Anterior): ${item.previous}`"
               />
@@ -171,11 +171,11 @@ const metricList = computed<MetricItem[]>(() => {
 
             <!-- Barra Atual -->
             <div class="w-1/2 max-w-[28px] flex flex-col items-center justify-end h-full">
-              <span class="text-xs font-bold text-slate-900 dark:text-white mb-1 tabular-nums">
+              <span class="text-xs font-bold text-(--ui-text-highlighted) mb-1 tabular-nums">
                 {{ item.current }}
               </span>
               <div
-                class="w-full rounded-t-[4px] bg-[#0f6381] dark:bg-cyan-400 transition-all duration-300 group-hover/col:brightness-110"
+                class="w-full rounded-t-[4px] bg-primary transition-all duration-300 group-hover/col:brightness-110"
                 :style="{ height: `${item.currentHeight}%` }"
                 :title="`${item.label} (Atual): ${item.current}`"
               />
@@ -183,8 +183,8 @@ const metricList = computed<MetricItem[]>(() => {
           </div>
 
           <!-- Rótulo da Métrica -->
-          <div class="w-full border-t border-slate-100 dark:border-white/10 pt-2 mt-2 text-center">
-            <span class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate block">
+          <div class="w-full border-t border-(--ui-border-muted) pt-2 mt-2 text-center">
+            <span class="text-xs font-semibold text-(--ui-text-toned) truncate block">
               {{ item.label }}
             </span>
           </div>

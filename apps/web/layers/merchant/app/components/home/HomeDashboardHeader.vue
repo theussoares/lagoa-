@@ -26,26 +26,26 @@ const currentDateFormatted = computed(() => {
 <template>
   <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <div>
-      <h1 class="font-display text-2xl sm:text-[1.75rem] font-bold tracking-tight text-slate-900 dark:text-white">
+      <h1 class="font-display text-2xl sm:text-[1.75rem] font-bold tracking-tight text-(--ui-text-highlighted)">
         {{ t('home.title') }}
       </h1>
-      <p class="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+      <p class="mt-0.5 text-sm text-(--ui-text-muted)">
         {{ t('home.subtitle') }}
       </p>
     </div>
 
     <div class="flex flex-wrap items-center gap-3 sm:gap-4 shrink-0 sm:pr-14">
       <!-- Data atual no fuso brasileiro -->
-      <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-        <UIcon name="i-ph-calendar-blank" class="size-4.5 text-slate-400" aria-hidden="true" />
+      <div class="flex items-center gap-2 text-sm text-(--ui-text-toned)">
+        <UIcon name="i-ph-calendar-blank" class="size-4.5 text-(--ui-text-muted)" aria-hidden="true" />
         <span class="font-medium">{{ currentDateFormatted }}</span>
       </div>
 
-      <div class="hidden sm:block h-4 w-px bg-slate-200 dark:bg-slate-700" aria-hidden="true" />
+      <div class="hidden sm:block h-4 w-px bg-(--ui-border)" aria-hidden="true" />
 
       <!-- Identificação da loja -->
-      <div v-if="shopName" class="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
-        <div class="flex size-7 items-center justify-center rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+      <div v-if="shopName" class="flex items-center gap-2 text-sm font-semibold text-(--ui-text-highlighted)">
+        <div class="flex size-7 items-center justify-center rounded-full bg-(--ui-bg-muted) text-(--ui-text-toned)">
           <UIcon name="i-ph-user" class="size-4" aria-hidden="true" />
         </div>
         <span class="max-w-[170px] truncate" :title="shopName">{{ shopName }}</span>
@@ -56,7 +56,7 @@ const currentDateFormatted = computed(() => {
         variant="ghost"
         color="neutral"
         icon="i-ph-arrow-clockwise"
-        class="size-9 justify-center rounded-lg cursor-pointer transition-all duration-150 hover:bg-slate-100 dark:hover:bg-white/10 active:scale-95"
+        class="size-9 justify-center rounded-lg cursor-pointer transition-all duration-150 hover:bg-(--ui-bg-muted) active:scale-95"
         :aria-label="t('home.refresh')"
         :loading="loading"
         @click="emit('refresh')"
