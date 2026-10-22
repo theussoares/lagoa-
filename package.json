@@ -13,6 +13,7 @@
     "test:watch": "pnpm --filter @lagoa/web test:watch",
     "dev:site": "pnpm --filter @lagoa/site dev",
     "generate:site": "pnpm --filter @lagoa/site generate",
+    "build:office": "pnpm --filter @lagoa/office build",
     "typecheck:site": "pnpm --filter @lagoa/site typecheck",
     "dev:api": "pnpm --filter @lagoa/api dev",
     "build:api": "pnpm --filter @lagoa/api build",

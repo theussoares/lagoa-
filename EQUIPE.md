@@ -129,3 +129,21 @@ da sua especialidade.
 | Revisão de auth, Balcão, resgate, consentimento, cobrança, dados pessoais | Opus   |
 | Implementação, testes, tipos, design system, stores                       | Sonnet |
 | Code review de componentes de UI e composables simples                    | Sonnet |
+
+## Fluxo oficial de demandas (`/demanda`)
+
+Toda demanda começa pelo `tech-lead` (triagem P/M/G), que define quem entra:
+
+| Tamanho | Fluxo |
+| ------- | ----- |
+| P | `dev-junior` (Haiku) ou dev pleno → revisor |
+| M | `product-owner` → devs → `qa` → revisor |
+| G | `product-owner` → `arquiteto` → `cto` → `engenheiro` → devs → `qa` → `seguranca` → `infra` → `code-reviewer` |
+
+`seguranca` entra sempre que tocar auth, sessão, Balcão, resgate, QR da visita,
+consentimento, cobrança ou dado pessoal. Senioridade = modelo: sênior/CTO/segurança
+em Opus, plenos e infra em Sonnet, júnior em Haiku.
+
+**Escritório 3D:** `tools/office` (preview `lagoa-office`, porta 4545). Hooks em
+`.claude/settings.json` gravam eventos em `tools/office/.data/events.jsonl`; não
+gastam tokens. Modelos 3D: Kenney (Furniture Kit e Mini Characters, CC0) em `tools/office/models`.
