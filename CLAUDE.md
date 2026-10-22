@@ -90,6 +90,9 @@ Onde ele fala em "CLAUDE.md", leia este arquivo de regras.
 - **Landing page do lojista:** `apps/site` (Nuxt pré-renderizado, herda
   `apps/web/layers/ui`). `pnpm dev:site` (porta 3001), `pnpm generate:site`.
   O `generate` exige `NUXT_PUBLIC_APP_URL` (link do Balcão congelado no HTML).
+  Bilíngue: português na raiz e inglês sob `/en` (`apps/site/i18n/locales/{pt-BR,en}.json`; textos de blog e guia em
+  `app/content/*.{pt-BR,en}.ts`). Slugs e caminhos de seção por idioma em `app/content/routes.ts`; `lang`, canonical e hreflang
+  saem de `useLocaleSeo`. Texto novo na LP entra nos dois idiomas.
 
 ## Idioma
 

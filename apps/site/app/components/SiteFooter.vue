@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { t } = useI18n()
+const localePath = useLocalePath()
 const { appUrl } = useRuntimeConfig().public
 const year = new Date().getFullYear()
 </script>
@@ -11,14 +12,15 @@ const year = new Date().getFullYear()
       <p class="text-[0.9375rem] text-muted">{{ t('footer.tagline') }}</p>
     </div>
     <nav :aria-label="t('footer.explore')" class="flex flex-col gap-1">
-      <NuxtLink to="/blog" class="inline-flex min-h-11 items-center text-toned hover:text-primary">{{ t('nav.blog') }}</NuxtLink>
-      <NuxtLink to="/guia" class="inline-flex min-h-11 items-center text-toned hover:text-primary">{{ t('nav.guide') }}</NuxtLink>
-      <NuxtLink to="/#preco" class="inline-flex min-h-11 items-center text-toned hover:text-primary">{{ t('nav.pricing') }}</NuxtLink>
+      <NuxtLink :to="localePath({ name: 'blog' })" class="inline-flex min-h-11 items-center text-toned hover:text-primary">{{ t('nav.blog') }}</NuxtLink>
+      <NuxtLink :to="localePath({ name: 'guia' })" class="inline-flex min-h-11 items-center text-toned hover:text-primary">{{ t('nav.guide') }}</NuxtLink>
+      <NuxtLink :to="`${localePath('/')}#preco`" class="inline-flex min-h-11 items-center text-toned hover:text-primary">{{ t('nav.pricing') }}</NuxtLink>
     </nav>
     <div class="flex flex-col gap-1 md:items-end">
       <a :href="`${appUrl}/balcao/entrar`" class="inline-flex min-h-11 items-center font-semibold text-primary underline-offset-4 hover:underline">
         {{ t('footer.merchantSignIn') }}
       </a>
+      <LanguageSwitch />
       <p class="text-[0.9375rem] text-muted">{{ t('footer.copyright', { year }) }}</p>
     </div>
   </footer>
