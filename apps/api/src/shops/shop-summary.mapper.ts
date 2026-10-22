@@ -1,3 +1,4 @@
+import { isSurpriseDayToday } from '#shared/domain/showcaseEarning'
 import { welcomeUnits } from '#shared/domain/bonusRules'
 import { earnRateOf, unitOf } from '#shared/domain/programStrategies'
 import { type ShopSummary, ShopSummarySchema } from '#shared/schemas/shop'
@@ -16,7 +17,11 @@ function showcaseOf(shop: CatalogShop, supabaseUrl: string): { showcase?: { imag
   return Object.keys(showcase).length === 0 ? {} : { showcase }
 }
 
-export function toShopSummary(shop: CatalogShop, supabaseUrl: string): Result<ShopSummary, ErrorOf<'invalidProgram'>> {
+export function toShopSummary(
+  shop: CatalogShop,
+  supabaseUrl: string,
+  now: Date,
+): Result<ShopSummary, ErrorOf<'invalidProgram'>> {
   const { rules, rewardTitle, bonusRules } = shop.program
   const parsed = ShopSummarySchema.safeParse({
     id: shop.id,
@@ -33,6 +38,7 @@ export function toShopSummary(shop: CatalogShop, supabaseUrl: string): Result<Sh
       earnRate: earnRateOf(rules),
       welcomeUnits: welcomeUnits(bonusRules),
     },
+    surpriseDayToday: isSurpriseDayToday(bonusRules, now),
   })
   return parsed.success ? ok(parsed.data) : err({ code: 'invalidProgram' })
 }

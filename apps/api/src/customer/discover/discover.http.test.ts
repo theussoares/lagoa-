@@ -11,6 +11,7 @@ import { catalogShop } from '../../shops/catalog.fixtures'
 import type { CatalogShop } from '../../shops/catalog-shop'
 import { DiscoverController } from './discover.controller'
 import { DiscoverRepository } from './discover.repository'
+import { Clock } from '../../common/clock'
 import { DiscoverService } from './discover.service'
 
 class RecordingDiscoverRepository extends DiscoverRepository {
@@ -35,6 +36,7 @@ describe('discover HTTP', () => {
         DiscoverService,
         { provide: DiscoverRepository, useValue: repository },
         { provide: ENV, useValue: { SUPABASE_URL: 'https://project.supabase.co' } },
+        { provide: Clock, useValue: { now: () => new Date('2026-10-03T12:00:00Z') } },
         { provide: APP_GUARD, useClass: FakeAuthGuard },
         { provide: APP_FILTER, useClass: AllExceptionsFilter },
       ],

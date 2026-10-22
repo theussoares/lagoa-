@@ -6,9 +6,11 @@ import { catalogShop, NO_BONUS } from './catalog.fixtures'
 import { toShopSummary } from './shop-summary.mapper'
 
 const SUPABASE_URL = 'https://project.supabase.co'
+// 2026-10-21T02:00Z is 22h of 2026-10-20 in the pilot time zone.
+const NOW = new Date('2026-10-21T02:00:00Z')
 
 function summaryOf(shop = catalogShop()): ShopSummary {
-  const result = toShopSummary(shop, SUPABASE_URL)
+  const result = toShopSummary(shop, SUPABASE_URL, NOW)
   if (!result.ok) throw new Error('expected a valid summary')
   return result.value
 }
@@ -30,6 +32,15 @@ describe('toShopSummary', () => {
     const base = catalogShop().program
     const shop = catalogShop({ program: { ...base, bonusRules: { ...NO_BONUS, welcomeBonus: { enabled: true, units: 2 } } } })
     expect(summaryOf(shop).program.welcomeUnits).toBe(2)
+  })
+
+  it('flags the surprise day only on its local date', () => {
+    const base = catalogShop().program
+    const onDate = (date: string) =>
+      catalogShop({ program: { ...base, bonusRules: { ...NO_BONUS, surpriseDay: { enabled: true, multiplier: 2, date } } } })
+    expect(summaryOf(onDate('2026-10-20')).surpriseDayToday).toBe(true)
+    expect(summaryOf(onDate('2026-10-21')).surpriseDayToday).toBe(false)
+    expect(summaryOf().surpriseDayToday).toBe(false)
   })
 
   it('describes points per real', () => {
@@ -60,11 +71,11 @@ describe('toShopSummary', () => {
   it('drops fields the app must never see even if the row carries them', () => {
     const leaky = { ...catalogShop(), checkInCode: 'NAV4K7', ownerUserId: 'owner-1', status: 'approved' }
     const summary = summaryOf(leaky)
-    expect(Object.keys(summary).sort()).toEqual(['addressLine', 'category', 'id', 'name', 'neighborhood', 'program'])
+    expect(Object.keys(summary).sort()).toEqual(['addressLine', 'category', 'id', 'name', 'neighborhood', 'program', 'surpriseDayToday'])
   })
 
   it('refuses a shop that breaks the contract (name too long) instead of throwing', () => {
     const shop = catalogShop({ name: 'x'.repeat(SHOP_NAME_MAX_LENGTH + 1) })
-    expect(toShopSummary(shop, SUPABASE_URL)).toEqual({ ok: false, error: { code: 'invalidProgram' } })
+    expect(toShopSummary(shop, SUPABASE_URL, NOW)).toEqual({ ok: false, error: { code: 'invalidProgram' } })
   })
 })

@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { programs } from '../../database/schema'
 import { NO_BONUS_RULES, TEST_DATABASE_URL, TestDatabase } from '../../test-support/test-database'
+import { SystemClock } from '../../common/clock'
 import { DiscoverService } from './discover.service'
 import { DrizzleDiscoverRepository } from './drizzle-discover.repository'
 
@@ -13,7 +14,7 @@ describe.skipIf(!TEST_DATABASE_URL)('discover against a real database', () => {
 
   beforeAll(() => {
     data = new TestDatabase(TEST_DATABASE_URL ?? '')
-    service = new DiscoverService(new DrizzleDiscoverRepository(data.db), { SUPABASE_URL: 'https://project.supabase.co' })
+    service = new DiscoverService(new DrizzleDiscoverRepository(data.db), { SUPABASE_URL: 'https://project.supabase.co' }, new SystemClock())
   })
 
   afterAll(async () => data.close())
