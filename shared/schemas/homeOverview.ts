@@ -38,7 +38,7 @@ export const HomeActivityItemSchema = z.object({
   maskedPhone: MaskedPhoneSchema.nullable(),
   units: z.number().int().nonnegative(),
   unit: ProgramUnitSchema,
-  amountCents: z.number().int().positive().nullable(),
+  amountCents: z.number().int().nonnegative().nullable(),
   rewardTitle: z.string().nullable(),
   createdAt: IsoDateTimeSchema,
 })

@@ -12,13 +12,35 @@ describe('homeComparison', () => {
     expect(ranges.month.current.end).toEqual(now)
     expect(ranges.last30.current.end).toEqual(now)
 
-    // Semana: 7 dias
+    // Semana: 7 dias contínuos sem buraco
     expect(ranges.week.current.start.toISOString().slice(0, 10)).toBe('2026-10-13')
     expect(ranges.week.previous.start.toISOString().slice(0, 10)).toBe('2026-10-06')
+    expect(ranges.week.previous.end).toEqual(ranges.week.current.start)
+
+    // Últimos 30 dias: 30 dias contínuos sem buraco
+    expect(ranges.last30.previous.end).toEqual(ranges.last30.current.start)
 
     // Mês: Outubro 1 vs Setembro 1
     expect(ranges.month.current.start.toISOString().slice(0, 10)).toBe('2026-10-01')
     expect(ranges.month.previous.start.toISOString().slice(0, 10)).toBe('2026-09-01')
+  })
+
+  it('counts boundary events without holes or duplicates between current and previous', () => {
+    const ranges = getComparisonRanges(now)
+    const boundaryTime = ranges.week.current.start // Exato instante de transição
+    const oneSecondBefore = new Date(boundaryTime.getTime() - 1000)
+    const oneSecondAfter = new Date(boundaryTime.getTime() + 1000)
+
+    const records = [
+      { kind: 'visit' as const, createdAt: oneSecondBefore, amountCents: null },
+      { kind: 'visit' as const, createdAt: boundaryTime, amountCents: null },
+      { kind: 'visit' as const, createdAt: oneSecondAfter, amountCents: null },
+    ]
+
+    const result = summarizeComparison(records, [], now)
+    // oneSecondBefore cai na anterior; boundaryTime e oneSecondAfter caem na atual
+    expect(result.week.visits.previous).toBe(1)
+    expect(result.week.visits.current).toBe(2)
   })
 
   it('summarizes comparison counts accurately', () => {

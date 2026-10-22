@@ -16,13 +16,21 @@ export interface CustomerRegistrationRecord {
   readonly createdAt: IsoDateTime | Date
 }
 
-interface DateRange {
+export interface DateRange {
   readonly start: Date
   readonly end: Date
+  readonly inclusiveEnd?: boolean
 }
 
 function toMs(d: IsoDateTime | Date): number {
   return typeof d === 'string' ? new Date(d).getTime() : d.getTime()
+}
+
+function inRange(t: number, range: DateRange): boolean {
+  const startMs = range.start.getTime()
+  const endMs = range.end.getTime()
+  const inclusive = range.inclusiveEnd ?? true
+  return inclusive ? (t >= startMs && t <= endMs) : (t >= startMs && t < endMs)
 }
 
 function countMetrics(
@@ -30,14 +38,11 @@ function countMetrics(
   newCustomers: readonly CustomerRegistrationRecord[],
   range: DateRange,
 ): { newCustomers: number; visits: number; purchases: number; redemptions: number } {
-  const startMs = range.start.getTime()
-  const endMs = range.end.getTime()
-
   // Clientes únicos cadastrados no intervalo
   const seenCustomers = new Set<string>()
   for (const c of newCustomers) {
     const t = toMs(c.createdAt)
-    if (t >= startMs && t <= endMs) {
+    if (inRange(t, range)) {
       seenCustomers.add(c.customerId)
     }
   }
@@ -48,7 +53,7 @@ function countMetrics(
 
   for (const r of records) {
     const t = toMs(r.createdAt)
-    if (t < startMs || t > endMs) continue
+    if (!inRange(t, range)) continue
 
     if (isVisitKind(r.kind)) {
       visits += 1
@@ -71,14 +76,16 @@ function countMetrics(
 export function getComparisonRanges(now: Date): Record<HomePeriod, { current: DateRange; previous: DateRange }> {
   const localDayStart = startOfLocalDay(now)
 
-  // 1. Semana: últimos 7 dias (terminando em now) vs 7 dias anteriores
+  // 1. Semana: últimos 7 dias (terminando em now) vs 7 dias anteriores (terminando em current.start)
   const weekCurrent: DateRange = {
     start: addDays(localDayStart, -6),
     end: now,
+    inclusiveEnd: true,
   }
   const weekPrevious: DateRange = {
     start: addDays(localDayStart, -13),
-    end: addDays(now, -7),
+    end: weekCurrent.start,
+    inclusiveEnd: false,
   }
 
   // 2. Mês: dia 1 até now vs dia 1 até o mesmo dia/hora do mês anterior
@@ -110,20 +117,24 @@ export function getComparisonRanges(now: Date): Record<HomePeriod, { current: Da
   const monthCurrent: DateRange = {
     start: startCurrentMonthUtc,
     end: now,
+    inclusiveEnd: true,
   }
   const monthPrevious: DateRange = {
     start: startPrevMonthUtc,
     end: endPrevMonthUtc,
+    inclusiveEnd: true,
   }
 
-  // 3. Últimos 30 dias: 30 dias (terminando em now) vs 30 dias anteriores
+  // 3. Últimos 30 dias: 30 dias (terminando em now) vs 30 dias anteriores (terminando em current.start)
   const last30Current: DateRange = {
     start: addDays(localDayStart, -29),
     end: now,
+    inclusiveEnd: true,
   }
   const last30Previous: DateRange = {
     start: addDays(localDayStart, -59),
-    end: addDays(now, -30),
+    end: last30Current.start,
+    inclusiveEnd: false,
   }
 
   return {
