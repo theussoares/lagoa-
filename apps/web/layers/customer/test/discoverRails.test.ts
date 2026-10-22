@@ -11,6 +11,7 @@ interface ShopOptions {
   category?: ShopCategory
   welcomeUnits?: number
   surpriseDayToday?: boolean
+  contact?: unknown
 }
 
 function shop(id: string, options: ShopOptions = {}): ShopSummary {
@@ -28,6 +29,7 @@ function shop(id: string, options: ShopOptions = {}): ShopSummary {
       welcomeUnits: options.welcomeUnits ?? 0,
     },
     surpriseDayToday: options.surpriseDayToday ?? false,
+    ...(options.contact !== undefined && { contact: options.contact }),
   })
 }
 
@@ -108,5 +110,17 @@ describe('toDiscoverRailModels', () => {
     const rails = buildDiscoverRails([shop('welcome', { welcomeUnits: 2 }), shop('plain')], null, noCards)
     const models = toDiscoverRailModels(rails, t)
     expect(models.map((rail) => [rail.id, rail.title, rail.cards.map((card) => card.id)])).toEqual([['welcome', 'discover.rails.welcome', ['welcome']]])
+  })
+})
+
+describe('toShopRailCardModel contact', () => {
+  it('carries the shop button like the standard card', () => {
+    const card = toShopRailCardModel(shop('a', { contact: { kind: 'url', url: 'https://loja.example.com', ctaLabel: 'Ver cardápio' } }), t)
+    expect(card.contact?.label).toBe('Ver cardápio')
+    expect(card.contact?.href).toBe('https://loja.example.com')
+  })
+
+  it('has no button when the shop has none', () => {
+    expect(toShopRailCardModel(shop('a'), t).contact).toBeNull()
   })
 })

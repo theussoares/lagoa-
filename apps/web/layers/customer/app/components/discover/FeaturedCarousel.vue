@@ -14,7 +14,8 @@ const { t } = useI18n()
   <section :aria-label="t('discover.featuredLabel')" class="relative -mx-5 -mt-10">
     <ul class="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-5 px-5 pb-3 [scrollbar-width:none]">
       <li v-for="(shop, index) in shops" :key="shop.id" :style="{ '--i': index + 1 }" class="rise w-72 shrink-0 snap-start">
-        <NuxtLink :to="shop.to" class="card-tap flex h-full flex-col overflow-hidden">
+        <div class="card-tap flex h-full flex-col overflow-hidden">
+          <NuxtLink :to="shop.to" class="flex flex-1 flex-col">
           <span class="relative block h-32 bg-(--color-tinta-100) dark:bg-(--color-tinta-900)">
             <img v-if="shop.image" :src="shop.image" alt="" loading="lazy" class="absolute inset-0 size-full object-cover" />
             <UIcon v-else :name="shop.icon" class="absolute -right-2 -bottom-4 size-24 text-primary opacity-15" aria-hidden="true" />
@@ -29,7 +30,22 @@ const { t } = useI18n()
             <span class="font-display truncate text-lg font-bold text-highlighted">{{ shop.shopName }}</span>
             <span class="truncate text-sm text-muted">{{ shop.meta }}</span>
           </span>
-        </NuxtLink>
+          </NuxtLink>
+          <ActionButton
+            v-if="shop.contact"
+            role="primary"
+            :to="shop.contact.href"
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            external
+            block
+            :icon="shop.contact.icon"
+            trailing-icon="i-ph-arrow-up-right"
+            :label="shop.contact.label"
+            :aria-label="shop.contact.accessibleLabel"
+            class="mx-4 mb-4 w-auto min-h-11"
+          />
+        </div>
       </li>
     </ul>
   </section>
