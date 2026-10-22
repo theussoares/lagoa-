@@ -17,9 +17,13 @@ export function useMerchantHome(): MerchantHome {
     if (!week.ok) return week
     if (!overviewResult.ok) return overviewResult
 
-    // Sessão vencida derruba a tela; qualquer outra falha só esconde aquela seção.
+    // Sessão vencida derruba a tela; qualquer outra falha gera aviso para o lojista.
     if (campaignsResult !== null && !campaignsResult.ok && campaignsResult.error.code === 'unauthorized') return err(campaignsResult.error)
     if (programResult !== null && !programResult.ok && programResult.error.code === 'unauthorized') return err(programResult.error)
+
+    const warnings: ('program' | 'campaigns')[] = []
+    if (programResult !== null && !programResult.ok) warnings.push('program')
+    if (campaignsResult !== null && !campaignsResult.ok) warnings.push('campaigns')
 
     return ok({
       week: week.value,
@@ -28,6 +32,7 @@ export function useMerchantHome(): MerchantHome {
       campaignsOverview: campaignsResult?.ok ? campaignsResult.value : null,
       reachable: campaignsResult?.ok ? campaignsResult.value.reach.reachable : null,
       posterReprintPending: reprint.ok && reprint.value,
+      warnings,
     })
   })
   return { state, reload, posterReprint: usePosterReprint(reload) }

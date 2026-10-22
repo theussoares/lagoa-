@@ -43,6 +43,8 @@ export interface MerchantHomeSnapshot {
   readonly reachable: number | null
   /** O cartaz antigo ainda está na parede. Sem a resposta, o aviso não aparece. */
   readonly posterReprintPending: boolean
+  /** Alertas de serviços que falharam (não-autorizado derruba a tela; outras falhas geram aviso). */
+  readonly warnings: readonly ('program' | 'campaigns')[]
 }
 
 export interface PosterReprint {

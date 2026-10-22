@@ -124,7 +124,9 @@
       "earnedAmount": "+{units} · {amount}",
       "earnedCheckIn": "+{units} · QR da visita",
       "redeemed": "Prêmio entregue: {reward}",
-      "earnedCampaign": "+{units} · presente de lembrete"
+      "earnedCampaign": "+{units} · presente de lembrete",
+      "earnedWelcome": "+{units} · boas-vindas",
+      "earnedReferral": "+{units} · indicação"
     }
   },
   "nav": {
@@ -538,6 +540,10 @@
     "lead": "O que aconteceu na loja nos últimos {days} dias e quem vale chamar de volta.",
     "subtitle": "Acompanhe o desempenho do seu clube e gerencie o dia a dia da sua loja.",
     "counterAction": "Ir para o Balcão",
+    "warnings": {
+      "program": "Não foi possível carregar as informações do programa. Algumas metas ou unidades podem não ser exibidas.",
+      "campaigns": "Não foi possível carregar as campanhas ativas no momento."
+    },
     "stats": {
       "sales": "Vendas da semana",
       "visits": "Visitas da semana",

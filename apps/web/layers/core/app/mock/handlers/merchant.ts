@@ -125,7 +125,7 @@ export function updateProgram(
 export function homeOverview(ctx: MockContext, shopId: ShopId): HomeOverview {
   const shopCards = ctx.state.cards.filter((card) => card.shopId === shopId)
   const shopLedger = ctx.state.ledger.filter((entry) => entry.shopId === shopId)
-  const shopRedemptions = ctx.state.redemptions.filter((redemption) => redemption.shopId === shopId)
+  const shopRedemptions = ctx.state.redemptions.filter((redemption) => redemption.shopId === shopId && redemption.status === 'active')
   const program = findProgram(ctx, shopId)
   const target = program?.rules.target ?? 10
   const unit = program?.rules.mode === 'stamps' ? 'stamp' : 'point'
@@ -152,7 +152,7 @@ export function homeOverview(ctx: MockContext, shopId: ShopId): HomeOverview {
       kind = 'redemption'
     } else if (entry.amountCents && entry.amountCents > 0) {
       kind = 'purchase'
-    } else if (entry.kind === 'campaignBonus') {
+    } else if (entry.kind === 'welcomeBonus' || entry.kind === 'referralBonus' || entry.kind === 'campaignBonus') {
       kind = 'bonus'
     }
     items.push({
@@ -171,14 +171,15 @@ export function homeOverview(ctx: MockContext, shopId: ShopId): HomeOverview {
 
   for (const redemption of shopRedemptions) {
     const customer = findCustomer(ctx, redemption.customerId)
+    const card = ctx.state.cards.find((c) => c.id === redemption.cardId)
     items.push({
       id: `redemption_${redemption.id}`,
       kind: 'rewardReleased',
       customerId: redemption.customerId,
       name: customer?.firstName ?? null,
       maskedPhone: customer ? maskPhone(customer.phone) : null,
-      units: target,
-      unit,
+      units: card?.target ?? target,
+      unit: card?.unit ?? unit,
       amountCents: null,
       rewardTitle: redemption.rewardTitle,
       createdAt: redemption.createdAt,

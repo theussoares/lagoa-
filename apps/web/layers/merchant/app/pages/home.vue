@@ -47,6 +47,18 @@ const snapshot = computed(() => (state.value.status === 'success' ? state.value.
         @print="posterReprint.print"
       />
 
+      <!-- Avisos de carregamento parcial -->
+      <template v-if="snapshot?.warnings && snapshot.warnings.length > 0">
+        <InkNote
+          v-for="warning in snapshot.warnings"
+          :key="warning"
+          tone="warning"
+          icon="i-ph-warning"
+          :description="t(`home.warnings.${warning}`)"
+          :actions="[{ label: t('common.retry'), onClick: reload }]"
+        />
+      </template>
+
       <!-- Estado de Carregamento -->
       <div v-if="state.status === 'loading'" class="flex flex-col gap-6" role="status" :aria-label="t('common.loading')">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
