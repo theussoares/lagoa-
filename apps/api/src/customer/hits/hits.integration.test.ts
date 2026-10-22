@@ -87,8 +87,8 @@ describe.skipIf(!TEST_DATABASE_URL)('customer hits against a real database', () 
     expect(flat).toHaveLength(6)
     expect(new Set(flat).size).toBe(6)
     expect(flat[0]).toBe(rows[0]?.id)
-    expect(flat.slice(1, 4).sort()).toEqual(rows.slice(1, 4).map((row) => row.id).sort())
-    expect(flat.slice(4).sort()).toEqual(rows.slice(4).map((row) => row.id).sort())
+    expect(flat.slice(1, 4)).toEqual(rows.slice(1, 4).map((row) => row.id).sort())
+    expect(flat.slice(4)).toEqual(rows.slice(4).map((row) => row.id).sort())
   }, SLOW)
 
   it('returns a full page only with a next cursor, and a short last page without one', async () => {
@@ -137,12 +137,35 @@ describe.skipIf(!TEST_DATABASE_URL)('customer hits against a real database', () 
       await place(paidA, 'hitsBanner', { startsAt: hoursFromNow(-10), endsAt: hoursFromNow(5) }, paidItemA.id)
       const list = await banners()
       const ids = list.map((banner) => banner.item.id)
-      expect(ids.slice(0, 2)).toEqual([paidItemB.id, paidItemA.id])
-      expect(list.slice(0, 2).every((banner) => banner.sponsored)).toBe(true)
-      expect(list.find((banner) => banner.item.id === proNewest.id)).toMatchObject({ sponsored: false })
-      expect(ids.indexOf(proNewest.id)).toBeGreaterThan(1)
+      const at = (id: string) => ids.indexOf(id)
+      expect(at(paidItemB.id)).toBeGreaterThanOrEqual(0)
+      expect(at(paidItemB.id)).toBeLessThan(at(paidItemA.id))
+      expect(list.find((banner) => banner.item.id === paidItemA.id)?.sponsored).toBe(true)
+      expect(list.find((banner) => banner.item.id === proNewest.id)?.sponsored).toBe(false)
+      expect(at(proNewest.id)).toBeGreaterThan(at(paidItemA.id))
+      expect(list.findIndex((banner) => !banner.sponsored)).toBeGreaterThan(list.map((banner) => banner.sponsored).lastIndexOf(true))
       expect(new Set(list.map((banner) => banner.item.shop.id)).size).toBe(list.length)
       expect(list.length).toBeLessThanOrEqual(HITS_BANNERS_MAX)
+    }, SLOW)
+
+    it('gives a shop with several live placements a single paid banner, the earliest one', async () => {
+      const shop = await data.createShop()
+      const [first, second] = [await approvedItem(shop.id), await approvedItem(shop.id)]
+      await place(shop, 'hitsBanner', { startsAt: hoursFromNow(-5), endsAt: hoursFromNow(5) }, second.id)
+      await place(shop, 'hitsBanner', { startsAt: hoursFromNow(-9), endsAt: hoursFromNow(5) }, first.id)
+      const ids = (await banners()).map((banner) => banner.item.id)
+      expect(ids).toContain(first.id)
+      expect(ids).not.toContain(second.id)
+    }, SLOW)
+
+    it('gives no banner to a Pro shop whose only approved item is expired, has no photo, or whose shop is suspended', async () => {
+      const [expiredShop, noPhotoShop, suspendedShop] = [await data.createShop(), await data.createShop(), await data.createShop({ status: 'suspended' })]
+      for (const shop of [expiredShop, noPhotoShop, suspendedShop]) await makePro(shop)
+      const expired = await approvedItem(expiredShop.id, { endsAt: hoursFromNow(-1) })
+      const noPhoto = await approvedItem(noPhotoShop.id, { photoPath: null })
+      const ofSuspended = await approvedItem(suspendedShop.id)
+      const ids = (await banners()).map((banner) => banner.item.id)
+      for (const hidden of [expired, noPhoto, ofSuspended]) expect(ids).not.toContain(hidden.id)
     }, SLOW)
 
     it('drops a paid banner whose item expired, whose placement is out of period, cancelled, or whose shop is suspended', async () => {

@@ -27,7 +27,7 @@ export interface HitFeedFilter {
  * Toda leitura devolve só o que passa nisso.
  */
 export abstract class CustomerHitsRepository {
-  /** Mais novo aprovado primeiro; a ordem é `approved_at desc nulls last, id desc` e `limit` já inclui a sobra da próxima página. */
+  /** Mais novo aprovado primeiro; a ordem é `approved_at desc nulls last, id` e `limit` já inclui a sobra da próxima página. */
   abstract listFeed(filter: HitFeedFilter): Promise<readonly PublicHitRecord[]>
 
   /** Produtos de destaque pago `hitsBanner` vigente (`starts_at <= now < ends_at`, não cancelado): o destaque mais antigo primeiro. */
