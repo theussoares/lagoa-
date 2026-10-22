@@ -10,7 +10,7 @@ import { FakeAuthGuard } from '../../test-support/fake-auth.guard'
 import { catalogShop } from '../../shops/catalog.fixtures'
 import type { CatalogShop } from '../../shops/catalog-shop'
 import { DiscoverController } from './discover.controller'
-import { DiscoverRepository } from './discover.repository'
+import { DiscoverRepository, type FeaturedCatalogShop } from './discover.repository'
 import { Clock } from '../../common/clock'
 import { DiscoverService } from './discover.service'
 
@@ -22,6 +22,9 @@ class RecordingDiscoverRepository extends DiscoverRepository {
   async listApprovedShops(limit: number): Promise<CatalogShop[]> {
     this.lastLimit = limit
     return this.shops
+  }
+  async listFeaturedShops(): Promise<FeaturedCatalogShop[]> {
+    return this.shops.map((shop, index) => ({ shop, sponsored: index === 0 }))
   }
 }
 

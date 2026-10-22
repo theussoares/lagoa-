@@ -1,5 +1,6 @@
 import { Controller, Get } from '@nestjs/common'
 import type { Challenge } from '#shared/schemas/discover'
+import type { FeaturedShop } from '#shared/schemas/showcase'
 import type { ShopSummary } from '#shared/schemas/shop'
 import { unwrap } from '../../common/http/domain-exception'
 import { DiscoverService } from './discover.service'
@@ -11,6 +12,11 @@ export class DiscoverController {
   @Get('shops')
   async listShops(): Promise<ShopSummary[]> {
     return unwrap(await this.discover.listShops())
+  }
+
+  @Get('featured')
+  async listFeatured(): Promise<FeaturedShop[]> {
+    return unwrap(await this.discover.listFeatured())
   }
 
   @Get('challenges')
