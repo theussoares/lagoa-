@@ -1,16 +1,18 @@
 <script setup lang="ts">
 const { t } = useI18n()
+const localePath = useLocalePath()
 const { appUrl } = useRuntimeConfig().public
 
 const menuOpen = ref(false)
 const menuId = useId()
 
+const home = computed(() => localePath('/'))
 const links = computed(() => [
-  { href: '/#balcao', label: t('nav.counter') },
-  { href: '/#sumidos', label: t('nav.lapsed') },
-  { href: '/#preco', label: t('nav.pricing') },
-  { href: '/blog', label: t('nav.blog') },
-  { href: '/guia', label: t('nav.guide') },
+  { href: `${home.value}#balcao`, label: t('nav.counter') },
+  { href: `${home.value}#sumidos`, label: t('nav.lapsed') },
+  { href: `${home.value}#preco`, label: t('nav.pricing') },
+  { href: localePath({ name: 'blog' }), label: t('nav.blog') },
+  { href: localePath({ name: 'guia' }), label: t('nav.guide') },
 ])
 
 function closeMenu(): void {
@@ -23,14 +25,14 @@ function closeMenu(): void {
   <header class="header-shell dark fixed inset-x-0 top-3 z-50 px-4" @keydown.esc="closeMenu">
     <div class="mx-auto max-w-6xl rounded-[1.75rem] bg-(--lagoa-header) text-default shadow-(--lagoa-shadow-card)">
       <div class="flex items-center justify-between gap-3 py-2 pr-2 pl-5">
-        <a href="/" class="inline-flex min-h-11 items-center font-display text-2xl font-bold text-highlighted" :aria-label="t('nav.home')">
+        <a :href="home" class="inline-flex min-h-11 items-center font-display text-2xl font-bold text-highlighted" :aria-label="t('nav.home')">
           Lagoa<span class="text-(--color-sol-200)">+</span>
         </a>
 
         <nav :aria-label="t('nav.label')" class="hidden lg:block">
           <ul class="flex items-center gap-1">
             <li v-for="link in links" :key="link.href">
-              <a :href="link.href" class="inline-flex min-h-11 items-center rounded-full px-3 text-[0.9375rem] text-toned transition-colors duration-(--lagoa-dur-fast) hover:text-highlighted">
+              <a :href="link.href" class="inline-flex min-h-11 items-center rounded-full px-3 text-[0.9375rem] whitespace-nowrap text-toned transition-colors duration-(--lagoa-dur-fast) hover:text-highlighted">
                 {{ link.label }}
               </a>
             </li>
@@ -38,10 +40,11 @@ function closeMenu(): void {
         </nav>
 
         <div class="flex items-center gap-1">
-          <a :href="`${appUrl}/balcao/entrar`" class="hidden min-h-11 items-center rounded-full px-3 text-[0.9375rem] text-toned hover:text-highlighted lg:inline-flex">
+          <LanguageSwitch />
+          <a :href="`${appUrl}/balcao/entrar`" class="hidden min-h-11 items-center rounded-full px-3 text-[0.9375rem] whitespace-nowrap text-toned hover:text-highlighted lg:inline-flex">
             {{ t('nav.signIn') }}
           </a>
-          <WhatsAppButton size="md" class="hidden min-h-11 px-4 sm:inline-flex" />
+          <WhatsAppButton size="md" class="hidden min-h-11 px-4 whitespace-nowrap sm:inline-flex" />
           <UButton
             class="size-11 justify-center lg:hidden"
             color="neutral"

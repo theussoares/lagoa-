@@ -4,7 +4,8 @@ import type { PhoneNumber } from '#shared/schemas/phone'
 import { ENV } from '../config/config.module'
 import type { Env } from '../config/env'
 
-const normalizeEmail = (email: string): string => email.trim().toLowerCase()
+/** Única forma do e-mail que entra em hash, cifra e no Supabase: com espaço ou maiúscula, o mesmo e-mail viraria dois. */
+export const normalizeEmail = (email: string): string => email.trim().toLowerCase()
 
 /** Primeiro byte do payload cifrado: qual chave cifrou. Rodar a chave = nova versão, sem perder o que já está gravado. */
 const KEY_VERSION = 1

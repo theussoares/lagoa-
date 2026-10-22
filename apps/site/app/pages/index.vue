@@ -3,6 +3,7 @@
 definePageMeta({ colorMode: 'light' })
 
 const { t } = useI18n()
+const locale = useSiteLocale()
 const { siteUrl } = useRuntimeConfig().public
 
 useSeoMeta({
@@ -11,14 +12,13 @@ useSeoMeta({
   ogTitle: () => t('seo.title'),
   ogDescription: () => t('seo.description'),
   ogType: 'website',
-  ogLocale: 'pt_BR',
   ogUrl: siteUrl || undefined,
   twitterCard: 'summary',
 })
 
+useLocaleSeo()
 useHead({
-  link: siteUrl ? [{ rel: 'canonical', href: siteUrl }] : [],
-  script: [{ type: 'application/ld+json', innerHTML: JSON.stringify(buildHomeSchema(siteUrl, t('seo.title'), t('seo.description'))) }],
+  script: [{ type: 'application/ld+json', innerHTML: JSON.stringify(buildHomeSchema(siteUrl, locale.value, t('seo.title'), t('seo.description'))) }],
 })
 </script>
 

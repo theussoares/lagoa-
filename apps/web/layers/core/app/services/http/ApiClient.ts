@@ -20,6 +20,10 @@ export class ApiClient {
     return this.send('PUT', path, schema, options)
   }
 
+  patch<S extends z.ZodType>(path: string, schema: S, options?: ApiRequestOptions): Promise<ApiResult<z.infer<S>>> {
+    return this.send('PATCH', path, schema, options)
+  }
+
   delete<S extends z.ZodType>(path: string, schema: S): Promise<ApiResult<z.infer<S>>> {
     return this.send('DELETE', path, schema)
   }

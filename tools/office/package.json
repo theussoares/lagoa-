@@ -1,0 +1,17 @@
+{
+  "name": "@lagoa/office",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server.mjs",
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "@gltf-transform/core": "^4.5.1",
+    "@gltf-transform/extensions": "^4.5.1",
+    "@gltf-transform/functions": "^4.5.1",
+    "esbuild": "^0.28.1",
+    "meshoptimizer": "^1.3.0",
+    "three": "0.160.0"
+  }
+}

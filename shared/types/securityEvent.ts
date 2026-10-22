@@ -6,6 +6,8 @@ export type SecurityEventName =
   | 'access.unauthorized'
   | 'access.denied'
   | 'rateLimit.hit'
+  /** MFA de um admin zerado no Supabase sem o `admin_events` gravado (`code: 'auditNotRecorded'`). */
+  | 'admin.mfaReset'
 
 /**
  * Uma linha de log por evento. Só ids opacos e rotas-padrão: nunca celular, código, token, cookie nem IP. `route` é o
@@ -19,6 +21,8 @@ export interface SecurityEvent {
   /** Código do erro devolvido (`invalidLoginCode`, `shopSuspended`, `rateLimited`). */
   readonly code?: string
   readonly userId?: string
+  /** Em ação de um admin sobre outro: o id de quem sofreu a ação (`userId` é quem agiu). */
+  readonly targetId?: string
   /** Id do pedido no provedor (`x-vercel-id`), para cruzar com o log da plataforma. */
   readonly requestId?: string
 }

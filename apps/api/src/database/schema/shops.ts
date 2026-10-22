@@ -3,6 +3,7 @@ import { boolean, char, check, index, integer, jsonb, pgTable, text, timestamp, 
 import type { BonusRules, CheckInCooldownMode } from '#shared/schemas/program'
 import { createdAt, primaryId } from './columns'
 import { earnPer, expirationKind, programMode, programUnit, shopCategory, shopPlan, shopStatus } from './enums'
+import { adminUsers } from './admin'
 import { appUsers } from './users'
 
 export const shops = pgTable(
@@ -67,6 +68,8 @@ export const shopStatusEvents = pgTable(
     toStatus: shopStatus('to_status').notNull(),
     plan: shopPlan('plan').notNull(),
     actor: text('actor').notNull(),
+    /** Admin do painel que agiu; `null` nas linhas de script (`actor` é o apelido do operador). */
+    actorAdminId: uuid('actor_admin_id').references(() => adminUsers.id),
     reason: text('reason'),
     createdAt: createdAt(),
   },

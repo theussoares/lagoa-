@@ -1,0 +1,340 @@
+{
+  "seo": {
+    "title": "Lagoa+ · Get your customers coming back",
+    "description": "Stop losing customers to the competition. With Lagoa+, people who buy once come back and buy again. From R$ 79.90/month, no lock-in."
+  },
+  "nav": {
+    "label": "Main navigation",
+    "skip": "Skip to content",
+    "home": "Lagoa+, home",
+    "counter": "How it works",
+    "lapsed": "Win-back",
+    "pricing": "Pricing",
+    "faq": "FAQ",
+    "signIn": "Counter sign-in",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "blog": "Blog",
+    "guide": "Guide"
+  },
+  "cta": {
+    "primary": "I want to sell more",
+    "newTab": "(opens WhatsApp)",
+    "forPlan": "{plan} plan",
+    "whatsappMessage": "Hi! I own a shop in Três Lagoas and I'd like to know more about Lagoa+.",
+    "whatsappMessageFounder": "Hi! I own a shop in Três Lagoas and I'd like to know more about the Lagoa+ Founder plan.",
+    "whatsappMessagePro": "Hi! I own a shop in Três Lagoas and I'd like to know more about the Lagoa+ Founder Pro plan.",
+    "whatsappMessageInstagram": "Hi! I came from Instagram and I'd like to know more about Lagoa+."
+  },
+  "hero": {
+    "titleLead": "Every day, customers leave your shop and never come back.",
+    "titleAccent": "That's money that was already yours walking out the door.",
+    "lead": "Lagoa+ brings those customers back to buy again. At the sale you generate a QR code, they collect stamps on their phone and return for the reward. More sales, without spending a cent on ads.",
+    "secondary": "Try the Counter",
+    "note": "Pilot in Três Lagoas/MS · only {founderSpots} shops get Founder pricing, from R$ 79.90/month",
+    "receipt": "+1 stamp from the visit QR",
+    "receiptDetail": "now 8 of 10",
+    "visualLabel": "Example: the customer's card with 8 of 10 stamps, 2 away from a free haircut, and the notice for the stamp that just landed from the visit QR.",
+    "segments": {
+      "barber": "Barbershops",
+      "cafe": "Cafés",
+      "pizza": "Pizzerias",
+      "pet": "Pet shops",
+      "gym": "Gyms"
+    },
+    "segmentsLabel": "Made for neighborhood businesses"
+  },
+  "card": {
+    "shopName": "Your barbershop",
+    "shopDetail": "10-stamp card",
+    "unitLine": "stamps to get a",
+    "reward": "Free haircut",
+    "peek": "2 stamps to go",
+    "summary": "Sample card: 8 of 10 stamps. 2 to go for a free haircut."
+  },
+  "counter": {
+    "title": "Your customer leaves already thinking about coming back.",
+    "lead": "At the sale, you generate a QR code and they scan it. That's it: they have a reward ahead and a reason to return.",
+    "stepsLabel": "How to give the stamp",
+    "steps": {
+      "generate": {
+        "title": "Generate the QR",
+        "body": "As a stamp, or with the purchase amount to give points."
+      },
+      "scan": {
+        "title": "The customer scans it",
+        "body": "Or types the short code. The stamp lands in their wallet and they see how far they are from the reward."
+      }
+    },
+    "bullets": {
+      "newCustomer": "New customers leave with their card already made",
+      "singleUse": "Each QR works once and expires in {minutes} minutes",
+      "noPhone": "No customer phone number at the counter: nothing to type",
+      "pointsPerReal": "With points per real, the more they buy, the faster they reach the reward"
+    },
+    "panelTitle": "Counter",
+    "tryIt": "See how simple it is: generate a QR and simulate the customer scanning it.",
+    "demo": {
+      "modeLabel": "QR type",
+      "modeStamp": "Stamp",
+      "modeValue": "By amount",
+      "amountLabel": "Purchase amount (R$)",
+      "amountHint": "Example: each real is worth {rate} points. This is just a demo: nothing is sent or saved.",
+      "amountError": "Enter an amount greater than zero.",
+      "generate": "Generate visit QR",
+      "waiting": "The visit QR shows up here.",
+      "qrCaption": "Illustrative QR, not valid.",
+      "codeLabel": "Short code",
+      "codeLabelSpoken": "Sample short code: {code}",
+      "validity": "Valid for {minutes} minutes and only once",
+      "simulate": "Simulate customer scan",
+      "restart": "Start over",
+      "seal": "Reward unlocked",
+      "stampTitle": "Reward unlocked",
+      "stampDetail": "The customer scanned and hit 10 of 10. Now just hand over the free haircut.",
+      "valueTitle": "+{points} points in the wallet",
+      "valueDetail": "Purchase of R$ {amount}, at {rate} points per real (example). Now at {balance} of {target}.",
+      "valueRuler": "{balance} of {target} points"
+    }
+  },
+  "lapsed": {
+    "title": "Customers who disappeared buy again.",
+    "lead": "Lagoa+ shows who hasn't been around for more than {lapsedDays} days. You know who to call back before they become a competitor's customer.",
+    "consent": "Phone numbers are always masked.",
+    "listTitle": "No visit in more than {lapsedDays} days",
+    "daysAgo": "{days} days ago",
+    "sample": "Illustrative example",
+    "proTag": "In Founder Pro"
+  },
+  "bonus": {
+    "title": "Foot traffic even on slow days.",
+    "lead": "Turn on what makes sense for your shop. If two rules land on the same day, the bigger one applies. Birthday comes with every plan; the other rules come with Founder Pro.",
+    "surprise": {
+      "tag": "2×",
+      "title": "A slow day with traffic",
+      "body": "Double stamps only on the day you choose."
+    },
+    "referral": {
+      "tag": "+1",
+      "title": "Customers bringing customers",
+      "body": "Whoever refers gets +1 stamp when their friend makes a first purchase."
+    },
+    "welcome": {
+      "tag": "+2",
+      "title": "New customers who already want to return",
+      "body": "The card starts with 2 stamps. People who start ahead are in a hurry to finish."
+    },
+    "birthday": {
+      "tag": "2×",
+      "title": "One more reason on their birthday",
+      "body": "On their birthday, each visit is worth two stamps."
+    },
+    "proTag": "In Founder Pro"
+  },
+  "network": {
+    "title": "New customers without paying for ads.",
+    "lead": "In the Discover showcase, customers see the city's shops and the month's challenges. Someone collecting stamps at the café finds your shop along the way.",
+    "challengeTitle": "Visit 3 new shops",
+    "challengeBody": "Complete the monthly challenge and earn an extra stamp.",
+    "challengeProgress": "1 of 3 visited",
+    "challengeDone": "Challenge complete",
+    "stops": {
+      "coffee": "Café",
+      "pizza": "Pizzeria",
+      "yours": "Your shop"
+    },
+    "stopVisited": "{shop}: visited",
+    "stopPending": "{shop}: not visited yet",
+    "proTag": "Spotlight in Founder Pro",
+    "proNote": "With Pro, your shop is featured in Discover."
+  },
+  "pricing": {
+    "title": "Less than R$ 3 a day to stop losing customers.",
+    "paybackNote": "Example: with an average ticket of R$ 30, 3 extra returns a month cover the Founder plan.",
+    "scarcity": "Only {founderSpots} shops get Founder pricing, and the first {founderSpots} Pro shops have no customer limit. After that, prices go back to R$ 119.90 and R$ 249.90.",
+    "currency": "R$",
+    "period": "/month",
+    "featured": "Most complete",
+    "priceLabel": "from R$ {from} to R$ {price} per month",
+    "includesLabel": "What's included",
+    "plans": {
+      "founder": {
+        "name": "Founder",
+        "from": "119.90",
+        "price": "79.90",
+        "items": {
+          "stamps": "Stamp at the sale and reward redemption at the counter",
+          "birthday": "Double stamps on the customer's birthday",
+          "limit": "Up to 300 customers in the club",
+          "setup": "Onboarding with the Lagoa+ team"
+        }
+      },
+      "pro": {
+        "name": "Founder Pro",
+        "from": "249.90",
+        "price": "99.90",
+        "lead": "Everything in Founder, plus:",
+        "items": {
+          "bonus": "Welcome, referral and double-stamp surprise day",
+          "spotlight": "Your shop featured in Discover",
+          "lapsed": "List of customers who stopped buying",
+          "limit": "Up to 1,000 customers in the club (the first {founderSpots} shops, no limit)"
+        }
+      }
+    },
+    "risk": {
+      "label": "Low risk to get started",
+      "locked": "Price locked for as long as you're in the club",
+      "noContract": "No lock-in: cancel whenever you want",
+      "setup": "Free onboarding: the Lagoa+ team builds the club with you"
+    },
+    "approval": "The network approves each shop so the club only has real local businesses from the city. The Lagoa+ team talks to you first."
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "items": {
+      "effort": {
+        "q": "Will it be a hassle at the counter?",
+        "a": "No. It's two steps at the sale: you generate the QR and the customer scans it. There's nothing to type about them."
+      },
+      "app": {
+        "q": "Does the customer need to download an app?",
+        "a": "No app store needed. The wallet opens in the phone's browser and can be installed on the home screen."
+      },
+      "system": {
+        "q": "Do I need to change my register or system?",
+        "a": "No. The Counter runs in the browser of the computer, tablet or phone you already have at the counter."
+      },
+      "results": {
+        "q": "What if it doesn't work for my shop?",
+        "a": "No lock-in and no penalty: if it doesn't make sense, just tell the Lagoa+ team."
+      },
+      "checkIn": {
+        "q": "How does the customer earn the stamp?",
+        "a": "At the sale, you generate the visit QR in the Counter. The customer points the camera at it (or types the short code) and the stamp lands in their wallet. The shop poster is for joining the club."
+      },
+      "fraud": {
+        "q": "What if someone tries to collect too many stamps?",
+        "a": "Each visit QR works once and expires in {minutes} minutes. On top of that, each customer earns at most one visit per shop in the interval you define. The redemption code is also single-use and expires in about {redeemMinutes} minutes."
+      },
+      "reward": {
+        "q": "How does the customer redeem the reward?",
+        "a": "They generate a {redeemLength}-character code of letters and numbers, valid for about {redeemMinutes} minutes. You check it in the Counter and hand over the reward. A reward that isn't redeemed is kept for {holdDays} days, and after redemption the next card starts ahead if the welcome rule is on."
+      },
+      "price": {
+        "q": "How much does it cost?",
+        "a": "Founder costs R$ 79.90 a month and Founder Pro R$ 99.90, both with locked pricing and no lock-in. The shop joins after the network approves it. Founder pricing applies only to the first {founderSpots} shops."
+      },
+      "plans": {
+        "q": "What's the difference between Founder and Pro?",
+        "a": "Founder has stamps, redemption and a birthday bonus, for up to 300 customers. Pro adds welcome, referral and surprise day, the list of customers who disappeared and your shop's spotlight in Discover, for up to 1,000 customers (the first {founderSpots} Pro shops have no limit)."
+      },
+      "privacy": {
+        "q": "What happens to my customers' data?",
+        "a": "A phone number is personal data: it appears masked in lists and is never exposed."
+      },
+      "change": {
+        "q": "Can I change the goal later?",
+        "a": "Yes, whenever you want. The change creates a new version of the program: cards in progress finish on the version they started with, and new cards use the new rule."
+      },
+      "next": {
+        "q": "What happens after I message on WhatsApp?",
+        "a": "The Lagoa+ team replies within 24 hours, talks about your shop and, once the shop is approved, builds the club with you."
+      }
+    }
+  },
+  "closing": {
+    "title": "Every day without a club is a customer walking away.",
+    "lead": "Message us on WhatsApp now. We build the club with you, with no onboarding fee.",
+    "phoneLabel": "Network WhatsApp",
+    "steps": {
+      "call": "You message us on WhatsApp and tell us about your shop.",
+      "reply": "The Lagoa+ team replies within 24 hours.",
+      "setup": "Once your shop is approved, we build the club with you."
+    },
+    "stepsLabel": "What happens next",
+    "note": "Only {founderSpots} shops with Founder pricing · from R$ 79.90/month · no lock-in"
+  },
+  "footer": {
+    "tagline": "Loyalty club for local businesses in Três Lagoas/MS.",
+    "merchantSignIn": "Sign in to the Counter",
+    "copyright": "© {year} Lagoa+",
+    "explore": "Explore"
+  },
+  "pain": {
+    "title": "You know this month.",
+    "items": {
+      "slowDays": "Tuesday and Wednesday, the shop is empty.",
+      "oneAndDone": "The customer buys once and disappears.",
+      "competitor": "They go to the competition and you never even find out."
+    },
+    "closing": "It's not a lack of customers. It's a lack of reasons for them to come back."
+  },
+  "blog": {
+    "title": "Blog",
+    "lead": "Practical ideas to help Três Lagoas businesses bring customers back.",
+    "seoTitle": "Blog · Lagoa+",
+    "seoDescription": "Practical articles on loyalty, customer retention and sales for local businesses.",
+    "read": "Read article",
+    "back": "Back to the blog",
+    "readingTime": "{minutes} min read"
+  },
+  "guide": {
+    "title": "Merchant guide",
+    "lead": "Everything to get started and use the Counter day to day, in short steps.",
+    "seoTitle": "Merchant guide · Lagoa+",
+    "seoDescription": "How to get started, generate the visit QR, validate redemptions and turn on bonus rules in Lagoa+.",
+    "back": "Back to the guide",
+    "more": "Keep reading"
+  },
+  "content": {
+    "ctaTitle": "Want this in your shop?",
+    "ctaLead": "Message the network on WhatsApp. We build the club with you, with no onboarding fee."
+  },
+  "roi": {
+    "title": "Run the numbers for your shop.",
+    "lead": "Move the sliders. This is an example using your average ticket, not a promise of results.",
+    "ticket": "Average ticket",
+    "returns": "Extra returns per month",
+    "extra": "Extra sales per month",
+    "plan": "Founder plan",
+    "covers": "The extra sales cover the plan and leave {net} over.",
+    "short": "{count} more returns needed to cover the plan.",
+    "note": "Illustrative example. Real results depend on your shop."
+  },
+  "bio": {
+    "tagline": "Loyalty club • Três Lagoas/MS",
+    "newTab": "(opens in a new tab)",
+    "partner": {
+      "label": "I want to be a partner shop",
+      "hint": "Get to know Lagoa+ and find out how to join.",
+      "cta": "Learn more"
+    },
+    "wallet": {
+      "label": "Open my wallet",
+      "hint": "Check your stamps and rewards.",
+      "cta": "Open"
+    },
+    "whatsapp": {
+      "label": "Talk to our team",
+      "hint": "Ask your questions on WhatsApp."
+    },
+    "sections": {
+      "learn": "See how it works"
+    },
+    "guide": {
+      "label": "How does it work for merchants?",
+      "hint": "Step by step in the Counter"
+    },
+    "post": {
+      "reading": "{minutes} min read"
+    },
+    "merchantSignIn": "I'm already a partner: sign in to the Counter",
+    "footer": "© Lagoa+ · Três Lagoas/MS",
+    "seo": {
+      "title": "Lagoa+ · Links",
+      "description": "Loyalty club for local businesses in Três Lagoas/MS. Become a partner shop, open your stamp wallet or talk to us."
+    },
+    "headline": "More perks for you. More foot traffic for local business."
+  }
+}

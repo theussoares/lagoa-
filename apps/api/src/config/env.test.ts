@@ -28,16 +28,16 @@ describe('parseEnv', () => {
     expect(() => parseEnv({ ...valid(), PII_HASH_PEPPER: 'short-pepper-1234567' })).toThrow('PII_HASH_PEPPER')
   })
 
-  it('requires the SMS provider, hook secret, service role and BFF secret in production', () => {
+  it('requires the SMS provider, hook secret, service role, BFF secret and admin app URL in production', () => {
     const production = { ...valid(), NODE_ENV: 'production', TRUST_PROXY_HOPS: '1' }
-    expect(() => parseEnv(production)).toThrow('COMTELE_AUTH_KEY, SEND_SMS_HOOK_SECRET, SUPABASE_SERVICE_ROLE_KEY, BFF_SHARED_SECRET')
-    expect(parseEnv({ ...production, COMTELE_AUTH_KEY: 'key', SEND_SMS_HOOK_SECRET: 'v1,whsec_abc', SUPABASE_SERVICE_ROLE_KEY: 'service-role', BFF_SHARED_SECRET: 'b'.repeat(32) })).toMatchObject({ COMTELE_ROUTE: 17 })
+    expect(() => parseEnv(production)).toThrow('COMTELE_AUTH_KEY, SEND_SMS_HOOK_SECRET, SUPABASE_SERVICE_ROLE_KEY, BFF_SHARED_SECRET, ADMIN_APP_URL')
+    expect(parseEnv({ ...production, COMTELE_AUTH_KEY: 'key', SEND_SMS_HOOK_SECRET: 'v1,whsec_abc', SUPABASE_SERVICE_ROLE_KEY: 'service-role', BFF_SHARED_SECRET: 'b'.repeat(32), ADMIN_APP_URL: 'https://admin.lagoamais.com.br' })).toMatchObject({ COMTELE_ROUTE: 17 })
   })
 
   it('requires the proxy hop count and https in production', () => {
     expect(() => parseEnv({ ...valid(), NODE_ENV: 'production' })).toThrow('TRUST_PROXY_HOPS')
     expect(() => parseEnv({ ...valid(), NODE_ENV: 'production', TRUST_PROXY_HOPS: '1', SUPABASE_URL: 'http://project.supabase.co' })).toThrow('SUPABASE_URL')
-    expect(parseEnv({ ...valid(), NODE_ENV: 'production', TRUST_PROXY_HOPS: '1', COMTELE_AUTH_KEY: 'key', SEND_SMS_HOOK_SECRET: 'v1,whsec_abc', SUPABASE_SERVICE_ROLE_KEY: 'service-role', BFF_SHARED_SECRET: 'b'.repeat(32) })).toMatchObject({ TRUST_PROXY_HOPS: 1 })
+    expect(parseEnv({ ...valid(), NODE_ENV: 'production', TRUST_PROXY_HOPS: '1', COMTELE_AUTH_KEY: 'key', SEND_SMS_HOOK_SECRET: 'v1,whsec_abc', SUPABASE_SERVICE_ROLE_KEY: 'service-role', BFF_SHARED_SECRET: 'b'.repeat(32), ADMIN_APP_URL: 'https://admin.lagoamais.com.br' })).toMatchObject({ TRUST_PROXY_HOPS: 1 })
   })
 })
 
@@ -48,7 +48,15 @@ describe('corsOrigins', () => {
 
   it('keeps test approval off by default and refuses it in production', () => {
     expect(parseEnv(valid()).ENABLE_TEST_APPROVE).toBe('0')
-    const production = { ...valid(), NODE_ENV: 'production', TRUST_PROXY_HOPS: '1', COMTELE_AUTH_KEY: 'key', SEND_SMS_HOOK_SECRET: 'v1,whsec_abc', SUPABASE_SERVICE_ROLE_KEY: 'service-role', BFF_SHARED_SECRET: 'b'.repeat(32) }
+    const production = { ...valid(), NODE_ENV: 'production', TRUST_PROXY_HOPS: '1', COMTELE_AUTH_KEY: 'key', SEND_SMS_HOOK_SECRET: 'v1,whsec_abc', SUPABASE_SERVICE_ROLE_KEY: 'service-role', BFF_SHARED_SECRET: 'b'.repeat(32), ADMIN_APP_URL: 'https://admin.lagoamais.com.br' }
     expect(() => parseEnv({ ...production, ENABLE_TEST_APPROVE: '1' })).toThrow('ENABLE_TEST_APPROVE')
+  })
+
+  it('keeps the admin app URL optional outside production, and https-only in it', () => {
+    expect(parseEnv(valid()).ADMIN_APP_URL).toBeUndefined()
+    expect(parseEnv({ ...valid(), ADMIN_APP_URL: 'http://localhost:3002' }).ADMIN_APP_URL).toBe('http://localhost:3002')
+    const production = { ...valid(), NODE_ENV: 'production', TRUST_PROXY_HOPS: '1', COMTELE_AUTH_KEY: 'key', SEND_SMS_HOOK_SECRET: 'v1,whsec_abc', SUPABASE_SERVICE_ROLE_KEY: 'service-role', BFF_SHARED_SECRET: 'b'.repeat(32) }
+    expect(() => parseEnv({ ...production, ADMIN_APP_URL: 'http://admin.lagoamais.com.br' })).toThrow('ADMIN_APP_URL')
+    expect(() => parseEnv({ ...production, ADMIN_APP_URL: 'not a url' })).toThrow('ADMIN_APP_URL')
   })
 })

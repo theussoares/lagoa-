@@ -1,6 +1,6 @@
 import type { IsoDateTime } from '../schemas/common'
 
-export type DomainEntity = 'shop' | 'program' | 'customer' | 'merchant' | 'card' | 'redemption' | 'visitQr'
+export type DomainEntity = 'shop' | 'program' | 'customer' | 'merchant' | 'card' | 'redemption' | 'visitQr' | 'hitItem' | 'featuredPlacement' | 'adminUser'
 
 /**
  * Erros esperados de regra de negócio. A UI traduz `code` para a chave
@@ -8,6 +8,8 @@ export type DomainEntity = 'shop' | 'program' | 'customer' | 'merchant' | 'card'
  */
 export type DomainError =
   | { readonly code: 'unauthorized' }
+  /** Sessão válida, mas sem acesso a esta superfície (ex.: conta da rede fora do painel da rede, ou sem MFA). Não diz o motivo. */
+  | { readonly code: 'forbidden' }
   | { readonly code: 'network' }
   /** Limite de requisições (HTTP 429 sem regra de negócio): esperar e tentar de novo. */
   | { readonly code: 'rateLimited' }
@@ -64,6 +66,18 @@ export type DomainError =
   | { readonly code: 'merchantTermsNotAccepted' }
   /** Aniversário trocado há menos de `BIRTHDAY_CHANGE_COOLDOWN_DAYS`: a data nova só a partir de `changeableAt`. */
   | { readonly code: 'birthdayLocked'; readonly changeableAt: IsoDateTime }
+  /** A loja já tem o máximo de produtos do Hits do plano (arquivar um libera vaga). */
+  | { readonly code: 'limitReached' }
+  /** Quem decidia olhava uma versão que já mudou: recarregar antes de decidir. */
+  | { readonly code: 'conflict' }
+  /** A ação não vale na situação atual do item. */
+  | { readonly code: 'invalidTransition' }
+  /** Destaque pago: algum instante do período já está com todas as vagas pagas da vitrine tomadas. */
+  | { readonly code: 'slotsFull' }
+  /** Destaque para loja que não está aprovada, ou banner com produto não aprovado ou de outra loja. */
+  | { readonly code: 'invalidTarget' }
+  /** Convite de admin para um e-mail que já tem conta (de admin, inclusive desativado, ou de cliente/lojista): nunca promove. */
+  | { readonly code: 'alreadyExists' }
 
 export type DomainErrorCode = DomainError['code']
 

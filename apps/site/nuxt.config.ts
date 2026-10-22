@@ -2,6 +2,7 @@
 // localStorage) e a LP precisa de HTML pré-renderizado para SEO e LCP.
 import { fileURLToPath } from 'node:url'
 import { SECURITY_HEADERS } from '../web/server/utils/securityHeaders'
+import { SECTION_PATHS } from './app/content/routes'
 
 export default defineNuxtConfig({
   // Mesmo tema, fontes e componentes de carimbo do app: a LP mostra o produto de verdade.
@@ -16,8 +17,22 @@ export default defineNuxtConfig({
   css: ['~/assets/css/site.css'],
   i18n: {
     defaultLocale: 'pt-BR',
-    strategy: 'no_prefix',
-    locales: [{ code: 'pt-BR', language: 'pt-BR', name: 'Português', file: 'pt-BR.json' }],
+    // Português na raiz (as URLs de hoje não mudam) e inglês sob /en.
+    strategy: 'prefix_except_default',
+    locales: [
+      { code: 'pt-BR', language: 'pt-BR', name: 'Português', file: 'pt-BR.json' },
+      { code: 'en', language: 'en-US', name: 'English', file: 'en.json' },
+    ],
+    // A LP é estática: redirecionar pelo idioma do navegador esconderia o português dos buscadores. A troca é um link.
+    detectBrowserLanguage: false,
+    // O nome da pasta da página fica em inglês; a URL de cada idioma sai daqui.
+    customRoutes: 'config',
+    pages: {
+      'blog/index': { 'pt-BR': SECTION_PATHS.blog['pt-BR'], en: SECTION_PATHS.blog.en },
+      'blog/[slug]': { 'pt-BR': `${SECTION_PATHS.blog['pt-BR']}/[slug]`, en: `${SECTION_PATHS.blog.en}/[slug]` },
+      'guia/index': { 'pt-BR': SECTION_PATHS.guide['pt-BR'], en: SECTION_PATHS.guide.en },
+      'guia/[slug]': { 'pt-BR': `${SECTION_PATHS.guide['pt-BR']}/[slug]`, en: `${SECTION_PATHS.guide.en}/[slug]` },
+    },
   },
   // A LP é clara: a composição alterna o branco com as faixas de tinta (.dark no hero, Balcão,
   // preço e fechamento). O "abre no escuro" da layer ui vale para o app, não para cá.
@@ -29,9 +44,10 @@ export default defineNuxtConfig({
     '/**': { headers: SECURITY_HEADERS },
     // O link da bio é só âncoras: sem JS ele chega pronto, sem hidratar nada. Custo: o analytics não conta aqui.
     '/links': { noScripts: true },
+    '/en/links': { noScripts: true },
   },
   nitro: {
-    prerender: { routes: ['/', '/sitemap.xml', '/robots.txt'], crawlLinks: true },
+    prerender: { routes: ['/', '/en', '/sitemap.xml', '/robots.txt'], crawlLinks: true },
   },
   runtimeConfig: {
     public: {
@@ -67,7 +83,6 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
-      htmlAttrs: { lang: 'pt-BR' },
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'theme-color', content: '#062B3A' },

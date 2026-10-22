@@ -5,19 +5,29 @@ export type Block =
   | { kind: 'ol'; items: string[] }
   | { kind: 'quote'; text: string }
 
-export interface Post {
+/** Texto de um artigo em um idioma. `id` é o mesmo entre idiomas; o `slug` é da URL daquele idioma. */
+export interface PostText {
+  id: string
   slug: string
   title: string
   description: string
-  date: string
-  readingMinutes: number
   body: Block[]
 }
 
-export interface GuideEntry {
+export interface GuideText {
+  id: string
   slug: string
   title: string
   description: string
-  icon: string
   body: Block[]
+}
+
+/** Artigo já no idioma pedido (texto + dados que não mudam entre idiomas). */
+export interface Post extends PostText {
+  date: string
+  readingMinutes: number
+}
+
+export interface GuideEntry extends GuideText {
+  icon: string
 }

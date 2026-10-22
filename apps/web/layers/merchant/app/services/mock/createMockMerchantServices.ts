@@ -9,6 +9,7 @@ import type { VisitQrIssueRequest } from '#shared/schemas/visitQr'
 import { ok } from '#shared/types/result'
 import { asMerchant } from '#layers/core/app/mock/withSession'
 import type { MerchantServices } from '../MerchantServices'
+import { MockHitItemService } from './MockHitItemService'
 import type { MockBackend } from '#layers/core/app/mock/MockBackend'
 import { campaignOverview, sendReminder } from '#layers/core/app/mock/handlers/campaigns'
 import { approveShop, createClub, markPosterReprinted, posterReprintPending, shopPoster, shopStatus } from '#layers/core/app/mock/handlers/onboarding'
@@ -22,6 +23,7 @@ import type { MerchantSessionProvider } from '#layers/core/app/services/SessionP
 export function createMockMerchantServices(backend: MockBackend, sessions: MerchantSessionProvider): MerchantServices {
   // As imagens do mock ficam só na memória da aba (data URL): servem para ver a tela, não vão ao Descobrir do mock.
   let photos: ShopPhotos = { logoUrl: null, bannerUrl: null }
+  const hits = new MockHitItemService()
   return {
     counter: {
       validateRedemption: (code: RedemptionCode) =>
@@ -81,6 +83,7 @@ export function createMockMerchantServices(backend: MockBackend, sessions: Merch
       getContact: () => asMerchant(backend, sessions, contactOf),
       saveContact: (update: ShopContactUpdate) => asMerchant(backend, sessions, (ctx, shopId) => saveContact(ctx, shopId, update)),
     },
+    hits,
     shopStatus: {
       getStatus: () => asMerchant(backend, sessions, shopStatus),
     },

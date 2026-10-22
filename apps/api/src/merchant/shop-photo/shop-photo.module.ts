@@ -15,5 +15,6 @@ import { SupabaseShopPhotoStorage } from './supabase-shop-photo.storage'
     { provide: ShopPhotoRepository, useClass: DrizzleShopPhotoRepository },
     { provide: ShopPhotoStorage, useClass: SupabaseShopPhotoStorage },
   ],
+  exports: [ShopPhotoStorage],
 })
 export class ShopPhotoModule {}

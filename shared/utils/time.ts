@@ -50,7 +50,11 @@ export function localDateParts(date: Date): { isoDate: string; monthDay: string 
 
 /** Meia-noite local do piloto do dia de `now`, em UTC. Fuso fixo sem horário de verão (MS não tem desde 2019). */
 export function startOfLocalDay(now: Date): Date {
-  const { isoDate } = localDateParts(now)
+  return localMidnight(localDateParts(now).isoDate)
+}
+
+/** Meia-noite local do piloto da data `AAAA-MM-DD`, em UTC. */
+export function localMidnight(isoDate: string): Date {
   return new Date(Date.parse(isoDate) - PILOT_UTC_OFFSET_HOURS * HOUR_MS)
 }
 

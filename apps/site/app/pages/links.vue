@@ -3,6 +3,7 @@
 definePageMeta({ layout: 'bare', colorMode: 'dark' })
 
 const { t } = useI18n()
+const localePath = useLocalePath()
 const { siteUrl } = useRuntimeConfig().public
 const { sections, merchantSignIn } = useBioLinks()
 const { trackClick } = useBioTracking()
@@ -13,14 +14,11 @@ useSeoMeta({
   ogTitle: () => t('bio.seo.title'),
   ogDescription: () => t('bio.seo.description'),
   ogType: 'website',
-  ogLocale: 'pt_BR',
-  ogUrl: siteUrl ? `${siteUrl}/links` : undefined,
+  ogUrl: () => (siteUrl ? `${siteUrl}${localePath('/links')}` : undefined),
   twitterCard: 'summary',
 })
-useHead({
-  htmlAttrs: { class: 'bio-page' },
-  link: siteUrl ? [{ rel: 'canonical', href: `${siteUrl}/links` }] : [],
-})
+useLocaleSeo()
+useHead({ htmlAttrs: { class: 'bio-page' } })
 </script>
 
 <template>

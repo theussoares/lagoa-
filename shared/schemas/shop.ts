@@ -26,6 +26,9 @@ export const ShopCategorySchema = z.enum([
   'restaurant',
   'petShop',
   'gym',
+  'clothing',
+  'services',
+  'home',
   'other',
 ])
 export type ShopCategory = z.infer<typeof ShopCategorySchema>

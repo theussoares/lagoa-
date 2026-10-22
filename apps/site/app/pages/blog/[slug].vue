@@ -4,33 +4,34 @@ import { buildArticleSchema } from '~/utils/schema'
 
 definePageMeta({ colorMode: 'light' })
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+const siteLocale = useSiteLocale()
 const route = useRoute()
+const localePath = useLocalePath()
 const { siteUrl } = useRuntimeConfig().public
 
-const post = findPost(String(route.params.slug))
+const post = findPost(siteLocale.value, String(route.params.slug))
 if (!post) throw createError({ statusCode: 404, statusMessage: 'Post not found', fatal: true })
 
-const url = siteUrl ? `${siteUrl}/blog/${post.slug}` : ''
+const url = siteUrl ? `${siteUrl}${localePath({ name: 'blog-slug', params: { slug: post.slug } })}` : ''
 useSeoMeta({
   title: () => `${post.title} · Lagoa+`,
   description: () => post.description,
   ogTitle: () => post.title,
   ogDescription: () => post.description,
   ogType: 'article',
-  ogLocale: 'pt_BR',
 })
+useLocaleSeo()
 useHead({
-  link: url ? [{ rel: 'canonical', href: url }] : [],
-  script: [{ type: 'application/ld+json', innerHTML: JSON.stringify(buildArticleSchema(post, url)) }],
+  script: [{ type: 'application/ld+json', innerHTML: JSON.stringify(buildArticleSchema(post, siteLocale.value, url)) }],
 })
 
-const dateLabel = new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(post.date))
+const dateLabel = new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(post.date))
 </script>
 
 <template>
   <article class="mx-auto max-w-3xl px-4 pt-32 pb-24 sm:px-6 lg:pt-40">
-    <NuxtLink to="/blog" class="inline-flex min-h-11 items-center gap-2 font-semibold text-primary">
+    <NuxtLink :to="localePath({ name: 'blog' })" class="inline-flex min-h-11 items-center gap-2 font-semibold text-primary">
       <UIcon name="i-ph-arrow-left" class="size-5" aria-hidden="true" />
       {{ t('blog.back') }}
     </NuxtLink>

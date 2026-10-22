@@ -1,21 +1,22 @@
 <script setup lang="ts">
-import { POSTS } from '~/content/posts'
+import { getPosts } from '~/content/posts'
 
 definePageMeta({ colorMode: 'light' })
 
-const { t } = useI18n()
-const { siteUrl } = useRuntimeConfig().public
+const { t, locale } = useI18n()
+const siteLocale = useSiteLocale()
+const localePath = useLocalePath()
 
 useSeoMeta({
   title: () => t('blog.seoTitle'),
   description: () => t('blog.seoDescription'),
   ogTitle: () => t('blog.seoTitle'),
   ogDescription: () => t('blog.seoDescription'),
-  ogLocale: 'pt_BR',
 })
-useHead({ link: siteUrl ? [{ rel: 'canonical', href: `${siteUrl}/blog` }] : [] })
+useLocaleSeo()
 
-const dateFormat = new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+const posts = computed(() => getPosts(siteLocale.value))
+const dateFormat = computed(() => new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }))
 </script>
 
 <template>
@@ -26,8 +27,8 @@ const dateFormat = new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'lo
     </header>
 
     <ul class="mt-14 grid gap-6 md:grid-cols-2">
-      <li v-for="(post, index) in POSTS" :key="post.slug" :class="index === 0 ? 'md:col-span-2' : ''">
-        <NuxtLink :to="`/blog/${post.slug}`" class="bento-tile group flex h-full flex-col gap-4 rounded-(--radius-card) bg-(--ui-bg-muted) p-7 shadow-(--lagoa-shadow-card) sm:p-9">
+      <li v-for="(post, index) in posts" :key="post.slug" :class="index === 0 ? 'md:col-span-2' : ''">
+        <NuxtLink :to="localePath({ name: 'blog-slug', params: { slug: post.slug } })" class="bento-tile group flex h-full flex-col gap-4 rounded-(--radius-card) bg-(--ui-bg-muted) p-7 shadow-(--lagoa-shadow-card) sm:p-9">
           <p class="type-tag text-muted">
             <time :datetime="post.date">{{ dateFormat.format(new Date(post.date)) }}</time>
             · {{ t('blog.readingTime', { minutes: post.readingMinutes }) }}

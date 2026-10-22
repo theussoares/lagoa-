@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computeRoi, formatBrl, FOUNDER_PRICE_CENTS } from '~/utils/roi'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const ticketReais = ref(30)
 const extraReturns = ref(3)
@@ -11,7 +11,7 @@ const ticketFill = computed(() => `${((ticketReais.value - 10) / (150 - 10)) * 1
 const returnsFill = computed(() => `${((extraReturns.value - 1) / (30 - 1)) * 100}%`)
 const verdict = computed(() =>
   result.value.coversPlan
-    ? t('roi.covers', { net: formatBrl(result.value.netCents) })
+    ? t('roi.covers', { net: formatBrl(result.value.netCents, locale.value) })
     : t('roi.short', { count: result.value.returnsToCoverPlan - extraReturns.value }),
 )
 const ticketId = useId()
@@ -29,7 +29,7 @@ const returnsId = useId()
         <div class="flex flex-col gap-3">
           <div class="flex items-baseline justify-between gap-4">
             <label :for="ticketId" class="font-semibold text-highlighted">{{ t('roi.ticket') }}</label>
-            <output :for="ticketId" class="font-display tabular text-2xl font-bold text-highlighted">{{ formatBrl(ticketReais * 100) }}</output>
+            <output :for="ticketId" class="font-display tabular text-2xl font-bold text-highlighted">{{ formatBrl(ticketReais * 100, locale) }}</output>
           </div>
           <input :id="ticketId" v-model.number="ticketReais" type="range" min="10" max="150" step="5" class="range" :style="{ '--fill': ticketFill }">
         </div>
@@ -45,11 +45,11 @@ const returnsId = useId()
         <dl class="grid grid-cols-2 gap-4 border-t-2 border-highlighted pt-6">
           <div>
             <dt class="type-tag text-muted">{{ t('roi.extra') }}</dt>
-            <dd class="font-display tabular text-3xl font-bold text-highlighted sm:text-4xl">{{ formatBrl(result.extraRevenueCents) }}</dd>
+            <dd class="font-display tabular text-3xl font-bold text-highlighted sm:text-4xl">{{ formatBrl(result.extraRevenueCents, locale) }}</dd>
           </div>
           <div>
             <dt class="type-tag text-muted">{{ t('roi.plan') }}</dt>
-            <dd class="font-display tabular text-3xl font-bold text-muted sm:text-4xl">{{ formatBrl(FOUNDER_PRICE_CENTS) }}</dd>
+            <dd class="font-display tabular text-3xl font-bold text-muted sm:text-4xl">{{ formatBrl(FOUNDER_PRICE_CENTS, locale) }}</dd>
           </div>
         </dl>
 

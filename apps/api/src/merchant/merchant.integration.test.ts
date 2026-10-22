@@ -126,7 +126,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
       },
     }
 
-    const clubResult = await clubSetupService.createClub({ id: merchantUserId, email: undefined, phone: PhoneNumberSchema.parse('67900000099') }, setupDraft)
+    const clubResult = await clubSetupService.createClub({ id: merchantUserId, email: undefined, phone: PhoneNumberSchema.parse('67900000099'), role: null, aal: null }, setupDraft)
     expect(clubResult.ok).toBe(true)
     if (!clubResult.ok) throw new Error('Failed to create club')
     const shopId = clubResult.value.session.shopId

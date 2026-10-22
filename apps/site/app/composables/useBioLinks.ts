@@ -1,4 +1,4 @@
-import { POSTS } from '~/content/posts'
+import { getPosts } from '~/content/posts'
 import type { BioLinkItem, BioLinkSection } from '../types/bioLink'
 
 const LATEST_POSTS = 2
@@ -10,12 +10,14 @@ interface BioLinks {
 
 export function useBioLinks(): BioLinks {
   const { t } = useI18n()
+  const locale = useSiteLocale()
+  const localePath = useLocalePath()
   const { appUrl, customerUrl } = useRuntimeConfig().public
   const { href: whatsappHref } = useWhatsAppLink('whatsappMessageInstagram')
 
   const partner = computed<BioLinkItem>(() => ({
     id: 'partner',
-    href: withBioUtm('/', 'partner'),
+    href: withBioUtm(localePath('/'), 'partner'),
     label: t('bio.partner.label'),
     hint: t('bio.partner.hint'),
     icon: 'i-ph-storefront-bold',
@@ -49,7 +51,7 @@ export function useBioLinks(): BioLinks {
 
   const guide = computed<BioLinkItem>(() => ({
     id: 'guide',
-    href: withBioUtm('/guia', 'guide'),
+    href: withBioUtm(localePath({ name: 'guia' }), 'guide'),
     label: t('bio.guide.label'),
     hint: t('bio.guide.hint'),
     icon: 'i-ph-book-open-bold',
@@ -59,12 +61,12 @@ export function useBioLinks(): BioLinks {
   }))
 
   const posts = computed<BioLinkItem[]>(() =>
-    [...POSTS]
+    [...getPosts(locale.value)]
       .sort((a, b) => b.date.localeCompare(a.date))
       .slice(0, LATEST_POSTS)
       .map((post) => ({
         id: `post-${post.slug}`,
-        href: withBioUtm(`/blog/${post.slug}`, 'blog'),
+        href: withBioUtm(localePath({ name: 'blog-slug', params: { slug: post.slug } }), 'blog'),
         label: post.title,
         hint: t('bio.post.reading', { minutes: post.readingMinutes }),
         icon: 'i-ph-newspaper-bold',

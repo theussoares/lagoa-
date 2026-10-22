@@ -88,6 +88,9 @@ const EXAMPLE_SHOWCASE: Record<ShopRecord['category'], NonNullable<ShopRecord['s
   bakery: { imageUrl: '/example/bakery.svg', rating: 4.6, distanceKm: 1.4, openNow: true },
   beauty: { imageUrl: '/example/beauty.svg', rating: 4.8, distanceKm: 1.7, openNow: false },
   restaurant: { imageUrl: '/example/cafe.svg', rating: 4.5, distanceKm: 1.9, openNow: true },
+  clothing: { imageUrl: '/example/beauty.svg', rating: 4.4, distanceKm: 1.5, openNow: true },
+  services: { imageUrl: '/example/gym.svg', rating: 4.5, distanceKm: 2.2, openNow: true },
+  home: { imageUrl: '/example/cafe.svg', rating: 4.3, distanceKm: 3.4, openNow: true },
   other: { imageUrl: '/example/cafe.svg', rating: 4.3, distanceKm: 2.0, openNow: true },
 }
 
