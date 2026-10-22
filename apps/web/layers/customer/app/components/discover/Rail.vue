@@ -1,0 +1,38 @@
+<script setup lang="ts">
+import type { ShopRailCardModel } from '../../types/discover'
+
+interface Props {
+  title: string
+  lead: string
+  shops: readonly ShopRailCardModel[]
+}
+
+defineProps<Props>()
+const titleId = useId()
+</script>
+
+<template>
+  <section class="flex flex-col gap-3" :aria-labelledby="titleId">
+    <div class="flex flex-col gap-1">
+      <h2 :id="titleId" class="type-h2">{{ title }}</h2>
+      <p class="text-pretty text-toned">{{ lead }}</p>
+    </div>
+    <ul class="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-5 px-5 pb-3 [scrollbar-width:none]">
+      <li v-for="(shop, index) in shops" :key="shop.id" :style="{ '--i': index + 1 }" class="rise w-44 shrink-0 snap-start">
+        <article class="card flex h-full flex-col overflow-hidden">
+          <div class="relative h-24 bg-(--color-tinta-100) dark:bg-(--color-tinta-900)">
+            <img v-if="shop.image" :src="shop.image" alt="" class="absolute inset-0 size-full object-cover" />
+            <UIcon v-else :name="shop.icon" class="absolute -right-2 -bottom-3 size-20 text-primary opacity-15" aria-hidden="true" />
+            <span v-if="shop.seal" class="eyebrow-tag absolute bottom-2 left-2 rounded-full bg-(--color-sol-100) px-2.5 py-1 text-(--color-sol-900) dark:bg-(--color-sol-900) dark:text-(--color-sol-200)">
+              {{ shop.seal }}
+            </span>
+          </div>
+          <div class="flex flex-col gap-0.5 px-4 pt-3 pb-4">
+            <h3 class="font-display text-base font-bold text-balance text-highlighted">{{ shop.shopName }}</h3>
+            <p class="text-sm text-muted">{{ shop.meta }}</p>
+          </div>
+        </article>
+      </li>
+    </ul>
+  </section>
+</template>

@@ -2,15 +2,17 @@
 interface Props {
   image: string
   mapUrl: string
+  /** Sem card para subir sobre a faixa (chave do Hits sem destaque), a faixa não deixa o espaço. */
+  overlap?: boolean
 }
 
-defineProps<Props>()
+withDefaults(defineProps<Props>(), { overlap: true })
 const query = defineModel<string>('query', { required: true })
 const { t } = useI18n()
 </script>
 
 <template>
-  <ScreenHeader :title="t('discover.title')" :lead="t('discover.lead')" :image="image">
+  <ScreenHeader :title="t('discover.title')" :lead="t('discover.lead')" :image="image" :overlap="overlap">
     <template #actions>
       <a
         :href="mapUrl"

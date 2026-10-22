@@ -2,7 +2,7 @@ import type { ShopSummary } from '#shared/schemas/shop'
 import { formatShortDate } from '#shared/utils/dateFormat'
 import type { DiscoverScreen } from '../types/discover'
 
-/** Descobrir: lojas novas e conhecidas, desafios da cidade e busca. */
+/** Descobrir: lojas novas e conhecidas, desafios da cidade e busca; com a chave do Hits, em trilhos. */
 export function useDiscoverScreen(): DiscoverScreen {
   const translate = useTranslate()
   const { signOut } = useCustomerSession()
@@ -22,7 +22,8 @@ export function useDiscoverScreen(): DiscoverScreen {
 
   const query = ref('')
   const searching = computed(() => query.value.trim() !== '')
-  const visibleShops = computed(() => filterShops(shops.value, query.value))
+  const showcase = useDiscoverRails(shops, searching, translate)
+  const visibleShops = computed(() => filterShops(showcase.shops, query.value))
   const groups = computed(() => groupShops(visibleShops.value, walletShopIds.value))
   const challengeShopIds = computed(() => pendingChallengeShopIds(challenges.value))
   const fresh = computed(() => sortByDistance(groups.value.fresh).map((shop) => toShopTeaserModel(shop, challengeShopIds.value, translate)))
@@ -32,11 +33,13 @@ export function useDiscoverScreen(): DiscoverScreen {
     return challenges.value.map((challenge) => toChallengeModel(challenge, byId, translate, formatShortDate))
   })
 
-  // O primeiro desafio em andamento vira o herói da tela; os outros seguem como cartões.
-  const heroChallenge = computed(() => challengeModels.value.find((challenge) => !challenge.done) ?? null)
+  // O primeiro desafio em andamento vira o herói da tela; os outros seguem como cartões. Nos trilhos, quem sobe
+  // sobre a faixa é o carrossel de destaque, e todos os desafios vão para a lista.
+  const heroChallenge = computed(() => (showcase.enabled ? null : (challengeModels.value.find((challenge) => !challenge.done) ?? null)))
   const otherChallenges = computed(() => challengeModels.value.filter((challenge) => challenge.id !== heroChallenge.value?.id))
 
   const unauthorized = computed(() =>
+    showcase.unauthorized ||
     [shopsState.value, challengesState.value, cardsState.value].some(
       (state) => state.status === 'error' && state.error.code === 'unauthorized',
     ),
@@ -58,5 +61,12 @@ export function useDiscoverScreen(): DiscoverScreen {
     otherChallenges,
     cityHeaderImage,
     mapUrl: shopsMapUrl(),
+    featured: toRef(showcase, 'featured'),
+    group: toRef(showcase, 'group'),
+    showGroups: toRef(showcase, 'showGroups'),
+    rails: toRef(showcase, 'rails'),
+    groupEmpty: toRef(showcase, 'groupEmpty'),
+    showFresh: computed(() => !showcase.showGroups || fresh.value.length > 0),
+    headerOverlap: computed(() => !showcase.enabled || showcase.featured.length > 0),
   })
 }

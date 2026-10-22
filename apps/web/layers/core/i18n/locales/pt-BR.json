@@ -640,7 +640,27 @@
     "challengeTag": "Conta no desafio",
     "directions": "Como chegar",
     "directionsTo": "Como chegar: {shop} (abre o mapa)",
-    "empty": "Nenhuma loja na rede por enquanto. Volte em breve."
+    "empty": "Nenhuma loja na rede por enquanto. Volte em breve.",
+    "featuredLabel": "Lojas em destaque",
+    "featuredBadge": "Destaque",
+    "rails": {
+      "surpriseDay": "Dia surpresa",
+      "surpriseDayLead": "Visita vale o dobro só hoje",
+      "surpriseDaySeal": "2× hoje",
+      "welcome": "Cartão já começa andado",
+      "welcomeLead": "Boas-vindas ao entrar no clube",
+      "welcomeSeal": "+{count} de cara"
+    },
+    "groups": {
+      "label": "Filtrar lojas por ramo",
+      "all": "Tudo",
+      "food": "Comer",
+      "beauty": "Beleza",
+      "clothing": "Roupas",
+      "services": "Serviços",
+      "pet": "Pet"
+    },
+    "groupEmpty": "Nenhuma loja desse ramo por enquanto. Escolha outro ramo ou toque em Tudo."
   },
   "checkIn": {
     "pageTitle": "Carimbar",

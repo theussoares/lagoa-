@@ -1,15 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { mockNuxtImport } from '@nuxt/test-utils/runtime'
+import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
+import type { VueWrapper } from '@vue/test-utils'
 import { clearNuxtData, useNuxtApp } from '#imports'
 import { anaSession } from '#layers/core/test/fixtures'
 import { mountComposable as mountHarness } from '#layers/core/test/composableHarness.nuxt'
 import type { MountedComposable } from '#layers/core/test/composableHarness.nuxt'
-import { resetWorld, restoreClock } from '#layers/core/test/pageHarness.nuxt'
+import { resetWorld, restoreClock, visibleText } from '#layers/core/test/pageHarness.nuxt'
+import type { FeaturedShop } from '#shared/schemas/showcase'
 import { useDiscoverScreen } from '../app/composables/useDiscoverScreen'
+import DiscoverPage from '../app/pages/discover.vue'
 
-const { signOutMock } = vi.hoisted(() => ({ signOutMock: vi.fn() }))
-mockNuxtImport('useCustomerSession', () => () => ({ signOut: signOutMock }))
+const { signOutMock, flag } = vi.hoisted(() => ({ signOutMock: vi.fn(), flag: { hits: false } }))
+// O middleware da página só quer saber se há sessão: o mundo do teste já começa com a Ana.
+mockNuxtImport('useCustomerSession', () => () => ({ signOut: signOutMock, restore: () => Promise.resolve(true) }))
+mockNuxtImport('useHitsEnabled', () => () => flag.hits)
 
 const mounted: Array<{ unmount: () => void }> = []
 
@@ -32,6 +37,7 @@ afterEach(() => {
   clearNuxtData()
   vi.restoreAllMocks()
   restoreClock()
+  flag.hits = false
 })
 
 function services(): ReturnType<typeof useNuxtApp>['$customerServices'] {
@@ -77,5 +83,91 @@ describe('useDiscoverScreen', () => {
     const hero = result.heroChallenge
     expect(hero?.done).toBe(false)
     expect(result.otherChallenges.some((challenge) => challenge.id === hero?.id)).toBe(false)
+  })
+})
+
+function t(key: string): string {
+  return useNuxtApp().$i18n.t(key)
+}
+
+async function mountPage(): Promise<VueWrapper> {
+  const page = await mountSuspended(DiscoverPage, { route: '/descobrir' })
+  mounted.push(page)
+  await flushPromises()
+  return page
+}
+
+function carousel(page: VueWrapper): ReturnType<VueWrapper['find']> {
+  return page.find(`section[aria-label="${t('discover.featuredLabel')}"]`)
+}
+
+async function featuredShops(): Promise<FeaturedShop[]> {
+  const shops = await services().discover.listShops()
+  if (!shops.ok) throw new Error('seed shops did not load')
+  return shops.value.slice(0, 2).map((shop, index) => ({ ...shop, sponsored: index === 0 }))
+}
+
+describe('discover page with the hits flag off', () => {
+  it('stays as today: no featured call, no group chips, the challenge hero on top', async () => {
+    const listFeatured = vi.spyOn(services().discover, 'listFeatured')
+    const page = await mountPage()
+    expect(listFeatured).not.toHaveBeenCalled()
+    expect(page.find(`[aria-label="${t('discover.groups.label')}"]`).exists()).toBe(false)
+    expect(visibleText(page)).toContain(t('discover.challengeBadge'))
+  })
+})
+
+describe('discover page with the hits flag on', () => {
+  beforeEach(() => {
+    flag.hits = true
+  })
+
+  it('shows no carousel when nothing is featured', async () => {
+    vi.spyOn(services().discover, 'listFeatured').mockResolvedValue({ ok: true, value: [] })
+    const page = await mountPage()
+    expect(carousel(page).exists()).toBe(false)
+    expect(page.find(`[aria-label="${t('discover.groups.label')}"]`).exists()).toBe(true)
+  })
+
+  it('shows the featured shops with the badge only on the sponsored one', async () => {
+    const featured = await featuredShops()
+    vi.spyOn(services().discover, 'listFeatured').mockResolvedValue({ ok: true, value: featured })
+    const page = await mountPage()
+    const cards = carousel(page).findAll('li')
+    expect(cards.map((card) => card.text().includes(t('discover.featuredBadge')))).toEqual([true, false])
+    expect(visibleText(page)).not.toContain(t('discover.challengeBadge'))
+  })
+
+  it('keeps the rest of the screen when the featured shops fail to load', async () => {
+    vi.spyOn(services().discover, 'listFeatured').mockResolvedValue({ ok: false, error: { code: 'network' } })
+    const page = await mountPage()
+    expect(carousel(page).exists()).toBe(false)
+    expect(page.find(`[aria-label="${t('discover.groups.label')}"]`).exists()).toBe(true)
+    expect(page.find('#fresh-title').exists()).toBe(true)
+  })
+
+  it('filters by group and says so when the group has no shop', async () => {
+    const page = await mountPage()
+    const chips = page.findAll(`[aria-label="${t('discover.groups.label')}"] button`)
+    expect(chips.map((chip) => chip.text())).toEqual(['Tudo', 'Comer', 'Beleza', 'Roupas', 'Serviços', 'Pet'])
+    expect(chips[0]?.attributes('aria-pressed')).toBe('true')
+    await chips[3]?.trigger('click')
+    expect(chips[3]?.attributes('aria-pressed')).toBe('true')
+    expect(chips[0]?.attributes('aria-pressed')).toBe('false')
+    expect(visibleText(page)).toContain(t('discover.groupEmpty'))
+    expect(page.find('#fresh-title').exists()).toBe(false)
+  })
+
+  it('turns chips and rails off while searching', async () => {
+    const { result } = await mountComposable(useDiscoverScreen)
+    await vi.waitFor(() => expect(result.loading).toBe(false))
+    expect(result.showGroups).toBe(true)
+    result.group = 'clothing'
+    expect(result.groupEmpty).toBe(true)
+    result.query = 'Café'
+    expect(result.showGroups).toBe(false)
+    expect(result.rails).toEqual([])
+    expect(result.groupEmpty).toBe(false)
+    expect(result.fresh.length + result.known.length).toBeGreaterThan(0)
   })
 })
