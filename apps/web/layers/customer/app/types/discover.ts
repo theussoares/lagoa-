@@ -12,9 +12,14 @@ export interface ShopGroups {
 
 /** Vitrine em trilhos: cada loja cai num trilho só (dia surpresa, depois boas-vindas, depois o resto). */
 export interface DiscoverRails {
+  /** Inclui lojas da carteira: o dobro vale para todo mundo. */
   readonly surpriseDay: ShopSummary[]
+  /** Só lojas sem cartão: boas-vindas é para cartão novo. */
   readonly welcome: ShopSummary[]
+  /** Lojas sem cartão fora dos trilhos. */
   readonly others: ShopSummary[]
+  /** Todas as lojas da carteira (do ramo), estejam ou não no "Dia surpresa". */
+  readonly known: ShopSummary[]
 }
 
 /** Card pequeno da loja no carrossel de destaque e nos trilhos. */
@@ -25,10 +30,12 @@ export interface ShopRailCardModel {
   readonly meta: string
   readonly image: string | null
   readonly icon: string
-  /** "Destaque": só na loja que pagou o destaque. */
+  /** "Destaque": todo card do carrossel (pago ou Pro). */
   readonly badge: string | null
   /** Selo do que rende mais: "2× hoje" ou "+2 de cara". */
   readonly seal: string | null
+  /** Para onde o card leva: o mesmo destino do `ShopTile`. */
+  readonly to: string
 }
 
 export interface DiscoverRailModel {
@@ -50,7 +57,7 @@ export interface DiscoverShowcase {
   readonly rails: DiscoverRailModel[]
   /** O ramo escolhido não tem loja nenhuma. */
   readonly groupEmpty: boolean
-  /** Lojas fora dos trilhos (ou todas, sem a chave ou na busca). */
+  /** Lojas das listas "Perto de você" e "Na sua carteira": fora dos trilhos e as da carteira (todas, sem a chave ou na busca). */
   readonly shops: ShopSummary[]
   /** O destaque disse que a sessão caiu. */
   readonly unauthorized: boolean

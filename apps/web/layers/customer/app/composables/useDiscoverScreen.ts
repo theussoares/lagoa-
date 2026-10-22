@@ -22,7 +22,7 @@ export function useDiscoverScreen(): DiscoverScreen {
 
   const query = ref('')
   const searching = computed(() => query.value.trim() !== '')
-  const showcase = useDiscoverRails(shops, searching, translate)
+  const showcase = useDiscoverRails(shops, walletShopIds, searching, translate)
   const visibleShops = computed(() => filterShops(showcase.shops, query.value))
   const groups = computed(() => groupShops(visibleShops.value, walletShopIds.value))
   const challengeShopIds = computed(() => pendingChallengeShopIds(challenges.value))

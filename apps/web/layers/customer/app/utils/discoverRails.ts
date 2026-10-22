@@ -3,6 +3,7 @@ import type { ShopGroup } from '#shared/domain/shopGroup'
 import type { ShopSummary } from '#shared/schemas/shop'
 import type { Translate } from '#layers/core/app/types/i18n'
 import { categoryIcon } from './categoryIcon'
+import { walletSectionPath } from './walletSection'
 import type { DiscoverRailModel, DiscoverRails, ShopRailCardModel } from '../types/discover'
 
 type RailId = DiscoverRailModel['id']
@@ -14,12 +15,20 @@ function railOf(shop: ShopSummary): RailId | null {
   return null
 }
 
-/** Separa as lojas do ramo escolhido (todas, sem ramo) nos trilhos; cada loja aparece num só. */
-export function buildDiscoverRails(shops: readonly ShopSummary[], group: ShopGroup | null): DiscoverRails {
-  const rails: DiscoverRails = { surpriseDay: [], welcome: [], others: [] }
+/**
+ * Separa as lojas do ramo escolhido (todas, sem ramo) nos trilhos; cada loja da vitrine aparece num trilho só.
+ * "Dia surpresa" vale para todo mundo e pega também as lojas da carteira; boas-vindas só vale para cartão novo, então
+ * o trilho e o resto da vitrine (`others`) ficam só com lojas sem cartão. As da carteira seguem todas em `known`.
+ */
+export function buildDiscoverRails(shops: readonly ShopSummary[], group: ShopGroup | null, walletShopIds: ReadonlySet<string>): DiscoverRails {
+  const rails: DiscoverRails = { surpriseDay: [], welcome: [], others: [], known: [] }
   for (const shop of shops) {
     if (group !== null && shopGroupOf(shop.category) !== group) continue
-    rails[railOf(shop) ?? 'others'].push(shop)
+    const known = walletShopIds.has(shop.id)
+    if (known) rails.known.push(shop)
+    const rail = railOf(shop)
+    if (rail === 'surpriseDay') rails.surpriseDay.push(shop)
+    else if (!known) rails[rail ?? 'others'].push(shop)
   }
   return rails
 }
@@ -35,15 +44,17 @@ function sealOf(shop: ShopSummary, t: Translate): string | null {
   }
 }
 
-export function toShopRailCardModel(shop: ShopSummary, t: Translate, featured: { sponsored: boolean } = { sponsored: false }): ShopRailCardModel {
+/** Destaque (pago ou Pro) sempre leva o selo; o card leva ao mesmo lugar que o `ShopTile` da loja. */
+export function toShopRailCardModel(shop: ShopSummary, t: Translate, options: { featured: boolean } = { featured: false }): ShopRailCardModel {
   return {
     id: shop.id,
     shopName: shop.name,
     meta: `${t(`discover.groups.${shopGroupOf(shop.category)}`)} · ${shop.neighborhood}`,
     image: shop.showcase?.imageUrl ?? null,
     icon: categoryIcon(shop.category),
-    badge: featured.sponsored ? t('discover.featuredBadge') : null,
+    badge: options.featured ? t('discover.featuredBadge') : null,
     seal: sealOf(shop, t),
+    to: walletSectionPath('cards'),
   }
 }
 

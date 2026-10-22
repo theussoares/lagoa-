@@ -33,6 +33,8 @@ function shop(id: string, options: ShopOptions = {}): ShopSummary {
 
 const ids = (shops: readonly ShopSummary[]): string[] => shops.map((item) => item.id)
 
+const noCards: ReadonlySet<string> = new Set()
+
 describe('buildDiscoverRails', () => {
   it('puts a shop in one rail only: surprise day first, then welcome, then the rest', () => {
     const rails = buildDiscoverRails(
@@ -43,25 +45,41 @@ describe('buildDiscoverRails', () => {
         shop('plain'),
       ],
       null,
+      noCards,
     )
     expect(ids(rails.surpriseDay)).toEqual(['both', 'surprise'])
     expect(ids(rails.welcome)).toEqual(['welcome'])
     expect(ids(rails.others)).toEqual(['plain'])
+    expect(ids(rails.known)).toEqual([])
+  })
+
+  it('keeps wallet shops out of welcome and the rest, but in surprise day and always in known', () => {
+    const rails = buildDiscoverRails(
+      [shop('surprise', { surpriseDayToday: true }), shop('welcome', { welcomeUnits: 2 }), shop('plain')],
+      null,
+      new Set(['surprise', 'welcome', 'plain']),
+    )
+    expect(ids(rails.surpriseDay)).toEqual(['surprise'])
+    expect(ids(rails.welcome)).toEqual([])
+    expect(ids(rails.others)).toEqual([])
+    expect(ids(rails.known)).toEqual(['surprise', 'welcome', 'plain'])
   })
 
   it('keeps only the shops of the chosen group', () => {
     const rails = buildDiscoverRails(
       [shop('cafe', { category: 'cafe', surpriseDayToday: true }), shop('barber', { category: 'barbershop', welcomeUnits: 2 }), shop('gym', { category: 'gym' })],
       'beauty',
+      new Set(['cafe']),
     )
     expect(ids(rails.surpriseDay)).toEqual([])
     expect(ids(rails.welcome)).toEqual(['barber'])
     expect(ids(rails.others)).toEqual([])
+    expect(ids(rails.known)).toEqual([])
   })
 
   it('leaves every rail empty when no shop is of the chosen group', () => {
-    const rails = buildDiscoverRails([shop('a', { surpriseDayToday: true }), shop('b', { welcomeUnits: 2 }), shop('c')], 'pet')
-    expect(rails).toEqual({ surpriseDay: [], welcome: [], others: [] })
+    const rails = buildDiscoverRails([shop('a', { surpriseDayToday: true }), shop('b', { welcomeUnits: 2 }), shop('c')], 'pet', new Set(['c']))
+    expect(rails).toEqual({ surpriseDay: [], welcome: [], others: [], known: [] })
   })
 })
 
@@ -78,15 +96,16 @@ describe('toShopRailCardModel', () => {
     expect(toShopRailCardModel(shop('b'), t).seal).toBeNull()
   })
 
-  it('carries the featured badge only for a sponsored shop', () => {
-    expect(toShopRailCardModel(shop('a'), t, { sponsored: true }).badge).toBe('discover.featuredBadge')
-    expect(toShopRailCardModel(shop('b'), t, { sponsored: false }).badge).toBeNull()
+  it('carries the featured badge on every featured card, and links like the shop tile', () => {
+    expect(toShopRailCardModel(shop('a'), t, { featured: true }).badge).toBe('discover.featuredBadge')
+    expect(toShopRailCardModel(shop('b'), t).badge).toBeNull()
+    expect(toShopRailCardModel(shop('b'), t).to).toBe('/carteira')
   })
 })
 
 describe('toDiscoverRailModels', () => {
   it('keeps the screen order and drops an empty rail', () => {
-    const rails = buildDiscoverRails([shop('welcome', { welcomeUnits: 2 }), shop('plain')], null)
+    const rails = buildDiscoverRails([shop('welcome', { welcomeUnits: 2 }), shop('plain')], null, noCards)
     const models = toDiscoverRailModels(rails, t)
     expect(models.map((rail) => [rail.id, rail.title, rail.cards.map((card) => card.id)])).toEqual([['welcome', 'discover.rails.welcome', ['welcome']]])
   })

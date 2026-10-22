@@ -129,13 +129,32 @@ describe('discover page with the hits flag on', () => {
     expect(page.find(`[aria-label="${t('discover.groups.label')}"]`).exists()).toBe(true)
   })
 
-  it('shows the featured shops with the badge only on the sponsored one', async () => {
+  it('seals every featured shop and links featured and rail cards where the shop tile goes', async () => {
     const featured = await featuredShops()
     vi.spyOn(services().discover, 'listFeatured').mockResolvedValue({ ok: true, value: featured })
+    const seed = await services().discover.listShops()
+    if (!seed.ok) throw new Error('seed shops did not load')
+    vi.spyOn(services().discover, 'listShops').mockResolvedValue({
+      ok: true,
+      value: seed.value.map((shop, index) => ({ ...shop, surpriseDayToday: index === 0 })),
+    })
     const page = await mountPage()
     const cards = carousel(page).findAll('li')
-    expect(cards.map((card) => card.text().includes(t('discover.featuredBadge')))).toEqual([true, false])
+    expect(cards.map((card) => card.text().includes(t('discover.featuredBadge')))).toEqual([true, true])
     expect(visibleText(page)).not.toContain(t('discover.challengeBadge'))
+    const tileHref = page.find('section[aria-labelledby="known-title"] li a').attributes('href')
+    const rail = page.findAll('section').find((section) => section.find('h2').exists() && section.find('h2').text() === t('discover.rails.surpriseDay'))
+    expect(tileHref).toBe('/carteira')
+    expect(cards[0]?.find('a').attributes('href')).toBe(tileHref)
+    expect(rail?.find('li a').attributes('href')).toBe(tileHref)
+  })
+
+  it('signs out when the featured shops say the session is no longer valid', async () => {
+    vi.spyOn(services().discover, 'listFeatured').mockResolvedValue({ ok: false, error: { code: 'unauthorized' } })
+    const { result } = await mountComposable(useDiscoverScreen)
+    await flushPromises()
+    expect(result.featured).toEqual([])
+    expect(signOutMock).toHaveBeenCalledTimes(1)
   })
 
   it('keeps the rest of the screen when the featured shops fail to load', async () => {
@@ -158,13 +177,17 @@ describe('discover page with the hits flag on', () => {
     expect(page.find('#fresh-title').exists()).toBe(false)
   })
 
-  it('turns chips and rails off while searching', async () => {
+  it('turns the carousel, chips and rails off while searching', async () => {
+    vi.spyOn(services().discover, 'listFeatured').mockResolvedValue({ ok: true, value: await featuredShops() })
     const { result } = await mountComposable(useDiscoverScreen)
     await vi.waitFor(() => expect(result.loading).toBe(false))
     expect(result.showGroups).toBe(true)
     result.group = 'clothing'
     expect(result.groupEmpty).toBe(true)
+    expect(result.featured).toHaveLength(2)
     result.query = 'Café'
+    expect(result.featured).toEqual([])
+    expect(result.headerOverlap).toBe(false)
     expect(result.showGroups).toBe(false)
     expect(result.rails).toEqual([])
     expect(result.groupEmpty).toBe(false)

@@ -13,17 +13,23 @@ const NOTHING_FEATURED: AsyncResultState<FeaturedShop[], TransportError> = { sta
  * Descobrir em trilhos (chave do Hits): carrossel de destaque, chips de ramo e os trilhos "Dia surpresa" e
  * "Cartão já começa andado". O destaque carrega à parte: se falhar, o carrossel some e o resto da tela segue.
  */
-export function useDiscoverRails(shops: Ref<ShopSummary[]>, searching: Ref<boolean>, translate: Translate): DiscoverShowcase {
+export function useDiscoverRails(
+  shops: Ref<ShopSummary[]>,
+  walletShopIds: Ref<ReadonlySet<string>>,
+  searching: Ref<boolean>,
+  translate: Translate,
+): DiscoverShowcase {
   const enabled = useHitsEnabled()
   // A chave é fixa no build: sem ela o Descobrir nem pede o destaque.
   const featuredState = enabled ? useDiscoverFeatured().state : computed(() => NOTHING_FEATURED)
   const group = ref<ShopGroup | null>(null)
 
   const railsOn = computed(() => enabled && !searching.value)
-  const rails = computed(() => buildDiscoverRails(shops.value, railsOn.value ? group.value : null))
+  const rails = computed(() => buildDiscoverRails(shops.value, railsOn.value ? group.value : null, walletShopIds.value))
+  // Na busca o carrossel some junto com chips e trilhos.
   const featured = computed(() =>
-    featuredState.value.status === 'success'
-      ? featuredState.value.value.map((shop) => toShopRailCardModel(shop, translate, { sponsored: shop.sponsored }))
+    railsOn.value && featuredState.value.status === 'success'
+      ? featuredState.value.value.map((shop) => toShopRailCardModel(shop, translate, { featured: true }))
       : [],
   )
 
@@ -35,10 +41,10 @@ export function useDiscoverRails(shops: Ref<ShopSummary[]>, searching: Ref<boole
     rails: computed(() => (railsOn.value ? toDiscoverRailModels(rails.value, translate) : [])),
     groupEmpty: computed(() => {
       if (!railsOn.value || group.value === null) return false
-      const { surpriseDay, welcome, others } = rails.value
-      return surpriseDay.length + welcome.length + others.length === 0
+      const { surpriseDay, welcome, others, known } = rails.value
+      return surpriseDay.length + welcome.length + others.length + known.length === 0
     }),
-    shops: computed(() => (railsOn.value ? rails.value.others : shops.value)),
+    shops: computed(() => (railsOn.value ? [...rails.value.others, ...rails.value.known] : shops.value)),
     unauthorized: computed(() => featuredState.value.status === 'error' && featuredState.value.error.code === 'unauthorized'),
   })
 }
