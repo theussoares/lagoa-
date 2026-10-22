@@ -30,6 +30,11 @@
     "lead": "Continue juntando carimbos pela cidade e ganhe prêmios.",
     "profileLink": "Abrir seu perfil",
     "stackLabel": "Seus cartões",
+    "tabs": {
+      "label": "Seções da carteira",
+      "cards": "Cartões",
+      "rewards": "Prêmios"
+    },
     "openCard": "Abrir o cartão de {shop}",
     "closeCard": "Fechar o cartão de {shop}",
     "searchLabel": "Buscar e filtrar seus cartões",
@@ -133,6 +138,7 @@
     "checkIn": "Carimbar",
     "rewards": "Prêmios",
     "profile": "Perfil",
+    "more": "Mais",
     "home": "Início",
     "counter": "Balcão",
     "customers": "Clientes",
@@ -141,6 +147,11 @@
     "mainLabel": "Navegação principal",
     "shopLink": "Botão do card",
     "hits": "Hits"
+  },
+  "moreMenu": {
+    "title": "Mais",
+    "ranking": "Ranking",
+    "profile": "Perfil"
   },
   "common": {
     "loading": "Carregando",

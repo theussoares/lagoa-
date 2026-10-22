@@ -14,8 +14,11 @@ const screen = useWalletScreen()
       </template>
     </ScreenHeader>
 
-    <div class="flex flex-col gap-8">
-      <section :aria-label="t('wallet.stackLabel')" class="relative -mt-10">
+    <WalletSectionTabs v-if="screen.sectionsEnabled" :selected="screen.section" class="relative -mt-10 mb-6" />
+    <WalletRewardsContainer v-if="screen.section === 'rewards'" />
+
+    <div v-else class="flex flex-col gap-8">
+      <section :aria-label="t('wallet.stackLabel')" class="relative" :class="{ '-mt-10': !screen.sectionsEnabled }">
         <WalletCardsContainer :screen="screen" />
       </section>
 

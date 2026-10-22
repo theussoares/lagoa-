@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { TabBarItem } from '../types/wallet'
+import type { TabBarItem, TabBarLinkItem } from '../types/wallet'
 
 interface Props {
-  /** Quatro destinos; os dois primeiros ficam à esquerda da ação central. */
+  /** Quatro itens; os dois primeiros ficam à esquerda da ação central. Item `kind: 'button'` abre uma folha. */
   items: readonly [TabBarItem, TabBarItem, TabBarItem, TabBarItem]
-  action: TabBarItem
+  action: TabBarLinkItem
   label: string
   /** Rota atual; quem conhece o roteador é o layout. */
   currentPath: string
@@ -15,14 +15,12 @@ const props = defineProps<Props>()
 const left = computed(() => props.items.slice(0, 2))
 const right = computed(() => props.items.slice(2))
 
-function tabClass(item: TabBarItem): string[] {
-  return [
-    'flex h-full flex-col items-center justify-center gap-1 text-sm leading-none transition-colors duration-(--lagoa-dur-fast)',
-    isActive(item) ? 'font-semibold text-primary' : 'font-medium text-muted hover:text-highlighted',
-  ]
+function keyOf(item: TabBarItem): string {
+  return item.kind === 'button' ? `button:${item.label}` : item.to
 }
 
 function isActive(item: TabBarItem): boolean {
+  if (item.kind === 'button') return item.expanded === true
   return props.currentPath === item.to || props.currentPath.startsWith(`${item.to}/`)
 }
 </script>
@@ -33,11 +31,8 @@ function isActive(item: TabBarItem): boolean {
     class="fixed inset-x-0 bottom-0 z-30 border-t border-(--lagoa-rule) bg-default pb-[env(safe-area-inset-bottom)]"
   >
     <ul class="mx-auto grid h-[4.75rem] max-w-[480px] grid-cols-5 items-stretch px-2">
-      <li v-for="item in left" :key="item.to">
-        <NuxtLink :to="item.to" :class="tabClass(item)" :aria-current="isActive(item) ? 'page' : undefined">
-          <UIcon :name="isActive(item) ? item.activeIcon : item.icon" class="size-6" aria-hidden="true" />
-          <span>{{ item.label }}</span>
-        </NuxtLink>
+      <li v-for="item in left" :key="keyOf(item)">
+        <AppTabBarTab :item="item" :active="isActive(item)" />
       </li>
       <li class="flex justify-center">
         <NuxtLink
@@ -51,11 +46,8 @@ function isActive(item: TabBarItem): boolean {
           <span class="leading-none">{{ action.label }}</span>
         </NuxtLink>
       </li>
-      <li v-for="item in right" :key="item.to">
-        <NuxtLink :to="item.to" :class="tabClass(item)" :aria-current="isActive(item) ? 'page' : undefined">
-          <UIcon :name="isActive(item) ? item.activeIcon : item.icon" class="size-6" aria-hidden="true" />
-          <span>{{ item.label }}</span>
-        </NuxtLink>
+      <li v-for="item in right" :key="keyOf(item)">
+        <AppTabBarTab :item="item" :active="isActive(item)" />
       </li>
     </ul>
   </nav>

@@ -168,6 +168,7 @@ Onde ele fala em "CLAUDE.md", leia este arquivo de regras.
 | Destaque pago             | `featuredPlacement` (`surface`: `discoverCarousel` \| `hitsBanner`) |
 | Ramo (filtro)             | `shopGroup`                    |
 | Menu Mais                 | `moreMenu`                     |
+| Abas Cartões \| Prêmios da Carteira (chave da fase B) | `walletSection` (`cards` \| `rewards`; `?aba=premios`) |
 | Admin da rede (pessoa)    | `adminUser`                    |
 | Convite de admin          | `adminInvite`                  |
 | Equipe do admin           | `adminTeam`                    |
