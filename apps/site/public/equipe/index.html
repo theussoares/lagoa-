@@ -20,18 +20,41 @@
   #log div { color: var(--muted); } #log div b { color: var(--ink); }
   button { pointer-events: auto; background: var(--accent); color: #1d1a17; border: 0; border-radius: 8px; padding: 10px 14px; font-weight: 700; cursor: pointer; min-height: 44px; }
   .meta { font-size: 12px; color: var(--muted); }
+  #loading { position: fixed; inset: 0; display: grid; place-content: center; gap: 16px; background: var(--bg); text-align: center; z-index: 5; }
+  #loading[hidden] { display: none; }
+  #loading .logo { font: 800 44px/1 system-ui, sans-serif; } #loading .logo span { color: var(--accent); }
+  #loading .track { width: min(280px, 70vw); height: 8px; border-radius: 4px; background: #ffffff1a; overflow: hidden; }
+  #loadingBar { width: 0; height: 100%; background: var(--accent); transition: width .2s; }
+  #card { position: fixed; top: 84px; right: 12px; width: min(280px, calc(100% - 24px)); background: #000c; border-radius: 10px; padding: 12px 14px; }
+  #card[hidden] { display: none; }
+  #card h2 { margin: 0 32px 2px 0; font-size: 16px; } #card p { margin: 6px 0; color: var(--muted); font-size: 13px; }
+  #card .energy { height: 6px; border-radius: 3px; background: #ffffff1a; overflow: hidden; } #card .energy span { display: block; height: 100%; background: #5f9e57; }
+  #card [data-close] { position: absolute; top: 4px; right: 4px; background: transparent; color: var(--ink); min-width: 44px; padding: 0; }
 </style>
 </head>
 <body>
+<div id="loading" role="status" aria-live="polite">
+  <div class="logo">Lagoa<span>+</span></div>
+  <div class="meta">Montando o escritório…</div>
+  <div class="track"><div id="loadingBar"></div></div>
+</div>
 <div id="hud">
   <div id="demand">
     <b>Demanda:</b> <span id="demandText">aguardando…</span>
-    <div class="meta"><span id="status">conectando…</span> · <span id="clock"></span> · passe o mouse num boneco para ver o nome</div>
+    <div class="meta"><span id="status">conectando…</span> · <span id="clock"></span> · clique num boneco para acompanhar</div>
   </div>
   <button id="demo" type="button">▶ Demo</button>
 </div>
 <div id="log" hidden></div>
+<aside id="card" hidden aria-live="polite">
+  <button type="button" data-close aria-label="Parar de acompanhar">✕</button>
+  <h2 data-name></h2>
+  <p data-trait></p>
+  <p data-activity></p>
+  <div class="energy" aria-label="Energia"><span data-energy></span></div>
+</aside>
 <div id="controls">
+  <button id="cinema" type="button" aria-pressed="false">🎬 Cinema</button>
   <button id="zoomOut" type="button" aria-label="Afastar">−</button>
   <button id="zoomIn" type="button" aria-label="Aproximar">+</button>
   <button id="logToggle" type="button" aria-controls="log" aria-expanded="false">Mostrar log</button>

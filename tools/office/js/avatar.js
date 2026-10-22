@@ -7,7 +7,7 @@ import { box } from './world.js'
 // Calibrated against the furniture kit chair (see models.js scale).
 export const TUNE = { sitY: 0.4, perchY: 0.78, armAxis: 'x', armSign: -1, glassesY: 0.32, glassesZ: 0.2, glassesScale: 1.6 }
 
-const CLIP = { walk: 'walk', stand: 'idle', talk: 'emote-yes', point: 'interact-right', frustrated: 'sit', perch: 'sit' }
+const CLIP = { walk: 'walk', stand: 'idle', talk: 'emote-yes', point: 'interact-right', frustrated: 'sit', perch: 'sit', cheer: 'jump' }
 const SEATED = new Set(['sit', 'type', 'mouse', 'think', 'read', 'sitTalk', 'game', 'frustrated', 'sip'])
 export const isSeated = (pose) => SEATED.has(pose)
 const FADE = 0.25

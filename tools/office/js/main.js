@@ -1,24 +1,33 @@
-// Scene, hook events and the frame loop.
+// Scene, hook events, simulation tick and the render loop.
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
-import { buildWorld, buildDesk, box } from './world.js'
+import { buildWorld, buildDesk, box, KANBAN_STAGES } from './world.js'
 import { ROLES, SPARE_DESKS } from './roster.js'
 import { buildAvatar } from './avatar.js'
-import { Agent, isOffHours } from './brain.js'
+import { Agent } from './brain.js'
 import { loadModels } from './models.js'
 import { scenario, loop } from './demo.js'
+import { Conversations, TRAITS, pickByAffinity } from './social.js'
+import { createDayClock, applyLight, isOffHours, isLunch, formatHour } from './daycycle.js'
+import { createFx } from './fx.js'
+import { createFollow } from './follow.js'
 
-// Public page (lagoamais.com.br/equipe): no hooks, a demo loop and always office hours.
+// Public page (lagoamais.com.br/equipe): no hooks, a demo loop and a virtual clock.
 const PUBLIC = document.documentElement.dataset.mode === 'public'
-
 const LABEL_DISTANCE = 22
+// Simulation runs at a fixed rate, independent of the camera and of the frame rate.
+const SIM_STEP = 1 / 20
+const PLANNING = new Set(['tech-lead', 'product-owner', 'arquiteto', 'cto'])
+const REVIEWING = new Set(['qa', 'seguranca', 'infra', 'code-reviewer', 'revisor-ui'])
 
 // ---------- Scene ----------
 const scene = new THREE.Scene()
 scene.background = new THREE.Color(0x1d1a17)
 const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.1, 300)
 const renderer = new THREE.WebGLRenderer({ antialias: true })
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
+// Phones and tablets: lighter rendering (pixel ratio and shadow resolution) to save battery.
+const LIGHT_MODE = matchMedia('(pointer: coarse)').matches
+renderer.setPixelRatio(Math.min(devicePixelRatio, LIGHT_MODE ? 1.25 : 2))
 renderer.setSize(innerWidth, innerHeight)
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap
 renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05
@@ -30,17 +39,21 @@ controls.zoomToCursor = true; controls.zoomSpeed = 1.6; controls.minDistance = 3
 const fitCamera = () => { const k = Math.max(1, 1.45 / camera.aspect); camera.position.set(0, 34 * k, 30 * k); camera.lookAt(controls.target) }
 fitCamera()
 
-scene.add(new THREE.HemisphereLight(0xfff4e5, 0x6b5a48, 1.1))
+const hemi = new THREE.HemisphereLight(0xfff4e5, 0x6b5a48, 1.1)
+scene.add(hemi)
 const sun = new THREE.DirectionalLight(0xfff1dc, 1.4)
 sun.position.set(12, 34, 18); sun.castShadow = true
 Object.assign(sun.shadow.camera, { left: -26, right: 26, top: 20, bottom: -20 })
-sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0005
+sun.shadow.mapSize.setScalar(LIGHT_MODE ? 1024 : 2048); sun.shadow.bias = -0.0005
 scene.add(sun)
 
+// ---------- Loading ----------
 const statusEl = document.getElementById('status')
-statusEl.textContent = 'carregando modelos…'
-await loadModels((done) => { statusEl.textContent = `carregando modelos… ${Math.round(done * 100)}%` })
+const loadingEl = document.getElementById('loading')
+const loadingBar = document.getElementById('loadingBar')
+await loadModels((done) => { loadingBar.style.width = `${Math.round(done * 100)}%` })
 const world = buildWorld(scene)
+const fx = createFx(scene)
 
 // ---------- Sprites ----------
 function textSprite(text, bg, fg, size = 34) {
@@ -55,12 +68,14 @@ function textSprite(text, bg, fg, size = 34) {
   return sprite
 }
 
-// ---------- Agents ----------
+// ---------- Office state shared with the agents ----------
 const agents = new Map()
 const office = {
   world,
   offHours: false,
+  lunch: false,
   list: () => [...agents.values()],
+  pickByAffinity,
   say(agent, text, seconds = 0) {
     if (agent.bubble) agent.avatar.root.remove(agent.bubble)
     agent.bubble = null
@@ -70,12 +85,13 @@ const office = {
     agent.bubbleUntil = seconds ? performance.now() + seconds * 1000 : Infinity
   },
 }
+office.talk = new Conversations(office)
 
 let spareIndex = 0
 function createAgent(id) {
   const role = ROLES[id] ?? (() => {
     const spare = SPARE_DESKS[spareIndex++ % SPARE_DESKS.length]
-    return { name: id, ...spare, look: { model: 'male-a', tint: 0xcccccc, skin: 0xe0ac69, hair: 'short', hairColor: 0x5a3825, outfit: 'tee', top: 0x9e9e9e, bottom: 0x3a3f4b }, idle: { desk: 3, copa: 1, coffee: 1 } }
+    return { name: id, ...spare, trait: 'social', look: { model: 'male-a', tint: 0xcccccc, top: 0x9e9e9e }, idle: { desk: 3, copa: 1, coffee: 1 } }
   })()
   const desk = buildDesk(scene, { x: role.desk[0], z: role.desk[1], room: role.room, dual: role.dual, item: role.item, accent: role.look.top })
   const avatar = buildAvatar(role.look)
@@ -90,17 +106,18 @@ function createAgent(id) {
 }
 const agentFor = (id) => agents.get(id) ?? createAgent(id)
 
-// ---------- Clock and hours ----------
-const forcedHour = new URLSearchParams(location.search).get('hora')
-const currentHour = () => (forcedHour !== null ? Number(forcedHour) : new Date().getHours())
-const offHoursNow = () => !PUBLIC && isOffHours(currentHour())
-office.offHours = offHoursNow()
+// ---------- Day ----------
+const forcedParam = new URLSearchParams(location.search).get('hora')
+const day = createDayClock({ virtual: PUBLIC, forcedHour: forcedParam === null ? null : Number(forcedParam) })
+const syncHours = () => { office.offHours = isOffHours(day.hour); office.lunch = isLunch(day.hour) }
+syncHours()
 
 for (const id of Object.keys(ROLES)) createAgent(id)
 for (const agent of agents.values()) {
   if (office.offHours) { agent.leave(); agent.setPlan([{ do: 'stand', secs: Math.random() * 20 }]); continue }
   agent.decide(); agent.settle()
 }
+loadingEl.hidden = true
 
 // ---------- Handoff papers ----------
 const papers = []
@@ -110,8 +127,7 @@ function handoff(fromId, toId) {
   papers.push({ mesh, from: from.clone(), to: to.clone(), t: 0 })
 }
 
-// ---------- Events ----------
-let lastActive = 'main'
+// ---------- HUD ----------
 const logEl = document.getElementById('log')
 const logToggle = document.getElementById('logToggle')
 logToggle.onclick = () => {
@@ -130,10 +146,31 @@ document.getElementById('zoomOut').onclick = () => zoom(1 / ZOOM_STEP)
 function log(html) { const d = document.createElement('div'); d.innerHTML = html; logEl.prepend(d); while (logEl.children.length > 40) logEl.lastChild.remove() }
 const escape = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
 
+// ---------- Events (hooks or demo) ----------
+let lastActive = 'main'
+let demand = null
+const setStage = (stage) => { if (!demand) return; demand.stage = Math.max(demand.stage, stage); world.setKanban(demand) }
+
+function celebrate() {
+  const present = [...agents.values()].filter((a) => !a.hidden)
+  for (const a of present) a.cheer(a.role.trait === 'festeiro' ? 4 : 2.5 + Math.random())
+  for (const a of present.filter((p) => p.role.trait === 'festeiro')) office.say(a, '🎉🎉', 3)
+  fx.celebrate(present.map((a) => a.pos))
+  // Someone chatty goes to tell a colleague the news.
+  const teller = present.find((a) => a.role.trait === 'social' && !a.task && !a.talk)
+  const listener = teller && present.find((a) => a !== teller && a.atDesk && !a.talk)
+  if (listener) setTimeout(() => {
+    const spot = teller.visitSpot(listener)
+    if (spot) teller.setPlan([{ go: spot }, { fn: () => teller.startTalkWith(listener, 'news') }, { do: 'converse', secs: 20, endWithTalk: true }], 'Contando a novidade')
+  }, 4500)
+}
+
 function handle(event) {
   switch (event.type) {
     case 'demand': {
       document.getElementById('demandText').textContent = event.text
+      demand = { text: event.text, stage: 0 }; world.setKanban(demand)
+      office.talk.lastDemand = event.text.toLowerCase()
       agentFor('main').assignTask('nova demanda!')
       lastActive = 'main'; log(`<b>Você</b> → ${escape(event.text)}`)
       break
@@ -142,6 +179,7 @@ function handle(event) {
       const a = agentFor(event.role)
       handoff(lastActive, event.role); lastActive = event.role
       a.assignTask(event.text)
+      setStage(PLANNING.has(event.role) ? 0 : REVIEWING.has(event.role) ? 2 : 1)
       log(`<b>${escape(a.role.name)}</b> começou: ${escape(event.text)}`)
       break
     }
@@ -151,10 +189,20 @@ function handle(event) {
       log(`<b>${escape(a.role.name)}</b> entregou`)
       break
     }
+    case 'alert': {
+      const a = agentFor(event.role)
+      office.say(a, `⛔ bloqueado: ${event.text}`, 4)
+      fx.alert(a.pos)
+      // Back to "Fazendo": the fix is work in progress again.
+      if (demand) { demand.stage = 1; world.setKanban(demand) }
+      log(`<b>${escape(a.role.name)}</b> bloqueou: ${escape(event.text)}`)
+      break
+    }
     case 'tool': agentFor(event.role).flash(event.tool); break
     case 'idle': {
       for (const a of agents.values()) a.finishTask()
-      log('<b>Equipe</b> liberada 🎉')
+      if (demand && demand.stage > 0) { demand.stage = KANBAN_STAGES.length - 1; world.setKanban(demand); celebrate() }
+      log('<b>Equipe</b> entregou 🎉')
       break
     }
   }
@@ -164,7 +212,7 @@ const demoButton = document.getElementById('demo')
 if (PUBLIC) {
   statusEl.textContent = 'demonstração'
   demoButton.hidden = true
-  loop(handle)
+  loop(handle, () => !office.offHours && !office.lunch)
 } else {
   const source = new EventSource('/events')
   source.onopen = () => { statusEl.textContent = 'ao vivo (hooks)' }
@@ -173,33 +221,40 @@ if (PUBLIC) {
   demoButton.onclick = () => { for (const [sec, event] of scenario()) setTimeout(() => handle(event), sec * 1000) }
 }
 
-// ---------- Hover: name tags show on hover, when close or while working ----------
-const raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2()
-let hoveredId = null
-renderer.domElement.addEventListener('pointermove', (e) => {
-  pointer.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1)
-  raycaster.setFromCamera(pointer, camera)
-  const hit = raycaster.intersectObjects([...agents.values()].map((a) => a.avatar.root), true).find((h) => h.object.isMesh)
-  hoveredId = hit?.object.userData.agentId ?? null
-  renderer.domElement.style.cursor = hoveredId ? 'pointer' : ''
+// ---------- Camera follow, info card, cinema ----------
+const follow = createFollow({
+  camera, controls, renderer, agents,
+  describe: (a) => ({ name: a.role.name, trait: TRAITS[a.role.trait]?.label ?? '', activity: a.describeActivity(), energy: a.energy }),
 })
 
 // ---------- Loop ----------
 const clock = new THREE.Clock()
 const clockEl = document.getElementById('clock')
-let lastHourCheck = -Infinity
+let simAccumulator = 0, lastHud = -Infinity
 function frame() {
+  // Hidden tab: no simulation and no rendering. Reading the delta here avoids a jump when the tab comes back.
+  if (document.hidden) { clock.getDelta(); return }
   const dt = Math.min(clock.getDelta(), 1), t = clock.elapsedTime, now = performance.now()
-  if (now - lastHourCheck > 10000) {
-    lastHourCheck = now
-    office.offHours = offHoursNow()
-    clockEl.textContent = office.offHours ? `🌙 ${currentHour()}h · fora do expediente` : `☀️ ${currentHour()}h · expediente`
+
+  simAccumulator += dt
+  while (simAccumulator >= SIM_STEP) {
+    simAccumulator -= SIM_STEP
+    day.tick(SIM_STEP); syncHours()
+    for (const a of agents.values()) a.tick(SIM_STEP, now)
+    office.talk.update(now)
   }
+  if (now - lastHud > 1000) {
+    lastHud = now
+    const phase = office.offHours ? '🌙 fora do expediente' : office.lunch ? '🍽️ almoço' : '☀️ expediente'
+    clockEl.textContent = `${formatHour(day.hour)} · ${phase}`
+  }
+  applyLight({ hour: day.hour, sun, hemi, scene, lamps: world.lamps })
+
   let meetingActive = false
   for (const a of agents.values()) {
-    a.update(dt, now, t)
+    if (!a.hidden) a.animate(now, t)
     if (a.bubble && now > a.bubbleUntil) office.say(a, null)
-    a.label.visible = !a.hidden && (a.id === hoveredId || !!a.task || camera.position.distanceTo(a.pos) < LABEL_DISTANCE)
+    a.label.visible = !a.hidden && (a.id === follow.hoveredId || a.id === follow.followId || !!a.task || camera.position.distanceTo(a.pos) < LABEL_DISTANCE)
     if (a.task && a.slot.room === 'reuniao' && !a.walking) meetingActive = true
   }
   world.meetingScreen.material.emissiveIntensity += ((meetingActive ? 0.8 : 0.12) - world.meetingScreen.material.emissiveIntensity) * 0.05
@@ -211,10 +266,12 @@ function frame() {
     p.mesh.rotation.y += dt * 6
     if (p.t >= 1) { scene.remove(p.mesh); papers.splice(i, 1) }
   }
+  fx.update(dt, t)
+  follow.update(now)
   controls.update(); renderer.render(scene, camera)
 }
 // Timer instead of requestAnimationFrame: keeps the office moving when the pane is in the background.
 setInterval(frame, 1000 / 40)
 // Handy for tweaking poses from the devtools console.
-window.__office = { agents, camera, controls, scene }
+window.__office = { agents, camera, controls, scene, office, day, handle }
 addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); fitCamera(); renderer.setSize(innerWidth, innerHeight) })

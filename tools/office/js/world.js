@@ -97,17 +97,28 @@ function drawGoals(ctx, w, h) {
     ctx.fillStyle = '#e7e2da'; ctx.fillRect(24, y + 12, w - 48, 22); ctx.fillStyle = color; ctx.fillRect(24, y + 12, (w - 48) * value, 22)
   })
 }
-function drawKanban(ctx, w, h) {
+// Kanban wall. `current` is the live demand: a highlighted card in the column of its stage.
+export const KANBAN_STAGES = ['A fazer', 'Fazendo', 'Revisão', 'Feito']
+function drawKanban(ctx, w, h, current = null) {
   ctx.fillStyle = '#fbfaf7'; ctx.fillRect(0, 0, w, h)
-  const cols = ['A fazer', 'Fazendo', 'Revisão', 'Feito']; const cw = w / 4
+  const cw = w / 4
   const colors = ['#ffd66b', '#9ad0f5', '#f7a8c4', '#b6e3a1']
-  cols.forEach((name, i) => {
+  KANBAN_STAGES.forEach((name, i) => {
     font(ctx, 26); ctx.fillStyle = '#1d1a17'; ctx.fillText(name, i * cw + 14, 40)
     ctx.fillStyle = '#e7e2da'; ctx.fillRect(i * cw + cw - 2, 10, 2, h - 20)
-    const count = [4, 2, 3, 5][i]
+    const count = [3, 1, 2, 4][i]
     for (let k = 0; k < count; k++) {
-      ctx.fillStyle = colors[(i + k) % 4]; ctx.fillRect(i * cw + 14 + (k % 2) * (cw / 2 - 6), 60 + Math.floor(k / 2) * 70, cw / 2 - 22, 56)
+      ctx.fillStyle = colors[(i + k) % 4]; ctx.fillRect(i * cw + 14 + (k % 2) * (cw / 2 - 6), 130 + Math.floor(k / 2) * 66, cw / 2 - 22, 54)
     }
+    if (current?.stage !== i) return
+    ctx.fillStyle = '#e8743b'; ctx.fillRect(i * cw + 10, 56, cw - 22, 64)
+    font(ctx, 20); ctx.fillStyle = '#ffffff'
+    const words = current.text.split(' '); let line = '', y = 82
+    for (const word of words) {
+      if (ctx.measureText(line + word).width > cw - 40 && line) { ctx.fillText(line.trim(), i * cw + 18, y); line = ''; y += 24; if (y > 112) break }
+      line += word + ' '
+    }
+    if (y <= 112) ctx.fillText(line.trim(), i * cw + 18, y)
   })
 }
 function drawTests(ctx, w, h) {
@@ -223,7 +234,7 @@ export function buildWorld(scene) {
     const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 8), new THREE.MeshStandardMaterial({ color: 0xffe2b0, emissive: 0xffc77a, emissiveIntensity: 1.5 }))
     at(scene, bulb, lampX, 3.05, lampZ)
     const light = new THREE.PointLight(id === 'lounge' ? 0x9b6bff : 0xffd29a, id === 'lounge' ? 30 : 18, 14, 1.6)
-    light.position.set(lampX, 3, lampZ); scene.add(light); lamps.push(light)
+    light.position.set(lampX, 3, lampZ); light.userData.base = light.intensity; scene.add(light); lamps.push(light)
   }
   solid(2, TALL_H, -22, 0, false); solid(2, TALL_H, 22, 0, false)
 
@@ -259,7 +270,12 @@ export function buildWorld(scene) {
   plant(scene, 7.3, -12.3, 1.2); plant(scene, -3.3, -1.8, 0.9)
 
   // Product: kanban wall and standing spots in front of it.
-  panel(scene, drawKanban, 4.6, 2.2, 15, 1.6, -12.85)
+  const kanban = panel(scene, drawKanban, 4.6, 2.2, 15, 1.6, -12.85)
+  const setKanban = (current) => {
+    const canvas = kanban.material.map.image
+    drawKanban(canvas.getContext('2d'), canvas.width, canvas.height, current)
+    kanban.material.map.needsUpdate = true
+  }
   for (const x of [14.2, 15.8]) slots.board.push(makeSlot({ room: 'produto', x, z: -11.6, lookX: x, lookZ: -14 }))
   plant(scene, 21.3, -12.3, 1.2); plant(scene, 8.7, -1.8, 0.9)
 
@@ -306,5 +322,5 @@ export function buildWorld(scene) {
   panel(scene, drawPoster('#e8743b', '1UP'), 1.1, 1.5, 21.85, 1.6, 11.8, -Math.PI / 2)
   plant(scene, 15.8, 12.3, 1.1)
 
-  return { slots, meetingScreen, gameScreen }
+  return { slots, meetingScreen, gameScreen, lamps, setKanban }
 }
