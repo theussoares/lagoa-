@@ -238,7 +238,7 @@ export function buildWorld(scene) {
   }
   solid(2, TALL_H, -22, 0, false); solid(2, TALL_H, 22, 0, false)
 
-  const slots = { meeting: [], presenter: null, coffee: [], copa: [], lounge: [], board: [], huddle: [], exit: null }
+  const slots = { meeting: [], presenter: null, coffee: [], copa: [], lounge: [], board: [], huddle: [] }
 
   // Reception: logo, counter, waiting chairs, entrance.
   panel(scene, drawLogo, 4, 1.2, -18, 1.9, -12.85)
@@ -248,7 +248,6 @@ export function buildWorld(scene) {
   kit(scene, 'coatRackStanding', { x: -21.2, z: -3.2, height: 2.0 })
   plant(scene, -21.2, -12.2, 1.3); plant(scene, -15, -4, 1)
   at(scene, box(1.6, 0.02, 2.2, 0x8a7d6c), -21, 0.03, ENTRANCE_Z)
-  slots.exit = makeSlot({ room: 'recepcao', x: -25.5, z: ENTRANCE_Z, lookX: -30, lookZ: ENTRANCE_Z })
 
   // Board room / diretoria: goals panel and a reading corner.
   panel(scene, drawGoals, 4.4, 2.2, -9, 1.6, -12.85)
