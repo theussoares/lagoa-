@@ -7,6 +7,7 @@ export const CUSTOMER_FILTER_QUERY = 'filtro'
 const slugByFilter: Readonly<Record<CustomerFilter, string>> = {
   all: 'todos',
   lapsed: 'sumidos',
+  nearReward: 'perto-do-premio',
   rewardReady: 'premio-liberado',
 }
 

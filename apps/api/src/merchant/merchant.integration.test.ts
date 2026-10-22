@@ -80,7 +80,7 @@ describe.skipIf(!TEST_DATABASE_URL)('merchant end-to-end integration against rea
     const visitQrsRepo = new DrizzleVisitQrsRepository(data.db, pii)
     const counterRepo = new DrizzleCounterRepository(data.db, ledger, pii, redemptionLookup)
     const customersRepo = new DrizzleCustomersRepository(data.db)
-    const homeRepo = new DrizzleHomeRepository(data.db)
+    const homeRepo = new DrizzleHomeRepository(data.db, pii)
 
     clubSetupService = new ClubSetupService(clubSetupRepo, pii, clock)
     programService = new ProgramService(new DrizzleProgramRepository(data.db), clock)

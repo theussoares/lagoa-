@@ -23,7 +23,7 @@ const OPTIONS: readonly { kind: ShopContactKind; icon: string }[] = [
       <label
         v-for="option in OPTIONS"
         :key="option.kind"
-        class="group relative flex min-h-11 cursor-pointer flex-col gap-1 rounded-(--radius-card) p-3 ring-1 ring-(--lagoa-rule) transition-shadow duration-(--lagoa-dur-fast) has-checked:ring-2 has-checked:ring-primary has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-primary"
+        class="group relative flex min-h-11 cursor-pointer flex-col gap-1 rounded-(--radius-card) p-3 ring-1 ring-(--lagoa-rule) transition-all duration-150 hover:ring-slate-300 dark:hover:ring-white/25 hover:bg-slate-50/70 dark:hover:bg-white/5 active:scale-[0.99] has-checked:ring-2 has-checked:ring-primary has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-primary"
       >
         <input v-model="kind" type="radio" :name="name" :value="option.kind" class="sr-only" />
         <span class="flex items-center gap-2 text-base font-semibold text-highlighted">

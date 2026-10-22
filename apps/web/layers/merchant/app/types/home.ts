@@ -1,10 +1,11 @@
+import type { CampaignOverview } from '#shared/schemas/campaign'
 import type { MerchantCustomerPage } from '#shared/schemas/customer'
+import type { Program } from '#shared/schemas/program'
 import type { WeekSummary } from '#shared/schemas/weekSummary'
 import type { TransportError } from '#shared/types/errors'
 import type { AsyncResultState } from '#layers/core/app/types/asyncResult'
 import type { ComputedRef } from 'vue'
 import type { CheckInPosterModel } from './poster'
-
 export interface HomeStatCard {
   readonly id: 'sales' | 'visits' | 'redemptions' | 'lapsed'
   /** "Vendas da semana". */
@@ -26,10 +27,15 @@ export interface LapsedPreviewLabels {
   readonly noName: string
 }
 
+import type { HomeOverview } from '#shared/schemas/homeOverview'
+
 export interface MerchantHomeSnapshot {
   readonly week: WeekSummary
-  /** Primeira página dos sumidos, mais recentes primeiro (os mais fáceis de trazer de volta); `total` conta todos. */
-  readonly lapsed: MerchantCustomerPage
+  readonly overview: HomeOverview
+  /** Programa e prêmio cadastrados da loja. */
+  readonly program: Program | null
+  /** Campanhas cadastradas. */
+  readonly campaignsOverview: CampaignOverview | null
   /**
    * Quantos podem receber um lembrete agora (regra do servidor, a mesma de Campanhas).
    * `null` quando a contagem não veio: o resto do Início continua de pé.
@@ -37,6 +43,8 @@ export interface MerchantHomeSnapshot {
   readonly reachable: number | null
   /** O cartaz antigo ainda está na parede. Sem a resposta, o aviso não aparece. */
   readonly posterReprintPending: boolean
+  /** Alertas de serviços que falharam (não-autorizado derruba a tela; outras falhas geram aviso). */
+  readonly warnings: readonly ('program' | 'campaigns')[]
 }
 
 export interface PosterReprint {

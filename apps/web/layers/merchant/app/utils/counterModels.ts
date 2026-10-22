@@ -22,6 +22,8 @@ const ledgerIcons: Readonly<Record<LedgerKind, string>> = {
   checkIn: 'i-ph-qr-code-bold',
   redemption: 'i-ph-gift-bold',
   campaignBonus: 'i-ph-megaphone-bold',
+  welcomeBonus: 'i-ph-sparkle-bold',
+  referralBonus: 'i-ph-users-three-bold',
 }
 
 function ledgerAction(entry: CounterEntry, t: Translate): string {
@@ -37,6 +39,10 @@ function ledgerAction(entry: CounterEntry, t: Translate): string {
       return t('counter.ledger.earned', { units: earned })
     case 'campaignBonus':
       return t('counter.ledger.earnedCampaign', { units: earned })
+    case 'welcomeBonus':
+      return t('counter.ledger.earnedWelcome', { units: earned })
+    case 'referralBonus':
+      return t('counter.ledger.earnedReferral', { units: earned })
   }
 }
 

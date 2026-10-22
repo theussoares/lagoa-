@@ -17,6 +17,7 @@ const look = computed(() => ACTION_ROLES[props.role])
     :color="look.color"
     :variant="look.variant"
     :size="size ?? look.size"
+    class="cursor-pointer transition-all duration-150 active:scale-[0.98]"
     :class="surface === 'dark' ? 'focus-visible:outline-white' : undefined"
   />
 </template>

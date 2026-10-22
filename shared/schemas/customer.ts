@@ -61,7 +61,7 @@ export const MerchantCustomerRowSchema = z.object({
 })
 export type MerchantCustomerRow = z.infer<typeof MerchantCustomerRowSchema>
 
-export const CustomerFilterSchema = z.enum(['all', 'lapsed', 'rewardReady'])
+export const CustomerFilterSchema = z.enum(['all', 'lapsed', 'nearReward', 'rewardReady'])
 export type CustomerFilter = z.infer<typeof CustomerFilterSchema>
 
 /** Uma página da tela Clientes. O cursor é o último cliente da página (um cartão por cliente e loja). */

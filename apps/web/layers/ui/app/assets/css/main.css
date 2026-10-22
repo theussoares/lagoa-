@@ -378,3 +378,52 @@ body {
   background-color: var(--ui-bg);
   box-shadow: var(--lagoa-shadow-raised);
 }
+
+/* Cursor pointer para elementos interativos / clicáveis em todo o sistema */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+[role="tab"]:not([aria-disabled="true"]),
+[role="menuitem"]:not([aria-disabled="true"]),
+[role="option"]:not([aria-disabled="true"]),
+[role="checkbox"]:not([aria-disabled="true"]),
+[role="radio"]:not([aria-disabled="true"]),
+[role="switch"]:not([aria-disabled="true"]),
+[type="button"]:not(:disabled),
+[type="submit"]:not(:disabled),
+[type="reset"]:not(:disabled),
+select:not(:disabled),
+summary,
+input[type="checkbox"]:not(:disabled),
+input[type="radio"]:not(:disabled),
+input[type="file"]:not(:disabled),
+label[for] {
+  cursor: pointer;
+}
+
+button:disabled,
+[type="button"]:disabled,
+[type="submit"]:disabled,
+[type="reset"]:disabled,
+[aria-disabled="true"],
+button[disabled] {
+  cursor: not-allowed;
+}
+
+/* Links de ação de cabeçalho e cards: sem sublinhado nativo e animação de seta suave */
+.group\/link,
+[class*="group/link"],
+.group\/link *,
+[class*="group/link"] * {
+  text-decoration: none !important;
+}
+.group\/link:hover,
+[class*="group/link"]:hover,
+.group\/link:hover *,
+[class*="group/link"]:hover * {
+  text-decoration: none !important;
+}
+.group\/link:hover [class*="arrow-right"],
+[class*="group/link"]:hover [class*="arrow-right"] {
+  transform: translateX(2px);
+}
+

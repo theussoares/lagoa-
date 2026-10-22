@@ -124,7 +124,9 @@
       "earnedAmount": "+{units} · {amount}",
       "earnedCheckIn": "+{units} · QR da visita",
       "redeemed": "Prêmio entregue: {reward}",
-      "earnedCampaign": "+{units} · presente de lembrete"
+      "earnedCampaign": "+{units} · presente de lembrete",
+      "earnedWelcome": "+{units} · boas-vindas",
+      "earnedReferral": "+{units} · indicação"
     }
   },
   "nav": {
@@ -289,7 +291,10 @@
   "theme": {
     "legend": "Cores do app neste aparelho",
     "light": "Claro",
-    "dark": "Escuro"
+    "dark": "Escuro",
+    "toggle": "Alternar tema",
+    "switchToLight": "Mudar para tema claro",
+    "switchToDark": "Mudar para tema escuro"
   },
   "merchantSignIn": {
     "pageTitle": "Entrar no painel",
@@ -337,6 +342,7 @@
       "label": "Mostrar",
       "all": "Todos",
       "lapsed": "Sumidos há mais de {days} dias",
+      "nearReward": "Perto do prêmio",
       "rewardReady": "Com prêmio liberado"
     },
     "table": {
@@ -360,6 +366,7 @@
     "empty": {
       "all": "Ainda não há clientes. Eles aparecem aqui depois da primeira visita lançada no Balcão.",
       "lapsed": "Ninguém sumido. Todo mundo voltou nos últimos {days} dias.",
+      "nearReward": "Nenhum cliente perto do prêmio agora.",
       "rewardReady": "Nenhum cliente com prêmio liberado agora."
     },
     "lapsedHint": "{count} de {total} aceitaram avisos.",
@@ -539,7 +546,12 @@
   "home": {
     "title": "Início",
     "lead": "O que aconteceu na loja nos últimos {days} dias e quem vale chamar de volta.",
+    "subtitle": "Acompanhe o desempenho do seu clube e gerencie o dia a dia da sua loja.",
     "counterAction": "Ir para o Balcão",
+    "warnings": {
+      "program": "Não foi possível carregar as informações do programa. Algumas metas ou unidades podem não ser exibidas.",
+      "campaigns": "Não foi possível carregar as campanhas ativas no momento."
+    },
     "stats": {
       "sales": "Vendas da semana",
       "visits": "Visitas da semana",
@@ -548,6 +560,81 @@
     "week": {
       "customers": "nenhum cliente | 1 cliente | {count} clientes",
       "newCustomers": "nenhum cliente novo | 1 cliente novo | {count} clientes novos"
+    },
+    "indicators": {
+      "activeCustomers": "Clientes ativos",
+      "ofRegistered": "de {total} cadastrados",
+      "registered": "cadastrados",
+      "lapsedCustomers": "Clientes sumidos",
+      "lapsedDescription": "há mais de {days} dias sem visita",
+      "oldestLapsed": "mais antigo: há {days} dias",
+      "noLapsed": "Nenhum cliente sumido 🎉",
+      "seeLapsedAction": "Detalhes",
+      "deliveredRewards": "Prêmios entregues",
+      "thisMonth": "este mês",
+      "thisWeek": "esta semana",
+      "vsLastMonth": "vs. mês anterior",
+      "newThisMonth": "+{count} este mês",
+      "newThisWeek": "+{count} novos",
+      "nearReward": "Perto do prêmio",
+      "nearRewardDescription": "a partir de 80% da meta",
+      "noNearReward": "Ninguém perto da meta",
+      "seeNearRewardAction": "Detalhes"
+    },
+    "monthSummary": {
+      "title": "Resumo do mês",
+      "subtitle": "Evolução do clube comparada com o período anterior",
+      "details": "Detalhes",
+      "periods": {
+        "week": "Esta semana",
+        "month": "Este mês",
+        "last30": "Últimos 30 dias"
+      },
+      "metrics": {
+        "newCustomers": "Cadastrados",
+        "visits": "Visitas",
+        "purchases": "Compras",
+        "redemptions": "Resgates"
+      },
+      "current": "Atual",
+      "previous": "Anterior",
+      "noData": "Sem movimentação no período"
+    },
+    "opportunities": {
+      "title": "Resumo de oportunidades",
+      "seeAll": "Ver clientes",
+      "lapsedAlert": "{count} clientes sumidos há mais de {days} dias",
+      "nearRewardAlert": "{count} clientes próximos de ganhar um prêmio",
+      "readyRewardAlert": "{count} prêmios disponíveis para resgate",
+      "empty": "Tudo em dia por aqui!",
+      "emptyHint": "Novos alertas aparecerão conforme clientes atingirem a meta ou ficarem inativos."
+    },
+    "recentActivity": {
+      "title": "Atividade recente do clube",
+      "seeAll": "Ver todos",
+      "empty": "Nenhuma atividade registrada ainda.",
+      "emptyHint": "Visitas, compras, prêmios e resgates aparecerão aqui em tempo real.",
+      "events": {
+        "visit": "Visita registrada",
+        "purchase": "Compra lançada ({amount})",
+        "bonus": "Pontos de bônus concedidos",
+        "rewardReleased": "Prêmio liberado: {reward}",
+        "redemption": "Resgate realizado: {reward}"
+      }
+    },
+    "activeCampaigns": {
+      "title": "Campanhas ativas",
+      "seeAll": "Ver todas",
+      "statusOngoing": "Em andamento",
+      "birthdayTitle": "Aniversário do clube",
+      "birthdayDesc": "Cliente ganha dobro de pontos na visita durante o mês do aniversário.",
+      "welcomeTitle": "Boas-vindas",
+      "welcomeDesc": "Cliente ganha {units} de boas-vindas no primeiro check-in.",
+      "surpriseTitle": "Dia surpresa",
+      "surpriseDesc": "Pontuação em dobro no dia especial da loja.",
+      "empty": "Nenhuma campanha ativa no momento.",
+      "emptyHint": "Ative regras de bônus ou envie campanhas para atrair clientes.",
+      "configureAction": "Configurar clube"
     },
     "lapsed": {
       "title": "Clientes sumidos",

@@ -81,7 +81,7 @@ const tableLabels = computed<CustomerTableLabels>(() => ({
             variant="ghost"
             color="neutral"
             icon="i-ph-arrow-clockwise"
-            class="size-11 justify-center"
+            class="size-11 justify-center cursor-pointer transition-all duration-150 hover:bg-slate-100 dark:hover:bg-white/10 active:scale-95"
             :aria-label="t('customers.refresh')"
             :loading="state.status === 'loading'"
             @click="reload"

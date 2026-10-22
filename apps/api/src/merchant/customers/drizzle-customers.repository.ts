@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common'
-import { and, desc, eq, gte, isNull, lte, sql, type SQL } from 'drizzle-orm'
+import { and, desc, eq, gte, isNull, lt, lte, sql, type SQL } from 'drizzle-orm'
+import { NEAR_REWARD_PERCENT } from '#shared/constants/domain'
 import type { CustomerFilter } from '#shared/schemas/customer'
 import { DB, type Database } from '../../database/database.module'
 import { ledgerEntries, loyaltyCards } from '../../database/schema/cards'
@@ -13,12 +14,7 @@ import {
   type RawCustomerCardRow,
 } from './customers.repository'
 
-/** Mesmas regras de `isLapsedSince` e `isRewardReady`, aplicadas no banco para filtrar antes de paginar e contar. */
-function filterCondition(filter: CustomerFilter, cutoff: Date): SQL | undefined {
-  if (filter === 'lapsed') return lte(loyaltyCards.lastVisitAt, cutoff)
-  if (filter === 'rewardReady') return gte(loyaltyCards.balance, programs.target)
-  return undefined
-}
+import { filterCondition } from './customer-filter.sql'
 
 /**
  * Linhas depois do cartão do cliente-cursor na ordem `last_visit_at desc nulls last, id desc`. Compara com o valor
